@@ -1,10 +1,4 @@
 import { createProfilePictureReportRepository, type ProfilePictureReportRepository } from "../../services/persistence/profilePictureReportRepository.js";
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
@@ -43,59 +37,6 @@ ${
     : ""
 }
 `;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const { text, loggedInModName, actionType, actionDescription, issueId } =
-    input;
-
-  return {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
 };
 
 const getResolver = (input: Input) => {
@@ -168,31 +109,16 @@ const getResolver = (input: Input) => {
     if (!existingIssueId) {
       const issueNumber = await getNextServerIssueNumber(driver);
 
-      const issueCreateInput: IssueCreateInput = {
-        title: `[Reported profile picture] ${displayLabel}`,
-        isOpen: true,
-        authorName: loggedInModName,
-        flaggedServerRuleViolation: true, // Profile picture reports always flag server rule violation
-        channelUniqueName: null, // Server-scoped issue
-        relatedProfilePicUserId: username,
-        relatedUsername: username,
-        issueNumber,
-        Author: {
-          ModerationProfile: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
-        },
-        // No Channel connection for server-scoped issues
-      };
-
       try {
-        const createResult = await repository.createProfileReportIssue(issueCreateInput);
+        const createResult = await repository.createProfileReportIssue({
+          issueNumber,
+          title: `[Reported profile picture] ${displayLabel}`,
+          authorModName: loggedInModName,
+          channelUniqueName: null, // Server-scoped issue (no HAS_ISSUE edge)
+          flaggedServerRuleViolation: true, // Profile picture reports always flag server rule violation
+          relatedProfilePicUserId: username, // → TARGETS_PROFILE_PICTURE_USER
+          relatedUsername: username, // → TARGETS_USER
+        });
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -206,34 +132,23 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const moderationActionCreateInput = getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName,
-      actionType: "report",
-      actionDescription: "Reported the profile picture",
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation: true, // Profile picture reports always flag server rule violation
-    };
-
+    // Append the report moderation action (with its embedded moderator comment)
+    // via the owned moderation write. Server-scoped: the comment has no Channel
+    // connect, and the comment text is stored verbatim (no newline wrapping).
     try {
-      const updateResult = await repository.appendProfileReport(issueUpdateWhere, issueUpdateInput);
+      const updateResult = await repository.appendProfileReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "report",
+            actionDescription: "Reported the profile picture",
+            text: finalCommentText,
+            modDisplayName: loggedInModName,
+          },
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation: true, // Profile picture reports always flag server rule violation
+      });
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

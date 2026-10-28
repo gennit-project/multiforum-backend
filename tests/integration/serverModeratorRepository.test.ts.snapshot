@@ -67,80 +67,6 @@ exports[`connectModerator preserves repeated native event payloads and mutation 
 
 exports[`connectModerator preserves repeated native event payloads and mutation results 2`] = `
 {
-  "events": [
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_SERVER",
-      "timestamp": "<generated-time>",
-      "toTypename": "ServerConfig"
-    },
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_SERVER",
-      "timestamp": "<generated-time>",
-      "toTypename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -149,7 +75,7 @@ exports[`connectModerator preserves repeated native event payloads and mutation 
       },
       "moderators": {
         "high": 0,
-        "low": 1
+        "low": 2
       },
       "username": "alice"
     }
@@ -226,61 +152,6 @@ exports[`disconnectInvite preserves repeated native event payloads and mutation 
 
 exports[`disconnectInvite preserves repeated native event payloads and mutation results 2`] = `
 {
-  "events": [
-    {
-      "event": "delete_relationship",
-      "fromTypename": "ServerConfig",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "username": "alice"
-        }
-      },
-      "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-      "timestamp": "<generated-time>",
-      "toTypename": "User"
-    },
-    {
-      "event": "update",
-      "id": "<id-1>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "<id-1>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -359,24 +230,6 @@ exports[`moderator writes preserve missing profile results and events 1`] = `
 
 exports[`moderator writes preserve missing profile results and events 2`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -429,24 +282,6 @@ exports[`moderator writes preserve missing profile results and events 3`] = `
 
 exports[`moderator writes preserve missing profile results and events 4`] = `
 {
-  "events": [
-    {
-      "event": "update",
-      "id": "<id-0>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "invites": {
@@ -471,7 +306,6 @@ exports[`moderator writes preserve missing server results and events 1`] = `
 
 exports[`moderator writes preserve missing server results and events 2`] = `
 {
-  "events": [],
   "graph": [
     {
       "invites": {
@@ -496,7 +330,6 @@ exports[`moderator writes preserve missing server results and events 3`] = `
 
 exports[`moderator writes preserve missing server results and events 4`] = `
 {
-  "events": [],
   "graph": [
     {
       "invites": {
@@ -515,47 +348,6 @@ exports[`moderator writes preserve missing server results and events 4`] = `
 
 exports[`projection failure preserves committed moderator relationship and native events 1`] = `
 {
-  "events": [
-    {
-      "event": "create_relationship",
-      "fromTypename": "ModerationProfile",
-      "id": "<id-0>",
-      "id_from": "<id-1>",
-      "id_to": "<id-2>",
-      "properties": {
-        "from": {
-          "displayName": "ModAlice"
-        },
-        "relationship": {},
-        "to": {
-          "createdAt": "<generated-time>",
-          "enableEvents": "invalid",
-          "serverName": "cats"
-        }
-      },
-      "relationshipName": "MODERATOR_OF_SERVER",
-      "timestamp": "<generated-time>",
-      "toTypename": "ServerConfig"
-    },
-    {
-      "event": "update",
-      "id": "<id-2>",
-      "properties": {
-        "new": {
-          "createdAt": "<generated-time>",
-          "enableEvents": "invalid",
-          "serverName": "cats"
-        },
-        "old": {
-          "createdAt": "<generated-time>",
-          "enableEvents": "invalid",
-          "serverName": "cats"
-        }
-      },
-      "timestamp": "<generated-time>",
-      "typename": "ServerConfig"
-    }
-  ],
   "graph": [
     {
       "invites": {

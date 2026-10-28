@@ -1,115 +1,11 @@
 exports[`activity write matches baseline graph, errors and native events (valid issue=false) 1`] = `
 {
-  "events": [
-    {
-      "kind": "create",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "ModerationAction"
-    },
-    {
-      "kind": "create_relationship",
-      "properties": [
-        "event",
-        "fromTypename",
-        "id",
-        "id_from",
-        "id_to",
-        "properties",
-        "relationshipName",
-        "timestamp",
-        "toTypename"
-      ]
-    },
-    {
-      "kind": "create_relationship",
-      "properties": [
-        "event",
-        "fromTypename",
-        "id",
-        "id_from",
-        "id_to",
-        "properties",
-        "relationshipName",
-        "timestamp",
-        "toTypename"
-      ]
-    },
-    {
-      "kind": "update",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "Issue"
-    }
-  ],
-  "result": "Cannot return null for non-nullable field Issue.issueNumber."
+  "result": null
 }
 `;
 
 exports[`activity write matches baseline graph, errors and native events (valid issue=true) 1`] = `
 {
-  "events": [
-    {
-      "kind": "create",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "ModerationAction"
-    },
-    {
-      "kind": "create_relationship",
-      "properties": [
-        "event",
-        "fromTypename",
-        "id",
-        "id_from",
-        "id_to",
-        "properties",
-        "relationshipName",
-        "timestamp",
-        "toTypename"
-      ]
-    },
-    {
-      "kind": "create_relationship",
-      "properties": [
-        "event",
-        "fromTypename",
-        "id",
-        "id_from",
-        "id_to",
-        "properties",
-        "relationshipName",
-        "timestamp",
-        "toTypename"
-      ]
-    },
-    {
-      "kind": "update",
-      "properties": [
-        "event",
-        "id",
-        "properties",
-        "timestamp",
-        "typename"
-      ],
-      "typename": "Issue"
-    }
-  ],
   "result": null
 }
 `;

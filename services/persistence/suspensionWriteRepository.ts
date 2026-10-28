@@ -1,94 +1,127 @@
 import type { Driver } from "neo4j-driver";
-import type { IssueUpdateInput, ChannelUpdateInput, ServerConfigUpdateInput } from "../../ogm_types.js";
-import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
-import { ISSUE_ACTIVITY_DEFAULT_SELECTION } from "./issueActivityRepository.js";
-import { assertIssueIdentityUpdateAllowed } from "../issueTargetIdentity.js";
+import {
+  appendModerationActions,
+  type AppendModerationActionsParams,
+} from "./moderationIssueWrites.js";
 
 type IssueResult = { issues: Array<{id: string; issueNumber?: number | null; ActivityFeed: Array<{id: string; actionType?: string | null}>}> };
+
+// FAMILY-3 / v7 (campaign #284). The suspension flow is owned Cypher: the Issue
+// ModerationActions go through moderationIssueWrites; the Suspension node and its
+// to-one edges (SuspendedUser/SuspendedMod, RelatedIssue — v7 removed their nested
+// connect) are written here. Leader-routed via the driver default.
+export type SuspensionSubjectType = "User" | "ModerationProfile";
+export type AddSuspensionParams = {
+  scope: "server" | "channel";
+  ownerServerName?: string | null;
+  ownerChannelUniqueName?: string | null;
+  subjectType: SuspensionSubjectType;
+  subjectKey: string; // username (User) or displayName (ModerationProfile) to connect
+  issueId: string;
+  // Suspension scalars:
+  channelUniqueName?: string | null;
+  serverName?: string | null;
+  username?: string | null;
+  modProfileName?: string | null;
+  suspendedUntil?: string | null;
+  suspendedIndefinitely?: boolean | null;
+};
+export type RemoveSuspensionParams = {
+  scope: "server" | "channel";
+  ownerServerName?: string | null;
+  ownerChannelUniqueName?: string | null;
+  subjectType: SuspensionSubjectType;
+  subjectKey: string;
+};
+
 export interface SuspensionWriteRepository {
-  appendSuspensionActivity(id: string, update: IssueUpdateInput): Promise<void>;
-  closeSuspensionIssue(id: string, update: IssueUpdateInput): Promise<IssueResult>;
-  addChannelSuspension(uniqueName: string | null | undefined, update: ChannelUpdateInput): Promise<{channels: Array<{uniqueName: string}>}>;
-  addServerSuspension(serverName: string | undefined, update: ServerConfigUpdateInput): Promise<{serverConfigs: Array<{serverName?: string | null}>}>;
-  removeChannelSuspensions(uniqueName: string | null | undefined, update: ChannelUpdateInput): Promise<void>;
-  removeServerSuspensions(serverName: string | undefined, update: ServerConfigUpdateInput): Promise<void>;
+  appendSuspensionActivity(params: AppendModerationActionsParams): Promise<void>;
+  closeSuspensionIssue(params: AppendModerationActionsParams): Promise<IssueResult>;
+  addSuspension(params: AddSuspensionParams): Promise<{ ownerKey: string | null }>;
+  removeSuspension(params: RemoveSuspensionParams): Promise<void>;
 }
-export const SUSPENSION_ISSUE_SELECTION = `{ issues { id issueNumber ActivityFeed { id actionType } } }`;
-// These projections retain the production reused-schema OGM default response/error contracts.
-export const SUSPENSION_CHANNEL_DEFAULT_SELECTION = `{
-  uniqueName
-  displayName
-  description
-  locked
-  lockReason
-  deleted
-  channelIconURL
-  icon32Url
-  icon48Url
-  icon64Url
-  icon96Url
-  channelBannerURL
-  eventsEnabled
-  wikiEnabled
-  feedbackEnabled
-  downloadsEnabled
-  emojiEnabled
-  imageUploadsEnabled
-  markdownImagesEnabled
-  allowPaidDownloads
-  allowPaywalledPosts
-  requireVerifiedPhoneForUploads
-  requireVerifiedEmailToPost
-  markAsAnsweredEnabled
-  discussionFlairRequired
-  allowedFileTypes
-  payoutPercent
-  variantUrls
-  rules
-  pluginPipelines
-  createdAt
-  lockedAt
-}`;
-export const SUSPENSION_SERVER_DEFAULT_SELECTION = `{
-  serverName
-  serverDescription
-  serverIconURL
-  allowedFileTypes
-  featuredWikiPageIds
-  enableDownloads
-  enableEvents
-  accountAgeGateEnabled
-  minimumAccountAge
-  sensitiveContentAgeGateEnabled
-  minimumSensitiveContentAge
-  brandingProductName
-  brandingDocsURL
-  brandingSourceURL
-  brandingIssuesURL
-  brandingSupportEmail
-  brandingShowUpstreamLinks
-  brandingLogoDarkURL
-  brandingLogoAlt
-  brandingFaviconURL
-  brandingPrimaryColor
-  pluginRegistries
-  rules
-  brandingCustomFooterLinks
-  pluginPipelines
-}`;
-const APPEND = `mutation AppendSuspensionActivity($where: IssueWhere, $update: IssueUpdateInput) { updateIssues(where:$where, update:$update) { issues ${ISSUE_ACTIVITY_DEFAULT_SELECTION} } }`;
-const CLOSE = `mutation CloseSuspensionIssue($where: IssueWhere, $update: IssueUpdateInput) { updateIssues(where:$where, update:$update) ${SUSPENSION_ISSUE_SELECTION} }`;
-const ADD_CHANNEL = `mutation AddChannelSuspension($where: ChannelWhere, $update: ChannelUpdateInput) { updateChannels(where:$where, update:$update) { channels { uniqueName } } }`;
-const ADD_SERVER = `mutation AddServerSuspension($where: ServerConfigWhere, $update: ServerConfigUpdateInput) { updateServerConfigs(where:$where, update:$update) { serverConfigs { serverName } } }`;
-const REMOVE_CHANNEL = `mutation RemoveChannelSuspensions($where: ChannelWhere, $update: ChannelUpdateInput) { updateChannels(where:$where, update:$update) { channels ${SUSPENSION_CHANNEL_DEFAULT_SELECTION} } }`;
-const REMOVE_SERVER = `mutation RemoveServerSuspensions($where: ServerConfigWhere, $update: ServerConfigUpdateInput) { updateServerConfigs(where:$where, update:$update) { serverConfigs ${SUSPENSION_SERVER_DEFAULT_SELECTION} } }`;
+
+// SUSPENDED_AS_USER / SUSPENDED_AS_MOD are the relationship types from typeDefs;
+// subject key is username (User) vs displayName (ModerationProfile).
+const relFor = (t: SuspensionSubjectType) => (t === "User" ? "SUSPENDED_AS_USER" : "SUSPENDED_AS_MOD");
+const subjectLabelFor = (t: SuspensionSubjectType) => (t === "User" ? "User" : "ModerationProfile");
+const subjectKeyFor = (t: SuspensionSubjectType) => (t === "User" ? "username" : "displayName");
+
 export function createSuspensionWriteRepository(driver: Driver): SuspensionWriteRepository {
   return {
-    async appendSuspensionActivity(id,update) { assertIssueIdentityUpdateAllowed(update); await executeGeneratedOperation(driver,APPEND,{where:{id},update}); },
-    async closeSuspensionIssue(id,update) { assertIssueIdentityUpdateAllowed(update); return (await executeGeneratedOperation<{updateIssues:IssueResult}>(driver,CLOSE,{where:{id},update})).updateIssues; },
-    async addChannelSuspension(uniqueName,update) { return (await executeGeneratedOperation<{updateChannels:{channels:Array<{uniqueName:string}>}}>(driver,ADD_CHANNEL,{where:{uniqueName},update})).updateChannels; },
-    async addServerSuspension(serverName,update) { return (await executeGeneratedOperation<{updateServerConfigs:{serverConfigs:Array<{serverName?:string|null}>}}>(driver,ADD_SERVER,{where:{serverName},update})).updateServerConfigs; },
-    async removeChannelSuspensions(uniqueName,update) { await executeGeneratedOperation(driver,REMOVE_CHANNEL,{where:{uniqueName},update}); },
-    async removeServerSuspensions(serverName,update) { await executeGeneratedOperation(driver,REMOVE_SERVER,{where:{serverName},update}); },
+    async appendSuspensionActivity(params) {
+      await appendModerationActions(driver, params);
+    },
+    async closeSuspensionIssue(params) {
+      const result = await appendModerationActions(driver, params);
+      return { issues: result.issues as unknown as IssueResult["issues"] };
+    },
+    async addSuspension(params) {
+      const rel = relFor(params.subjectType);
+      const ownerClause =
+        params.scope === "server"
+          ? "MATCH (owner:ServerConfig {serverName: $ownerServerName})"
+          : "MATCH (owner:Channel {uniqueName: $ownerChannelUniqueName})";
+      const subjectClause = `OPTIONAL MATCH (subject:${subjectLabelFor(params.subjectType)} {${subjectKeyFor(params.subjectType)}: $subjectKey})`;
+      const ownerKeyReturn = params.scope === "server" ? "owner.serverName" : "owner.uniqueName";
+      const cypher = `
+ ${ownerClause}
+ CREATE (s:Suspension {
+   id: randomUUID(),
+   channelUniqueName: $channelUniqueName,
+   serverName: $serverName,
+   username: $username,
+   modProfileName: $modProfileName,
+   suspendedUntil: CASE WHEN $suspendedUntil IS NULL THEN null ELSE datetime($suspendedUntil) END,
+   suspendedIndefinitely: $suspendedIndefinitely,
+   createdAt: datetime()
+ })
+ CREATE (owner)-[:${rel}]->(s)
+ WITH s, owner
+ ${subjectClause}
+ FOREACH (_ IN CASE WHEN subject IS NULL THEN [] ELSE [1] END |
+  MERGE (subject)-[:${rel}]->(s)
+ )
+ WITH s, owner
+ OPTIONAL MATCH (i:Issue {id: $issueId})
+ FOREACH (_ IN CASE WHEN i IS NULL THEN [] ELSE [1] END |
+  MERGE (s)-[:HAS_CONTEXT]->(i)
+ )
+ RETURN ${ownerKeyReturn} AS ownerKey
+`;
+      const result = await driver.executeQuery(cypher, {
+        ownerServerName: params.ownerServerName ?? null,
+        ownerChannelUniqueName: params.ownerChannelUniqueName ?? null,
+        subjectKey: params.subjectKey,
+        issueId: params.issueId,
+        channelUniqueName: params.channelUniqueName ?? null,
+        serverName: params.serverName ?? null,
+        username: params.username ?? null,
+        modProfileName: params.modProfileName ?? null,
+        suspendedUntil: params.suspendedUntil ?? null,
+        suspendedIndefinitely: params.suspendedIndefinitely ?? null,
+      });
+      const ownerKey = result.records[0]?.get("ownerKey");
+      return { ownerKey: (ownerKey as string | null) ?? null };
+    },
+    async removeSuspension(params) {
+      const rel = relFor(params.subjectType);
+      const ownerClause =
+        params.scope === "server"
+          ? "MATCH (owner:ServerConfig {serverName: $ownerServerName})"
+          : "MATCH (owner:Channel {uniqueName: $ownerChannelUniqueName})";
+      // Delete the owner -> Suspension edge for suspensions whose subject matches
+      // (mirrors the former disconnect by SuspendedUser.username / SuspendedMod.displayName).
+      const cypher = `
+ ${ownerClause}
+ MATCH (owner)-[r:${rel}]->(s:Suspension)<-[:${rel}]-(subject:${subjectLabelFor(params.subjectType)} {${subjectKeyFor(params.subjectType)}: $subjectKey})
+ DELETE r
+`;
+      await driver.executeQuery(cypher, {
+        ownerServerName: params.ownerServerName ?? null,
+        ownerChannelUniqueName: params.ownerChannelUniqueName ?? null,
+        subjectKey: params.subjectKey,
+      });
+    },
   };
 }

@@ -96,7 +96,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
       await tx.commit();
 
       const existingUpvotedByUsers = discussionChannel.UpvotedByUsers || [];
-      const existingUpvotedByUsersAggregate = discussionChannel.UpvotedByUsersAggregate || { count: 0 };
+      const existingUpvotedByUsersAggregate = { count: existingUpvotedByUsers.length };
 
       return {
         id: discussionChannelId,

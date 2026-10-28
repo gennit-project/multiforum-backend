@@ -223,8 +223,8 @@ test("enforces and assigns flairs when adding a discussion to a channel", async 
   await env.resolvers.Mutation.updateDiscussionWithChannelConnections(
     null,
     {
-      where: { id: "existing-discussion" },
-      discussionUpdateInput: { hasSpoiler: true },
+      where: { id: { eq: "existing-discussion" } },
+      discussionUpdateInput: { hasSpoiler: { set: true } },
       channelConnections: ["required"],
       channelFlairSelections: [
         { channelUniqueName: "required", flairIds: ["question"] },

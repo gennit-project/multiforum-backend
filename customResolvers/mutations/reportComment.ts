@@ -1,15 +1,8 @@
 import { createCommentReportRepository, type CommentReportRepository } from "../../services/persistence/commentReportRepository.js"
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  ModerationRecommendedAction,
-  IssueWhere,
-  IssueUpdateInput
-} from '../../ogm_types.js'
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js"
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
 import { GraphQLError } from 'graphql'
 import { getFinalCommentText } from "./shared/reportText.js"
-import { DateTime } from 'luxon'
 import type { Driver } from 'neo4j-driver'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
@@ -39,219 +32,6 @@ type IssueCommentAuthor =
     }
   | null
   | undefined
-
-type ModActionInput = {
-  text?: string
-  loggedInModName: string
-  channelUniqueName: string
-  actionType: string
-  actionDescription: string
-  issueId: string
-  idempotencyKey?: string | null
-  recommendedAction?: ModerationRecommendedAction | null
-  recommendationConfidence?: number | null
-  recommendationRationale?: string | null
-  suspendUntil?: string
-  suspendIndefinitely?: boolean
-}
-
-const humanReadableDate = (dateISO: string) => {
-  // Example input: 2025-03-19T17:40:14.432-07:00
-  // Example conversion: "2021-09-01T00:00:00.000Z" -> "September 1, 2021"
-  return DateTime.fromISO(dateISO).toLocaleString(DateTime.DATE_FULL)
-}
-
-export const getModerationActionCreateInput = (input: ModActionInput) => {
-  const {
-    text,
-    loggedInModName,
-    channelUniqueName,
-    actionType,
-    actionDescription,
-    issueId,
-    idempotencyKey,
-    recommendedAction,
-    recommendationConfidence,
-    recommendationRationale,
-    suspendIndefinitely,
-    suspendUntil
-  } = input
-
-  return {
-    ...(idempotencyKey ? { idempotencyKey } : {}),
-    ...(recommendedAction ? { recommendedAction } : {}),
-    ...(recommendationConfidence !== null && recommendationConfidence !== undefined
-      ? { recommendationConfidence }
-      : {}),
-    ...(recommendationRationale ? { recommendationRationale } : {}),
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName
-          }
-        }
-      }
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text ? `
-${text}
-${
-  suspendIndefinitely || suspendUntil
-    ? `Length of suspension: ${
-        suspendIndefinitely
-          ? 'Indefinite'
-          : `Until ${
-              suspendUntil
-                ? humanReadableDate(suspendUntil)
-                : 'unknown date'
-            }`
-      }`
-    : ''
-}
-`: null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName
-                  }
-                }
-              }
-            }
-          },
-          Channel: {
-            // Important for making user profile's permalinks work
-            connect: {
-              where: {
-                node: {
-                  uniqueName: channelUniqueName
-                }
-              }
-            }
-          },
-          Issue: {
-            // Important for making user profile's permalinks work
-            connect: {
-              where: {
-                node: {
-                  id: issueId
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-type InputIssueCreate = {
-  contextText: string
-  selectedForumRules: string[]
-  selectedServerRules: string[]
-  loggedInModName: string
-  channelUniqueName: string
-  reportedContentType: 'comment' | 'discussion' | 'event'
-    | 'wiki edit'
-  relatedCommentId?: string
-  relatedDiscussionId?: string
-  relatedEventId?: string
-  relatedWikiPageId?: string
-  relatedWikiRevisionId?: string
-  relatedUsername?: string
-  relatedModProfileName?: string
-  issueNumber?: number
-}
-
-export const getIssueCreateInput = (
-  input: InputIssueCreate
-): IssueCreateInput => {
-  const {
-    contextText,
-    selectedServerRules,
-    loggedInModName,
-    channelUniqueName,
-    reportedContentType,
-    relatedCommentId,
-    relatedDiscussionId,
-    relatedEventId,
-    relatedWikiPageId,
-    relatedWikiRevisionId,
-    relatedUsername,
-    relatedModProfileName,
-    issueNumber
-  } = input
-
-  if (reportedContentType === 'comment' && !relatedCommentId) {
-    throw new GraphQLError('Comment ID is required')
-  }
-  if (reportedContentType === 'discussion' && !relatedDiscussionId) {
-    throw new GraphQLError('Discussion ID is required')
-  }
-  if (reportedContentType === 'event' && !relatedEventId) {
-    throw new GraphQLError('Event ID is required')
-  }
-  if (reportedContentType === 'wiki edit' && !relatedWikiPageId) {
-    throw new GraphQLError('Wiki page ID is required')
-  }
-
-  const truncatedContextText = contextText?.substring(0, 50) || ''
-  const output: IssueCreateInput = {
-    title: `[Reported ${reportedContentType}] "${truncatedContextText}${
-      contextText.length > 50 ? '...' : ''
-    }"`,
-    isOpen: true,
-    authorName: loggedInModName,
-    flaggedServerRuleViolation: selectedServerRules.length > 0,
-    channelUniqueName: channelUniqueName,
-    issueNumber: issueNumber ?? 0,
-    relatedUsername,
-    relatedModProfileName,
-    Author: {
-      ModerationProfile: {
-        connect: {
-          where: {
-            node: {
-              displayName: loggedInModName
-            }
-          }
-        }
-      }
-    },
-    Channel: {
-      connect: {
-        where: {
-          node: {
-            uniqueName: channelUniqueName
-          }
-        }
-      }
-    }
-  }
-  switch (reportedContentType) {
-    case 'comment':
-      output.relatedCommentId = relatedCommentId
-      break
-    case 'discussion':
-      output.relatedDiscussionId = relatedDiscussionId
-      break
-    case 'event':
-      output.relatedEventId = relatedEventId
-      break
-    case 'wiki edit':
-      output.relatedWikiPageId = relatedWikiPageId
-      output.relatedWikiRevisionId = relatedWikiRevisionId
-      break
-  }
-  return output
-}
 
 export const getRelatedIssueAccountFields = (
   commentAuthor: IssueCommentAuthor
@@ -349,20 +129,21 @@ const getResolver = (input: Input) => {
     // If an issue does NOT already exist, create a new issue.
     if (!existingIssueId) {
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText: commentText,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: 'comment',
-        relatedCommentId: commentId,
-        relatedUsername,
-        relatedModProfileName,
-        issueNumber
-      })
+      const truncatedContextText = commentText?.substring(0, 50) || ''
+      const title = `[Reported comment] "${truncatedContextText}${
+        commentText.length > 50 ? '...' : ''
+      }"`
       try {
-        const issueData = await repository.createIssue(issueCreateInput)
+        const issueData = await repository.createIssue({
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedCommentId: commentId,
+          relatedUsername,
+          relatedModProfileName
+        })
         const issueId = issueData.issues[0]?.id || null
         if (!issueId) {
           throw new GraphQLError('Error creating issue')
@@ -372,38 +153,26 @@ const getResolver = (input: Input) => {
         throw new GraphQLError('Error creating issue')
       }
     }
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: 'report',
-        actionDescription: 'Reported the comment',
-        issueId: existingIssueId
-      })
 
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId
-    }
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput
-            }
-          ]
-        }
-      ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0
-    }
-
+    // Append the report moderation action (with its embedded moderator comment)
+    // to the issue's activity feed via the owned moderation write.
     try {
-      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput)
+      const issueData = await repository.appendReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: 'report',
+            actionDescription: 'Reported the comment',
+            text: formatModerationActionText({ text: finalCommentText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName
+          }
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0
+      })
       const issueId = issueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')

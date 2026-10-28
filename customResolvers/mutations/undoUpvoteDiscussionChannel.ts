@@ -103,8 +103,7 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
       await tx.commit();
 
       const existingUpvotedByUsers = discussionChannel.UpvotedByUsers || [];
-      const existingUpvotedByUsersCount =
-        discussionChannel.UpvotedByUsersAggregate?.count || 0;
+      const existingUpvotedByUsersCount = existingUpvotedByUsers.length;
 
       return {
         id: discussionChannelId,

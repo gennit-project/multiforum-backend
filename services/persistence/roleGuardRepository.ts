@@ -45,7 +45,7 @@ export function createRoleGuardRepository(driver: Driver): RoleGuardRepository {
   return {
     async findChannelAdmins(uniqueName) {
       const data = await executeGeneratedOperation<{ channels: Array<{ Admins: Array<{ username: string }> }> }>(
-        driver, CHANNEL_ADMINS, { where: { uniqueName } }
+        driver, CHANNEL_ADMINS, { where: { uniqueName: { eq: uniqueName } } }
       );
       return data.channels;
     },

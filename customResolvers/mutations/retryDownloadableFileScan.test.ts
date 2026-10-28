@@ -191,8 +191,8 @@ test("retries the latest failed channel scan for an optional channel policy", as
       Discussion: { id: "discussion-1" },
     },
     findAttempts: async ({ where } = {}) => {
-      seenTargets.push(String(where?.targetType));
-      return where?.targetType === "Discussion"
+      seenTargets.push(String(where?.targetType?.eq));
+      return where?.targetType?.eq === "Discussion"
         ? [{
             pipelineId: "failed-channel-pipeline",
             createdAt: "2026-07-31T00:00:00.000Z",

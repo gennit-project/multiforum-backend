@@ -77,8 +77,8 @@ test("operation-owned selections retain generated default limits and GraphQL var
   assert.equal(data.users.length, 25);
 
   const selected = await executeGeneratedOperation<{ users: unknown[] }>(driver,
-    `query FirstUsers($options: UserOptions = {limit: 2, sort: [{username: ASC}]}) {
-      users(options: $options) { username }
+    `query FirstUsers {
+      users(limit: 2, sort: [{ username: ASC }]) { username }
     }`, {}
   );
   // Order is part of the contract here (limit + ASC sort), and the global
@@ -99,7 +99,7 @@ const errorMessage = async (work: () => Promise<unknown>): Promise<string> => {
 };
 
 test("validation/coercion fail before database access and expose the first error", async () => {
-  const where = { username: 42 };
+  const where = { username: { eq: 42 } };
   const newCoercion = await errorMessage(() => executeGeneratedOperation(driver, USER_SNAPSHOT, { where }));
   assert.match(newCoercion, /String cannot represent a non string value/);
 
@@ -118,7 +118,7 @@ test("named reads retain READ routing, configured database and request bookmarks
     await driver.executeQuery("CREATE (:User {username: 'new-user'})");
     sessions.length = 0;
     const result = await executeGeneratedOperation<{ users: unknown[] }>(driver, USER_SNAPSHOT, {
-      where: { username: "new-user" },
+      where: { username: { eq: "new-user" } },
     });
     // Read-your-own-writes: the generated read observes the just-written value.
     assert.deepEqual(plain(result.users), [{ username: "new-user" }]);

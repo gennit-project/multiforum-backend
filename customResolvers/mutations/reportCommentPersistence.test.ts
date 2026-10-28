@@ -40,10 +40,10 @@ class ModelStub {
     return {
       issues: [
         {
-          id: args.where?.id ?? "issue-1",
+          id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
           flaggedServerRuleViolation:
-            args.update?.flaggedServerRuleViolation ?? false,
+            args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },
       ],
     };
@@ -128,7 +128,7 @@ test("reportComment creates an issue and reopens it with a report activity item"
       findExisting: (channelUniqueName, commentId) => Issue.find({where:{channelUniqueName,relatedCommentId:commentId}}),
       findComment: commentId => Comment.find({where:{id:commentId}}),
       createIssue: input => Issue.create({input:[input]}),
-      appendReport: (where, update) => Issue.update({where,update}),
+      appendReport: params => Issue.update(params),
     },
     driver: createDriver(),
   });
@@ -150,13 +150,10 @@ test("reportComment creates an issue and reopens it with a report activity item"
   assert.equal(Issue.createCalls.length, 1);
   assert.equal(Issue.createCalls[0].input[0].relatedCommentId, "comment-1");
   assert.equal(Issue.createCalls[0].input[0].issueNumber, 1);
-  assert.equal(Issue.updateCalls[0].where.id, "issue-1");
-  assert.equal(Issue.updateCalls[0].update.isOpen, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, false);
-  assert.equal(
-    Issue.updateCalls[0].update.ActivityFeed[0].create[0].node.actionType,
-    "report"
-  );
+  assert.equal(Issue.updateCalls[0].issueId, "issue-1");
+  assert.equal(Issue.updateCalls[0].isOpen, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, false);
+  assert.equal(Issue.updateCalls[0].actions[0].actionType, "report");
 });
 
 test("reportComment reuses existing issues and preserves server-rule flagging", async () => {
@@ -182,7 +179,7 @@ test("reportComment reuses existing issues and preserves server-rule flagging", 
       findExisting: (channelUniqueName, commentId) => Issue.find({where:{channelUniqueName,relatedCommentId:commentId}}),
       findComment: commentId => Comment.find({where:{id:commentId}}),
       createIssue: input => Issue.create({input:[input]}),
-      appendReport: (where, update) => Issue.update({where,update}),
+      appendReport: params => Issue.update(params),
     },
     driver: createDriver(),
   });
@@ -202,9 +199,9 @@ test("reportComment reuses existing issues and preserves server-rule flagging", 
 
   assert.equal(Issue.createCalls.length, 0);
   assert.equal(Comment.findCalls.length, 1);
-  assert.equal(Issue.updateCalls[0].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[0].update.isOpen, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[0].isOpen, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
 });
 
 test("reportComment flags new issues for server-rule violations", async () => {
@@ -223,7 +220,7 @@ test("reportComment flags new issues for server-rule violations", async () => {
       findExisting: (channelUniqueName, commentId) => Issue.find({where:{channelUniqueName,relatedCommentId:commentId}}),
       findComment: commentId => Comment.find({where:{id:commentId}}),
       createIssue: input => Issue.create({input:[input]}),
-      appendReport: (where, update) => Issue.update({where,update}),
+      appendReport: params => Issue.update(params),
     },
     driver: createDriver(),
   });
@@ -242,7 +239,7 @@ test("reportComment flags new issues for server-rule violations", async () => {
   );
 
   assert.equal(Issue.createCalls[0].input[0].flaggedServerRuleViolation, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
 });
 
 const validArgs = {commentId:'comment-1', channelUniqueName:'cats', selectedForumRules:['Kind'], selectedServerRules:[], reportText:'report'};

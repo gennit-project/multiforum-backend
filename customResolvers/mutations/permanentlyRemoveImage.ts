@@ -1,10 +1,7 @@
 import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type {
   Issue,
-  IssueCreateInput,
-  ModerationActionCreateInput,
   IssueWhere,
-  IssueUpdateInput,
   ImageUpdateInput,
   ImageWhere,
 } from "../../ogm_types.js";
@@ -25,59 +22,6 @@ type Args = {
 type Input = {
   repository?: ImageModerationRepository;
   driver: Driver;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const { text, loggedInModName, actionType, actionDescription, issueId } =
-    input;
-
-  return {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
 };
 
 const getResolver = (input: Input) => {
@@ -128,8 +72,8 @@ const getResolver = (input: Input) => {
 
     // Check if a server-scoped issue exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
-      channelUniqueName: null, // Server-scoped
+      relatedImageId: { eq: imageId },
+      channelUniqueName: { eq: null }, // Server-scoped
     };
 
     const existingIssueData = await repository.findIssue(issueWhereClause);
@@ -143,30 +87,16 @@ const getResolver = (input: Input) => {
     if (!existingIssueId) {
       const issueNumber = await getNextServerIssueNumber(driver);
 
-      const issueCreateInput: IssueCreateInput = {
-        title: `[Permanently removed image] ${truncatedUrl}`,
-        isOpen: true,
-        authorName: loggedInModName,
-        flaggedServerRuleViolation: true,
-        channelUniqueName: null,
-        relatedImageId: imageId,
-        relatedUsername: uploaderUsername || undefined,
-        issueNumber,
-        Author: {
-          ModerationProfile: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
-        },
-      };
-
       try {
-        const createResult = await repository.createModerationIssue(issueCreateInput);
+        const createResult = await repository.createModerationIssue({
+          issueNumber,
+          title: `[Permanently removed image] ${truncatedUrl}`,
+          authorModName: loggedInModName,
+          channelUniqueName: null, // Server-scoped
+          flaggedServerRuleViolation: true,
+          relatedImageId: imageId,
+          relatedUsername: uploaderUsername || undefined,
+        });
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -181,57 +111,34 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const removeModActionCreateInput = getModerationActionCreateInput({
-      text: explanation,
-      loggedInModName,
-      actionType: "permanent-removal",
-      actionDescription: "Permanently removed the image",
-      issueId: existingIssueId,
-    });
-
-    const closeIssueModActionCreateInput = getModerationActionCreateInput({
-      text: explanation,
-      loggedInModName,
-      actionType: "close",
-      actionDescription: "Closed the issue",
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the permanent removal action
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-
-    const removeUpdateIssueInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: removeModActionCreateInput,
-            },
-          ],
-        },
-      ],
-      flaggedServerRuleViolation: true,
-    };
-
-    const closeIssueUpdateInput: IssueUpdateInput = {
-      isOpen: false,
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: closeIssueModActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the permanent-removal action then the close action via the owned
+    // write (two appends). Server-scoped: no comment Channel connect; text verbatim.
     try {
-      await repository.appendIssueAction(issueUpdateWhere, removeUpdateIssueInput);
+      await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "permanent-removal",
+            actionDescription: "Permanently removed the image",
+            text: explanation ?? null,
+            modDisplayName: loggedInModName,
+          },
+        ],
+        flaggedServerRuleViolation: true,
+      });
 
-      const issueData = await repository.appendIssueAction(issueUpdateWhere, closeIssueUpdateInput);
+      const issueData = await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "close",
+            actionDescription: "Closed the issue",
+            text: explanation ?? null,
+            modDisplayName: loggedInModName,
+          },
+        ],
+        isOpen: false,
+      });
 
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
@@ -256,27 +163,21 @@ const getResolver = (input: Input) => {
     // Update the image to set permanentlyRemoved=true and link the mod
     try {
       const imageUpdateWhere: ImageWhere = {
-        id: imageId,
+        id: { eq: imageId },
       };
+      // PermanentlyRemovedByMod is a to-one relationship (no generated connect in
+      // v7); set the scalars + to-many RelatedIssues via the generated API, then
+      // wire the moderator edge with the owned write.
       const imageUpdateInput: ImageUpdateInput = {
-        permanentlyRemoved: true,
-        permanentlyRemovedAt: new Date().toISOString(),
-        PermanentlyRemovedByMod: {
-          connect: {
-            where: {
-              node: {
-                displayName: loggedInModName,
-              },
-            },
-          },
-        },
+        permanentlyRemoved: { set: true },
+        permanentlyRemovedAt: { set: new Date().toISOString() },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },
@@ -291,6 +192,8 @@ const getResolver = (input: Input) => {
       if (!imageUpdateId) {
         throw new GraphQLError("Error updating image");
       }
+
+      await repository.connectPermanentlyRemovedByMod(imageId, loggedInModName);
 
       return existingIssue;
     } catch (error) {

@@ -59,15 +59,17 @@ test("cancels only older pending jobs for the same target and plugin", async () 
   assert.deepEqual(result.pluginRuns, [{ id: "older-job" }]);
   assert.deepEqual(calls, [{
     where: {
-      id_NOT: "current-job",
-      pluginId: "moderator",
-      pipelineId_NOT: "pipeline-2",
-      scope: "CHANNEL",
-      channelId: "cats",
-      targetId: "discussion-1",
-      targetType: "Discussion",
-      status: PluginRunStatus.Pending,
-      queuedAt_LT: "2026-07-30T12:01:00.000Z",
+      pluginId: { eq: "moderator" },
+      scope: { eq: "CHANNEL" },
+      channelId: { eq: "cats" },
+      targetId: { eq: "discussion-1" },
+      targetType: { eq: "Discussion" },
+      status: { eq: PluginRunStatus.Pending },
+      queuedAt: { lt: "2026-07-30T12:01:00.000Z" },
+      AND: [
+        { NOT: { id: { eq: "current-job" } } },
+        { NOT: { pipelineId: { eq: "pipeline-2" } } },
+      ],
     },
     update: {
       status: PluginRunStatus.Cancelled,
@@ -236,8 +238,8 @@ test("terminal writes require the current running lease", async () => {
       leaseId: "lease-1",
     },
     update: {
-      status: PluginRunStatus.Succeeded,
-      message: "Done",
+      status: { set: PluginRunStatus.Succeeded },
+      message: { set: "Done" },
     },
     now: new Date("2026-07-30T12:02:00.000Z"),
   });
@@ -249,8 +251,8 @@ test("terminal writes require the current running lease", async () => {
       status: PluginRunStatus.Running,
     },
     update: {
-      status: PluginRunStatus.Succeeded,
-      message: "Done",
+      status: { set: PluginRunStatus.Succeeded },
+      message: { set: "Done" },
       heartbeatAt: "2026-07-30T12:02:00.000Z",
       finishedAt: "2026-07-30T12:02:00.000Z",
       timeoutAt: null,

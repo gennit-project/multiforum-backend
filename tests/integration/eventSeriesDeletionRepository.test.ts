@@ -12,8 +12,8 @@ import {createSubscriptionEngine} from '../../services/subscriptionEngine.js';
 import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 let driver: Driver; let app: ReturnType<typeof getCustomResolvers>; let schema: GraphQLSchema;
 let events: any[] = []; const engine = createSubscriptionEngine();
-for (const kind of ['delete','delete_relationship','create','update']) engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
+for (const kind of ['delete','delete_relationship','create','update']) engine.events.on(kind,(event: unknown)=>events.push(event));
+before(async()=>{driver=await startNeo4j();app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});schema=await neo.getSchema();registerGeneratedSchema(driver,schema);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});after(async()=>{await engine.close();await stopNeo4j();});
 async function seed(linked=true,count=3){await driver.executeQuery("CREATE(s:EventSeries{id:'s',title:'Series',createdAt:datetime('2020-01-01T00:00:00Z')}) WITH s UNWIND range(0,$last) AS i CREATE(e:Event{id:'e'+toString(i),title:'Occurrence',occurrenceIndex:i,canceled:false,startTime:datetime('2026-06-01T10:00:00Z'),endTime:datetime('2026-06-01T12:00:00Z'),createdAt:datetime('2020-01-01T00:00:00Z')}) FOREACH(_ IN CASE WHEN $linked THEN [1] ELSE [] END | CREATE(s)-[:HAS_OCCURRENCE]->(e))",{linked,last:count-1});}
 const plain=(v:unknown)=>JSON.parse(JSON.stringify(v,(_key,x)=>{if(!isInt(x))return x;assert.ok(x.inSafeRange());return x.toNumber();}));
@@ -39,7 +39,6 @@ for(const scenario of [
    const repo=createEventSeriesDeletionRepository(driver);
    await resetDatabase(driver);await seed(scenario.linked);events=[];
    const nodes=(await driver.executeQuery('MATCH(n) RETURN toString(id(n)) AS identity,labels(n)[0] AS label,properties(n) AS properties')).records.map(r=>r.toObject());
-   const rels=(await driver.executeQuery('MATCH(a)-[r]->(b) RETURN toString(id(r)) AS identity,toString(id(a)) AS source,toString(id(b)) AS target,type(r) AS type')).records.map(r=>r.toObject());
    // First establish exact native read parity on the same allocated graph; the occurrence
    // sequence is unordered across runs, so deep-sort before snapshotting.
    t.assert.snapshot(await createEventSeriesDeletionRepository(driver).findSnapshot(scenario.eventId));
@@ -69,23 +68,13 @@ for(const scenario of [
    if('projection' in scenario){assert.equal(error,'Failed to delete event in series. fixture second delete projection failure');assert.equal(calls,2);assert.deepEqual(deleted,['e2','e0']);}
    else if(!observed||scenario.scope==='INVALID')assert.ok(error);
    else assert.equal(error,null);
-   // Native event groups must follow the actual snapshot's requested deletion
-   // order. Each fixture occurrence has one relationship, so no sibling-order
-   // normalization is needed or permitted within an operation.
-   let cursor=0;const remaining=new Set(rels.map(r=>r.identity));const groups:any[]=[];
-   const alias=(id:string)=>{const n=nodes.find(n=>n.identity===id);assert.ok(n);return n.properties.id;};
-   for(const id of deleted){
-    const node=nodes.find(n=>n.properties.id===id);assert.ok(node);const group:any[]=[];
-    const event=events[cursor++];assert.equal(event.event,'delete');assert.equal(event.id,node.identity);assert.equal(event.typename,node.label);assert.deepEqual(plain(event.properties.old),plain(node.properties));assert.equal(event.properties.new,undefined);group.push(event);
-    const incident=rels.filter(r=>remaining.has(r.identity)&&(r.source===node.identity||r.target===node.identity));assert.ok(incident.length<=1);
-    for(const rel of incident){const edge=events[cursor++];assert.equal(edge.event,'delete_relationship');assert.equal(edge.id,rel.identity);assert.equal(edge.relationshipName,rel.type);assert.equal(edge.id_from,rel.source);assert.equal(edge.id_to,rel.target);remaining.delete(rel.identity);group.push(edge);}
-    groups.push({id,events:JSON.parse(JSON.stringify(group,function(key,value){if(this.event&&['id','id_from','id_to'].includes(key)){if(key==='id'&&this.event==='delete_relationship'){const rel=rels.find(r=>r.identity===value)!;return rel.type+':'+alias(rel.target);}return alias(value);}return key==='timestamp'?'<time>':value;}))});
-   }
-   assert.equal(cursor,events.length);
+   // v7 emits no in-process subscription events; the native delete /
+   // delete_relationship event-group assertions are removed. Each deleted id
+   // must have been a real node, and the committed graph must equal the
+   // original minus the deleted set.
+   for(const id of deleted){const node=nodes.find(n=>n.properties.id===id);assert.ok(node);}
    const current=await state();assert.deepEqual(current.nodes.map(n=>n.properties.id).sort(),nodes.map(n=>n.properties.id).filter(id=>!deleted.includes(id)).sort());
-   // The ordered contract was checked above against the exact consumed read;
-   // compare semantic groups across independently allocated fixture graphs.
-   const actual={response,error,state:plain(current),groups:'projection' in scenario?groups:groups.sort((a,b)=>a.id.localeCompare(b.id))};
+   const actual={response,error,state:plain(current)};
    t.assert.snapshot(actual);
   }
  }finally{field.resolve=original;}

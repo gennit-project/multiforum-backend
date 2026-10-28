@@ -152,7 +152,7 @@ test('actual delete wrapper suppresses close notification and continues after cl
  const {buildSchema}=await import('graphql');
  const {registerGeneratedSchema}=await import('../services/persistence/generatedSchemaOperations.js');
  const {context,calls,resolve}=recordingContext();context.driver={};
- const schema=buildSchema('input IssueWhere {id:ID} type Email {address:String} type User {username:String notifyOnSubscribedIssueUpdates:Boolean Email:Email} type Issue {id:ID issueNumber:Int title:String channelUniqueName:String SubscribedToNotifications:[User]} type Query {issues(where:IssueWhere):[Issue]}');
+ const schema=buildSchema('input IDWhere {eq:ID} input IssueWhere {id:IDWhere} type Email {address:String} type User {username:String notifyOnSubscribedIssueUpdates:Boolean Email:Email} type Issue {id:ID issueNumber:Int title:String channelUniqueName:String SubscribedToNotifications:[User]} type Query {issues(where:IssueWhere):[Issue]}');
  schema.getQueryType()!.getFields().issues.resolve=()=>{calls.push('notify');throw Error('notify failed');};registerGeneratedSchema(context.driver,schema);
  let failClose=false;
  context.issueActivityRepository.appendActivity=async(_id:string,node:any)=>{calls.push(`activity:${node.actionType}`);if(failClose&&node.actionType==='close')throw Error('close activity failed');};

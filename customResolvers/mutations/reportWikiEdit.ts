@@ -3,17 +3,9 @@ import { GraphQLError } from 'graphql'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import type { GraphQLContext } from '../../types/context.js'
-import type {
-  IssueCreateInput,
-  IssueUpdateInput,
-  IssueWhere,
-  ModerationActionCreateInput,
-} from '../../ogm_types.js'
+import type { IssueWhere } from '../../ogm_types.js'
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js'
-import {
-  getIssueCreateInput,
-  getModerationActionCreateInput
-} from './reportComment.js'
+import { formatModerationActionText } from '../../services/persistence/moderationIssueWrites.js'
 import { getFinalCommentText } from "./shared/reportText.js"
 import getNextIssueNumber from './utils/getNextIssueNumber.js'
 
@@ -107,12 +99,12 @@ const getResolver = (input: Input) => {
     }
 
     const issueWhere: IssueWhere = {
-      channelUniqueName,
-      relatedWikiPageId: wikiPageId
+      channelUniqueName: { eq: channelUniqueName },
+      relatedWikiPageId: { eq: wikiPageId }
     }
 
     if (wikiRevisionId) {
-      issueWhere.relatedWikiRevisionId = wikiRevisionId
+      issueWhere.relatedWikiRevisionId = { eq: wikiRevisionId }
     }
 
     const issueData = await repository.findPriorWikiReport(issueWhere)
@@ -134,21 +126,22 @@ const getResolver = (input: Input) => {
 
     if (!existingIssueId) {
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: 'wiki edit',
-        relatedWikiPageId: wikiPageId,
-        relatedWikiRevisionId: wikiRevisionId || undefined,
-        relatedUsername,
-        issueNumber
-      })
+      const truncatedContextText = contextText?.substring(0, 50) || ''
+      const title = `[Reported wiki edit] "${truncatedContextText}${
+        contextText.length > 50 ? '...' : ''
+      }"`
 
       try {
-        const createdIssueData = await repository.createWikiReportIssue(issueCreateInput)
+        const createdIssueData = await repository.createWikiReportIssue({
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedWikiPageId: wikiPageId,
+          relatedWikiRevisionId: wikiRevisionId || undefined,
+          relatedUsername
+        })
         const issueId = createdIssueData.issues[0]?.id || null
         if (!issueId) {
           throw new GraphQLError('Error creating issue')
@@ -159,37 +152,25 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: 'report',
-        actionDescription: 'Reported the wiki edit',
-        issueId: existingIssueId
-      })
-
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId
-    }
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput
-            }
-          ]
-        }
-      ],
-      isOpen: true,
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0
-    }
-
+    // Append the report moderation action (with its embedded moderator comment)
+    // via the owned moderation write.
     try {
-      const updatedIssueData = await repository.appendWikiReport(issueUpdateWhere, issueUpdateInput)
+      const updatedIssueData = await repository.appendWikiReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: 'report',
+            actionDescription: 'Reported the wiki edit',
+            text: formatModerationActionText({ text: finalCommentText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName
+          }
+        ],
+        isOpen: true,
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0
+      })
       const issueId = updatedIssueData.issues[0]?.id || null
       if (!issueId) {
         throw new GraphQLError('Error updating issue')

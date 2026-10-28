@@ -38,7 +38,7 @@ test('getIssueIdsForRelated builds where clause and returns ids', async () => {
     commentId: 'comment-123',
   });
 
-  assert.deepEqual(lastWhere, { relatedCommentId: 'comment-123' });
+  assert.deepEqual(lastWhere, { relatedCommentId: { eq: 'comment-123' } });
   assert.deepEqual(issueIds, ['issue-1', 'issue-2']);
 });
 
@@ -76,7 +76,7 @@ test('related reads combine every legacy scalar and retain duplicate ids', async
   assert.deepEqual(await getIssueIdsForRelated(repository, {}), []);
   assert.deepEqual(calls, []);
   assert.deepEqual(await getIssueIdsForRelated(repository, {discussionId:'d',commentId:'c',eventId:'e'}), ['a','a']);
-  assert.deepEqual(calls, [{relatedDiscussionId:'d',relatedCommentId:'c',relatedEventId:'e'}]);
+  assert.deepEqual(calls, [{relatedDiscussionId:{eq:'d'},relatedCommentId:{eq:'c'},relatedEventId:{eq:'e'}}]);
 });
 test('related lookup failure is swallowed', async () => {
   assert.deepEqual(await getIssueIdsForRelated({findRelatedIssueIds:async()=>{throw Error('read');},appendActivity:async()=>{}},{commentId:'c'}), []);
@@ -84,7 +84,7 @@ test('related lookup failure is swallowed', async () => {
 test('activity keeps moderator priority, duplicate ids and sequential continuation after failure', async () => {
   const calls: string[] = [];
   const repository: IssueActivityRepository = {findRelatedIssueIds:async()=>[],appendActivity:async(id,node)=>{
-    calls.push(id); assert.equal(node.User, undefined); assert.equal(node.ModerationProfile?.connect?.where?.node?.displayName, 'mod');
+    calls.push(id); assert.equal(node.User, undefined); assert.equal((node.ModerationProfile as any)?.connect?.where?.node?.displayName, 'mod');
     await Promise.resolve(); if(id==='bad') throw Error('write'); calls.push(`done:${id}`);
   }};
   await createIssueActivityFeedItems({issueActivityRepository:repository,issueIds:['a','bad','a'],attribution:{username:'u',modProfileName:'mod'},actionDescription:'edited'});
@@ -100,9 +100,9 @@ test('omitted driver suppresses notification and false/throw results retain sequ
   const {buildSchema}=await import('graphql');
   const {registerGeneratedSchema}=await import('../services/persistence/generatedSchemaOperations.js');
   const driver={} as import('neo4j-driver').Driver;
-  const schema=buildSchema(`input IssueWhere {id: ID} type Email {address:String} type User {username:String notifyOnSubscribedIssueUpdates:Boolean Email:Email} type Issue {id:ID issueNumber:Int title:String channelUniqueName:String SubscribedToNotifications:[User]} type Query {issues(where:IssueWhere):[Issue]}`);
+  const schema=buildSchema(`input IDWhere {eq: ID} input IssueWhere {id: IDWhere} type Email {address:String} type User {username:String notifyOnSubscribedIssueUpdates:Boolean Email:Email} type Issue {id:ID issueNumber:Int title:String channelUniqueName:String SubscribedToNotifications:[User]} type Query {issues(where:IssueWhere):[Issue]}`);
   const calls:string[]=[];
-  schema.getQueryType()!.getFields().issues.resolve=(_source,args)=>{calls.push(`notify:${args.where.id}`);if(args.where.id==='throw')throw Error('notification failed');return [];};
+  schema.getQueryType()!.getFields().issues.resolve=(_source,args)=>{calls.push(`notify:${args.where.id.eq}`);if(args.where.id.eq==='throw')throw Error('notification failed');return [];};
   registerGeneratedSchema(driver,schema);
   const repository:IssueActivityRepository={findRelatedIssueIds:async()=>[],appendActivity:async(id)=>{calls.push(`write:${id}`);}};
   const base={issueActivityRepository:repository,attribution:{username:'u'},actionDescription:'edited'};

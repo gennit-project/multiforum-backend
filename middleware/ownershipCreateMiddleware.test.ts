@@ -17,9 +17,19 @@ type ContextParams = {
   userExists?: boolean;
 };
 
-const createContext = ({ username, userExists = true }: ContextParams) =>
-  ({
-    driver: {},
+// FAMILY-3 / v7: ownership is wired by an owned post-create write (an
+// executeQuery against context.driver), so the context carries a recording
+// driver and the tests assert both the stripped input reaching the generated
+// mutation and the owner-edge query.
+const createContext = ({ username, userExists = true }: ContextParams) => {
+  const driverCalls: Array<{ cypher: string; params: Record<string, unknown> }> = [];
+  const context = {
+    driver: {
+      executeQuery: async (cypher: string, params: Record<string, unknown>) => {
+        driverCalls.push({ cypher, params });
+        return { records: [] };
+      },
+    },
     req: {
       headers: username
         ? {
@@ -36,13 +46,15 @@ const createContext = ({ username, userExists = true }: ContextParams) =>
       userExists: async (candidate: string) =>
         userExists && candidate === username,
     },
-  }) as unknown as GraphQLContext;
+  } as unknown as GraphQLContext;
+  return { context, driverCalls };
+};
 
-const recordingResolve = () => {
+const recordingResolve = (result: unknown) => {
   const calls: Array<Record<string, unknown>> = [];
   const resolve = async (_parent: unknown, args: Record<string, unknown>) => {
     calls.push(args);
-    return { ok: true };
+    return result;
   };
   return { calls, resolve };
 };
@@ -52,30 +64,28 @@ const connectTo = (username: string) => ({
 });
 
 test("album creation is rejected when signed out, without reaching the resolver", async () => {
-  const { calls, resolve } = recordingResolve();
+  const { calls, resolve } = recordingResolve({ albums: [] });
+  const { context, driverCalls } = createContext({ username: null });
   await assert.rejects(
-    forceAlbumOwner(resolve, null, { input: [{}] }, createContext({ username: null }), mockInfo),
+    forceAlbumOwner(resolve, null, { input: [{}] }, context, mockInfo),
     { message: "You must be logged in to create albums." }
   );
   assert.equal(calls.length, 0);
+  assert.equal(driverCalls.length, 0);
 });
 
 test("album creation is rejected when the signed-in user has no account", async () => {
-  const { resolve } = recordingResolve();
+  const { resolve } = recordingResolve({ albums: [] });
+  const { context } = createContext({ username: "alice", userExists: false });
   await assert.rejects(
-    forceAlbumOwner(
-      resolve,
-      null,
-      { input: [{}] },
-      createContext({ username: "alice", userExists: false }),
-      mockInfo
-    ),
+    forceAlbumOwner(resolve, null, { input: [{}] }, context, mockInfo),
     { message: "Could not find the album owner." }
   );
 });
 
-test("album owner and nested image uploaders are forced to the signed-in user", async () => {
-  const { calls, resolve } = recordingResolve();
+test("album owner connects are stripped before the generated create and wired by an owned write", async () => {
+  const { calls, resolve } = recordingResolve({ albums: [{ id: "album-1" }] });
+  const { context, driverCalls } = createContext({ username: "alice" });
   await forceAlbumOwner(
     resolve,
     null,
@@ -90,59 +100,64 @@ test("album owner and nested image uploaders are forced to the signed-in user", 
         },
       ],
     },
-    createContext({ username: "alice" }),
+    context,
     mockInfo
   );
 
+  // The generated create receives scalars + the to-many Images.create, but no
+  // to-one Owner / Uploader connects.
   assert.deepEqual(calls[0].input, [
     {
       imageOrder: [],
-      Owner: connectTo("alice"),
       Images: {
-        create: [{ node: { url: "https://example.com/a.jpg", Uploader: connectTo("alice") } }],
+        create: [{ node: { url: "https://example.com/a.jpg" } }],
       },
     },
   ]);
+  // Ownership is applied by the owned post-create write, keyed on the created id.
+  assert.equal(driverCalls.length, 1);
+  assert.deepEqual(driverCalls[0].params, { ids: ["album-1"], username: "alice" });
+  assert.match(driverCalls[0].cypher, /HAS_ALBUM/);
+  assert.match(driverCalls[0].cypher, /UPLOADED_IMAGE/);
 });
 
 test("collection creation is rejected when signed out, without reaching the resolver", async () => {
-  const { calls, resolve } = recordingResolve();
+  const { calls, resolve } = recordingResolve({ collections: [] });
+  const { context } = createContext({ username: null });
   await assert.rejects(
-    forceCollectionOwner(
-      resolve,
-      null,
-      { input: [{ name: "Favorites" }] },
-      createContext({ username: null }),
-      mockInfo
-    ),
+    forceCollectionOwner(resolve, null, { input: [{ name: "Favorites" }] }, context, mockInfo),
     { message: "You must be logged in to create collections." }
   );
   assert.equal(calls.length, 0);
 });
 
-test("collection creator is forced to the signed-in user and visibility defaults to private", async () => {
-  const { calls, resolve } = recordingResolve();
+test("collection creator is wired by an owned write and visibility defaults to private", async () => {
+  const { calls, resolve } = recordingResolve({ collections: [{ id: "collection-1" }] });
+  const { context, driverCalls } = createContext({ username: "alice" });
   await forceCollectionOwner(
     resolve,
     null,
     { input: [{ name: "Favorites", CreatedBy: connectTo("mallory") }] },
-    createContext({ username: "alice" }),
+    context,
     mockInfo
   );
 
-  assert.deepEqual(calls[0].input, [
-    { name: "Favorites", visibility: "PRIVATE", CreatedBy: connectTo("alice") },
-  ]);
+  // CreatedBy stripped before the generated create; visibility default preserved.
+  assert.deepEqual(calls[0].input, [{ name: "Favorites", visibility: "PRIVATE" }]);
+  assert.equal(driverCalls.length, 1);
+  assert.deepEqual(driverCalls[0].params, { ids: ["collection-1"], username: "alice" });
+  assert.match(driverCalls[0].cypher, /CREATED_BY/);
 });
 
 test("the resolver's result is passed through unchanged", async () => {
-  const { resolve } = recordingResolve();
+  const { resolve } = recordingResolve({ collections: [{ id: "collection-1" }] });
+  const { context } = createContext({ username: "alice" });
   const result = await forceCollectionOwner(
     resolve,
     null,
     { input: [{ name: "Favorites" }] },
-    createContext({ username: "alice" }),
+    context,
     mockInfo
   );
-  assert.deepEqual(result, { ok: true });
+  assert.deepEqual(result, { collections: [{ id: "collection-1" }] });
 });

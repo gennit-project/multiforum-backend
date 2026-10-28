@@ -94,6 +94,9 @@ class SessionStub {
 
 const createDriver = (session: SessionStub) => ({
   session: () => session,
+  // Create-side ownership connects (author/collection, album) run via
+  // executeQuery, outside the session the channel links use.
+  executeQuery: async () => ({ records: [] }),
 } as unknown as Driver);
 
 const createContext = (username: string = "testuser") => ({
@@ -324,10 +327,20 @@ test("createDiscussionWithChannelConnections", async (t) => {
     assert.equal(session.runCalls.length, 1);
   });
 
-  await t.test("creates tags with connect-or-create pattern", async () => {
+  await t.test("strips Tags from the generated create and owns them (create-if-missing)", async () => {
+    // v7 removed connectOrCreate; the resolver no longer forwards Tags to the
+    // generated create. It strips the field and owns the HAS_TAG edges, MERGE-ing
+    // each tag by text so a missing tag is created (from connect or create shapes).
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
-    const driver = createDriver(session);
+    const ownedQueries: Array<{ query: string; params: Record<string, unknown> }> = [];
+    const driver = {
+      session: () => session,
+      executeQuery: async (query: string, params: Record<string, unknown>) => {
+        ownedQueries.push({ query, params });
+        return { records: [] };
+      },
+    } as unknown as Driver;
 
     await createDiscussionsFromInput(
       asRepository(discussionModel),
@@ -338,16 +351,8 @@ test("createDiscussionWithChannelConnections", async (t) => {
             title: "Tagged Discussion",
             body: "Test body",
             Tags: {
-              connectOrCreate: [
-                {
-                  where: { node: { text: "tag1" } },
-                  onCreate: { node: { text: "tag1" } },
-                },
-                {
-                  where: { node: { text: "tag2" } },
-                  onCreate: { node: { text: "tag2" } },
-                },
-              ],
+              connect: [{ where: { node: { text: { eq: "tag1" } } } }],
+              create: [{ node: { text: "tag2" } }],
             },
           },
           channelConnections: ["test-channel"],
@@ -357,9 +362,12 @@ test("createDiscussionWithChannelConnections", async (t) => {
 
     assert.equal(discussionModel.createCalls.length, 1);
     const createInput = discussionModel.createCalls[0].input[0] as any;
-    assert.ok(createInput.Tags);
-    assert.ok(createInput.Tags.connectOrCreate);
-    assert.equal(createInput.Tags.connectOrCreate.length, 2);
+    // Tags no longer reach the generated create.
+    assert.equal(createInput.Tags, undefined);
+    // The owned write MERGEs HAS_TAG with both texts (connect + create shapes).
+    const tagWrite = ownedQueries.find((call) => call.query.includes("HAS_TAG"));
+    assert.ok(tagWrite, "expected an owned HAS_TAG merge");
+    assert.deepEqual([...(tagWrite!.params.tagTexts as string[])].sort(), ["tag1", "tag2"]);
   });
 
   await t.test("sanitizes album creation when context is provided", async () => {

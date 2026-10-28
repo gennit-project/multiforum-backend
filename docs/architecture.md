@@ -102,10 +102,16 @@ behavior is defined declaratively rather than written by hand.
 Operations that need genuinely custom behavior (multi-step transactions,
 hand-tuned Cypher, cross-entity workflows) are implemented as custom resolvers,
 organized by domain under [`customResolvers/`](../customResolvers) with their
-Cypher kept in dedicated `.cypher` files. These use the
-[OGM](https://neo4j.com/docs/graphql/current/ogm/) for typed, programmatic graph
-access. A single composition root assembles the type, query, and mutation
+Cypher kept in dedicated `.cypher` files. These run their database access
+through the driver-backed repositories in
+[`services/persistence/`](../services/persistence) (the OGM was removed in
+campaign #284). A single composition root assembles the type, query, and mutation
 resolvers from per-concern builders.
+
+The division of labour between the generated API and these owned writes is a
+deliberate boundary — generated reads and simple writes, owned Cypher for
+complex / critical / relationship-heavy writes. See
+[write-layer-strategy.md](write-layer-strategy.md).
 
 ### Side effects — middleware and hooks
 

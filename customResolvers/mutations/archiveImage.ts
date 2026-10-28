@@ -1,10 +1,7 @@
 import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type {
   Issue,
-  IssueCreateInput,
-  ModerationActionCreateInput,
   IssueWhere,
-  IssueUpdateInput,
   ImageUpdateInput,
   ImageWhere,
 } from "../../ogm_types.js";
@@ -58,80 +55,6 @@ ${
     : ""
 }
 `;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  channelUniqueName?: string | null;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const {
-    text,
-    loggedInModName,
-    channelUniqueName,
-    actionType,
-    actionDescription,
-    issueId,
-  } = input;
-
-  const baseInput: ModerationActionCreateInput = {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-
-  if (channelUniqueName && baseInput.Comment?.create?.node) {
-    baseInput.Comment.create.node.Channel = {
-      connect: {
-        where: {
-          node: {
-            uniqueName: channelUniqueName,
-          },
-        },
-      },
-    };
-  }
-
-  return baseInput;
 };
 
 const getResolver = (input: Input) => {
@@ -199,13 +122,13 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
     };
 
     if (isServerScoped) {
-      issueWhereClause.channelUniqueName = null;
+      issueWhereClause.channelUniqueName = { eq: null };
     } else {
-      issueWhereClause.channelUniqueName = channelUniqueName;
+      issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
 
     const existingIssueData = await repository.findIssue(issueWhereClause);
@@ -229,42 +152,16 @@ const getResolver = (input: Input) => {
         ? await getNextServerIssueNumber(driver)
         : await getNextIssueNumber(driver, channelUniqueName!);
 
-      const issueCreateInput: IssueCreateInput = {
-        title: `[Archived image] ${truncatedUrl}`,
-        isOpen: true,
-        authorName: loggedInModName,
-        flaggedServerRuleViolation: (selectedServerRules?.length ?? 0) > 0,
-        channelUniqueName: channelUniqueName || null,
-        relatedImageId: imageId,
-        relatedUsername: uploaderUsername || undefined,
-        issueNumber,
-        Author: {
-          ModerationProfile: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
-        },
-      };
-
-      if (channelUniqueName) {
-        issueCreateInput.Channel = {
-          connect: {
-            where: {
-              node: {
-                uniqueName: channelUniqueName,
-              },
-            },
-          },
-        };
-      }
-
       try {
-        const createResult = await repository.createModerationIssue(issueCreateInput);
+        const createResult = await repository.createModerationIssue({
+          issueNumber,
+          title: `[Archived image] ${truncatedUrl}`,
+          authorModName: loggedInModName,
+          channelUniqueName: channelUniqueName || null,
+          flaggedServerRuleViolation: (selectedServerRules?.length ?? 0) > 0,
+          relatedImageId: imageId,
+          relatedUsername: uploaderUsername || undefined,
+        });
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -279,61 +176,40 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const archiveModActionCreateInput = getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName,
-      channelUniqueName,
-      actionType: "archive",
-      actionDescription: "Archived the image",
-      issueId: existingIssueId,
-    });
-
-    const closeIssueModActionCreateInput = getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName,
-      channelUniqueName,
-      actionType: "close",
-      actionDescription: "Closed the issue",
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the archive action
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-
-    const archiveUpdateIssueInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: archiveModActionCreateInput,
-            },
-          ],
-        },
-      ],
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        (selectedServerRules?.length ?? 0) > 0,
-    };
-
-    const closeIssueUpdateInput: IssueUpdateInput = {
-      isOpen: false,
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: closeIssueModActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the archive action then the close action via the owned write
+    // (two appends). Comment Channel connect only when channel-scoped; text
+    // stored verbatim.
+    const commentChannelUniqueName = channelUniqueName || undefined;
     try {
-      await repository.appendIssueAction(issueUpdateWhere, archiveUpdateIssueInput);
+      await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "archive",
+            actionDescription: "Archived the image",
+            text: finalCommentText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName,
+          },
+        ],
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          (selectedServerRules?.length ?? 0) > 0,
+      });
 
-      const issueData = await repository.appendIssueAction(issueUpdateWhere, closeIssueUpdateInput);
+      const issueData = await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "close",
+            actionDescription: "Closed the issue",
+            text: finalCommentText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName,
+          },
+        ],
+        isOpen: false,
+      });
 
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
@@ -358,17 +234,17 @@ const getResolver = (input: Input) => {
     // Update the image to set archived=true and link the issue
     try {
       const imageUpdateWhere: ImageWhere = {
-        id: imageId,
+        id: { eq: imageId },
       };
       const imageUpdateInput: ImageUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

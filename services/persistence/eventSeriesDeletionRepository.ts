@@ -25,16 +25,16 @@ export function createEventSeriesDeletionRepository(driver: Driver): EventSeries
   return {
     async findSnapshot(id) {
       const result=await executeGeneratedOperation<{events: Event[]}>(driver,
-        `query SeriesBeforeScopedDeletion($where: EventWhere) {events(where: $where) ${SERIES_DELETION_SNAPSHOT_SELECTION}}`, {where: {id}});
+        `query SeriesBeforeScopedDeletion($where: EventWhere) {events(where: $where) ${SERIES_DELETION_SNAPSHOT_SELECTION}}`, {where: {id: {eq: id}}});
       return result.events;
     },
     async deleteOccurrence(id) {
       await executeGeneratedOperation(driver,
-        `mutation DeleteSeriesOccurrence($where: EventWhere) {deleteEvents(where: $where) {nodesDeleted relationshipsDeleted}}`, {where: {id}});
+        `mutation DeleteSeriesOccurrence($where: EventWhere) {deleteEvents(where: $where) {nodesDeleted relationshipsDeleted}}`, {where: {id: {eq: id}}});
     },
     async deleteTemplate(id) {
       await executeGeneratedOperation(driver,
-        `mutation DeleteSeriesTemplate($where: EventSeriesWhere) {deleteEventSeries(where: $where) {nodesDeleted relationshipsDeleted}}`, {where: {id}});
+        `mutation DeleteSeriesTemplate($where: EventSeriesWhere) {deleteEventSeries(where: $where) {nodesDeleted relationshipsDeleted}}`, {where: {id: {eq: id}}});
     },
   };
 }

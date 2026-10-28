@@ -185,14 +185,14 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
         pluginRecord = createResult.plugins[0]
       } else {
         await repository.updateInstallPlugin(pluginRecord.id, ({
-            displayName: pluginUpdatePayload.displayName,
-            description: pluginUpdatePayload.description,
-            authorName: pluginUpdatePayload.authorName,
-            authorUrl: pluginUpdatePayload.authorUrl,
-            homepage: pluginUpdatePayload.homepage,
-            license: pluginUpdatePayload.license,
-            tags: pluginUpdatePayload.tags,
-            metadata: pluginUpdatePayload.metadata
+            displayName: { set: pluginUpdatePayload.displayName },
+            description: { set: pluginUpdatePayload.description },
+            authorName: { set: pluginUpdatePayload.authorName },
+            authorUrl: { set: pluginUpdatePayload.authorUrl },
+            homepage: { set: pluginUpdatePayload.homepage },
+            license: { set: pluginUpdatePayload.license },
+            tags: { set: pluginUpdatePayload.tags },
+            metadata: { set: pluginUpdatePayload.metadata }
           } as unknown as PluginUpdateInput))
       }
 
@@ -234,16 +234,16 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
         pluginVersion = createResult.pluginVersions[0]
       } else {
         await repository.updateInstallVersion(pluginVersion.id, ({
-            repoUrl: String(registryVersion.tarballUrl),
-            tarballGsUri: String(registryVersion.tarballUrl),
-            integritySha256: String(registryVersion.integritySha256),
-            ...releaseMetadataPayload,
-            entryPath: artifacts.entryPath || pluginVersion.entryPath || 'index.js',
-            manifest: manifestJson,
-            settingsDefaults,
-            uiSchema,
-            documentationPath,
-            readmeMarkdown
+            repoUrl: { set: String(registryVersion.tarballUrl) },
+            tarballGsUri: { set: String(registryVersion.tarballUrl) },
+            integritySha256: { set: String(registryVersion.integritySha256) },
+            ...Object.fromEntries(Object.entries(releaseMetadataPayload).map(([key, value]) => [key, { set: value }])),
+            entryPath: { set: artifacts.entryPath || pluginVersion.entryPath || 'index.js' },
+            manifest: { set: manifestJson },
+            settingsDefaults: { set: settingsDefaults },
+            uiSchema: { set: uiSchema },
+            documentationPath: { set: documentationPath },
+            readmeMarkdown: { set: readmeMarkdown }
           } as unknown as PluginVersionUpdateInput), pluginRecord!.id)
       }
 

@@ -66,9 +66,9 @@ const attachFile = (discussionId: string) =>
   resolvers.Mutation.updateDiscussionWithChannelConnections(
     null,
     {
-      where: { id: discussionId },
+      where: { id: { eq: discussionId } },
       discussionUpdateInput: {
-        DownloadableFiles: [{ connect: [{ where: { node: { id: "file" } } }] }],
+        DownloadableFiles: [{ connect: [{ where: { node: { id: { eq: "file" } } } }] }],
       },
       channelConnections: [],
       channelDisconnections: [],

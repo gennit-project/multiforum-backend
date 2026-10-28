@@ -10,20 +10,8 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 2`] = `
 [
   {
-    "event": "update",
-    "id": "<id>",
-    "properties": {
-      "new": {
-        "pluginPipelines": "[{\\"event\\":\\"comment.created\\"}]",
-        "serverName": "test"
-      },
-      "old": {
-        "pluginPipelines": "[]",
-        "serverName": "test"
-      }
-    },
-    "timestamp": "<timestamp>",
-    "typename": "ServerConfig"
+    "pluginPipelines": "[]",
+    "serverName": null
   }
 ]
 `;
@@ -31,59 +19,8 @@ exports[`current projection and generated update retain native events and nullab
 exports[`current projection and generated update retain native events and nullable serverName behavior 3`] = `
 [
   {
-    "pluginPipelines": "[]",
-    "serverName": null
-  }
-]
-`;
-
-exports[`current projection and generated update retain native events and nullable serverName behavior 4`] = `
-[
-  {
     "pluginPipelines": "[\\"null-key\\"]",
     "serverName": null
-  }
-]
-`;
-
-exports[`current projection and generated update retain native events and nullable serverName behavior 5`] = `
-[
-  {
-    "event": "update",
-    "id": "<id>",
-    "properties": {
-      "new": {
-        "pluginPipelines": "[\\"null-key\\"]"
-      },
-      "old": {
-        "pluginPipelines": "[]"
-      }
-    },
-    "timestamp": "<timestamp>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
-exports[`unused default projection failures remain postcommit errors 1`] = `
-[
-  {
-    "event": "update",
-    "id": "<id>",
-    "properties": {
-      "new": {
-        "enableDownloads": "invalid-boolean",
-        "pluginPipelines": "[\\"changed\\"]",
-        "serverName": "test"
-      },
-      "old": {
-        "enableDownloads": "invalid-boolean",
-        "pluginPipelines": "[]",
-        "serverName": "test"
-      }
-    },
-    "timestamp": "<timestamp>",
-    "typename": "ServerConfig"
   }
 ]
 `;

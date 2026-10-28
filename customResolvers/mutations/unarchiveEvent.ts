@@ -1,9 +1,6 @@
 import {createEventModerationRepository, type EventModerationRepository, type EventModerationIssue} from "../../services/persistence/eventModerationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   EventChannelUpdateInput,
   EventChannelWhere,
 } from "../../ogm_types.js";
@@ -11,7 +8,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { getModerationActionCreateInput } from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 
 type Args = {
@@ -64,8 +61,8 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for the event ID and channel unique name.
     const issueData = await repository.findRelatedIssues({
-        channelUniqueName: channelUniqueName,
-        relatedEventId: eventId,
+        channelUniqueName: { eq: channelUniqueName },
+        relatedEventId: { eq: eventId },
       });
 
     if (issueData.length > 0) {
@@ -75,35 +72,21 @@ const getResolver = (input: Input) => {
       throw new GraphQLError("Issue not found");
     }
 
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: explanation,
-        loggedInModName,
-        channelUniqueName,
-        actionType: "un-archive",
-        actionDescription: "Un-archived the event",
-        issueId: existingIssueId,
-      });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      isOpen: false, // Close the issue; the event is no longer flagged.
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the un-archive action (closing the issue) via the owned write.
     try {
-      const issueData = await repository.recordAction(issueUpdateWhere, issueUpdateInput);
+      const issueData = await repository.recordAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "un-archive",
+            actionDescription: "Un-archived the event",
+            text: formatModerationActionText({ text: explanation }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
+          },
+        ],
+        isOpen: false, // Close the issue; the event is no longer flagged.
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
@@ -125,11 +108,11 @@ const getResolver = (input: Input) => {
     try {
       // Update the eventChannel so that archived=false.
       const eventChannelUpdateWhere: EventChannelWhere = {
-        channelUniqueName: channelUniqueName,
-        eventId: eventId,
+        channelUniqueName: { eq: channelUniqueName },
+        eventId: { eq: eventId },
       };
       const eventChannelUpdateInput: EventChannelUpdateInput = {
-        archived: false,
+        archived: { set: false },
       };
       const eventUpdateData = await repository.setArchived(eventChannelUpdateWhere, eventChannelUpdateInput);
       const eventUpdateId =

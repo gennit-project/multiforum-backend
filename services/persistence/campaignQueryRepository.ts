@@ -23,6 +23,6 @@ export const CAMPAIGN_QUERY_SELECTION_2 = `{
         }`;
 export function createCampaignQueryRepository(driver:Driver):CampaignQueryRepository {return {
  async findCampaigns(){const r=await executeGeneratedOperation<{pluginPipelineCampaigns:PluginPipelineCampaign[]}>(driver,`query CampaignHistory {pluginPipelineCampaigns${CAMPAIGN_QUERY_SELECTION_0}}`,{});return r.pluginPipelineCampaigns;},
- async findFailures(campaignId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query CampaignFailures($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${CAMPAIGN_QUERY_SELECTION_1}}`,{where:{campaignId,status_IN:['FAILED','TIMED_OUT','CANCELLED']}});return r.pluginPipelineRuns;},
- async findDestination(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query CampaignFailureDestination($where:DownloadableFileWhere){downloadableFiles(where:$where)${CAMPAIGN_QUERY_SELECTION_2}}`,{where:{id}});return r.downloadableFiles;},
+ async findFailures(campaignId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query CampaignFailures($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${CAMPAIGN_QUERY_SELECTION_1}}`,{where:{campaignId:{eq:campaignId},status:{in:['FAILED','TIMED_OUT','CANCELLED']}}});return r.pluginPipelineRuns;},
+ async findDestination(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query CampaignFailureDestination($where:DownloadableFileWhere){downloadableFiles(where:$where)${CAMPAIGN_QUERY_SELECTION_2}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
 };}

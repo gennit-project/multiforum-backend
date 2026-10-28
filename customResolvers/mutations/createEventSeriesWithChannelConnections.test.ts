@@ -110,8 +110,8 @@ test("createEventSeriesWithChannelConnections creates series with occurrences", 
   assert.equal(createCalls.length, 1);
   assert.ok(createCalls[0].context.executionContext);
   assert.equal(sessions[0].executeWriteCalls, 1);
-  // Should have created EventChannel for each occurrence and channel
-  assert.equal(sessions[0].runCalls.length, 2); // 2 occurrences * 1 channel
+  // v7: one owned-Poster MERGE run + an EventChannel run per occurrence/channel
+  assert.equal(sessions[0].runCalls.length, 3); // 1 poster + (2 occurrences * 1 channel)
   assert.equal(sessions[0].closeCalls, 1);
 });
 
@@ -219,7 +219,7 @@ test("createEventSeriesWithChannelConnections handles repeat pattern", async () 
 });
 
 test("createEventSeriesWithChannelConnections connects tags", async () => {
-  const { driver } = buildDriver();
+  const { driver, sessions } = buildDriver();
   const createCalls: any[] = [];
 
   const mockSeriesWithTags = {
@@ -252,11 +252,13 @@ test("createEventSeriesWithChannelConnections connects tags", async () => {
 
   assert.equal(result.Tags.length, 2);
 
-  // Verify tags were passed to create with connectOrCreate
+  // v7 dropped connectOrCreate: tags are written as owned MERGEs inside the
+  // create transaction (MERGE (tag:Tag {text}) + HAS_TAG), not on the create input.
   const createInput = createCalls[0].input[0];
-  assert.ok(createInput.Tags.connectOrCreate);
-  assert.equal(createInput.Tags.connectOrCreate.length, 2);
-  assert.equal(createInput.Tags.connectOrCreate[0].where.node.text, "meetup");
+  assert.equal(createInput.Tags, undefined);
+  const tagRun = sessions[0].runCalls.find((c) => c.query.includes("MERGE (tag:Tag"));
+  assert.ok(tagRun, "expected a Tag MERGE run");
+  assert.deepEqual(tagRun.params.tagTexts, ["meetup", "community"]);
 });
 
 test("createEventSeriesWithChannelConnections handles location coordinates", async () => {
@@ -368,7 +370,8 @@ test("createEventSeriesWithChannelConnections is safe when Neo4j retries the cal
   assert.equal(result.id, "series-1");
   assert.equal(createCalls.length, 2);
   assert.equal(sessions[0].executeWriteCalls, 1);
-  assert.equal(sessions[0].runCalls.length, 4);
+  // v7: each attempt runs 1 poster MERGE + 2 EventChannel runs; retried twice.
+  assert.equal(sessions[0].runCalls.length, 6);
   assert.equal(sessions[0].closeCalls, 1);
 });
 

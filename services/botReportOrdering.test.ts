@@ -8,7 +8,7 @@ function fixture(existing=true){const calls:string[]=[];const repo:BotReportRepo
  findReportedComment:async()=>{calls.push('comment');return [{id:'c',text:'Context',CommentAuthor:{__typename:'User',username:'alice'}}] as any;},
  findReportedDiscussion:async()=>[],findReportedEvent:async()=>[],
  createReportedIssue:async()=>{calls.push('create');return {issues:[{id:'i',issueNumber:7}] as any};},
- appendBotReport:async(_where,update)=>{calls.push('append');assert.equal(update.isOpen,true);return {issues:[{id:'i',issueNumber:7}] as any};},
+ appendBotReport:async(params)=>{calls.push('append');assert.equal(params.isOpen,true);return {issues:[{id:'i',issueNumber:7}] as any};},
 };const identity={findIdentity:async()=>{calls.push('identity');return [{username:'bot-forum-helper',isBot:true,botProfileId:null}] as any;},createIdentity:async()=>{throw Error('unexpected create');},reactivateIdentity:async()=>{throw Error('unexpected reactivate');},findChannelBots:async()=>{calls.push('membership');return [{uniqueName:'forum',Bots:[{username:'bot-forum-helper'}]}] as any;},connectBot:async()=>({channels:[]}),disconnectBots:async()=>({channels:[]})};
 const driver={session:()=>({executeWrite:async()=>{calls.push('counter');return {records:[{get:()=>7}]};},close:async()=>{calls.push('close');}})} as any;
 const args={contentType:'comment' as const,contentId:'c',reportText:'Review',selectedForumRules:['Rule'],selectedServerRules:[] as string[],botName:'helper'};

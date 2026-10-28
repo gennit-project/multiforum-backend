@@ -130,7 +130,7 @@ const getResolver = (input: Input) => {
 
         // Get settings from all three levels
         const settingsDefaults = parseSettingsJson(edge?.node?.settingsDefaults)
-        const serverData = serverSettingsMap.get(pluginName)
+        const serverData = serverSettingsMap.get(pluginName ?? "")
         const serverSettings = serverData?.settingsJson || {}
         const channelSettings = parseSettingsJson(edge.properties.settingsJson)
 

@@ -51,8 +51,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(graphql@16.14.2)
       '@neo4j/graphql':
-        specifier: ^5.12.15
-        version: 5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)
+        specifier: ^7.6.4
+        version: 7.6.4(graphql@16.14.2)(neo4j-driver@5.28.3)
       '@sendgrid/mail':
         specifier: ^8.1.4
         version: 8.1.6
@@ -297,13 +297,6 @@ packages:
     resolution: {integrity: sha512-VFpv9UP820SiwDUPYtq7PmD3jifzZlevkQ26bhbSzFeruSTys0eHzQCZyKg+IhgmZzwPI9AFjPe26ABNjGeIKg==}
     peerDependencies:
       graphql: '*'
-
-  '@as-integrations/express4@1.1.2':
-    resolution: {integrity: sha512-PGeMcwoOKdYnZ4LtsmM7aLNoel3tbK8wKnfyahdRau1qb7wLbuaXB35zg3w34Ov4bm3WJtO3yzd8Bw5jVE+aIQ==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      '@apollo/server': ^4.0.0 || ^5.0.0
-      express: ^4.0.0
 
   '@as-integrations/express5@1.1.2':
     resolution: {integrity: sha512-BxfwtcWNf2CELDkuPQxi5Zl3WqY/dQVJYafeCBOGoFQjv5M0fjhxmAFZ9vKx/5YKKNeok4UY6PkFbHzmQrdxIA==}
@@ -1265,16 +1258,16 @@ packages:
   '@kwsites/file-exists@1.1.1':
     resolution: {integrity: sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw==}
 
-  '@neo4j/cypher-builder@2.12.0':
-    resolution: {integrity: sha512-rBpMSoSPNVq2S8ayfTZcd1TNBwE8GWdFYoy8Sbk4xtB4X6L6y2y9/CQ/L7dj5mtbNBK1FmUlrNWub/1FuakeTA==}
-    engines: {node: '>=16.0.0'}
+  '@neo4j/cypher-builder@3.2.2':
+    resolution: {integrity: sha512-8AKHnJwCyCS66bftiFp+PbY5llPCndCr6hRp0KYMnjD101dqNd7arI7MD6qv9e92WMCQT2jAs3uiozWEXHykwg==}
+    engines: {node: '>=20.0.0'}
 
-  '@neo4j/graphql@5.12.15':
-    resolution: {integrity: sha512-gAU2vkC1oN13NrTpXNpoJ0yyDmJxCRUahHdpyLY8iaT48BvuTYa6jYRP+PJXt98CreB7qoSkoWvctngTrFZ1iw==}
-    engines: {node: '>=16.0.0'}
+  '@neo4j/graphql@7.6.4':
+    resolution: {integrity: sha512-bduT/IEQDi+uGAkADptUaj7K4gQdqmFmbiG8pW15NgIXKiIOgikihv7ufJtMyhGleKLTVhSW2Nj7CQA/wrV6jA==}
+    engines: {node: '>=20.0.0'}
     peerDependencies:
       graphql: ^16.0.0
-      neo4j-driver: ^5.8.0
+      neo4j-driver: ^5.8.0 || ^6.0.0
 
   '@nodable/entities@3.0.0':
     resolution: {integrity: sha512-8L9xFeTYKhm49xfIypoe2W5wV1m/3Z58kT+7kR9A8OyFxcPduI4VmxaUMQyKYrRjUoLLSXv6EKKID5Tvj9cUVw==}
@@ -2577,6 +2570,11 @@ packages:
     engines: {node: '>=8.6'}
     peerDependencies:
       graphql: '>=0.9 <0.14 || ^14.0.2 || ^15.4.0 || ^16.3.0'
+
+  graphql-query-complexity@1.1.1:
+    resolution: {integrity: sha512-q0u1yrPYdEYnhEL4x6xeEoOHdHUV4hISrI/uDFhOaxLvIN60RqlzV3kW6N0f+0pygGM9wjskl1cD5/55G+TPmw==}
+    peerDependencies:
+      graphql: ^15.0.0 || ^16.0.0
 
   graphql-query-complexity@2.0.0:
     resolution: {integrity: sha512-gmdNp8Lq3KbJcWeX9mpIqpIxD2oDEVO5QgZtw7eiDB7Q1RYMlqDFQnGq6ZcaDclBNcwTnyOCHUtEr3qAjnUDVg==}
@@ -4220,11 +4218,6 @@ snapshots:
       immutable: 5.1.9
       invariant: 2.2.4
 
-  '@as-integrations/express4@1.1.2(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)':
-    dependencies:
-      '@apollo/server': 5.5.1(graphql@16.14.2)
-      express: 5.2.1
-
   '@as-integrations/express5@1.1.2(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)':
     dependencies:
       '@apollo/server': 5.5.1(graphql@16.14.2)
@@ -5256,23 +5249,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@neo4j/cypher-builder@2.12.0': {}
+  '@neo4j/cypher-builder@3.2.2': {}
 
-  '@neo4j/graphql@5.12.15(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)(graphql@16.14.2)(neo4j-driver@5.28.3)':
+  '@neo4j/graphql@7.6.4(graphql@16.14.2)(neo4j-driver@5.28.3)':
     dependencies:
       '@apollo/subgraph': 2.14.2(graphql@16.14.2)
-      '@as-integrations/express4': 1.1.2(@apollo/server@5.5.1(graphql@16.14.2))(express@5.2.1)
       '@graphql-tools/merge': 9.2.3(graphql@16.14.2)
       '@graphql-tools/resolvers-composition': 7.0.32(graphql@16.14.2)
       '@graphql-tools/schema': 10.1.0(graphql@16.14.2)
       '@graphql-tools/utils': 12.1.0(graphql@16.14.2)
-      '@neo4j/cypher-builder': 2.12.0
+      '@neo4j/cypher-builder': 3.2.2
       camelcase: 6.3.0
       debug: 4.4.3
       dot-prop: 6.0.1
       graphql: 16.14.2
       graphql-compose: 9.1.0(graphql@16.14.2)
       graphql-parse-resolve-info: 4.14.1(graphql@16.14.2)
+      graphql-query-complexity: 1.1.1(graphql@16.14.2)
       graphql-relay: 0.10.2(graphql@16.14.2)
       jose: 5.10.0
       neo4j-driver: 5.28.3
@@ -5280,8 +5273,6 @@ snapshots:
       semver: 7.8.5
       typescript-memoize: 1.1.1
     transitivePeerDependencies:
-      - '@apollo/server'
-      - express
       - supports-color
 
   '@nodable/entities@3.0.0': {}
@@ -6793,6 +6784,11 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
+
+  graphql-query-complexity@1.1.1(graphql@16.14.2):
+    dependencies:
+      graphql: 16.14.2
+      lodash.get: 4.4.2
 
   graphql-query-complexity@2.0.0(graphql@16.14.2):
     dependencies:

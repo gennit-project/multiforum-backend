@@ -197,7 +197,7 @@ export const updateDownloadableFileInputIsValid = rule({ cache: "contextual" })(
       }
 
       // Use the new filename if provided, otherwise use existing filename
-      const fileName = args.update.fileName || existingFile.fileName;
+      const fileName = args.update.fileName?.set || existingFile.fileName;
 
       const fileTypeValidation = await validateFileTypePermissions(
         fileName,

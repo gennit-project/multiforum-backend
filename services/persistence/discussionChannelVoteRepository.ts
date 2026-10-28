@@ -13,7 +13,7 @@ export const DISCUSSION_CHANNEL_VOTE_SELECTION = `{
   Discussion { Author { username discussionKarma createdAt } }
   weightedVotesCount
   UpvotedByUsers { username }
-  UpvotedByUsersAggregate { count }
+  UpvotedByUsersConnection { aggregate { count { nodes } } }
 }`;
 const DISCUSSION_CHANNEL = `query DiscussionChannelVoteSnapshot($where: DiscussionChannelWhere) {
   discussionChannels(where: $where) ${DISCUSSION_CHANNEL_VOTE_SELECTION}
@@ -31,13 +31,13 @@ const KARMA = `mutation SetDiscussionChannelVoteAuthorKarma($where: UserWhere, $
 export function createDiscussionChannelVoteRepository(driver: Driver): DiscussionChannelVoteRepository {
   return {
     async findDiscussionChannel(id) {
-      return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver, DISCUSSION_CHANNEL, {where: {id}})).discussionChannels;
+      return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver, DISCUSSION_CHANNEL, {where: {id: {eq: id}}})).discussionChannels;
     },
     async findVoter(username) {
-      return (await executeGeneratedOperation<{users: User[]}>(driver, VOTER, {where: {username}})).users;
+      return (await executeGeneratedOperation<{users: User[]}>(driver, VOTER, {where: {username: {eq: username}}})).users;
     },
     async setAuthorKarma(username, discussionKarma) {
-      await executeGeneratedOperation(driver, KARMA, {where: {username}, update: {discussionKarma}});
+      await executeGeneratedOperation(driver, KARMA, {where: {username: {eq: username}}, update: {discussionKarma: {set: discussionKarma}}});
     },
   };
 }

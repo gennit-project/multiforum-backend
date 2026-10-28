@@ -1,4 +1,5 @@
 import { createProfileImageRepository, type ProfileImageRepository } from "../../services/persistence/imageWriteRepository.js";
+import type { UserUpdateInput } from "../../src/generated/graphql.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -68,9 +69,14 @@ const getResolver = ({
     });
 
     const repository = injectedRepository ?? createProfileImageRepository(driver);
+    const variantFields = buildUserAvatarVariantPersistenceFields(generatedVariants);
     const response = await repository.setProfileImage(args.username, {
-        profilePicURL: args.imageUrl,
-        ...buildUserAvatarVariantPersistenceFields(generatedVariants),
+        profilePicURL: { set: args.imageUrl },
+        ...(Object.fromEntries(
+          Object.entries(variantFields)
+            .filter(([, value]) => value !== undefined)
+            .map(([key, value]) => [key, { set: value }])
+        ) as UserUpdateInput),
       });
 
     const updatedUser = response.users[0];

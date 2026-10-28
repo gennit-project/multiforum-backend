@@ -20,7 +20,7 @@ test("collectCollectionIds retains top-level collection mutation arguments", () 
 
 test("collectCollectionIds deduplicates ids supplied by multiple argument shapes", () => {
   const collectionIds = collectCollectionIds(undefined, {
-    where: { id: "collection-1" },
+    where: { id: { eq: "collection-1" } },
     input: { collectionId: "collection-1" },
   });
 

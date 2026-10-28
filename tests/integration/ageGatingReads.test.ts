@@ -178,16 +178,16 @@ const nodeCount = async (
 const visibleIds = async (username?: string) => {
   const result = await execute(
     `query {
-      discussions(options: { sort: [{ id: ASC }] }) { id }
-      discussionChannels(options: { sort: [{ id: ASC }] }) { id }
-      comments(options: { sort: [{ id: ASC }] }) { id }
-      issues(options: { sort: [{ id: ASC }] }) { id }
-      images(options: { sort: [{ id: ASC }] }) { id }
-      downloadableFiles(options: { sort: [{ id: ASC }] }) { id }
-      fileVersions(options: { sort: [{ id: ASC }] }) { id }
-      discussionsAggregate { count }
-      channels(where: { uniqueName: "general" }) {
-        DiscussionChannels(options: { sort: [{ id: ASC }] }) { id }
+      discussions(sort: [{ id: ASC }]) { id }
+      discussionChannels(sort: [{ id: ASC }]) { id }
+      comments(sort: [{ id: ASC }]) { id }
+      issues(sort: [{ id: ASC }]) { id }
+      images(sort: [{ id: ASC }]) { id }
+      downloadableFiles(sort: [{ id: ASC }]) { id }
+      fileVersions(sort: [{ id: ASC }]) { id }
+      discussionsConnection { aggregate { count { nodes } } }
+      channels(where: { uniqueName: { eq: "general" } }) {
+        DiscussionChannels(sort: [{ id: ASC }]) { id }
       }
     }`,
     username
@@ -215,7 +215,7 @@ for (const [label, username] of [
     assert.deepEqual(data.fileVersions.map((item: any) => item.id), [
       "file-version-public",
     ]);
-    assert.equal(data.discussionsAggregate.count, 1);
+    assert.equal(data.discussionsConnection.aggregate.count.nodes, 1);
     assert.deepEqual(
       data.channels[0].DiscussionChannels.map((item: any) => item.id),
       ["dc-public"]
@@ -276,7 +276,7 @@ test("an age-eligible caller can read sensitive nodes", async () => {
     "file-version-public",
     "file-version-sensitive",
   ]);
-  assert.equal(data.discussionsAggregate.count, 2);
+  assert.equal(data.discussionsConnection.aggregate.count.nodes, 2);
 });
 
 test("the public API rejects account creation without a birthday when gating is enabled", async () => {

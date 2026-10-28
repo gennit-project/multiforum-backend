@@ -10,10 +10,10 @@ export interface PluginStatusRepository {
 // Values are deliberately variables: approved correction treats quotes and
 // backslashes as data instead of allowing them to change selection text.
 const VERSION = `query PluginStatusVersion($where: PluginWhere, $version: String!) {
-  plugins(where: $where) { Versions(where: { version: $version }) { id manifest } }
+  plugins(where: $where) { Versions(where: { version: { eq: $version } }) { id manifest } }
 }`
 const INSTALLATION = `query PluginStatusInstallation($id: ID!) {
-  serverConfigs { InstalledVersionsConnection(where: { node: { id: $id } }) {
+  serverConfigs { InstalledVersionsConnection(where: { node: { id: { eq: $id } } }) {
     edges { properties { settingsJson } }
   } }
 }`
@@ -24,7 +24,7 @@ const SECRETS = `query PluginStatusSecrets($where: ServerSecretWhere) {
 export function createPluginStatusRepository(driver: Driver): PluginStatusRepository {
   return {
     async findVersion(pluginId, version) {
-      const data = await executeGeneratedOperation<{ plugins: Awaited<ReturnType<PluginStatusRepository['findVersion']>> }>(driver, VERSION, { where: { name: pluginId }, version })
+      const data = await executeGeneratedOperation<{ plugins: Awaited<ReturnType<PluginStatusRepository['findVersion']>> }>(driver, VERSION, { where: { name: { eq: pluginId } }, version })
       return data.plugins
     },
     async findInstallation(id) {
@@ -32,7 +32,7 @@ export function createPluginStatusRepository(driver: Driver): PluginStatusReposi
       return data.serverConfigs
     },
     async findSecretStatuses(pluginId) {
-      const data = await executeGeneratedOperation<{ serverSecrets: Awaited<ReturnType<PluginStatusRepository['findSecretStatuses']>> }>(driver, SECRETS, { where: { pluginId } })
+      const data = await executeGeneratedOperation<{ serverSecrets: Awaited<ReturnType<PluginStatusRepository['findSecretStatuses']>> }>(driver, SECRETS, { where: { pluginId: { eq: pluginId } } })
       return data.serverSecrets
     }
   }

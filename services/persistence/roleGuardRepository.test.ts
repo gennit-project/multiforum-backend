@@ -22,7 +22,8 @@ test("fixed role snapshots select every guarded capability and preserve filter i
       type ModChannelRole { Owner: Channel! }
       type ServerRole { ${capabilityFields(SERVER_ROLE_CAPABILITY_FIELDS)} }
       type ModServerRole { ${capabilityFields(MOD_SERVER_ROLE_CAPABILITY_FIELDS)} }
-      input ChannelWhere { uniqueName: String }
+      input StringScalarFilters { eq: String }
+      input ChannelWhere { uniqueName: StringScalarFilters }
       input ChannelRoleWhere { OR: [ChannelRoleWhere!] name_CONTAINS: String }
       input ModChannelRoleWhere { name: String }
       input ServerRoleWhere { name: String }
@@ -61,7 +62,7 @@ test("fixed role snapshots select every guarded capability and preserve filter i
   assert.ok(Object.values(serverRoles[0]).every((value) => value === true));
   assert.ok(Object.values(modRoles[0]).every((value) => value === false));
   assert.deepEqual(seen.map(({ where }) => where), [
-    { uniqueName: "cats" }, where, { name: "Mod" }, { name: "Server" }, { name: "Mod" },
+    { uniqueName: { eq: "cats" } }, where, { name: "Mod" }, { name: "Server" }, { name: "Mod" },
   ]);
   assert.ok(seen.every(({ context }) => {
     assert.deepEqual(context, { sessionConfig: { database: undefined } });

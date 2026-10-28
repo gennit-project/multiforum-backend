@@ -153,7 +153,6 @@ const PUBLIC_READ_TYPES = [
   "IssueInfo",
   "LabelChangeHistory",
   "License",
-  "LinkFlair",
   "Message",
   "ModActivity",
   "ModChannelRole",
@@ -163,7 +162,6 @@ const PUBLIC_READ_TYPES = [
   "Notification",
   "OwnAgeProfile",
   "OwnEmail",
-  "PipelineStep",
   "Plugin",
   "PluginConfigFieldStatus",
   "PluginConfigStatus",
@@ -261,9 +259,7 @@ const permissionRules: IRules = {
       getPluginPipelineCampaigns: chain(isAuthenticated, canManagePlugins),
       getPluginPipelineCampaignFailures: chain(isAuthenticated, canManagePlugins),
       pluginRuns: deny,
-      pluginRunsAggregate: deny,
       pluginPipelineRuns: deny,
-      pluginPipelineRunsAggregate: deny,
       // Generated solely for the internal OGM campaign service. Clients must
       // use the application-defined, admin-protected campaign query instead.
       pluginPipelineCampaigns: deny,
@@ -303,7 +299,7 @@ const permissionRules: IRules = {
       FavoriteComments: isAccountOwner,
       FavoriteDownloads: isAccountOwner,
       FavoriteImages: isAccountOwner,
-      FavoriteImagesAggregate: isAccountOwner,
+      FavoriteImagesConnection: isAccountOwner,
       FavoriteChannels: isAccountOwner,
       OwnedDownloads: isAccountOwner,
 
@@ -312,7 +308,6 @@ const permissionRules: IRules = {
       // intentional: otherwise shield would reject after the database query and
       // defeat filter semantics (empty list instead of an authorization error).
       Notifications: allow,
-      NotificationsAggregate: allow,
       NotificationsConnection: allow,
 
       // Other private fields
@@ -346,23 +341,23 @@ const permissionRules: IRules = {
 
       // Fields intentionally public under the previous fallback behavior.
       Albums: allow,
-      AlbumsAggregate: allow,
+      AlbumsConnection: allow,
       Images: allow,
-      ImagesAggregate: allow,
+      ImagesConnection: allow,
       isBot: allow,
       botProfileId: allow,
       isDeprecated: allow,
       deprecatedReason: allow,
       Comments: allow,
-      CommentsAggregate: allow,
+      CommentsConnection: allow,
       Discussions: allow,
-      DiscussionsAggregate: allow,
+      DiscussionsConnection: allow,
       Events: allow,
-      EventsAggregate: allow,
+      EventsConnection: allow,
       AdminOfChannels: allow,
-      AdminOfChannelsAggregate: allow,
+      AdminOfChannelsConnection: allow,
       ModOfChannels: allow,
-      ModOfChannelsAggregate: allow,
+      ModOfChannelsConnection: allow,
       AdminOfServers: allow,
       RecentlyVisitedChannels: allow,
       UpvotedComments: allow,
@@ -371,7 +366,7 @@ const permissionRules: IRules = {
       AuthoredWikiPages: allow,
       OriginalWikiPages: allow,
       AuthoredWikiPageVersions: allow,
-      AuthoredWikiPageVersionsAggregate: allow,
+      AuthoredWikiPageVersionsConnection: allow,
       ChannelRoles: allow,
       ServerRoles: allow,
       ModChannelRoles: allow,
@@ -484,8 +479,15 @@ const permissionRules: IRules = {
       deleteEvents: and(isAuthenticated, isEventOwner),
       deleteEventChannels: and(isAuthenticated, canRemoveEventChannel),
 
-      createComments: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
+      // v7 (campaign #284): comment creation moved to the owned-write mutation;
+      // generated createComments can't carry the to-one connects and is left
+      // default-denied.
+      createCommentWithOwnedConnections: and(isAuthenticated, createCommentInputIsValid, canCreateComment),
       updateComments: and(isAuthenticated, updateCommentInputIsValid, or(isCommentAuthor, canEditComments)),
+      // v7: soft-delete/anonymize a comment (owns the AUTHORED_COMMENT removal
+      // the generated updateComments can no longer express). Same gate as an edit
+      // — the author or a moderator with edit permission — resolved from where.id.
+      softDeleteComment: and(isAuthenticated, or(isCommentAuthor, canEditComments)),
       deleteComments: and(isAuthenticated, isCommentAuthor),
       
       createSignedStorageURL: and(isAuthenticated, canUploadFile),
@@ -518,6 +520,17 @@ const permissionRules: IRules = {
       // 2. Issue author (if issue is not locked)
       // 3. Moderators with archive permissions
       updateIssues: and(
+        isAuthenticated,
+        or(
+          isChannelOwner,
+          and(isIssueAuthor, issueIsNotLocked),
+          canArchiveAndUnarchiveDiscussion
+        )
+      ),
+      // v7: add a moderation activity-feed item (replaces the nested
+      // updateIssues(create: { ActivityFeed }) the frontend can no longer send).
+      // Same gate as updateIssues — resolved from where.id.
+      addIssueActivityFeedItem: and(
         isAuthenticated,
         or(
           isChannelOwner,

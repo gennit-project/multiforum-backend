@@ -3,7 +3,6 @@ import test from "node:test";
 import neo4j, { type Driver } from "neo4j-driver";
 import {
   evaluateSchemaAudit,
-  getLibraryManagedConstraintNames,
   getRequiredConstraintNames,
   requiredConstraintNames,
   requiredEnterpriseConstraintNames,
@@ -12,15 +11,18 @@ import {
   type IntegrityCounts,
 } from "./neo4jSchemaAudit.js";
 
-test("schema audit includes library-managed unique constraints and their indexes", () => {
-  const managed = getLibraryManagedConstraintNames();
-  assert.equal(managed.includes("User_username"), true);
-  assert.equal(managed.includes("Discussion_id"), true);
-  assert.equal(managed.includes("plugin_pipeline_run_pipeline_id"), true);
-  assert.equal(managed.includes("PluginPipelineRun_pipelineId"), false);
+test("schema audit requires the single-field identity constraints and their indexes", () => {
+  // v7 removed `@unique`, so these single-field uniqueness constraints are no
+  // longer library-managed; they are created explicitly at startup and named
+  // `<label>_<property>_unique` (or a pinned explicit name). The audit must
+  // still require every one of them.
+  assert.equal(requiredConstraintNames.includes("user_username_unique"), true);
+  assert.equal(requiredConstraintNames.includes("discussion_id_unique"), true);
+  assert.equal(requiredConstraintNames.includes("plugin_pipeline_run_pipeline_id"), true);
+  assert.equal(requiredConstraintNames.includes("PluginPipelineRun_pipelineId"), false);
   assert.equal(requiredConstraintNames.includes("discussion_channel_unique"), true);
-  assert.equal(managed.includes("ChannelRole_id"), true);
-  assert.equal(managed.includes("ChannelRole_name"), false);
+  assert.equal(requiredConstraintNames.includes("channelrole_id_unique"), true);
+  assert.equal(requiredConstraintNames.includes("ChannelRole_name"), false);
   assert.equal(
     requiredConstraintNames.every((name) => requiredOnlineIndexNames.includes(name)),
     true

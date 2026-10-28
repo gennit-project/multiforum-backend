@@ -12,10 +12,10 @@ const MODERATOR_INVITE=`mutation InviteForumModerator($where: ChannelWhere, $upd
 export function createForumInvitationRepository(driver:Driver):ForumInvitationRepository {
  return {
   async connectOwnerInvite(uniqueName,username){
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,OWNER_INVITE,{where:{uniqueName},update:{PendingOwnerInvites:[{connect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,OWNER_INVITE,{where:{uniqueName:{eq:uniqueName}},update:{PendingOwnerInvites:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
   async connectModeratorInvite(uniqueName,username){
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,MODERATOR_INVITE,{where:{uniqueName},update:{PendingModInvites:[{connect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,MODERATOR_INVITE,{where:{uniqueName:{eq:uniqueName}},update:{PendingModInvites:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
  };
 }

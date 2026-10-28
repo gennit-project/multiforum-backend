@@ -246,7 +246,9 @@ export async function evaluateCanEditWikiHomePageRule(
   args: MutationUpdateChannelsArgs,
   ctx: GraphQLContext
 ) {
-  const wikiHomePageUpdate = args?.update?.WikiHomePage;
+  // v7 dropped the to-one WikiHomePage relationship from ChannelUpdateInput; the
+  // wiki-home-page edit flow still carries it for this rule to inspect.
+  const wikiHomePageUpdate = (args?.update as Record<string, any>)?.WikiHomePage;
 
   // This rule only grants the wiki-home-page edit path. For any other channel
   // update it grants nothing (returns an Error) so it can be safely OR'd with
@@ -260,7 +262,7 @@ export async function evaluateCanEditWikiHomePageRule(
   }
 
   const channelNames = new Set<string>();
-  addChannelName(channelNames, args?.where?.uniqueName);
+  addChannelName(channelNames, args?.where?.uniqueName?.eq);
   addChannelName(
     channelNames,
     wikiHomePageUpdate?.create?.node?.channelUniqueName

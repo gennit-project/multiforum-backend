@@ -73,7 +73,7 @@ export const notifyUploaderOfPipelineResult = async ({
         ? "timed out"
         : "did not pass";
   await persistence.createNotification({
-    where: { username },
+    where: { username: { eq: username } },
     update: {
       Notifications: [{
         create: [{

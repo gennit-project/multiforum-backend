@@ -38,73 +38,7 @@ exports[`admin missing targets and malformed inputs retain generated behavior 2`
 }
 `;
 
-exports[`admin missing targets and malformed inputs retain generated behavior 3`] = `
-[
-  {
-    "event": "update",
-    "id": "<id-0>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
 exports[`admin projection failure preserves committed invite and events 1`] = `
-[
-  {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
-exports[`admin projection failure preserves committed invite and events 2`] = `
 [
   {
     "invites": {
@@ -193,88 +127,9 @@ exports[`admin repeated invitation writes preserve result and native events 1`] 
 exports[`admin repeated invitation writes preserve result and native events 2`] = `
 [
   {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_ADMIN_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
-exports[`admin repeated invitation writes preserve result and native events 3`] = `
-[
-  {
     "invites": {
       "high": 0,
-      "low": 1
+      "low": 2
     },
     "notifications": [
       {
@@ -340,73 +195,7 @@ exports[`moderator missing targets and malformed inputs retain generated behavio
 }
 `;
 
-exports[`moderator missing targets and malformed inputs retain generated behavior 3`] = `
-[
-  {
-    "event": "update",
-    "id": "<id-0>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
 exports[`moderator projection failure preserves committed invite and events 1`] = `
-[
-  {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "enableEvents": "invalid",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
-exports[`moderator projection failure preserves committed invite and events 2`] = `
 [
   {
     "invites": {
@@ -495,88 +284,9 @@ exports[`moderator repeated invitation writes preserve result and native events 
 exports[`moderator repeated invitation writes preserve result and native events 2`] = `
 [
   {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "create_relationship",
-    "fromTypename": "ServerConfig",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_SERVER_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "serverName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "ServerConfig"
-  }
-]
-`;
-
-exports[`moderator repeated invitation writes preserve result and native events 3`] = `
-[
-  {
     "invites": {
       "high": 0,
-      "low": 1
+      "low": 2
     },
     "notifications": [
       {

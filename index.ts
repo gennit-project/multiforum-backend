@@ -33,11 +33,13 @@ import filterGroupValidationMiddleware from "./middleware/filterGroupValidationM
 import ownershipCreateMiddleware from "./middleware/ownershipCreateMiddleware.js";
 import wikiPageOwnershipMiddleware from "./middleware/wikiPageOwnershipMiddleware.js";
 import channelRoleOwnershipMiddleware from "./middleware/channelRoleOwnershipMiddleware.js";
+import channelTagOwnershipMiddleware from "./middleware/channelTagOwnershipMiddleware.js";
 import issueIdentityMiddleware from "./middleware/issueIdentityMiddleware.js";
 import sensitiveContentPolicyMiddleware from "./middleware/sensitiveContentPolicyMiddleware.js";
 import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorMiddleware.js";
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
+import { ensureFulltextIndexes } from "./services/fulltextIndexes.js";
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
@@ -184,8 +186,15 @@ const features = {
       MATCHES: true,
     },
   },
-  // Enable subscriptions for change data capture
-  subscriptions: subscriptionEngine
+  // v7's features.subscriptions type accepts only
+  // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`, but the app ships no
+  // subscription transport (no WebSocket server), so the custom in-process
+  // engine is kept as-is — it builds the schema's subscription types at runtime
+  // and the library accepts the engine object. The cast satisfies the v7 type
+  // without adopting CDC, which would be infrastructure with no client-facing
+  // benefit until a transport exists. See issue #284 and the real-delivery
+  // follow-up issue for the WebSocket + CDC feature work.
+  subscriptions: subscriptionEngine as unknown as boolean
 };
 
 // Create Neo4j GraphQL schema
@@ -237,6 +246,7 @@ async function initializeServer() {
       ownershipCreateMiddleware as AppMiddleware,
       wikiPageOwnershipMiddleware as AppMiddleware,
       channelRoleOwnershipMiddleware as AppMiddleware,
+      channelTagOwnershipMiddleware as AppMiddleware,
       issueIdentityMiddleware as AppMiddleware,
       discussionVersionHistoryMiddleware as AppMiddleware,
       discussionPluginPipelineMiddleware as AppMiddleware,
@@ -254,6 +264,9 @@ async function initializeServer() {
       filterGroupValidationMiddleware as AppMiddleware
     );
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
+    // v7's assertIndexesAndConstraints only checks @fulltext indexes; create them
+    // first so a fresh database does not crash the check (see fulltextIndexes.ts).
+    await ensureFulltextIndexes(driver);
     await ensureSchemaConstraints(neoSchema);
     await ensureAgeGateIndexes(driver);
     await ensureDiscussionListIndexes(driver);

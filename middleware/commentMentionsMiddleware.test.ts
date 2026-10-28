@@ -25,7 +25,7 @@ function spyResolve() {
 const ctx = {} as any;
 const run = async (args: any) => {
   const { resolve, state } = spyResolve();
-  const out = await M.createComments(resolve, null, args, ctx, {});
+  const out = await M.createCommentWithOwnedConnections(resolve, null, args, ctx, {});
   return { out, state };
 };
 

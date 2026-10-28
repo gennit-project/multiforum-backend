@@ -99,20 +99,20 @@ export function createEventSeriesUpdateRepository(driver: Driver): EventSeriesUp
   return {
     async findSnapshot(id) {
       const result = await executeGeneratedOperation<{events: Event[]}>(driver,
-        `query SeriesOccurrenceBeforeUpdate($where: EventWhere) {events(where: $where) ${SERIES_OCCURRENCE_SNAPSHOT_SELECTION}}`, {where: {id}});
+        `query SeriesOccurrenceBeforeUpdate($where: EventWhere) {events(where: $where) ${SERIES_OCCURRENCE_SNAPSHOT_SELECTION}}`, {where: {id: {eq: id}}});
       return result.events;
     },
     async updateOccurrence(id, update, tx) {
       await executeGeneratedOperation(driver,
-        `mutation UpdateSeriesOccurrence($where: EventWhere, $update: EventUpdateInput) {updateEvents(where: $where, update: $update) {events ${EVENT_REVISION_DEFAULT_SELECTION}}}`, {where: {id}, update}, tx);
+        `mutation UpdateSeriesOccurrence($where: EventWhere, $update: EventUpdateInput) {updateEvents(where: $where, update: $update) {events ${EVENT_REVISION_DEFAULT_SELECTION}}}`, {where: {id: {eq: id}}, update}, tx);
     },
     async updateTemplate(id, update, tx) {
       await executeGeneratedOperation(driver,
-        `mutation UpdateSeriesTemplate($where: EventSeriesWhere, $update: EventSeriesUpdateInput) {updateEventSeries(where: $where, update: $update) {eventSeries ${EVENT_SERIES_DEFAULT_SELECTION}}}`, {where: {id}, update}, tx);
+        `mutation UpdateSeriesTemplate($where: EventSeriesWhere, $update: EventSeriesUpdateInput) {updateEventSeries(where: $where, update: $update) {eventSeries ${EVENT_SERIES_DEFAULT_SELECTION}}}`, {where: {id: {eq: id}}, update}, tx);
     },
     async findUpdatedOccurrence(id) {
       const result = await executeGeneratedOperation<{events: Event[]}>(driver,
-        `query SeriesOccurrenceAfterUpdate($where: EventWhere) {events(where: $where) ${UPDATED_SERIES_OCCURRENCE_SELECTION}}`, {where: {id}});
+        `query SeriesOccurrenceAfterUpdate($where: EventWhere) {events(where: $where) ${UPDATED_SERIES_OCCURRENCE_SELECTION}}`, {where: {id: {eq: id}}});
       return result.events;
     },
   };

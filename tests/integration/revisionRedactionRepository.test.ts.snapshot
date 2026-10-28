@@ -1,12 +1,6 @@
 exports[`actual redaction resolver parity: comment, authorized no-op still checks permissions 1`] = `
 {
   "body": "[deleted]",
-  "events": [
-    {
-      "kind": "update",
-      "typename": "TextVersion"
-    }
-  ],
   "touched": true
 }
 `;
@@ -14,12 +8,6 @@ exports[`actual redaction resolver parity: comment, authorized no-op still check
 exports[`actual redaction resolver parity: discussion body, authorized no-op still checks permissions 1`] = `
 {
   "body": "[deleted]",
-  "events": [
-    {
-      "kind": "update",
-      "typename": "TextVersion"
-    }
-  ],
   "touched": true
 }
 `;
@@ -27,12 +15,6 @@ exports[`actual redaction resolver parity: discussion body, authorized no-op sti
 exports[`actual redaction resolver parity: event description, authorized no-op still checks permissions 1`] = `
 {
   "body": "[deleted]",
-  "events": [
-    {
-      "kind": "update",
-      "typename": "TextVersion"
-    }
-  ],
   "touched": true
 }
 `;
@@ -40,12 +22,6 @@ exports[`actual redaction resolver parity: event description, authorized no-op s
 exports[`actual redaction resolver parity: wiki, authorized no-op still checks permissions 1`] = `
 {
   "body": "[deleted]",
-  "events": [
-    {
-      "kind": "update",
-      "typename": "TextVersion"
-    }
-  ],
   "touched": true
 }
 `;
@@ -53,8 +29,7 @@ exports[`actual redaction resolver parity: wiki, authorized no-op still checks p
 exports[`post-read invalid temporal value preserves baseline transaction failure boundary 1`] = `
 {
   "body": "Original",
-  "error": "Failed to invoke function \`apoc.date.convertFormat\`: Caused by: java.time.format.DateTimeParseException: Text 'invalid' could not be parsed at index 0",
-  "events": []
+  "error": "Failed to invoke function \`apoc.date.convertFormat\`: Caused by: java.time.format.DateTimeParseException: Text 'invalid' could not be parsed at index 0"
 }
 `;
 
@@ -78,5 +53,5 @@ exports[`revision snapshot matches exact selected fields, hidden/missing rows an
 `;
 
 exports[`revision snapshot matches exact selected fields, hidden/missing rows and ID coercion 3`] = `
-"Variable \\"$where\\" got invalid value {} at \\"where.id\\"; ID cannot represent value: {}"
+"Variable \\"$where\\" got invalid value {} at \\"where.id.eq\\"; ID cannot represent value: {}"
 `;

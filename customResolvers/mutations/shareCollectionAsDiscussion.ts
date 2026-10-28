@@ -111,6 +111,9 @@ const getResolver = (input: Input) => {
               title,
               body,
               hasDownload: false,
+              // v7 removed the to-one connect; these are read and wired as owned
+              // edges by createDiscussionsFromInput (POSTED_DISCUSSION /
+              // SHARES_COLLECTION), so they are intermediate, not generated input.
               Author: {
                 connect: {
                   where: {
@@ -119,7 +122,7 @@ const getResolver = (input: Input) => {
                     },
                   },
                 },
-              },
+              } as any,
               SharedCollection: {
                 connect: {
                   where: {
@@ -128,7 +131,7 @@ const getResolver = (input: Input) => {
                     },
                   },
                 },
-              },
+              } as any,
             },
             channelConnections: [channelUniqueName],
             channelFlairSelections: [

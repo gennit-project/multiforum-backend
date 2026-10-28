@@ -1,4 +1,5 @@
 import { createChannelIconRepository, type ChannelIconRepository } from "../../services/persistence/imageWriteRepository.js";
+import type { ChannelUpdateInput } from "../../src/generated/graphql.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -68,9 +69,14 @@ const getResolver = ({
     });
 
     const repository = injectedRepository ?? createChannelIconRepository(driver);
+    const variantFields = buildChannelIconVariantPersistenceFields(generatedVariants);
     const response = await repository.setChannelIcon(args.channelUniqueName, {
-        channelIconURL: args.imageUrl,
-        ...buildChannelIconVariantPersistenceFields(generatedVariants),
+        channelIconURL: { set: args.imageUrl },
+        ...(Object.fromEntries(
+          Object.entries(variantFields)
+            .filter(([, value]) => value !== undefined)
+            .map(([key, value]) => [key, { set: value }])
+        ) as ChannelUpdateInput),
       });
 
     const updatedChannel = response.channels[0];

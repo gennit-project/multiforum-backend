@@ -212,16 +212,16 @@ export const createStartPluginPipelineResolver = (
     }
 
     const activeAttempts = await repository.findActiveAttempts({
-        targetId,
-        targetType,
-        ...(uploadedAt ? { targetVersion: uploadedAt } : {}),
-        eventType,
-        scope,
-        ...(channelId ? { channelId } : {}),
-        status_IN: [
+        targetId: { eq: targetId },
+        targetType: { eq: targetType },
+        ...(uploadedAt ? { targetVersion: { eq: uploadedAt } } : {}),
+        eventType: { eq: eventType },
+        scope: { eq: scope },
+        ...(channelId ? { channelId: { eq: channelId } } : {}),
+        status: { in: [
           PluginPipelineRunStatus.Queued,
           PluginPipelineRunStatus.Running,
-        ],
+        ] },
       });
     if (activeAttempts.length > 0) {
       throw userInputError("This pipeline already has an active attempt");

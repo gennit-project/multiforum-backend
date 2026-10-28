@@ -23,11 +23,11 @@ const STICKY_UPDATE = `mutation UpdateStickyCommentMetadata($where: CommentWhere
 export function createStickyCommentRepository(driver: Driver): StickyCommentRepository {
   return {
     async findState(id) {
-      const result=await executeGeneratedOperation<{comments:StickyCommentState[]}>(driver, STICKY_STATE, {where:{id}});
+      const result=await executeGeneratedOperation<{comments:StickyCommentState[]}>(driver, STICKY_STATE, {where:{id:{eq:id}}});
       return result.comments;
     },
     async updateMetadata(id, update) {
-      const result=await executeGeneratedOperation<{updateComments:{comments:StickyCommentResult[]}}>(driver, STICKY_UPDATE, {where:{id},update});
+      const result=await executeGeneratedOperation<{updateComments:{comments:StickyCommentResult[]}}>(driver, STICKY_UPDATE, {where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([field,value])=>[field,{set:value}]))});
       return result.updateComments.comments;
     },
   };

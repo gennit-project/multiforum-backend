@@ -33,7 +33,7 @@ export function createLegacyPipelineMigrationRepository(driver: Driver): LegacyP
     async saveConfiguration(serverName, pluginPipelines) {
       await executeGeneratedOperation(driver,
         `mutation SaveLegacyPipelineConfiguration($where: ServerConfigWhere, $update: ServerConfigUpdateInput) { updateServerConfigs(where: $where, update: $update) { serverConfigs ${LEGACY_PIPELINE_SAVE_SELECTION} } }`,
-        {where:{serverName},update:{pluginPipelines}});
+        {where:{serverName:{eq:serverName}},update:{pluginPipelines:{set:pluginPipelines}}});
     },
   };
 }

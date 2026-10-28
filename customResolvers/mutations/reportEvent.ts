@@ -1,20 +1,11 @@
 import { createEventReportRepository, type EventReportRepository } from "../../services/persistence/eventReportRepository.js";
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { getFinalCommentText } from "./shared/reportText.js";
-import {
-  getModerationActionCreateInput,
-  getIssueCreateInput,
-} from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 
 type Args = {
@@ -96,18 +87,18 @@ const getResolver = (input: Input) => {
       const contextText = eventData[0]?.title || "";
 
       const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-      const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-        contextText,
-        selectedForumRules,
-        selectedServerRules,
-        loggedInModName,
-        channelUniqueName,
-        reportedContentType: "event",
-        relatedEventId: eventId,
-        issueNumber,
-      });
+      const title = `[Reported event] "${contextText?.substring(0, 50) || ""}${
+        contextText.length > 50 ? "..." : ""
+      }"`;
       try {
-        const issueData = await repository.createIssue(issueCreateInput);
+        const issueData = await repository.createIssue({
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
+          channelUniqueName,
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
+          relatedEventId: eventId,
+        });
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -118,38 +109,25 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const moderationActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: "report",
-        actionDescription: "Reported the Event",
-        issueId: existingIssueId,
-      });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0,
-    };
-
+    // Append the report moderation action (with its embedded moderator comment)
+    // via the owned moderation write.
     try {
-      const issueData = await repository.appendReport(issueUpdateWhere, issueUpdateInput);
+      const issueData = await repository.appendReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "report",
+            actionDescription: "Reported the Event",
+            text: formatModerationActionText({ text: finalCommentText }),
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
+          },
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0,
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

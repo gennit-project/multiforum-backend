@@ -1,6 +1,6 @@
-import type { IssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
+import type { IssueActivityRepository, ModerationActivityNode } from "../services/persistence/issueActivityRepository.js";
 import type { Driver } from "neo4j-driver";
-import type { ModerationActionCreateInput, IssueWhere } from "../ogm_types.js";
+import type { IssueWhere } from "../ogm_types.js";
 import type { GraphQLContext } from "../types/context.js";
 
 type ActivityAttribution = {
@@ -44,13 +44,13 @@ export const getIssueIdsForRelated = async (
   try {
     const where: IssueWhere = {};
     if (related.discussionId) {
-      where.relatedDiscussionId = related.discussionId;
+      where.relatedDiscussionId = { eq: related.discussionId };
     }
     if (related.commentId) {
-      where.relatedCommentId = related.commentId;
+      where.relatedCommentId = { eq: related.commentId };
     }
     if (related.eventId) {
-      where.relatedEventId = related.eventId;
+      where.relatedEventId = { eq: related.eventId };
     }
 
     if (!Object.keys(where).length) {
@@ -88,7 +88,7 @@ export const createIssueActivityFeedItems = async (
     return;
   }
 
-  const activityNode: ModerationActionCreateInput = {
+  const activityNode: ModerationActivityNode = {
     actionDescription,
     actionType,
   };

@@ -177,11 +177,14 @@ export const runPipelineCampaign = async ({
   const finished =
     candidates.length <= batch.length && refreshedCounts.runningCount === 0;
   await repository.updateProgress(campaign.id, {
-      ...refreshedCounts,
+      completedCount: { set: refreshedCounts.completedCount },
+      runningCount: { set: refreshedCounts.runningCount },
+      failedCount: { set: refreshedCounts.failedCount },
+      timedOutCount: { set: refreshedCounts.timedOutCount },
       ...(finished
         ? {
-            status: PluginPipelineCampaignStatus.Completed,
-            finishedAt: now.toISOString(),
+            status: { set: PluginPipelineCampaignStatus.Completed },
+            finishedAt: { set: now.toISOString() },
           }
         : {}),
     });

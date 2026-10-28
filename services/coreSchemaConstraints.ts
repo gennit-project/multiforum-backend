@@ -87,11 +87,95 @@ export const coreSchemaConstraints = [
   },
 ] as const;
 
+// Single-field uniqueness constraints that replace the `@unique` directive,
+// which @neo4j/graphql 7 removed. `@id` does NOT reliably create a uniqueness
+// constraint on current Neo4j versions — that is exactly why `@unique` was
+// added to these fields — so we now create them explicitly at startup rather
+// than relying on the library's `assertIndexesAndConstraints`. `IS UNIQUE`
+// (not NODE KEY) mirrors `@unique` precisely: uniqueness only, with no
+// existence requirement (several fields below are nullable). Each tuple is
+// [node label, property, optional explicit constraint name]; the two explicit
+// names preserve the identifiers that were pinned via `@unique(constraintName:)`.
+const singleFieldUniqueConstraints: ReadonlyArray<
+  readonly [label: string, property: string, constraintName?: string]
+> = [
+  ["Image", "id"],
+  ["License", "id"],
+  ["Purchase", "id"],
+  ["FileVersion", "id"],
+  ["Collection", "id"],
+  ["Album", "id"],
+  ["Notification", "id"],
+  ["Message", "id"],
+  ["Contact", "id"],
+  ["User", "username"],
+  ["ScratchpadEntry", "id"],
+  ["TextVersion", "id"],
+  ["LabelChangeHistory", "id"],
+  ["WikiPage", "id"],
+  ["Suspension", "id"],
+  ["DownloadableFile", "id"],
+  ["DiscussionFlair", "id"],
+  ["Channel", "uniqueName"],
+  ["DiscussionChannel", "id"],
+  ["Discussion", "id"],
+  ["EventChannel", "id"],
+  ["RepeatPattern", "id"],
+  ["EventSeries", "id"],
+  ["RecurringEvent", "id"],
+  ["Event", "id"],
+  ["Comment", "id"],
+  ["Emoji", "id"],
+  ["Emoji", "name"],
+  ["Email", "address"],
+  ["ModerationProfile", "displayName"],
+  ["ModerationAction", "id"],
+  ["ModerationAction", "idempotencyKey", "moderation_action_idempotency_key"],
+  ["Issue", "id"],
+  ["Feed", "id"],
+  ["Tag", "text"],
+  ["ServerRole", "name"],
+  ["ChannelRole", "id"],
+  ["ModChannelRole", "id"],
+  ["ModServerRole", "name"],
+  ["Plugin", "id"],
+  ["PluginVersion", "id"],
+  ["ServerSecret", "id"],
+  ["PluginPipelineRun", "id"],
+  ["PluginPipelineRun", "pipelineId", "plugin_pipeline_run_pipeline_id"],
+  ["PluginPipelineCampaign", "id"],
+  ["PluginRun", "id"],
+  ["ServerConfig", "serverName"],
+];
+
+export const singleFieldUniqueConstraintName = (
+  label: string,
+  property: string,
+  constraintName?: string
+): string => constraintName ?? `${label}_${property}_unique`.toLowerCase();
+
+// The constraint names these statements create. The schema audit requires
+// these so it still verifies the single-field uniqueness constraints that used
+// to be library-managed via `@unique` before v7 removed that directive.
+export const singleFieldUniqueConstraintNames = singleFieldUniqueConstraints.map(
+  ([label, property, constraintName]) =>
+    singleFieldUniqueConstraintName(label, property, constraintName)
+);
+
+export const singleFieldUniqueConstraintStatements =
+  singleFieldUniqueConstraints.map(([label, property, constraintName]) => {
+    const name = singleFieldUniqueConstraintName(label, property, constraintName);
+    return `CREATE CONSTRAINT ${name} IF NOT EXISTS FOR (n:${label}) REQUIRE n.${property} IS UNIQUE`;
+  });
+
 export const getCoreSchemaConstraintStatements = (edition: string) => {
   const statementKey = edition.toLowerCase() === "enterprise"
     ? "enterpriseStatement"
     : "communityStatement";
-  return coreSchemaConstraints.map((constraint) => constraint[statementKey]);
+  return [
+    ...coreSchemaConstraints.map((constraint) => constraint[statementKey]),
+    ...singleFieldUniqueConstraintStatements,
+  ];
 };
 
 // Retained for callers that need the strongest form of every constraint.

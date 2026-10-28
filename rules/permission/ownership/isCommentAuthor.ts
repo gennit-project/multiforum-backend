@@ -19,7 +19,7 @@ export const isCommentAuthor = rule({ cache: "contextual" })(
     let commentId;
     const { where } = args;
     if (where) {
-      commentId = where.id;
+      commentId = where.id?.eq;
     }
 
     // set user data

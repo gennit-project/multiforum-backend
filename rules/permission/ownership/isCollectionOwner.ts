@@ -22,8 +22,9 @@ export const collectCollectionIds = (
   const collectionIds: string[] = [];
   const whereArg = args?.where;
 
-  if (whereArg?.id) {
-    collectionIds.push(whereArg.id);
+  const whereIdEq = whereArg?.id?.eq;
+  if (whereIdEq) {
+    collectionIds.push(whereIdEq);
   }
 
   if (whereArg?.id_IN && Array.isArray(whereArg.id_IN)) {

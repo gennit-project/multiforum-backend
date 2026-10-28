@@ -67,7 +67,7 @@ const findFileAccess = async (): Promise<FileAccessRecord[]> =>
   (await executeGeneratedOperation<{ downloadableFiles: FileAccessRecord[] }>(
     driver,
     FIND_FILE_ACCESS,
-    { where: { id: "file" } }
+    { where: { id: { eq: "file" } } }
   )).downloadableFiles;
 
 test("production OGM resolves the selected URL anonymously; standalone OGM returns storage data", async () => {

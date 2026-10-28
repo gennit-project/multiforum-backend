@@ -35,7 +35,7 @@ const getChannelContributionsResolver = (input: Input) => {
       driver,
       agePolicyRepository,
     });
-    const session = driver.session({ defaultAccessMode: 'READ' });
+    const session = driver.session();
 
     try {
       // Verify channel existence
@@ -48,11 +48,11 @@ const getChannelContributionsResolver = (input: Input) => {
       // Determine effective date range
       const effectiveStartDate = year
         ? `${year}-01-01`
-        : (startDate || DateTime.now().minus({ year: 1 }).toISODate());
+        : (startDate || DateTime.utc().minus({ year: 1 }).toISODate());
 
       const effectiveEndDate = year
         ? `${year}-12-31`
-        : (endDate || DateTime.now().toISODate());
+        : (endDate || DateTime.utc().toISODate());
 
       const result = await session.run(getChannelContributionsQuery, {
         channelUniqueName,

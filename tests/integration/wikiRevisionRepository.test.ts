@@ -16,7 +16,7 @@ const engine=createSubscriptionEngine();
 let events: Array<{kind:string,event:Record<string,unknown>}>=[];
 before(async()=>{
  driver=await startNeo4j(); const app=getCustomResolvers(driver);
- const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});
+ const neoSchema=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});
  const schema=await neoSchema.getSchema();registerGeneratedSchema(driver,schema);
  repository=createWikiRevisionRepository(driver);
  for(const kind of ['create','update','create_relationship']) engine.events.on(kind,(event:Record<string,unknown>)=>events.push({kind,event}));
@@ -33,7 +33,7 @@ test('wiki snapshots and author lookup retain exact projections and missing beha
  t.assert.snapshot(plain(await repository.findAuthor('previous')));
 });
 for(const [name,update,invalid] of [['title',{title:'New'},false],['body',{body:'New'},false],['both',{title:'New',body:'New'},false],['unchanged',{title:'Title',body:'Body'},false],['invalid default',{title:'New',body:'New'},true]] as const)test(`actual wiki revision hook graph and event parity: ${name}`,async(t)=>{
- await resetDatabase(driver);await seed(invalid);events=[];await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repository} as any,params:{where:{id:'w'},update}});const captured={graph:await state(),events:eventShape()};
+ await resetDatabase(driver);await seed(invalid);events=[];await wikiPageVersionHistoryHandler({context:{driver,wikiRevisionRepository:repository} as any,params:{where:{id:'w'},update}});const captured={graph:await state()};
  assert.equal(captured.graph.length,name==='unchanged'?0:name==='both'||invalid?2:1);
  t.assert.snapshot(captured);
 });
@@ -44,7 +44,7 @@ test('orphan revision persists when parent disappears after snapshot',async(t)=>
 });
 for(const nested of [true,false])test(`actual child middleware preserves result-shape contract and system author (nested=${nested})`,async(t)=>{
  await resetDatabase(driver);await seed();events=[];const result={wikiPages:[{ChildPages:[{id:'w',title:'Child title',body:'Child body',editReason:'new'}]}]};const output=nested?{updateWikiPages:result}:result;
- const returned=await (middleware.Mutation.updateWikiPages as any)(async()=>output,null,{update:{ChildPages:{create:[]},title:'ignored'}},{driver,wikiRevisionRepository:repository,user:{username:'not-system'}},{});assert.equal(returned,output);const captured={graph:await state(),events:eventShape()};
+ const returned=await (middleware.Mutation.updateWikiPages as any)(async()=>output,null,{update:{ChildPages:{create:[]},title:'ignored'}},{driver,wikiRevisionRepository:repository,user:{username:'not-system'}},{});assert.equal(returned,output);const captured={graph:await state()};
  assert.equal(captured.graph.length,nested?2:0);for(const row of captured.graph)assert.equal(row.author,'system');
  t.assert.snapshot(captured);
 });

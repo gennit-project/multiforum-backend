@@ -135,7 +135,7 @@ export function createPluginConfigurationReadRepository(driver: Driver): PluginC
   return {
     async listPluginSecretStatuses(pluginId) {
       const data = await executeGeneratedOperation<{ serverSecrets: PluginSecretStatusSnapshot[] }>(
-        driver, PLUGIN_SECRET_STATUSES, { where: { pluginId } }
+        driver, PLUGIN_SECRET_STATUSES, { where: { pluginId: { eq: pluginId } } }
       );
       return data.serverSecrets;
     },

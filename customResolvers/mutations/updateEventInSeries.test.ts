@@ -127,7 +127,7 @@ test("updateEventInSeries THIS_ONLY updates only the specified event", async () 
     {
       eventId: "event-1",
       scope: "THIS_ONLY",
-      eventUpdateInput: { startTime: "2026-04-08T19:00:00.000Z" },
+      eventUpdateInput: { startTime: { set: "2026-04-08T19:00:00.000Z" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -170,7 +170,7 @@ test("updateEventInSeries THIS_ONLY sets override flags for series-level changes
     {
       eventId: "event-1",
       scope: "THIS_ONLY",
-      eventUpdateInput: { title: "Custom Title", description: "Custom desc" },
+      eventUpdateInput: { title: { set: "Custom Title" }, description: { set: "Custom desc" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -180,10 +180,10 @@ test("updateEventInSeries THIS_ONLY sets override flags for series-level changes
 
   assert.equal(updateCalls.length, 1);
   const update = updateCalls[0].update;
-  assert.equal(update.title, "Custom Title");
-  assert.equal(update.description, "Custom desc");
-  assert.equal(update.overrideSeriesTitle, true);
-  assert.equal(update.overrideSeriesDescription, true);
+  assert.deepEqual(update.title, { set: "Custom Title" });
+  assert.deepEqual(update.description, { set: "Custom desc" });
+  assert.deepEqual(update.overrideSeriesTitle, { set: true });
+  assert.deepEqual(update.overrideSeriesDescription, { set: true });
 });
 
 test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", async () => {
@@ -215,7 +215,7 @@ test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", 
     {
       eventId: "event-1",
       scope: "THIS_AND_FUTURE",
-      eventUpdateInput: { title: "New Title" },
+      eventUpdateInput: { title: { set: "New Title" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -232,7 +232,7 @@ test("updateEventInSeries THIS_AND_FUTURE updates this and future occurrences", 
   // Should also update series template for series-level field
   assert.equal(seriesUpdateCalls.length, 1);
   assert.equal(seriesUpdateCalls[0].where.id, "series-1");
-  assert.equal(seriesUpdateCalls[0].update.title, "New Title");
+  assert.deepEqual(seriesUpdateCalls[0].update.title, { set: "New Title" });
 });
 
 test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
@@ -264,7 +264,7 @@ test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
     {
       eventId: "event-1",
       scope: "ALL_IN_SERIES",
-      eventUpdateInput: { title: "All Updated", description: "New description" },
+      eventUpdateInput: { title: { set: "All Updated" }, description: { set: "New description" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -282,8 +282,8 @@ test("updateEventInSeries ALL_IN_SERIES updates all occurrences", async () => {
 
   // Should also update series template
   assert.equal(seriesUpdateCalls.length, 1);
-  assert.equal(seriesUpdateCalls[0].update.title, "All Updated");
-  assert.equal(seriesUpdateCalls[0].update.description, "New description");
+  assert.deepEqual(seriesUpdateCalls[0].update.title, { set: "All Updated" });
+  assert.deepEqual(seriesUpdateCalls[0].update.description, { set: "New description" });
 });
 
 test("updateEventInSeries throws error when event not found", async () => {
@@ -306,7 +306,7 @@ test("updateEventInSeries throws error when event not found", async () => {
       {
         eventId: "nonexistent",
         scope: "THIS_ONLY",
-        eventUpdateInput: { title: "Test" },
+        eventUpdateInput: { title: { set: "Test" } },
         channelConnections: [],
         channelDisconnections: [],
       },
@@ -337,7 +337,7 @@ test("updateEventInSeries throws error for invalid scope", async () => {
       {
         eventId: "event-1",
         scope: "INVALID_SCOPE" as any,
-        eventUpdateInput: { title: "Test" },
+        eventUpdateInput: { title: { set: "Test" } },
         channelConnections: [],
         channelDisconnections: [],
       },
@@ -385,7 +385,7 @@ test("updateEventInSeries handles standalone event without series", async () => 
     {
       eventId: "event-solo",
       scope: "ALL_IN_SERIES",
-      eventUpdateInput: { title: "Updated Solo" },
+      eventUpdateInput: { title: { set: "Updated Solo" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -483,7 +483,7 @@ test("updateEventInSeries retries all graph writes as one unit", async () => {
     {
       eventId: "event-1",
       scope: "THIS_ONLY",
-      eventUpdateInput: { title: "Retried" },
+      eventUpdateInput: { title: { set: "Retried" } },
       channelConnections: ["general"],
       channelDisconnections: ["old-channel"],
     },
@@ -515,7 +515,7 @@ test("updateEventInSeries does not partially apply the event update when a chann
       {
         eventId: "event-1",
         scope: "THIS_ONLY",
-        eventUpdateInput: { title: "Should roll back" },
+        eventUpdateInput: { title: { set: "Should roll back" } },
         channelConnections: ["general"],
         channelDisconnections: [],
       },
@@ -555,7 +555,7 @@ test("updateEventInSeries does not update series for occurrence-level only chang
     {
       eventId: "event-1",
       scope: "ALL_IN_SERIES",
-      eventUpdateInput: { startTime: "2026-04-08T20:00:00.000Z", canceled: true },
+      eventUpdateInput: { startTime: { set: "2026-04-08T20:00:00.000Z" }, canceled: { set: true } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -591,7 +591,7 @@ test("updateEventInSeries THIS_ONLY does not set override flags for occurrence-l
     {
       eventId: "event-1",
       scope: "THIS_ONLY",
-      eventUpdateInput: { startTime: "2026-04-08T20:00:00.000Z" },
+      eventUpdateInput: { startTime: { set: "2026-04-08T20:00:00.000Z" } },
       channelConnections: [],
       channelDisconnections: [],
     },
@@ -600,7 +600,7 @@ test("updateEventInSeries THIS_ONLY does not set override flags for occurrence-l
   );
 
   const update = updateCalls[0].update;
-  assert.equal(update.startTime, "2026-04-08T20:00:00.000Z");
+  assert.deepEqual(update.startTime, { set: "2026-04-08T20:00:00.000Z" });
   // Should not have any override flags since startTime is occurrence-level
   assert.equal(update.overrideSeriesStartTime, undefined);
 });

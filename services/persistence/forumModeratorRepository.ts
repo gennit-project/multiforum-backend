@@ -18,19 +18,19 @@ const CANCEL = `mutation DisconnectForumModeratorInvite($where: ChannelWhere, $u
 export function createForumModeratorRepository(driver: Driver): ForumModeratorRepository {
  return {
   async findModeratorProfile(username) {
-   return (await executeGeneratedOperation<{users:Array<{ModerationProfile?:{displayName:string}|null}>}>(driver,PROFILE,{where:{username}})).users;
+   return (await executeGeneratedOperation<{users:Array<{ModerationProfile?:{displayName:string}|null}>}>(driver,PROFILE,{where:{username:{eq:username}}})).users;
   },
   async findPendingInvites(uniqueName) {
-   return (await executeGeneratedOperation<{channels:Array<{PendingModInvites:Array<{username:string}>}>}>(driver,PENDING,{where:{uniqueName}})).channels;
+   return (await executeGeneratedOperation<{channels:Array<{PendingModInvites:Array<{username:string}>}>}>(driver,PENDING,{where:{uniqueName:{eq:uniqueName}}})).channels;
   },
   async connectModerator(uniqueName,displayName) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CONNECT,{where:{uniqueName},update:{Moderators:[{connect:[{where:{node:{displayName}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Moderators:[{connect:[{where:{node:{displayName:{eq:displayName}}}}]}]}})).updateChannels;
   },
   async disconnectModerator(uniqueName,displayName) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT,{where:{uniqueName},update:{Moderators:[{disconnect:[{where:{node:{displayName}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Moderators:[{disconnect:[{where:{node:{displayName:{eq:displayName}}}}]}]}})).updateChannels;
   },
   async disconnectInvite(uniqueName,username) {
-   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CANCEL,{where:{uniqueName},update:{PendingModInvites:[{disconnect:[{where:{node:{username}}}]}]}})).updateChannels;
+   return (await executeGeneratedOperation<{updateChannels:UpdatedChannels}>(driver,CANCEL,{where:{uniqueName:{eq:uniqueName}},update:{PendingModInvites:[{disconnect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;
   },
  };
 }

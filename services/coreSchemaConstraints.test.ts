@@ -9,9 +9,12 @@ import {
 
 test("Enterprise uses node keys where property existence can be enforced", () => {
   const statements = getCoreSchemaConstraintStatements("enterprise");
-  assert.equal(statements.length, 12);
+  // 12 composite core constraints (8 NODE KEY + 4 UNIQUE) plus the 47
+  // single-field uniqueness constraints that replaced the removed `@unique`
+  // directive (always IS UNIQUE, never NODE KEY).
+  assert.equal(statements.length, 59);
   assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 8);
-  assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 4);
+  assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 51);
 });
 
 test("Community uses supported uniqueness constraints for every identity", () => {

@@ -17,8 +17,8 @@ export const RERUN_SELECTION_2 = `{
           }`;
 export const RERUN_SELECTION_3 = `{ pipelineId status trigger createdAt }`;
 export function createPipelineRerunRepository(driver:Driver):PipelineRerunRepository { return {
- async findSourceAttempt(pipelineId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query RerunPipelineFindSourceAttempt($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${RERUN_SELECTION_0}}`,{where:{pipelineId}});return r.pluginPipelineRuns;},
- async findFileVersion(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query RerunPipelineFindFileVersion($where:DownloadableFileWhere){downloadableFiles(where:$where)${RERUN_SELECTION_1}}`,{where:{id}});return r.downloadableFiles;},
- async findDiscussionVersion(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query RerunPipelineFindDiscussionVersion($where:DiscussionWhere){discussions(where:$where)${RERUN_SELECTION_2}}`,{where:{id}});return r.discussions;},
+ async findSourceAttempt(pipelineId){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query RerunPipelineFindSourceAttempt($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${RERUN_SELECTION_0}}`,{where:{pipelineId:{eq:pipelineId}}});return r.pluginPipelineRuns;},
+ async findFileVersion(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query RerunPipelineFindFileVersion($where:DownloadableFileWhere){downloadableFiles(where:$where)${RERUN_SELECTION_1}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
+ async findDiscussionVersion(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query RerunPipelineFindDiscussionVersion($where:DiscussionWhere){discussions(where:$where)${RERUN_SELECTION_2}}`,{where:{id:{eq:id}}});return r.discussions;},
  async findRelatedAttempts(where){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query RerunPipelineFindRelatedAttempts($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${RERUN_SELECTION_3}}`,{where});return r.pluginPipelineRuns;},
 };}

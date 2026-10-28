@@ -1,8 +1,4 @@
 import { createIssueLockRepository, type IssueLockRepository } from "../../services/persistence/issueLockRepository.js";
-import type {
-  IssueUpdateInput,
-  ModerationActionCreateInput,
-} from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -63,67 +59,22 @@ const getResolver = (input: Input = {}) => {
       throw new GraphQLError("Issue is already locked");
     }
 
-    // Create the moderation action for the activity feed
-    const moderationActionCreateInput: ModerationActionCreateInput = {
-      ModerationProfile: {
-        connect: {
-          where: {
-            node: {
-              displayName: loggedInModName,
-            },
-          },
-        },
-      },
-      actionType: "lock",
-      actionDescription: "Locked the issue",
-      Comment: {
-        create: {
-          node: {
-            text: `**Reason for locking:** ${reason}`,
-            isRootComment: true,
-            CommentAuthor: {
-              ModerationProfile: {
-                connect: {
-                  where: {
-                    node: {
-                      displayName: loggedInModName,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-
-    // Update the issue with locked status and activity feed entry
-    const issueUpdateInput: IssueUpdateInput = {
-      locked: true,
-      lockedAt: new Date().toISOString(),
-      lockReason: reason,
-      LockedBy: {
-        connect: {
-          where: {
-            node: {
-              displayName: loggedInModName,
-            },
-          },
-        },
-      },
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Lock the issue via the owned write: the moderation action + embedded
+    // moderator comment, the lock scalars, and the LockedBy (LOCKED_ISSUE) edge.
     try {
-      const updateResult = await repository.updateLock(issueId, issueUpdateInput);
+      const updateResult = await repository.lockIssue({
+        issueId,
+        modDisplayName: loggedInModName,
+        lockedAt: new Date().toISOString(),
+        lockReason: reason,
+        action: {
+          actionType: "lock",
+          actionDescription: "Locked the issue",
+          text: `**Reason for locking:** ${reason}`,
+          modDisplayName: loggedInModName,
+          commentChannelUniqueName: null,
+        },
+      });
 
       const updatedIssue = updateResult.issues[0];
       if (!updatedIssue) {

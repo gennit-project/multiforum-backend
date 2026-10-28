@@ -50,7 +50,7 @@
     "@google-cloud/storage": "^8.4.0",
     "@graphql-tools/delegate": "12.1.0",
     "@graphql-tools/schema": "^10.1.0",
-    "@neo4j/graphql": "^5.12.15",
+    "@neo4j/graphql": "^7.6.4",
     "@sendgrid/mail": "^8.1.4",
     "@types/tar-stream": "^3.1.4",
     "axios": "^1.20.0",

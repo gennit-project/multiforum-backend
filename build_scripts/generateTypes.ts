@@ -16,6 +16,7 @@ import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import typeDefs from "../typeDefs.js";
+import { createSubscriptionEngine } from "../services/subscriptionEngine.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -57,7 +58,11 @@ async function main() {
     typeDefs,
     features: {
       filters: { String: { MATCHES: true } },
-      subscriptions: true,
+      // v7's features.subscriptions type accepts only
+      // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`; the custom in-process
+      // engine still builds the full schema at runtime. Cast to satisfy the v7
+      // type (the app keeps the in-process engine — see index.ts).
+      subscriptions: createSubscriptionEngine() as unknown as boolean,
     },
   });
   const schema = await neoSchema.getSchema();

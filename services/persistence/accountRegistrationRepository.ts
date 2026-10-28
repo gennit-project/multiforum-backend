@@ -13,7 +13,7 @@ export type OwnAccountSummary = {
     username?: string | null;
     profilePicURL?: string | null;
     ModerationProfile?: { displayName?: string | null } | null;
-    NotificationsAggregate?: { count?: number | null } | null;
+    NotificationsConnection?: { aggregate?: { count?: { nodes?: number | null } | null } | null } | null;
   } | null;
 };
 export interface AccountRegistrationRepository {
@@ -55,7 +55,7 @@ const OWN_ACCOUNT = `query OwnAccountSummary($where: EmailWhere) {
     address
     User {
       username profilePicURL ModerationProfile { displayName }
-      NotificationsAggregate(where: { read: false }) { count }
+      NotificationsConnection(where: { node: { read: { eq: false } } }) { aggregate { count { nodes } } }
     }
   }
 }`;
@@ -64,13 +64,13 @@ export function createAccountRegistrationRepository(driver: Driver): AccountRegi
   return {
     async findExistingUsername(username) {
       const result = await executeGeneratedOperation<{users: unknown[]}>(
-        driver, EXISTING_USERNAME, {where: {username}}
+        driver, EXISTING_USERNAME, {where: {username: {eq: username}}}
       );
       return result.users;
     },
     async findExistingEmail(address) {
       const result = await executeGeneratedOperation<{emails: unknown[]}>(
-        driver, EXISTING_EMAIL, {where: {address}}
+        driver, EXISTING_EMAIL, {where: {address: {eq: address}}}
       );
       return result.emails;
     },
@@ -79,13 +79,13 @@ export function createAccountRegistrationRepository(driver: Driver): AccountRegi
     },
     async findCreatedAccount(username) {
       const result = await executeGeneratedOperation<{users: RegisteredAccount[]}>(
-        driver, CREATED_ACCOUNT, {where: {username}}
+        driver, CREATED_ACCOUNT, {where: {username: {eq: username}}}
       );
       return result.users;
     },
     async findOwnAccountSummary(address) {
       const result = await executeGeneratedOperation<{emails: OwnAccountSummary[]}>(
-        driver, OWN_ACCOUNT, {where: {address}}
+        driver, OWN_ACCOUNT, {where: {address: {eq: address}}}
       );
       return result.emails;
     },

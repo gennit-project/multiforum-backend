@@ -16,7 +16,7 @@ export function createEmailNotificationRepository(driver: Driver): EmailNotifica
   return {
     async findRecipient(username) {
       const result = await executeGeneratedOperation<{users: Array<{username: string; Email?: {address: string} | null}>}>(
-        driver, EMAIL_RECIPIENT, {where: {username}}
+        driver, EMAIL_RECIPIENT, {where: {username: {eq: username}}}
       );
       return result.users;
     },
@@ -24,7 +24,7 @@ export function createEmailNotificationRepository(driver: Driver): EmailNotifica
       // This helper historically omitted notificationType. Do not borrow the
       // general notification helper's required type or suppress repeated events.
       const result = await executeGeneratedOperation<{updateUsers: {users: unknown[]}}>(driver,
-        AFTER_EMAIL_NOTIFICATION, {where: {username}, update: {
+        AFTER_EMAIL_NOTIFICATION, {where: {username: {eq: username}}, update: {
           Notifications: [{create: [{node: {text, read: false}}]}],
         }}
       );

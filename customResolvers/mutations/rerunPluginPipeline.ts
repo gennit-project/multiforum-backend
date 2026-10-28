@@ -110,14 +110,14 @@ export const createRerunPluginPipelineResolver = (
     }
 
     const relatedAttempts = (await repository.findRelatedAttempts({
-        targetId: source.targetId,
-        targetType: source.targetType,
+        targetId: { eq: source.targetId },
+        targetType: { eq: source.targetType },
         ...(source.targetVersion
-          ? { targetVersion: source.targetVersion }
+          ? { targetVersion: { eq: source.targetVersion } }
           : {}),
-        eventType: source.eventType,
-        scope: source.scope,
-        ...(source.channelId ? { channelId: source.channelId } : {}),
+        eventType: { eq: source.eventType },
+        scope: { eq: source.scope },
+        ...(source.channelId ? { channelId: { eq: source.channelId } } : {}),
       })) as AttemptRecord[];
     const currentTime = now();
     const latestAttempt = [...relatedAttempts].sort(

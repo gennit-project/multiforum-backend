@@ -14,12 +14,13 @@ type Input = {
   agePolicyRepository?: AgePolicyReader;
 };
 
+// v7 replaced the `<rel>_SOME` suffix with `<rel>: { some: {...} }`.
 const itemTypeWhereMap: Record<string, CollectionWhere> = {
-  DISCUSSION: { Discussions_SOME: { id: undefined } },
-  COMMENT: { Comments_SOME: { id: undefined } },
-  DOWNLOAD: { Downloads_SOME: { id: undefined, hasDownload: true } },
-  IMAGE: { Images_SOME: { id: undefined } },
-  CHANNEL: { Channels_SOME: { uniqueName: undefined } },
+  DISCUSSION: { Discussions: { some: { id: { eq: undefined } } } },
+  COMMENT: { Comments: { some: { id: { eq: undefined } } } },
+  DOWNLOAD: { Downloads: { some: { id: { eq: undefined }, hasDownload: { eq: true } } } },
+  IMAGE: { Images: { some: { id: { eq: undefined } } } },
+  CHANNEL: { Channels: { some: { uniqueName: { eq: undefined } } } },
 };
 
 const publicCollectionsContaining = ({ driver, collectionReadRepository = createCollectionReadRepository(driver), agePolicyRepository }: Input) => {
@@ -52,16 +53,16 @@ const publicCollectionsContaining = ({ driver, collectionReadRepository = create
     const where = JSON.parse(JSON.stringify(whereTemplate));
 
     if (itemType === "CHANNEL") {
-      where.Channels_SOME.uniqueName = itemId;
+      where.Channels.some.uniqueName.eq = itemId;
     } else {
       const key = Object.keys(where)[0];
-      where[key].id = itemId;
+      where[key].some.id.eq = itemId;
     }
 
 
     try {
       const collections = await collectionReadRepository.findPublicContaining({
-        visibility: "PUBLIC",
+        visibility: { eq: "PUBLIC" },
         ...where,
       }, canViewSensitiveContent);
 

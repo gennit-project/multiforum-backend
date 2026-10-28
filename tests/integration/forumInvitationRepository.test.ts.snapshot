@@ -45,67 +45,7 @@ exports[`moderator missing targets and malformed inputs retain generated behavio
 }
 `;
 
-exports[`moderator missing targets and malformed inputs retain generated behavior 3`] = `
-[
-  {
-    "event": "update",
-    "id": "<id-0>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
 exports[`moderator projection failure preserves committed invite and events 1`] = `
-[
-  {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "uniqueName": "cats"
-      },
-      "old": {
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
-exports[`moderator projection failure preserves committed invite and events 2`] = `
 [
   {
     "invites": {
@@ -208,88 +148,9 @@ exports[`moderator repeated invitation writes preserve result and native events 
 exports[`moderator repeated invitation writes preserve result and native events 2`] = `
 [
   {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_MOD_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
-exports[`moderator repeated invitation writes preserve result and native events 3`] = `
-[
-  {
     "invites": {
       "high": 0,
-      "low": 1
+      "low": 2
     },
     "notifications": [
       {
@@ -350,67 +211,7 @@ exports[`owner missing targets and malformed inputs retain generated behavior 2`
 }
 `;
 
-exports[`owner missing targets and malformed inputs retain generated behavior 3`] = `
-[
-  {
-    "event": "update",
-    "id": "<id-0>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
 exports[`owner projection failure preserves committed invite and events 1`] = `
-[
-  {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "uniqueName": "cats"
-      },
-      "old": {
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
-exports[`owner projection failure preserves committed invite and events 2`] = `
 [
   {
     "invites": {
@@ -513,88 +314,9 @@ exports[`owner repeated invitation writes preserve result and native events 1`] 
 exports[`owner repeated invitation writes preserve result and native events 2`] = `
 [
   {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "create_relationship",
-    "fromTypename": "Channel",
-    "id": "<id-0>",
-    "id_from": "<id-1>",
-    "id_to": "<id-2>",
-    "properties": {
-      "from": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "relationship": {},
-      "to": {
-        "createdAt": "<generated-time>",
-        "username": "alice"
-      }
-    },
-    "relationshipName": "HAS_PENDING_INVITE",
-    "timestamp": "<generated-time>",
-    "toTypename": "User"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  },
-  {
-    "event": "update",
-    "id": "<id-1>",
-    "properties": {
-      "new": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      },
-      "old": {
-        "createdAt": "<generated-time>",
-        "uniqueName": "cats"
-      }
-    },
-    "timestamp": "<generated-time>",
-    "typename": "Channel"
-  }
-]
-`;
-
-exports[`owner repeated invitation writes preserve result and native events 3`] = `
-[
-  {
     "invites": {
       "high": 0,
-      "low": 1
+      "low": 2
     },
     "notifications": [
       {

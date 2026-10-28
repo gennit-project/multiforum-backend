@@ -5,10 +5,15 @@ import { DiscussionWhere, DiscussionUpdateInput } from "../../src/generated/grap
 import { discussionVersionHistoryHandler } from "../../hooks/discussionVersionHistoryHook.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
-import { sanitizeAlbumCreateNode, sanitizeAlbumUpdateNode } from "./utils/ownershipSanitizers.js";
+import {
+  writeDiscussionAlbum,
+  albumImageScalars,
+  type DiscussionAlbumWrite,
+} from "../../services/persistence/discussionAlbumWrite.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { triggerPluginRunsForDownloadableFile } from "../../services/pluginRunner.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
+import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import { logger } from "../../logger.js";
 import {
   loadChannelDiscussionFlairRequirements,
@@ -54,7 +59,7 @@ export const getConnectedDownloadableFileIds = (
   const updates = updateInput.DownloadableFiles || [];
   return updates.flatMap((update) =>
     (update?.connect || [])
-      .map((connection) => connection?.where?.node?.id)
+      .map((connection) => connection?.where?.node?.id?.eq)
       .filter((id): id is string => typeof id === "string" && id.length > 0)
   );
 };
@@ -84,18 +89,16 @@ const getResolver = (
       ),
     ];
 
-    let sanitizedUpdateInput = discussionUpdateInput;
-    const albumInput = discussionUpdateInput?.Album;
+    // v7's DiscussionUpdateInput no longer carries the Album relationship, so read
+    // it from a loose view, strip it from the generated update, and apply it as an
+    // owned album write (see discussionAlbumWrite).
+    const albumInput = (discussionUpdateInput as Record<string, any>)?.Album;
     const albumCreateNode = albumInput?.create?.node;
     const albumUpdateNode = albumInput?.update?.node;
-    const albumUpdateImagesCreate = Array.isArray(albumUpdateNode?.Images)
-      ? albumUpdateNode?.Images?.some((image) => image?.create?.length)
-      : false;
+    const albumNode = albumCreateNode ?? albumUpdateNode;
 
-    const needsAlbumSanitization =
-      Boolean(albumCreateNode) || Boolean(albumUpdateNode) || Boolean(albumUpdateImagesCreate);
-
-    if (needsAlbumSanitization) {
+    let albumWrite: DiscussionAlbumWrite | null = null;
+    if (albumNode) {
       context.user = await setUserDataOnContext({
         context,
       });
@@ -106,29 +109,22 @@ const getResolver = (
         throw new GraphQLError("You must be logged in to update albums.");
       }
 
-      if (albumInput) {
-        const nextAlbumInput: any = { ...albumInput };
-
-        if (albumCreateNode) {
-          nextAlbumInput.create = {
-            ...albumInput.create,
-            node: sanitizeAlbumCreateNode(albumCreateNode, username),
-          };
-        }
-
-        if (albumUpdateNode) {
-          nextAlbumInput.update = {
-            ...albumInput.update,
-            node: sanitizeAlbumUpdateNode(albumUpdateNode, username),
-          };
-        }
-
-        sanitizedUpdateInput = {
-          ...discussionUpdateInput,
-          Album: nextAlbumInput,
-        };
-      }
+      albumWrite = {
+        discussionId: where.id?.eq ?? "",
+        username,
+        mode: albumCreateNode ? "create" : "update",
+        imageOrder: albumNode.imageOrder,
+        images: albumImageScalars(albumNode.Images),
+      };
     }
+
+    const { Album: _strippedAlbum, ...withoutAlbum } =
+      discussionUpdateInput as Record<string, any>;
+    void _strippedAlbum;
+    // v7 dropped connectOrCreate for Tags; strip the Tags field and own the
+    // HAS_TAG edges (replace semantics) so the discussion's tags match the set.
+    const { cleaned: withoutAlbumOrTags, tagTexts, hadTags } = stripTags(withoutAlbum);
+    const sanitizedUpdateInput = withoutAlbumOrTags as DiscussionUpdateInput;
 
     let flairIdsByChannel = new Map<string, string[]>();
     if (
@@ -163,7 +159,7 @@ const getResolver = (
       const connectedDownloadableFileIds = getConnectedDownloadableFileIds(
         sanitizedUpdateInput
       );
-      const updatedDiscussionId = where.id;
+      const updatedDiscussionId = where.id?.eq;
 
       // Update the discussion in a managed write so the age-gate reconcile step
       // runs before commit. Attaching an existing file is a relationship-only
@@ -171,14 +167,27 @@ const getResolver = (
       // here: the reconcile step then flags them in this same transaction.
       await executeManagedWrite(driver, async (tx) => {
         await repository.updateWithinTransaction(where, sanitizedUpdateInput, tx);
+        if (hadTags && updatedDiscussionId) {
+          await ownTags(
+            (cypher, params) => tx.run(cypher, params),
+            { label: "Discussion", id: updatedDiscussionId },
+            tagTexts,
+            { replace: true }
+          );
+        }
+        if (albumWrite) {
+          await writeDiscussionAlbum(tx, albumWrite);
+        }
         if (connectedDownloadableFileIds.length > 0) {
           await tx.run(stampAttachedDownloadableFilesQuery, {
             ids: connectedDownloadableFileIds,
           });
         }
         if (normalizedAlbumImageDisconnections.length > 0) {
+          // disconnectAlbumImagesQuery matches (:Discussion {id: $discussionId}),
+          // so pass the id string — not the v7 where filter object { eq }.
           await tx.run(disconnectAlbumImagesQuery, {
-            discussionId: where.id,
+            discussionId: updatedDiscussionId,
             imageIds: normalizedAlbumImageDisconnections,
           });
         }
@@ -208,8 +217,11 @@ const getResolver = (
         await discussionVersionHistoryHandler({
           context,
           params: {
-            where,
-            update: sanitizedUpdateInput,
+            where: { id: where.id?.eq },
+            update: {
+              title: sanitizedUpdateInput.title?.set,
+              body: sanitizedUpdateInput.body?.set,
+            },
           },
           discussionSnapshot,
         });

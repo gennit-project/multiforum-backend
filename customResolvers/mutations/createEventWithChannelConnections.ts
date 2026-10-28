@@ -4,6 +4,7 @@ import { createEventChannelQuery } from "../cypher/cypherQueries.js";
 import { EventCreateInput } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { createEventWriteRepository, type EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
+import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import { logger } from "../../logger.js";
 
 type EventCreateInputWithChannels = {
@@ -46,9 +47,24 @@ export const createEventsFromInput = async (
       }
 
       try {
+        // v7 dropped connectOrCreate for Tags; strip the Tags field and own the
+        // HAS_TAG edges (create-if-missing) inside the same write transaction.
+        const { cleaned: eventScalars, tagTexts } = stripTags(
+          eventCreateInput as Record<string, any>
+        );
+
         const newEventId = await session.executeWrite(async (transaction) => {
-          const created = await repository.createWithinTransaction(eventCreateInput, transaction);
+          const created = await repository.createWithinTransaction(
+            eventScalars as typeof eventCreateInput,
+            transaction
+          );
           const newEvent = created[0];
+
+          await ownTags(
+            (cypher, params) => transaction.run(cypher, params),
+            { label: "Event", id: newEvent.id },
+            tagTexts
+          );
 
           for (const channelUniqueName of channelConnections) {
             await transaction.run(createEventChannelQuery, {

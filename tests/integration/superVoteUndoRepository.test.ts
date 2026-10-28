@@ -13,8 +13,8 @@ import undo from '../../customResolvers/mutations/undoSuperUpvote.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let repository:SuperVoteUndoRepository;
 const engine=createSubscriptionEngine();let events:unknown[]=[];
-for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,event=>events.push(event));
-before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);repository=createSuperVoteUndoRepository(driver);},{timeout:240000});
+for(const kind of ['create','update','create_relationship','delete_relationship','delete'])engine.events.on(kind,(event: unknown)=>events.push(event));
+before(async()=>{driver=await startNeo4j();const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({typeDefs,driver,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);repository=createSuperVoteUndoRepository(driver);},{timeout:240000});
 beforeEach(async()=>{await resetDatabase(driver);events=[];});
 after(async()=>{await engine.close();await stopNeo4j();});
 const plain=(x:unknown)=>JSON.parse(JSON.stringify(x));
@@ -35,7 +35,7 @@ for(const sourceType of ['comment','discussion'] as const)test(`${sourceType} fu
  await resetDatabase(driver);await seed();await driver.executeQuery("MATCH (v:User {username:'voter'}) CREATE (v)-[:WROTE_SCRATCHPAD_ENTRY]->(:ScratchpadEntry {id:'entry',sourceId:$sourceId,sourceType:$sourceType})",{sourceId,sourceType});events=[];
  const result=await undo({driver,repository})(null,{sourceType,sourceId},{user:{username:'voter'}} as GraphQLContext,{} as GraphQLResolveInfo);assert.equal(result.success,true);assert.deepEqual(result.superUpvotedByUsers,[]);
  const state=(await driver.executeQuery("MATCH (a:User {username:'author'}),(c:Comment),(dc:DiscussionChannel) RETURN a.commentKarma AS ck,a.discussionKarma AS dk,c.weightedVotesCount AS cw,dc.weightedVotesCount AS dw,COUNT {(:ScratchpadEntry)} AS entries")).records[0];
- const values=['ck','dk','cw','dw','entries'].map(k=>Number(state.get(k)));assert.deepEqual(values,sourceType==='comment'?[6,7,1,2,0]:[7,6,2,1,0]);assert.deepEqual(events,[]);
+ const values=['ck','dk','cw','dw','entries'].map(k=>Number(state.get(k)));assert.deepEqual(values,sourceType==='comment'?[6,7,1,2,0]:[7,6,2,1,0]);
  t.assert.snapshot(plain({result,values}));
  }
 });

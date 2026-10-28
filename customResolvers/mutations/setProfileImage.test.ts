@@ -145,9 +145,47 @@ test("setProfileImage persists avatar variants for a verified uploaded profile i
       updateInput: {
         where: { username: "alice" },
         update: {
-          profilePicURL:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar.png",
+          profilePicURL: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/avatar.png",
+          },
           variantUrls: {
+            set: {
+              avatar32:
+                "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
+              avatar48:
+                "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
+              avatar64:
+                "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
+              avatar96:
+                "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
+            },
+          },
+          avatar32Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
+          },
+          avatar48Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
+          },
+          avatar64Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
+          },
+          avatar96Url: {
+            set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
+          },
+        },
+        selectionSet: `{ users ${PROFILE_IMAGE_SELECTION} }`,
+      },
+      claimedByType: "UserProfileImage",
+      claimedById: "alice",
+      // The stub returns `{ username, ...update }`, so the v7 `{ set }`
+      // wrappers flow straight through into the stubbed user payload.
+      result: {
+        username: "alice",
+        profilePicURL: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/avatar.png",
+        },
+        variantUrls: {
+          set: {
             avatar32:
               "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
             avatar48:
@@ -157,51 +195,19 @@ test("setProfileImage persists avatar variants for a verified uploaded profile i
             avatar96:
               "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
           },
-          avatar32Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
-          avatar48Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
-          avatar64Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
-          avatar96Url:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
         },
-        selectionSet: `{ users 
-  {
-    username
-    profilePicURL
-    variantUrls
-    avatar32Url
-    avatar48Url
-    avatar64Url
-    avatar96Url
-  }
- }`,
-      },
-      claimedByType: "UserProfileImage",
-      claimedById: "alice",
-      result: {
-        username: "alice",
-        profilePicURL:
-          "https://storage.googleapis.com/bucket/uploads/alice/avatar.png",
-        variantUrls: {
-          avatar32:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
-          avatar48:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
-          avatar64:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
-          avatar96:
-            "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
+        avatar32Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
         },
-        avatar32Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar32.webp",
-        avatar48Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
-        avatar64Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
-        avatar96Url:
-          "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
+        avatar48Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar48.webp",
+        },
+        avatar64Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar64.webp",
+        },
+        avatar96Url: {
+          set: "https://storage.googleapis.com/bucket/uploads/alice/avatar__avatar96.webp",
+        },
       },
     }
   );

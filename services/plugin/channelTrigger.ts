@@ -849,19 +849,19 @@ export const triggerChannelPluginPipeline = async (
       repository: leaseRepository,
         lease,
         update: {
-          status: succeeded ? 'SUCCEEDED' : 'FAILED',
-          message: succeeded
+          status: { set: succeeded ? 'SUCCEEDED' : 'FAILED' },
+          message: { set: succeeded
             ? (result?.result?.message || 'Plugin run completed')
-            : (result?.error || 'Plugin reported failure'),
-          durationMs,
-          publicDiagnostics: JSON.stringify(publicDiagnostics),
-          payload: JSON.stringify({
+            : (result?.error || 'Plugin reported failure') },
+          durationMs: { set: durationMs },
+          publicDiagnostics: { set: JSON.stringify(publicDiagnostics) },
+          payload: { set: JSON.stringify({
             event,
             channel: channelContext,
             flags,
             logs,
             result
-          }),
+          }) },
         },
       })
       jobStatuses[order] = succeeded ? 'SUCCEEDED' : 'FAILED'
@@ -892,16 +892,16 @@ export const triggerChannelPluginPipeline = async (
       repository: leaseRepository,
         lease,
         update: {
-          status: 'FAILED',
-          message,
-          durationMs,
-          publicDiagnostics: JSON.stringify(publicDiagnostics),
-          payload: JSON.stringify({
+          status: { set: 'FAILED' },
+          message: { set: message },
+          durationMs: { set: durationMs },
+          publicDiagnostics: { set: JSON.stringify(publicDiagnostics) },
+          payload: { set: JSON.stringify({
             event,
             error: message,
             logs,
             flags
-          }),
+          }) },
         },
       })
       jobStatuses[order] = 'FAILED'
@@ -929,11 +929,14 @@ export const triggerChannelPluginPipeline = async (
     const outcome = securityScanOutcome || failedDownloadScanOutcome(
       'The security scan was skipped before it could complete.'
     )
-    await repository.writeScanState(downloadableFile.id, ({
+    // writeScanState takes plain scalar values and the repository wraps each as
+    // { set: … } for the generated v7 updateDownloadableFiles mutation. Passing
+    // pre-wrapped values here would double-wrap, so keep them flat.
+    await repository.writeScanState(downloadableFile.id, {
         scanStatus: outcome.status,
         scanReason: outcome.reason,
         scanCheckedAt: new Date().toISOString(),
-      } as DownloadableFileUpdateInput))
+      })
   }
 
   await completePipelineAttempt({

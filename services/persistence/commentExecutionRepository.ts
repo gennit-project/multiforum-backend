@@ -124,12 +124,12 @@ export const SECRET_SELECTION = `{
         }`;
 export function createCommentExecutionRepository(driver:Driver):CommentExecutionRepository {
  return {
- async findChannel(uniqueName){const r=await executeGeneratedOperation<{channels:Channel[]}>(driver,`query CommentExecutionChannel($where:ChannelWhere){channels(where:$where)${CHANNEL_SELECTION}}`,{where:{uniqueName}});return r.channels;},
- async findComment(id){const r=await executeGeneratedOperation<{comments:Comment[]}>(driver,`query CommentExecutionComment($where:CommentWhere){comments(where:$where)${COMMENT_SELECTION}}`,{where:{id}});return r.comments;},
+ async findChannel(uniqueName){const r=await executeGeneratedOperation<{channels:Channel[]}>(driver,`query CommentExecutionChannel($where:ChannelWhere){channels(where:$where)${CHANNEL_SELECTION}}`,{where:{uniqueName:{eq:uniqueName}}});return r.channels;},
+ async findComment(id){const r=await executeGeneratedOperation<{comments:Comment[]}>(driver,`query CommentExecutionComment($where:CommentWhere){comments(where:$where)${COMMENT_SELECTION}}`,{where:{id:{eq:id}}});return r.comments;},
  async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query CommentExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
  async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:CreatePluginRunsMutationResponse}>(driver,`mutation CreatePendingCommentJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
- async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipCommentJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id},update});},
- async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedCommentJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id}});return r.pluginRuns;},
- async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query CommentExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId}});return r.serverSecrets;},
+ async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipCommentJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
+ async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedCommentJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
+ async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query CommentExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
  };
 }

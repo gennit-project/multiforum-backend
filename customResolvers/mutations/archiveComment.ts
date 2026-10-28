@@ -1,10 +1,6 @@
 import { createCommentModerationRepository, type CommentModerationRepository } from "../../services/persistence/commentModerationRepository.js";
 import type {
   Issue,
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
   CommentUpdateInput,
   CommentWhere,
 } from "../../ogm_types.js";
@@ -14,11 +10,8 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import { getFinalCommentText } from "./shared/reportText.js";
-import {
-  getModerationActionCreateInput,
-  getIssueCreateInput,
-  getRelatedIssueAccountFields,
-} from "./reportComment.js";
+import { getRelatedIssueAccountFields } from "./reportComment.js";
+import { formatModerationActionText } from "../../services/persistence/moderationIssueWrites.js";
 import getNextIssueNumber from "./utils/getNextIssueNumber.js";
 import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 import { notifyArchivedContentAuthor } from "../../hooks/archivedContentNotificationHook.js";
@@ -184,19 +177,20 @@ const getResolver = (input: Input) => {
         const commentText = commentData[0]?.text || "";
 
         const issueNumber = await getNextIssueNumber(driver, channelUniqueName);
-        const issueCreateInput: IssueCreateInput = getIssueCreateInput({
-          contextText: commentText,
-          selectedForumRules,
-          selectedServerRules,
-          loggedInModName,
+        const truncatedContextText = commentText?.substring(0, 50) || "";
+        const title = `[Reported comment] "${truncatedContextText}${
+          commentText.length > 50 ? "..." : ""
+        }"`;
+        const issueData = await repository.createArchiveIssue({
+          issueNumber,
+          title,
+          authorModName: loggedInModName,
           channelUniqueName,
-          reportedContentType: "comment",
+          flaggedServerRuleViolation: selectedServerRules.length > 0,
           relatedCommentId: commentId,
           relatedUsername,
           relatedModProfileName,
-          issueNumber,
         });
-        const issueData = await repository.createArchiveIssue(issueCreateInput);
         const issueId = issueData.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -210,64 +204,38 @@ const getResolver = (input: Input) => {
       }
     }
     
-    const archiveCommentModActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: "archive",
-        actionDescription: "Archived the comment",
-        issueId: existingIssueId,
-        suspendUntil: undefined,
-        suspendIndefinitely: false,
-      });
-
-      const closeIssueModActionCreateInput: ModerationActionCreateInput =
-      getModerationActionCreateInput({
-        text: finalCommentText,
-        loggedInModName,
-        channelUniqueName,
-        actionType: "close",
-        actionDescription: "Closed the issue",
-        issueId: existingIssueId,
-        suspendUntil: undefined,
-        suspendIndefinitely: false,
-      });
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-    const archiveCommentUpdateIssueInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: archiveCommentModActionCreateInput,
-            },
-          ],
-        },
-      ],
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        selectedServerRules.length > 0,
-    };
-
-    const closeIssueUpdateIssueInput: IssueUpdateInput = {
-      isOpen: false, // Close the issue; un-archival is often the final action.
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: closeIssueModActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Record the archive action then the close action on the issue's activity
+    // feed via the owned moderation write (two appends, same as before).
+    const actionText = formatModerationActionText({ text: finalCommentText });
     try {
-      await repository.appendIssueAction(issueUpdateWhere, archiveCommentUpdateIssueInput);
-      const issueData = await repository.appendIssueAction(issueUpdateWhere, closeIssueUpdateIssueInput);
+      await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "archive",
+            actionDescription: "Archived the comment",
+            text: actionText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
+          },
+        ],
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          selectedServerRules.length > 0,
+      });
+      const issueData = await repository.appendIssueAction({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "close",
+            actionDescription: "Closed the issue",
+            text: actionText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName,
+          },
+        ],
+        isOpen: false, // Close the issue; un-archival is often the final action.
+      });
       const issueId = issueData.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");
@@ -291,17 +259,17 @@ const getResolver = (input: Input) => {
       // Update the comment so that archived=true and the issue is linked
       // to the comment under RelatedIssues.
       const commentUpdateWhere: CommentWhere = {
-        id: commentId,
+        id: { eq: commentId },
       };
       const commentUpdateInput: CommentUpdateInput = {
-        archived: true,
+        archived: { set: true },
         RelatedIssues: [
           {
             connect: [
               {
                 where: {
                   node: {
-                    id: existingIssueId,
+                    id: { eq: existingIssueId },
                   },
                 },
               },

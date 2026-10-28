@@ -1,5 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import { createTextVersion } from "./textVersionWrite.js";
 
 export type EventRevisionSnapshot = {
   id?: string;
@@ -80,48 +81,46 @@ export const EVENT_REVISION_DEFAULT_SELECTION = `{
   createdAt
 }`;
 export const EVENT_TEXT_VERSION_DEFAULT_SELECTION = `{ id body editReason createdAt updatedAt }`;
-const CREATE = `mutation CreatePreviousEventText($input: [TextVersionCreateInput!]!) {
- createTextVersions(input: $input) { textVersions ${EVENT_TEXT_VERSION_DEFAULT_SELECTION} }
-}`;
 const CONNECT_TITLE = `mutation ConnectPreviousEventTitle($where: EventWhere!, $update: EventUpdateInput!) {
  updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
 }`;
 const CONNECT_DESCRIPTION = `mutation ConnectPreviousEventDescription($where: EventWhere!, $update: EventUpdateInput!) {
  updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
 }`;
-const REPLACE_EDITOR = `mutation ReplaceEventDescriptionEditor($where: EventWhere!, $update: EventUpdateInput!) {
- updateEvents(where: $where, update: $update) { events ${EVENT_REVISION_DEFAULT_SELECTION} }
-}`;
+// v7 removed the to-one connect/disconnect from update inputs; own the
+// DESCRIPTION_LAST_EDITED_BY edge ((:Event)-[:DESCRIPTION_LAST_EDITED_BY]->(:User)).
 export function createEventRevisionRepository(driver: Driver): EventRevisionRepository {
   return {
     async findSnapshot(id) {
-      const result = await executeGeneratedOperation<{events: EventRevisionSnapshot[]}>(driver, SNAPSHOT, {where: {id}});
+      const result = await executeGeneratedOperation<{events: EventRevisionSnapshot[]}>(driver, SNAPSHOT, {where: {id: {eq: id}}});
       return result.events;
     },
     async findVersionAuthor(username) {
-      const result = await executeGeneratedOperation<{users: Array<{username: string}>}>(driver, AUTHOR, {where: {username}});
+      const result = await executeGeneratedOperation<{users: Array<{username: string}>}>(driver, AUTHOR, {where: {username: {eq: username}}});
       return result.users;
     },
     async createPreviousText(body, username) {
-      const result = await executeGeneratedOperation<{createTextVersions: {textVersions: Array<{id: string}>}}>(driver, CREATE, {
-        input: [{body, Author: {connect: {where: {node: {username}}}}}],
-      });
-      return result.createTextVersions;
+      return createTextVersion(driver, {body}, username);
     },
     async connectTitleVersion(id, versionId) {
-      await executeGeneratedOperation(driver, CONNECT_TITLE, {where: {id}, update: {
-        PastTitleVersions: {connect: [{where: {node: {id: versionId}}}]},
+      await executeGeneratedOperation(driver, CONNECT_TITLE, {where: {id: {eq: id}}, update: {
+        PastTitleVersions: [{connect: [{where: {node: {id: {eq: versionId}}}}]}],
       }});
     },
     async connectDescriptionVersion(id, versionId) {
-      await executeGeneratedOperation(driver, CONNECT_DESCRIPTION, {where: {id}, update: {
-        PastDescriptionVersions: {connect: [{where: {node: {id: versionId}}}]},
+      await executeGeneratedOperation(driver, CONNECT_DESCRIPTION, {where: {id: {eq: id}}, update: {
+        PastDescriptionVersions: [{connect: [{where: {node: {id: {eq: versionId}}}}]}],
       }});
     },
     async replaceDescriptionEditor(id, username) {
-      await executeGeneratedOperation(driver, REPLACE_EDITOR, {where: {id}, update: {
-        DescriptionLastEditedBy: {disconnect: {}, connect: {where: {node: {username}}}},
-      }});
+      await driver.executeQuery(
+        `MATCH (e:Event {id: $id})
+         OPTIONAL MATCH (e)-[r:DESCRIPTION_LAST_EDITED_BY]->(:User)
+         DELETE r
+         WITH e
+         OPTIONAL MATCH (u:User {username: $username})
+         FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (e)-[:DESCRIPTION_LAST_EDITED_BY]->(u))`,
+        {id, username});
     },
   };
 }

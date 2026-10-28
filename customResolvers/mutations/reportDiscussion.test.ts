@@ -48,10 +48,10 @@ class ModelStub {
     return {
       issues: [
         {
-          id: args.where?.id ?? "issue-1",
+          id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
           flaggedServerRuleViolation:
-            args.update?.flaggedServerRuleViolation ?? false,
+            args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },
       ],
     };
@@ -149,7 +149,7 @@ test("reportDiscussion creates an issue and reopens it with a report activity it
       findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
       findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
       createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
-      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+      appendReport: async params => await Issue.update(params) as {issues:any[]},
     },
     driver: createDriver(),
   });
@@ -174,13 +174,10 @@ test("reportDiscussion creates an issue and reopens it with a report activity it
     "discussion-1"
   );
   assert.equal(Issue.createCalls[0].input[0].issueNumber, 1);
-  assert.equal(Issue.updateCalls[0].where.id, "issue-1");
-  assert.equal(Issue.updateCalls[0].update.isOpen, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, false);
-  assert.equal(
-    Issue.updateCalls[0].update.ActivityFeed[0].create[0].node.actionType,
-    "report"
-  );
+  assert.equal(Issue.updateCalls[0].issueId, "issue-1");
+  assert.equal(Issue.updateCalls[0].isOpen, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, false);
+  assert.equal(Issue.updateCalls[0].actions[0].actionType, "report");
 });
 
 test("reportDiscussion reuses existing issues and preserves server-rule flagging", async () => {
@@ -207,7 +204,7 @@ test("reportDiscussion reuses existing issues and preserves server-rule flagging
       findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
       findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
       createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
-      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+      appendReport: async params => await Issue.update(params) as {issues:any[]},
     },
     driver: createDriver(),
   });
@@ -227,9 +224,9 @@ test("reportDiscussion reuses existing issues and preserves server-rule flagging
 
   assert.equal(Issue.createCalls.length, 0);
   assert.equal(Discussion.findCalls.length, 0);
-  assert.equal(Issue.updateCalls[0].where.id, "existing-issue");
-  assert.equal(Issue.updateCalls[0].update.isOpen, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].issueId, "existing-issue");
+  assert.equal(Issue.updateCalls[0].isOpen, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
 });
 
 test("reportDiscussion omits the channel connection when the channel is missing", async () => {
@@ -249,7 +246,7 @@ test("reportDiscussion omits the channel connection when the channel is missing"
       findDiscussion: discussionId => Discussion.find({where:{id:discussionId}}),
       findChannel: uniqueName => createChannelModel().find({where:{uniqueName}}),
       createIssue: async input => await Issue.create({input:[input]}) as {issues:any[]},
-      appendReport: async (where,update) => await Issue.update({where,update}) as {issues:any[]},
+      appendReport: async params => await Issue.update(params) as {issues:any[]},
     },
     driver: createDriver(),
   });
@@ -267,9 +264,12 @@ test("reportDiscussion omits the channel connection when the channel is missing"
     null as unknown as GraphQLResolveInfo
   );
 
-  assert.equal(Issue.createCalls[0].input[0].Channel, undefined);
+  // Owned write takes channelUniqueName as a scalar param (no nested Channel
+  // connect object); a missing channel is skipped by the best-effort HAS_ISSUE
+  // connect, verified in the integration test.
+  assert.equal(Issue.createCalls[0].input[0].channelUniqueName, "missing-channel");
   assert.equal(Issue.createCalls[0].input[0].flaggedServerRuleViolation, true);
-  assert.equal(Issue.updateCalls[0].update.flaggedServerRuleViolation, true);
+  assert.equal(Issue.updateCalls[0].flaggedServerRuleViolation, true);
 });
 
 const validArgs={discussionId:'discussion',channelUniqueName:'cats',selectedForumRules:['Kind'],selectedServerRules:[],reportText:'text'};

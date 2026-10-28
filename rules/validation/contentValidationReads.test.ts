@@ -22,7 +22,7 @@ for (const fileName of [undefined,"", "new.zip"]) test(`update validation preser
 });
 test("new filename is validated instead of existing filename",async()=>{
  const {ctx}=makeContext();
- assert.equal((await updateDownloadableFileInputIsValid.resolve({}, {where:{id:"file"},update:{fileName:"new.exe"}},ctx,info,options) as Error).message,"File type 'exe' is not allowed by server configuration. Allowed types: zip");
+ assert.equal((await updateDownloadableFileInputIsValid.resolve({}, {where:{id:"file"},update:{fileName:{set:"new.exe"}}},ctx,info,options) as Error).message,"File type 'exe' is not allowed by server configuration. Allowed types: zip");
 });
 test("missing file and failed lookup retain their failure strings",async()=>{
  const {ctx}=makeContext([]);

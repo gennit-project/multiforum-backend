@@ -489,7 +489,7 @@ exports[`comment union resolves moderator ownership and preserves absent owner 8
 
 exports[`invalid arguments and selected scalars retain generated first errors 1`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.ModerationProfile.displayName\\"; String cannot represent a non string value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.ModerationProfile.displayName.eq\\"; String cannot represent a non string value: true"
 }
 `;
 
@@ -561,43 +561,43 @@ exports[`invalid arguments and selected scalars retain generated first errors 16
 
 exports[`invalid arguments and selected scalars retain generated first errors 2`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 3`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.username\\"; String cannot represent a non string value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.username.eq\\"; String cannot represent a non string value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 4`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 5`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 6`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 7`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 
 exports[`invalid arguments and selected scalars retain generated first errors 8`] = `
 {
-  "error": "Variable \\"$where\\" got invalid value true at \\"where.id\\"; ID cannot represent value: true"
+  "error": "Variable \\"$where\\" got invalid value true at \\"where.id.eq\\"; ID cannot represent value: true"
 }
 `;
 

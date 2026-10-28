@@ -7,7 +7,6 @@ import {
 } from './issueActivityFeedHelpers.js';
 import { createInAppNotification } from './notificationHelpers.js';
 import type { GraphQLContext } from '../types/context.js';
-import type { TextVersionCreateInput } from '../src/generated/graphql.js';
 import type { CommentSnapshot } from '../utils/buildCommentMentionContext.js';
 import { logger } from "../logger.js";
 
@@ -169,7 +168,9 @@ async function trackTextVersionHistory(
       return;
     }
 
-    const textVersionInput: TextVersionCreateInput = {
+    // v7 removed the to-one Author connect from the generated type; the owned
+    // revision write reads it from this loose create shape.
+    const textVersionInput: Record<string, unknown> = {
       body: newText,
     };
 

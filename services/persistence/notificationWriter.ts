@@ -30,7 +30,7 @@ export function createNotificationWriter(driver: Driver): NotificationWriter {
       // Generated mutation execution owns retries, defaults, relationship writes
       // and publication through the already-registered shared subscription engine.
       const result = await executeGeneratedOperation<{updateUsers: {users: unknown[]}}>(driver, CREATE_NOTIFICATION, {
-        where: {username},
+        where: {username: {eq: username}},
         update: {Notifications: [{create: [{node: {text, read: false, notificationType}}]}]},
       });
       return Boolean(result.updateUsers?.users?.length);

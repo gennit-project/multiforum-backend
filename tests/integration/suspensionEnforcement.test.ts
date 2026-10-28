@@ -216,11 +216,12 @@ const CREATE_DISCUSSION = `
   }
 `;
 
-const discussionInput = (channel: string, username: string) => [
+// v7 removed the Author to-one connect from DiscussionCreateInput; the resolver
+// derives the author from the authenticated context user (passed to exec).
+const discussionInput = (channel: string, _username: string) => [
   {
     discussionCreateInput: {
       title: "A discussion",
-      Author: { connect: { where: { node: { username } } } },
     },
     channelConnections: [channel],
   },

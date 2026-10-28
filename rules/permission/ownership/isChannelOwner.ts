@@ -36,9 +36,10 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     logger.info('args: ', JSON.stringify(args));
     let uniqueName = '';
 
-    if (where?.uniqueName) {
+    const whereUniqueNameEq = where?.uniqueName?.eq;
+    if (whereUniqueNameEq) {
       // The channel name can be passed in the where object.
-      uniqueName = where.uniqueName;
+      uniqueName = whereUniqueNameEq;
     }
 
     if (channelUniqueName) {
@@ -67,8 +68,10 @@ export const isChannelOwner = rule({ cache: "contextual" })(
     }
 
     // If no channel name is provided but we have an issueId, look it up
-    // Also check where.id for mutations like updateIssues that pass issue ID in where clause
-    const resolvedIssueId = issueId || (where as any)?.id;
+    // Also check where.id for mutations like updateIssues that pass issue ID in where clause.
+    // v7: the generated `where.id` is an IdScalarFilters object ({ eq }), not a bare
+    // string — read `.eq` so channel owners can still act on issues by where.id.
+    const resolvedIssueId = issueId || (where as any)?.id?.eq;
     if (!uniqueName && resolvedIssueId) {
       const repository = resolveContentChannelPermissionRepository(ctx);
       const issue = await repository.findIssueChannel(resolvedIssueId);

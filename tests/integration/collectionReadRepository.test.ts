@@ -49,8 +49,8 @@ const seed = () => driver.executeQuery(`
 
 test("profile collections preserve arbitrary filters, options and computed counts", async (t) => {
   await seed();
-  for (const where of [{}, {CreatedBy:{username:'owner'}}, {OR:[{name_CONTAINS:'First'},{visibility:'PRIVATE'}]},
-    {Downloads_SOME:{id:'clear'}}, {Channels_SOME:{uniqueName:'cats'}}, {NOT:{name:'Second'}}]) {
+  for (const where of [{}, {CreatedBy:{username:{eq:'owner'}}}, {OR:[{name:{contains:'First'}},{visibility:{eq:'PRIVATE'}}]},
+    {Downloads:{some:{id:{eq:'clear'}}}}, {Channels:{some:{uniqueName:{eq:'cats'}}}}, {NOT:{name:{eq:'Second'}}}]) {
     for (const options of [{}, {sort:[]}, {sort:[{createdAt:'DESC'}],limit:1,offset:1}]) {
       const actual = await outcome(() => repository.findProfileCollections(where as never,options as never));
       assert.ok('value' in actual, JSON.stringify(actual));
@@ -61,7 +61,7 @@ test("profile collections preserve arbitrary filters, options and computed count
 
 test("public collections preserve explicit sensitive filtering and anonymous schema authorization", async (t) => {
   await seed();
-  const where = {visibility:'PUBLIC',Channels_SOME:{uniqueName:'cats'}};
+  const where = {visibility:{eq:'PUBLIC'},Channels:{some:{uniqueName:{eq:'cats'}}}};
   for (const mode of [false,true]) {
     const actual = await repository.findPublicContaining(where as never,mode);
     t.assert.snapshot(norm(actual));
@@ -87,7 +87,7 @@ test("owned sharing snapshots retain ownership filter and narrow projections", a
 });
 
 test("filter and options validation preserve original first errors", async () => {
-  const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:'invalid'},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
+  const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:{eq:'invalid'}},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
   for (const [where,options,message] of cases) {
     await assert.rejects(repository.findProfileCollections(where as never,options as never), message);
   }
@@ -98,7 +98,11 @@ test("malformed selected enum and mandatory creator retain failures", async () =
   await driver.executeQuery("MATCH (c:Collection {id:'first'}) SET c.visibility = 'INVALID'");
   await assert.rejects(repository.findOwnedShareTarget('first','owner'), /cannot represent value/);
   await driver.executeQuery("MATCH (c:Collection {id:'first'})-[r:CREATED_BY]->() SET c.visibility='PUBLIC' DELETE r");
-  await assert.rejects(repository.findPublicContaining({id:'first'},false), /Cannot return null for non-nullable field Collection\.CreatedBy/);
+  // v7 schema migration made Collection.CreatedBy nullable (was CreatedBy! on
+  // main), so a creator-less public collection reads back with CreatedBy null
+  // instead of throwing a non-nullable projection error.
+  const rows = await repository.findPublicContaining({id:{eq:'first'}},false);
+  assert.ok(rows.every((row) => (row.CreatedBy ?? null) === null));
 });
 
 test("collections remain unbounded at root and public downloads retain limit five", async (t) => {
@@ -109,7 +113,7 @@ test("collections remain unbounded at root and public downloads retain limit fiv
   assert.equal((await repository.findProfileCollections({},{})).length,32);
   await driver.executeQuery(`MATCH (c:Collection {id:'first'}) UNWIND range(1,10) AS i
     CREATE (d:Discussion {id:'download-'+toString(i),title:'Download',createdAt:datetime()}) CREATE (c)-[:CONTAINS_DOWNLOAD]->(d)`);
-  const actual = await repository.findPublicContaining({id:'first'},false);
+  const actual = await repository.findPublicContaining({id:{eq:'first'}},false);
   assert.equal((actual[0].Downloads as unknown[]).length,5);
   // The Downloads projection applies limit 5; which 5 of the eligible downloads are returned
   // is only stable within a single run, so snapshot the projection with Downloads reduced to a count.

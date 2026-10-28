@@ -1,10 +1,5 @@
 import { createImageReportRepository, type ImageReportRepository } from "../../services/persistence/imageReportRepository.js";
-import type {
-  IssueCreateInput,
-  ModerationActionCreateInput,
-  IssueWhere,
-  IssueUpdateInput,
-} from "../../ogm_types.js";
+import type { IssueWhere } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
@@ -53,81 +48,6 @@ ${
     : ""
 }
 `;
-};
-
-const getModerationActionCreateInput = (input: {
-  text?: string;
-  loggedInModName: string;
-  channelUniqueName?: string | null;
-  actionType: string;
-  actionDescription: string;
-  issueId: string;
-}): ModerationActionCreateInput => {
-  const {
-    text,
-    loggedInModName,
-    channelUniqueName,
-    actionType,
-    actionDescription,
-    issueId,
-  } = input;
-
-  const baseInput: ModerationActionCreateInput = {
-    ModerationProfile: {
-      connect: {
-        where: {
-          node: {
-            displayName: loggedInModName,
-          },
-        },
-      },
-    },
-    actionType,
-    actionDescription,
-    Comment: {
-      create: {
-        node: {
-          text: text || null,
-          isRootComment: true,
-          CommentAuthor: {
-            ModerationProfile: {
-              connect: {
-                where: {
-                  node: {
-                    displayName: loggedInModName,
-                  },
-                },
-              },
-            },
-          },
-          Issue: {
-            connect: {
-              where: {
-                node: {
-                  id: issueId,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  };
-
-  // Only connect to channel if channel-scoped
-  if (channelUniqueName && baseInput.Comment?.create?.node) {
-    baseInput.Comment.create.node.Channel = {
-      connect: {
-        where: {
-          node: {
-            uniqueName: channelUniqueName,
-          },
-        },
-      },
-    };
-  }
-
-  return baseInput;
 };
 
 const getResolver = (input: Input) => {
@@ -201,13 +121,13 @@ const getResolver = (input: Input) => {
 
     // Check if an issue already exists for this image
     const issueWhereClause: IssueWhere = {
-      relatedImageId: imageId,
+      relatedImageId: { eq: imageId },
     };
 
     if (isServerScoped) {
-      issueWhereClause.channelUniqueName = null;
+      issueWhereClause.channelUniqueName = { eq: null };
     } else {
-      issueWhereClause.channelUniqueName = channelUniqueName;
+      issueWhereClause.channelUniqueName = { eq: channelUniqueName };
     }
 
     const existingIssueData = await repository.findPriorImageReport(issueWhereClause);
@@ -230,43 +150,17 @@ const getResolver = (input: Input) => {
         ? await getNextServerIssueNumber(driver)
         : await getNextIssueNumber(driver, channelUniqueName!);
 
-      const issueCreateInput: IssueCreateInput = {
-        title: `[Reported image] ${truncatedUrl}`,
-        isOpen: true,
-        authorName: loggedInModName,
-        flaggedServerRuleViolation: (selectedServerRules?.length ?? 0) > 0,
-        channelUniqueName: channelUniqueName || null,
-        relatedImageId: imageId,
-        relatedUsername: uploaderUsername || undefined,
-        issueNumber,
-        Author: {
-          ModerationProfile: {
-            connect: {
-              where: {
-                node: {
-                  displayName: loggedInModName,
-                },
-              },
-            },
-          },
-        },
-      };
-
-      // Only connect to channel if channel-scoped
-      if (channelUniqueName) {
-        issueCreateInput.Channel = {
-          connect: {
-            where: {
-              node: {
-                uniqueName: channelUniqueName,
-              },
-            },
-          },
-        };
-      }
-
       try {
-        const createResult = await repository.createImageReportIssue(issueCreateInput);
+        const createResult = await repository.createImageReportIssue({
+          issueNumber,
+          title: `[Reported image] ${truncatedUrl}`,
+          authorModName: loggedInModName,
+          // channel-scoped → scalar + best-effort HAS_ISSUE connect; null → server-scoped.
+          channelUniqueName: channelUniqueName || null,
+          flaggedServerRuleViolation: (selectedServerRules?.length ?? 0) > 0,
+          relatedImageId: imageId, // → TARGETS_IMAGE
+          relatedUsername: uploaderUsername || undefined, // → TARGETS_USER
+        });
         const issueId = createResult.issues[0]?.id || null;
         if (!issueId) {
           throw new GraphQLError("Error creating issue");
@@ -280,37 +174,26 @@ const getResolver = (input: Input) => {
       }
     }
 
-    const moderationActionCreateInput = getModerationActionCreateInput({
-      text: finalCommentText,
-      loggedInModName,
-      channelUniqueName,
-      actionType: "report",
-      actionDescription: "Reported the image",
-      issueId: existingIssueId,
-    });
-
-    // Update the issue with the new moderation action.
-    const issueUpdateWhere: IssueWhere = {
-      id: existingIssueId,
-    };
-    const issueUpdateInput: IssueUpdateInput = {
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-      isOpen: true, // Reopen the issue if it was closed
-      flaggedServerRuleViolation:
-        existingIssueFlaggedServerRuleViolation ||
-        (selectedServerRules?.length ?? 0) > 0,
-    };
-
+    // Append the report moderation action (with its embedded moderator comment)
+    // via the owned moderation write. The comment's Channel connect is only made
+    // when channel-scoped; the comment text is stored verbatim (no wrapping).
     try {
-      const updateResult = await repository.appendImageReport(issueUpdateWhere, issueUpdateInput);
+      const updateResult = await repository.appendImageReport({
+        issueId: existingIssueId,
+        actions: [
+          {
+            actionType: "report",
+            actionDescription: "Reported the image",
+            text: finalCommentText,
+            modDisplayName: loggedInModName,
+            commentChannelUniqueName: channelUniqueName || undefined,
+          },
+        ],
+        isOpen: true, // Reopen the issue if it was closed
+        flaggedServerRuleViolation:
+          existingIssueFlaggedServerRuleViolation ||
+          (selectedServerRules?.length ?? 0) > 0,
+      });
       const issueId = updateResult.issues[0]?.id || null;
       if (!issueId) {
         throw new GraphQLError("Error updating issue");

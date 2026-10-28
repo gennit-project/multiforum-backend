@@ -1,5 +1,6 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import { createTextVersion } from "./textVersionWrite.js";
 export type DiscussionSnapshot = {
   id?: string;
   title?: string | null;
@@ -46,20 +47,27 @@ const SNAPSHOT = `query DiscussionRevisionSnapshot($where: DiscussionWhere) { di
 } }`;
 const MENTION_SNAPSHOT = `query DiscussionRevisionMentionSnapshot($where:DiscussionWhere) {discussions(where:$where) {id title body Author {username displayName} DiscussionChannels {channelUniqueName}}}`;
 const AUTHOR = `query DiscussionRevisionAuthor($where:UserWhere) {users(where:$where) {username}}`;
-const CREATE = `mutation CreateDiscussionRevision($input:[TextVersionCreateInput!]!) {createTextVersions(input:$input) {textVersions ${TEXT_VERSION_DEFAULT_SELECTION}}}`;
 const EXISTS = `query DiscussionRevisionParent($where:DiscussionWhere) {discussions(where:$where) {id}}`;
 const CONNECT_TITLE = `mutation ConnectDiscussionTitleRevision($where:DiscussionWhere,$update:DiscussionUpdateInput) {updateDiscussions(where:$where,update:$update) {discussions ${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`;
 const CONNECT_BODY = `mutation ConnectDiscussionBodyRevision($where:DiscussionWhere,$update:DiscussionUpdateInput) {updateDiscussions(where:$where,update:$update) {discussions ${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`;
-const EDITOR = `mutation SetDiscussionBodyEditor($where:DiscussionWhere,$update:DiscussionUpdateInput) {updateDiscussions(where:$where,update:$update) {discussions ${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`;
+// v7 removed the to-one connect/disconnect from update inputs; own the
+// BODY_LAST_EDITED_BY edge ((:Discussion)-[:BODY_LAST_EDITED_BY]->(:User)).
 export function createDiscussionRevisionRepository(driver:Driver):DiscussionRevisionRepository {
  return {
-  async findMentionSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,MENTION_SNAPSHOT,{where:{id}})).discussions;},
-  async findSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,SNAPSHOT,{where:{id}})).discussions;},
-  async findAuthor(username){return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,AUTHOR,{where:{username}})).users;},
-  async createRevision(body,username){return (await executeGeneratedOperation<{createTextVersions:{textVersions:Array<{id:string}>}}>(driver,CREATE,{input:[{body,Author:{connect:{where:{node:{username}}}}}]})).createTextVersions;},
-  async findDiscussionId(id){return (await executeGeneratedOperation<{discussions:Array<{id:string}>}>(driver,EXISTS,{where:{id}})).discussions;},
-  async connectTitleRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_TITLE,{where:{id},update:{PastTitleVersions:{connect:[{where:{node:{id:revisionId}}}]}}});},
-  async connectBodyRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_BODY,{where:{id},update:{PastBodyVersions:{connect:[{where:{node:{id:revisionId}}}]}}});},
-  async setBodyEditor(id,username){await executeGeneratedOperation(driver,EDITOR,{where:{id},update:{BodyLastEditedBy:{disconnect:{},connect:{where:{node:{username}}}}}});},
+  async findMentionSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,MENTION_SNAPSHOT,{where:{id:{eq:id}}})).discussions;},
+  async findSnapshot(id){return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver,SNAPSHOT,{where:{id:{eq:id}}})).discussions;},
+  async findAuthor(username){return (await executeGeneratedOperation<{users:Array<{username:string}>}>(driver,AUTHOR,{where:{username:{eq:username}}})).users;},
+  async createRevision(body,username){return createTextVersion(driver,{body},username);},
+  async findDiscussionId(id){return (await executeGeneratedOperation<{discussions:Array<{id:string}>}>(driver,EXISTS,{where:{id:{eq:id}}})).discussions;},
+  async connectTitleRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_TITLE,{where:{id:{eq:id}},update:{PastTitleVersions:[{connect:[{where:{node:{id:{eq:revisionId}}}}]}]}});},
+  async connectBodyRevision(id,revisionId){await executeGeneratedOperation(driver,CONNECT_BODY,{where:{id:{eq:id}},update:{PastBodyVersions:[{connect:[{where:{node:{id:{eq:revisionId}}}}]}]}});},
+  async setBodyEditor(id,username){await driver.executeQuery(
+   `MATCH (d:Discussion {id: $id})
+    OPTIONAL MATCH (d)-[r:BODY_LAST_EDITED_BY]->(:User)
+    DELETE r
+    WITH d
+    OPTIONAL MATCH (u:User {username: $username})
+    FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (d)-[:BODY_LAST_EDITED_BY]->(u))`,
+   {id, username});},
  };
 }

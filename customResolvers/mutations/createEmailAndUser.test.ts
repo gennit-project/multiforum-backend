@@ -116,7 +116,7 @@ test("Cypress identity and admin role inputs remain unchanged", async () => {
     const repository={...stubRepository(),createAccount:async(input:unknown)=>{created=input;}};
     await createUsersWithEmails(repository,"admin@example.test","alice");
     assert.equal(created.ModerationProfile.create.node.displayName,"testModProfile2");
-    assert.deepEqual(created.ServerRoles,{connect:[{where:{node:{name:"Admin Role"}}}]});
+    assert.deepEqual(created.ServerRoles,{connect:[{where:{node:{name:{eq:"Admin Role"}}}}]});
     assert.equal(created.Email.create.node.address,"admin@example.test");
   } finally {
     if(oldName===undefined) delete process.env.SERVER_CONFIG_NAME;else process.env.SERVER_CONFIG_NAME=oldName;

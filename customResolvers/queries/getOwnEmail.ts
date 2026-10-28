@@ -57,7 +57,7 @@ const getResolver = (input: Input) => {
         username: user?.username ?? null,
         profilePicURL: user?.profilePicURL ?? null,
         modProfileName: user?.ModerationProfile?.displayName ?? null,
-        unreadNotificationCount: user?.NotificationsAggregate?.count ?? null,
+        unreadNotificationCount: user?.NotificationsConnection?.aggregate?.count?.nodes ?? null,
       };
     } catch (error) {
       logger.error("Error in getOwnEmail resolver:", error);

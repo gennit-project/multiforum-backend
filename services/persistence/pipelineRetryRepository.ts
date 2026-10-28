@@ -25,7 +25,7 @@ export const RETRY_SELECTION_2 = `{
           skippedReason createdAt updatedAt
         }`;
 export function createPipelineRetryRepository(driver:Driver):PipelineRetryRepository { return {
- async findScanTarget(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query RetryPipelineFindScanTarget($where:DownloadableFileWhere){downloadableFiles(where:$where)${RETRY_SELECTION_0}}`,{where:{id}});return r.downloadableFiles;},
+ async findScanTarget(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query RetryPipelineFindScanTarget($where:DownloadableFileWhere){downloadableFiles(where:$where)${RETRY_SELECTION_0}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
  async findFailedAttempts(where){const r=await executeGeneratedOperation<{pluginPipelineRuns:PluginPipelineRun[]}>(driver,`query RetryPipelineFindFailedAttempts($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${RETRY_SELECTION_1}}`,{where});return r.pluginPipelineRuns;},
- async findRetryJobs(pipelineId){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query RetryPipelineFindRetryJobs($where:PluginRunWhere){pluginRuns(where:$where)${RETRY_SELECTION_2}}`,{where:{pipelineId}});return r.pluginRuns;},
+ async findRetryJobs(pipelineId){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query RetryPipelineFindRetryJobs($where:PluginRunWhere){pluginRuns(where:$where)${RETRY_SELECTION_2}}`,{where:{pipelineId:{eq:pipelineId}}});return r.pluginRuns;},
 };}

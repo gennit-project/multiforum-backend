@@ -11,7 +11,9 @@ function fixture(fail='',existing=true){
  const calls:string[]=[];const issue={id:'i',issueNumber:7,flaggedServerRuleViolation:true};
  const step=async(name:string,result:any)=>{calls.push(name);if(name===fail)throw Error('failed '+name);return result;};
  const target=[{id:'c',text:'text',Channel:{uniqueName:'forum'}}];
- const repository:any={findArchiveTarget:()=>step('target',target),findUnarchiveTarget:()=>step('target',target),findIssue:()=>step('issue',existing?[issue]:[]),createArchiveIssue:()=>step('create',{issues:[issue]}),appendIssueAction:(_where:any,update:any)=>step(update.isOpen===false?'close':'activity',{issues:[issue]}),setArchived:()=>step('comment',{comments:[{id:'c'}]})};
+ // appendIssueAction takes a single params object (AppendModerationActionsParams);
+ // the archive action omits isOpen ('activity'), the close action sets isOpen:false ('close').
+ const repository:any={findArchiveTarget:()=>step('target',target),findUnarchiveTarget:()=>step('target',target),findIssue:()=>step('issue',existing?[issue]:[]),createArchiveIssue:()=>step('create',{issues:[issue]}),appendIssueAction:(params:any)=>step(params.isOpen===false?'close':'activity',{issues:[issue]}),setArchived:()=>step('comment',{comments:[{id:'c'}]})};
  const driver:any={session:()=>({executeWrite:()=>step('number',{records:[{get:()=>7}]}),close:async()=>{calls.push('session-close');}})};
  const context:any={driver,user:{username:'mod-user',data:{ModerationProfile:{displayName:'mod'}}},notificationSnapshotRepository:{findIssueSubscribers:()=>step('notify',[])}};
  return {calls,repository,driver,context,issue};
@@ -32,5 +34,5 @@ test('archive comment-write failure prevents author notification after issue eff
 test('archive author notification failure is swallowed after all writes',async()=>{const f=fixture();f.repository.findArchiveTarget=async()=>[{id:'c',text:'text',CommentAuthor:{__typename:'User',username:'author'},Channel:{uniqueName:'forum'},DiscussionChannel:{discussionId:'d'}}];f.context.notificationSnapshotRepository.findArchivedAuthor=async()=>{f.calls.push('author');throw Error('author snapshot failure');};assert.deepEqual(await archive(f)(null,args,f.context,{} as any),f.issue);assert.deepEqual(f.calls,['issue','activity','close','notify','comment','author']);});
 for(const [name,factory] of [['archive',archive],['unarchive',unarchive]] as const){
  test(name+' denies anonymous requests before persistence',async()=>{const f=fixture();f.context.user=null;await assert.rejects(factory(f)(null,args,f.context,{} as any),/User must be logged in/);assert.deepEqual(f.calls,[]);});
- test(name+' empty close result stops before subscriber and comment effects',async()=>{const f=fixture();f.repository.appendIssueAction=async(_where:any,update:any)=>{f.calls.push(update.isOpen===false?'close':'activity');return{issues:[]};};await assert.rejects(factory(f)(null,args,f.context,{} as any),/Error updating issue/);assert.deepEqual(f.calls,['target','issue','activity','close']);});
+ test(name+' empty close result stops before subscriber and comment effects',async()=>{const f=fixture();f.repository.appendIssueAction=async(params:any)=>{f.calls.push(params.isOpen===false?'close':'activity');return{issues:[]};};await assert.rejects(factory(f)(null,args,f.context,{} as any),/Error updating issue/);assert.deepEqual(f.calls,['target','issue','activity','close']);});
 }

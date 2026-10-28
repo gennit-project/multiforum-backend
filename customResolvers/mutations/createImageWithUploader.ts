@@ -92,7 +92,11 @@ const getResolver = (input: Input) => {
       }
     }
 
-    // Build the create input with the Uploader relationship
+    // Build the create input with the Uploader relationship. The Uploader
+    // (UPLOADED_IMAGE, to-one) and Albums (HAS_IMAGE) edges are wired by the
+    // owned write in the repository — v7 removed the nested to-one connect, but
+    // the resolver keeps assembling this familiar shape and the repository reads
+    // the owner/album identifiers out of it.
     const createInput: any = {
       url: imageInput.url,
       storageBucket: uploadMetadata?.storageBucket,

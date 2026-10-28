@@ -75,8 +75,10 @@ test("Notification reads compile ownership into Cypher", async () => {
 });
 
 test("Notification aggregate reads compile ownership into Cypher", async () => {
+  // v7 removed the top-level `notificationsAggregate` query; the aggregate now
+  // lives on the connection as `aggregate { count { nodes } }`.
   const { capture, result } = await executeNotificationQuery(
-    `query { notificationsAggregate { count } }`,
+    `query { notificationsConnection { aggregate { count { nodes } } } }`,
     { sub: "alice" }
   );
 
@@ -85,7 +87,7 @@ test("Notification aggregate reads compile ownership into Cypher", async () => {
   // are the behavior under test here.
   assert.match(
     result.errors?.[0]?.message ?? "",
-    /Cannot return null for non-nullable field Query\.notificationsAggregate/
+    /Cannot return null for non-nullable field/
   );
   assert.match(capture.cypher, /HAS_NOTIFICATION/);
   assert.match(capture.cypher, /username/);
@@ -95,9 +97,9 @@ test("Notification aggregate reads compile ownership into Cypher", async () => {
 test("nested Notification reads and aggregates use the verified caller", async () => {
   const { capture, result } = await executeNotificationQuery(
     `query {
-      users(where: { username: "bob" }) {
+      users(where: { username: { eq: "bob" } }) {
         Notifications { id }
-        NotificationsAggregate { count }
+        NotificationsConnection { aggregate { count { nodes } } }
       }
     }`,
     { sub: "alice" }

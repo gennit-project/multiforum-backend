@@ -6,6 +6,7 @@ import { createEventUpdateNotificationEmail } from "./shared/emailUtils.js";
 import { buildEventUpdateNotificationPayload } from "../../services/eventUpdateNotifications.js";
 import { createInAppNotificationsForUsers } from "../../services/inAppNotifications.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
+import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { createEventWriteRepository, type EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
 import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
@@ -60,10 +61,29 @@ const getResolver = (input: Input) => {
         throw new Error("Event not found");
       }
 
-      const updatedEventId = where.id;
+      const updatedEventId = where.id?.eq;
+
+      // v7 dropped connectOrCreate for Tags; strip the Tags field and own the
+      // HAS_TAG edges (replace semantics) so the event's tags match the set.
+      const { cleaned: eventUpdateScalars, tagTexts, hadTags } = stripTags(
+        eventUpdateInput as Record<string, any>
+      );
 
       await executeManagedWrite(driver, async (transaction) => {
-        await repository.updateWithinTransaction(where, eventUpdateInput, transaction);
+        await repository.updateWithinTransaction(
+          where,
+          eventUpdateScalars as EventUpdateInput,
+          transaction
+        );
+
+        if (hadTags && updatedEventId) {
+          await ownTags(
+            (cypher, params) => transaction.run(cypher, params),
+            { label: "Event", id: updatedEventId },
+            tagTexts,
+            { replace: true }
+          );
+        }
 
         await applyEventChannelChanges({
           transaction,
@@ -80,10 +100,10 @@ const getResolver = (input: Input) => {
         await eventVersionHistoryHandler({
           context,
           params: {
-            where: { id: where.id },
+            where: { id: where.id?.eq },
             update: {
-              title: eventUpdateInput.title,
-              description: eventUpdateInput.description,
+              title: eventUpdateInput.title?.set,
+              description: eventUpdateInput.description?.set,
             },
           },
           eventSnapshot: existingEvent,

@@ -113,21 +113,21 @@ const exec = async (source: string, authorization?: string) => {
 };
 
 const MOD_TO_USER = `query {
-  moderationProfiles(where: { displayName: "${MOD_PROFILE}" }) {
+  moderationProfiles(where: { displayName: { eq: "${MOD_PROFILE}" } }) {
     displayName
     User { username }
   }
 }`;
 
 const USER_TO_MOD = `query {
-  users(where: { username: "${USERNAME}" }) {
+  users(where: { username: { eq: "${USERNAME}" } }) {
     username
     ModerationProfile { displayName }
   }
 }`;
 
 const MOD_TO_EMAIL = `query {
-  moderationProfiles(where: { displayName: "${MOD_PROFILE}" }) {
+  moderationProfiles(where: { displayName: { eq: "${MOD_PROFILE}" } }) {
     User { Email { address } }
   }
 }`;

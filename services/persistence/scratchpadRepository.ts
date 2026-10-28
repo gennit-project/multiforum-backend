@@ -24,12 +24,12 @@ const DELETE=`mutation DeleteScratchpadEntry($where:ScratchpadEntryWhere){delete
 const UPDATE=`mutation UpdateScratchpadVisibility($where:ScratchpadEntryWhere,$update:ScratchpadEntryUpdateInput){updateScratchpadEntries(where:$where,update:$update){scratchpadEntries ${SCRATCHPAD_DEFAULT_SELECTION}}}`;
 export function createScratchpadRepository(driver:Driver):ScratchpadRepository {
  return {
-  async findRecipient(username){return(await executeGeneratedOperation<{users:Array<Username & {displayName?:string|null}>}>(driver,RECIPIENT,{where:{username}})).users;},
-  async findCommentSource(id){return(await executeGeneratedOperation<{comments:ScratchpadCommentSource[]}>(driver,COMMENT,{where:{id}})).comments;},
-  async findDiscussionSource(id){return(await executeGeneratedOperation<{discussionChannels:ScratchpadDiscussionSource[]}>(driver,DISCUSSION,{where:{id}})).discussionChannels;},
-  async findOwnership(id){return(await executeGeneratedOperation<{scratchpadEntries:ScratchpadOwnership[]}>(driver,OWNER,{where:{id}})).scratchpadEntries;},
-  async findVisibility(id){return(await executeGeneratedOperation<{scratchpadEntries:ScratchpadVisibility[]}>(driver,VISIBILITY,{where:{id}})).scratchpadEntries;},
-  async deleteEntry(id){await executeGeneratedOperation(driver,DELETE,{where:{id}});},
-  async updateVisibility(id,isPublic){await executeGeneratedOperation(driver,UPDATE,{where:{id},update:{isPublic}});},
+  async findRecipient(username){return(await executeGeneratedOperation<{users:Array<Username & {displayName?:string|null}>}>(driver,RECIPIENT,{where:{username:{eq:username}}})).users;},
+  async findCommentSource(id){return(await executeGeneratedOperation<{comments:ScratchpadCommentSource[]}>(driver,COMMENT,{where:{id:{eq:id}}})).comments;},
+  async findDiscussionSource(id){return(await executeGeneratedOperation<{discussionChannels:ScratchpadDiscussionSource[]}>(driver,DISCUSSION,{where:{id:{eq:id}}})).discussionChannels;},
+  async findOwnership(id){return(await executeGeneratedOperation<{scratchpadEntries:ScratchpadOwnership[]}>(driver,OWNER,{where:{id:{eq:id}}})).scratchpadEntries;},
+  async findVisibility(id){return(await executeGeneratedOperation<{scratchpadEntries:ScratchpadVisibility[]}>(driver,VISIBILITY,{where:{id:{eq:id}}})).scratchpadEntries;},
+  async deleteEntry(id){await executeGeneratedOperation(driver,DELETE,{where:{id:{eq:id}}});},
+  async updateVisibility(id,isPublic){await executeGeneratedOperation(driver,UPDATE,{where:{id:{eq:id}},update:{isPublic:{set:isPublic}}});},
  };
 }

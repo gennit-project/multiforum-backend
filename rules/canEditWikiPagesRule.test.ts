@@ -96,14 +96,30 @@ const buildOgm = ({
         Channel: wikiPage.Channel ?? { uniqueName: wikiPage.channelUniqueName },
       }));
       return {
-        find: async ({ where }: { where?: { id?: string; id_IN?: string[] } }) => {
-          if (where?.id) {
-            return pages.filter((wikiPage) => wikiPage.id === where.id);
+        find: async ({
+          where,
+        }: {
+          where?: {
+            id?: { eq?: string; in?: string[] } | string;
+            id_IN?: string[];
+          };
+        }) => {
+          // v7: the generated WikiPageWhere nests filters as { id: { eq } } /
+          // { id: { in: [...] } }. Keep the deprecated flat id_IN working too.
+          const idObject =
+            where?.id && typeof where.id === "object" ? where.id : undefined;
+          const idEq =
+            idObject?.eq ??
+            (typeof where?.id === "string" ? where.id : undefined);
+          const idIn = idObject?.in ?? where?.id_IN;
+
+          if (idEq) {
+            return pages.filter((wikiPage) => wikiPage.id === idEq);
           }
 
-          if (where?.id_IN?.length) {
+          if (idIn?.length) {
             return pages.filter(
-              (wikiPage) => wikiPage.id && where.id_IN?.includes(wikiPage.id)
+              (wikiPage) => wikiPage.id && idIn.includes(wikiPage.id)
             );
           }
 
@@ -203,7 +219,7 @@ test("allows wiki page updates when the channel role can update the channel", as
   });
 
   const result = await evaluateCanEditWikiPagesRule(
-    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    { where: { id: { eq: "wiki-page-1" } }, update: { body: { set: "Updated" } } },
     ctx
   );
 
@@ -216,7 +232,7 @@ test("blocks generated wiki page updates that mutate lock fields directly", asyn
   });
 
   const result = await evaluateCanEditWikiPagesRule(
-    { where: { id: "wiki-page-1" }, update: { locked: true } },
+    { where: { id: { eq: "wiki-page-1" } }, update: { locked: { set: true } } },
     ctx
   );
 
@@ -231,7 +247,7 @@ test("blocks ordinary wiki editors from editing locked wiki pages", async () => 
   });
 
   const result = await evaluateCanEditWikiPagesRule(
-    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    { where: { id: { eq: "wiki-page-1" } }, update: { body: { set: "Updated" } } },
     ctx,
     async () => new Error("No wiki moderation permission")
   );
@@ -248,7 +264,7 @@ test("allows users with wiki moderation permission to edit locked wiki pages", a
   });
 
   const result = await evaluateCanEditWikiPagesRule(
-    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    { where: { id: { eq: "wiki-page-1" } }, update: { body: { set: "Updated" } } },
     ctx,
     async () => true
   );
@@ -328,7 +344,7 @@ test("blocks wiki page updates for suspended users when the suspended role canno
   });
 
   const result = await evaluateCanEditWikiPagesRule(
-    { where: { id: "wiki-page-1" }, update: { body: "Updated" } },
+    { where: { id: { eq: "wiki-page-1" } }, update: { body: { set: "Updated" } } },
     ctx
   );
 
@@ -343,7 +359,7 @@ test("checks child wiki page creation against the parent page channel", async ()
 
   const result = await evaluateCanEditWikiPagesRule(
     {
-      where: { id: "wiki-home" },
+      where: { id: { eq: "wiki-home" } },
       update: {
         ChildPages: [
           {
@@ -373,8 +389,8 @@ test("checks wiki home page updates that flow through updateChannels", async () 
 
   const result = await evaluateCanEditWikiHomePageRule(
     {
-      where: { uniqueName: "sourceit" },
-      update: { WikiHomePage: { update: { node: { body: "Updated" } } } },
+      where: { uniqueName: { eq: "sourceit" } },
+      update: ({ WikiHomePage: { update: { node: { body: "Updated" } } } } as any),
     },
     ctx
   );
@@ -389,8 +405,8 @@ test("blocks wiki home page updates when wiki is disabled for the channel", asyn
 
   const result = await evaluateCanEditWikiHomePageRule(
     {
-      where: { uniqueName: "sourceit" },
-      update: { WikiHomePage: { update: { node: { body: "Updated" } } } },
+      where: { uniqueName: { eq: "sourceit" } },
+      update: ({ WikiHomePage: { update: { node: { body: "Updated" } } } } as any),
     },
     ctx
   );
@@ -410,8 +426,8 @@ test("does not grant non-wiki channel updates (owner/admin gate handles those)",
   // settings.
   const result = await evaluateCanEditWikiHomePageRule(
     {
-      where: { uniqueName: "sourceit" },
-      update: { description: "Updated" },
+      where: { uniqueName: { eq: "sourceit" } },
+      update: { description: { set: "Updated" } },
     },
     ctx
   );
@@ -431,7 +447,7 @@ test("allows original wiki page authors to delete their pages", async () => {
   });
 
   const result = await evaluateCanDeleteWikiPagesRule(
-    { where: { id: "wiki-page-1" } },
+    { where: { id: { eq: "wiki-page-1" } } },
     ctx
   );
 
@@ -451,7 +467,7 @@ test("blocks deleting wiki pages that have child pages", async () => {
   });
 
   const result = await evaluateCanDeleteWikiPagesRule(
-    { where: { id: "wiki-page-1" } },
+    { where: { id: { eq: "wiki-page-1" } } },
     ctx
   );
 
@@ -474,7 +490,7 @@ test("checks the dedicated wiki delete permission for non-author page deletion",
   }> = [];
 
   const result = await evaluateCanDeleteWikiPagesRule(
-    { where: { id: "wiki-page-1" } },
+    { where: { id: { eq: "wiki-page-1" } } },
     ctx,
     async ({ channelConnections, permissionCheck }) => {
       permissionCalls.push({ channelConnections, permissionCheck });
@@ -503,7 +519,7 @@ test("blocks wiki page deletion when the user is not the original author or a pe
   });
 
   const result = await evaluateCanDeleteWikiPagesRule(
-    { where: { id: "wiki-page-1" } },
+    { where: { id: { eq: "wiki-page-1" } } },
     ctx,
     async () => new Error("No permission")
   );
@@ -525,7 +541,7 @@ test("wiki permission lookup skips absent/empty filters and preserves two edit s
     await evaluateCanEditWikiPagesRule({ where } as never, ctx);
   }
   assert.deepEqual(filters, []);
-  const where = { OR: [{ id: "page" }, { title_CONTAINS: "guide" }] };
+  const where = { OR: [{ id: { eq: "page" } }, { title_CONTAINS: "guide" }] };
   assert.equal(await evaluateCanEditWikiPagesRule({ where }, ctx, async () => true), true);
   assert.deepEqual(filters, [where, where]);
 });

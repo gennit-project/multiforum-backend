@@ -85,7 +85,7 @@ test("all four validation snapshots preserve missing and populated results",asyn
 });
 test("arbitrary compound filters and default25 limits match generated operations",async(t)=>{
  await driver.executeQuery("UNWIND range(0,29) AS i CREATE (:Discussion {id:toString(i),title:'topic'}) CREATE (:DownloadableFile {id:toString(i),fileName:'old.zip'})");
- for(const read of reads({OR:[{id_STARTS_WITH:"1"},{id_STARTS_WITH:"2"}]})) await compare(t,read);
+ for(const read of reads({OR:[{id:{startsWith:"1"}},{id:{startsWith:"2"}}]})) await compare(t,read);
  // Unfiltered reads hit the generated default limit of 25 over 30 rows; which 25
  // is only stable within a run (no ORDER BY), so assert the cap rather than
  // snapshotting a non-reproducible subset.
@@ -99,7 +99,7 @@ test("sensitive roots and nested channels retain anonymous internal filtering",a
 });
 const message=async(fn:()=>Promise<unknown>)=>{try{await fn();}catch(error){return (error as Error).message;}assert.fail("Expected error");};
 test("malformed filters preserve first coercion error",async()=>{
- for(const read of reads({id:true})) await assert.rejects(read(),/ID cannot represent/);
+ for(const read of reads({id:{eq:true}})) await assert.rejects(read(),/ID cannot represent/);
  for(const read of reads({unknownField:true})) await assert.rejects(read(),/Field "unknownField" is not defined by type/);
 });
 test("malformed selected values preserve first serialization error",async()=>{
@@ -117,7 +117,7 @@ test("outer privileged auth is not inherited by validation snapshots",async()=>{
 test("nested discussion channels preserve filtering when the root remains visible",async(t)=>{
  await seed();await driver.executeQuery("MATCH (dc:DiscussionChannel) SET dc.ageGateRestricted=true");
  await compare(t,reads()[0]);await compareEmoji(t);
- const [discussion]=await createContentValidationRepository(driver).findDiscussionChannels({id:"d"});
+ const [discussion]=await createContentValidationRepository(driver).findDiscussionChannels({id:{eq:"d"}});
  assert.deepEqual(discussion.DiscussionChannels,[]);
  const [comment]=await createContentValidationRepository(driver).findCommentEmojiState("c");
  assert.equal(comment.DiscussionChannel,null);

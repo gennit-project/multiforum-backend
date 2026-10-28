@@ -279,6 +279,75 @@ export const attachIssueIdentityRelationships = <T extends IssueInput>(
   return output as T;
 };
 
+// v7 (campaign #284): to-one connect was removed from create inputs, so the
+// Issue identity edges can no longer ride along on IssueCreateInput. The
+// repository creates the Issue with scalars, then owns these edges in Cypher.
+// Directions come from typeDefs: Channel HAS_ISSUE IN, Author AUTHORED_ISSUE
+// OUT (User/ModerationProfile union), every typed target TARGETS_* OUT.
+export const issueIdentityRelationshipFields: readonly string[] = [
+  "Channel",
+  "Author",
+  ...issueTargetDefinitions.map((definition) => definition.relationshipField),
+];
+
+export type IssueIdentityEdge = {
+  relationshipType: string;
+  direction: "IN" | "OUT";
+  targetLabel: string;
+  targetKey: string;
+  value: string;
+};
+
+export const extractIssueIdentityEdges = (
+  input: IssueInput
+): IssueIdentityEdge[] => {
+  const edges: IssueIdentityEdge[] = [];
+  if (populated(input.channelUniqueName)) {
+    edges.push({
+      relationshipType: "HAS_ISSUE",
+      direction: "IN",
+      targetLabel: "Channel",
+      targetKey: "uniqueName",
+      value: input.channelUniqueName,
+    });
+  }
+  const authorUser = collectConnectionValues(input.Author?.User, "username")[0];
+  const authorMod = collectConnectionValues(
+    input.Author?.ModerationProfile,
+    "displayName"
+  )[0];
+  if (populated(authorUser)) {
+    edges.push({
+      relationshipType: "AUTHORED_ISSUE",
+      direction: "OUT",
+      targetLabel: "User",
+      targetKey: "username",
+      value: authorUser,
+    });
+  } else if (populated(authorMod)) {
+    edges.push({
+      relationshipType: "AUTHORED_ISSUE",
+      direction: "OUT",
+      targetLabel: "ModerationProfile",
+      targetKey: "displayName",
+      value: authorMod,
+    });
+  }
+  for (const definition of issueTargetDefinitions) {
+    const value = input[definition.scalarField];
+    if (populated(value)) {
+      edges.push({
+        relationshipType: definition.relationshipType,
+        direction: "OUT",
+        targetLabel: definition.targetLabel,
+        targetKey: definition.targetKey,
+        value,
+      });
+    }
+  }
+  return edges;
+};
+
 export const assertIssueIdentityUpdateAllowed = (update: unknown) => {
   const updates = Array.isArray(update) ? update : update ? [update] : [];
   for (const entry of updates) {

@@ -52,10 +52,15 @@ function getDownloadableFileIds(discussionCreateInput: any) {
     ? [downloadableFiles]
     : [];
 
+  // v7 nests the filter leaf as where.node.id = { eq: "..." } (IDScalarFilters);
+  // tolerate the old flat string too.
   return fieldInputs.flatMap(
     (fieldInput) =>
       fieldInput?.connect
-        ?.map((connection: { where?: { node?: { id?: string } } }) => connection?.where?.node?.id)
+        ?.map((connection: { where?: { node?: { id?: string | { eq?: string | null } } } }) => {
+          const id = connection?.where?.node?.id;
+          return typeof id === "string" ? id : id?.eq;
+        })
         .filter((id: unknown): id is string => typeof id === "string") || []
   );
 }

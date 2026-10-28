@@ -34,7 +34,7 @@ const getUserContributionsResolver = (input: Input) => {
       driver,
       agePolicyRepository,
     });
-    const session = driver.session({ defaultAccessMode: 'READ' });
+    const session = driver.session();
 
     try {
       // Verify user existence
@@ -47,11 +47,11 @@ const getUserContributionsResolver = (input: Input) => {
       // Determine effective date range
       const effectiveStartDate = year
         ? `${year}-01-01`
-        : (startDate || DateTime.now().minus({ year: 1 }).toISODate());
+        : (startDate || DateTime.utc().minus({ year: 1 }).toISODate());
 
       const effectiveEndDate = year
         ? `${year}-12-31`
-        : (endDate || DateTime.now().toISODate());
+        : (endDate || DateTime.utc().toISODate());
 
       // Execute optimized Cypher query
       const result = await session.run(getUserContributionsQuery, {

@@ -138,8 +138,8 @@ const CREATE_DISCUSSION = `
 `;
 
 const CREATE_COMMENTS = `
-  mutation ($input: [CommentCreateInput!]!) {
-    createComments(input: $input) { comments { id } }
+  mutation ($input: [OwnedCommentCreateInput!]!) {
+    createCommentWithOwnedConnections(input: $input) { comments { id } }
   }
 `;
 
@@ -276,7 +276,7 @@ test("creating a download is blocked when the file type is not allowed in the ch
 
   const result = await exec(CREATE_DISCUSSION, {
     input: downloadDiscussionInput("dl-typed", {
-      DownloadableFiles: { connect: [{ where: { node: { id: "file-zip" } } }] },
+      DownloadableFiles: { connect: [{ where: { node: { id: { eq: "file-zip" } } } }] },
     }),
   });
 
@@ -294,8 +294,7 @@ test("a download whose file type IS allowed in the channel passes the file-type 
 
   const result = await exec(CREATE_DISCUSSION, {
     input: downloadDiscussionInput("dl-ok", {
-      Author: { connect: { where: { node: { username: ADMIN_USER } } } },
-      DownloadableFiles: { connect: [{ where: { node: { id: "file-ok" } } }] },
+      DownloadableFiles: { connect: [{ where: { node: { id: { eq: "file-ok" } } } }] },
     }),
   });
 
@@ -324,7 +323,7 @@ test("creating a discussion with an image is blocked when image uploads are disa
           Album: {
             create: {
               node: {
-                Images: { connect: [{ where: { node: { id: "image-1" } } }] },
+                Images: { connect: [{ where: { node: { id: { eq: "image-1" } } } }] },
               },
             },
           },

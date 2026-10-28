@@ -106,8 +106,9 @@ const undoUpvoteCommentResolver = (input: Input) => {
       await tx.commit();
 
       const existingUpvotedByUsers = comment.UpvotedByUsers || [];
-      const existingUpvotedByUsersAggregate =
-        comment.UpvotedByUsersAggregate || { count: 0 };
+      const existingUpvotedByUsersAggregate = {
+        count: existingUpvotedByUsers.length,
+      };
 
       const returnValue = {
         id: commentId,

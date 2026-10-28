@@ -137,7 +137,7 @@ export function createEventWriteRepository(driver: Driver): EventWriteRepository
     },
     async findCreatedEvent(id) {
       const result = await executeGeneratedOperation<{events: Event[]}>(driver,
-        `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id}});
+        `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}});
       return result.events;
     },
     async findUpdateSnapshot(where) {
@@ -153,7 +153,7 @@ export function createEventWriteRepository(driver: Driver): EventWriteRepository
     },
     async findUpdatedEvent(id) {
       const result = await executeGeneratedOperation<{events: Event[]}>(driver,
-        `query EventAfterCustomUpdate($where: EventWhere) { events(where: $where) ${UPDATED_EVENT_SELECTION} }`, {where: {id}});
+        `query EventAfterCustomUpdate($where: EventWhere) { events(where: $where) ${UPDATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}});
       return result.events;
     },
   };

@@ -16,7 +16,7 @@ type IssueIsNotLockedInput = {
 export const issueIsNotLocked = rule({ cache: "contextual" })(
   async (parent: unknown, args: IssueIsNotLockedInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
-    const issueId = where?.id;
+    const issueId = where?.id?.eq;
     if (!issueId) {
       throw new Error(ERROR_MESSAGES.issue.noId);
     }

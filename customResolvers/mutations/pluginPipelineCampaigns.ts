@@ -99,10 +99,10 @@ const changeCampaignStatus = (
     }
     const timestamp = new Date().toISOString();
     const result = await repository.updateStatus(campaignId, {
-        status,
+        status: { set: status },
         ...(status === PluginPipelineCampaignStatus.Paused
-          ? { pausedAt: timestamp }
-          : { pausedAt: null }),
+          ? { pausedAt: { set: timestamp } }
+          : { pausedAt: { set: null } }),
       });
     return result.pluginPipelineCampaigns[0];
   };

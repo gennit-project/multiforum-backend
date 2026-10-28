@@ -1,8 +1,4 @@
 import { createIssueLockRepository, type IssueLockRepository } from "../../services/persistence/issueLockRepository.js";
-import type {
-  IssueUpdateInput,
-  ModerationActionCreateInput,
-} from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { GraphQLError } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
@@ -69,66 +65,23 @@ const getResolver = (input: Input = {}) => {
       ? `**Reason for unlocking:** ${reason}`
       : "Issue unlocked";
 
-    const moderationActionCreateInput: ModerationActionCreateInput = {
-      ModerationProfile: {
-        connect: {
-          where: {
-            node: {
-              displayName: loggedInModName,
-            },
-          },
-        },
-      },
-      actionType: "unlock",
-      actionDescription: "Unlocked the issue",
-      Comment: {
-        create: {
-          node: {
-            text: actionText,
-            isRootComment: true,
-            CommentAuthor: {
-              ModerationProfile: {
-                connect: {
-                  where: {
-                    node: {
-                      displayName: loggedInModName,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-
-    // Update the issue to unlock it
-    const issueUpdateInput: IssueUpdateInput = {
-      locked: false,
-      lockedAt: null,
-      lockReason: null,
-      LockedBy: {
-        disconnect: {
-          where: {
-            node: {
-              displayName_NOT: null, // Disconnect any connected ModerationProfile
-            },
-          },
-        },
-      },
-      ActivityFeed: [
-        {
-          create: [
-            {
-              node: moderationActionCreateInput,
-            },
-          ],
-        },
-      ],
-    };
-
+    // Unlock the issue via the owned write: the moderation action + embedded
+    // moderator comment, clear the lock scalars, and drop the LockedBy
+    // (LOCKED_ISSUE) edge.
     try {
-      const updateResult = await repository.updateLock(issueId, issueUpdateInput);
+      const updateResult = await repository.unlockIssue({
+        issueId,
+        modDisplayName: loggedInModName,
+        lockedAt: null,
+        lockReason: null,
+        action: {
+          actionType: "unlock",
+          actionDescription: "Unlocked the issue",
+          text: actionText,
+          modDisplayName: loggedInModName,
+          commentChannelUniqueName: null,
+        },
+      });
 
       const updatedIssue = updateResult.issues[0];
       if (!updatedIssue) {

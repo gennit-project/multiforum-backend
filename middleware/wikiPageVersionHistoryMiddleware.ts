@@ -8,7 +8,6 @@ import { createWikiRevisionRepository, type WikiRevisionRepository } from "../se
 // Import the handler function that contains the version history logic
 import { wikiPageVersionHistoryHandler } from "../hooks/wikiPageVersionHistoryHook.js";
 import { GraphQLResolveInfo } from 'graphql';
-import type { TextVersionCreateInput } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
 import { logger } from "../logger.js";
 
@@ -162,7 +161,7 @@ async function createFirstTextVersion(
   username: string
 ) {
   try {
-    const textVersionInput: TextVersionCreateInput = {
+    const textVersionInput: Record<string, unknown> = {
       body: content,
       Author: {
         connect: { where: { node: { username } } }

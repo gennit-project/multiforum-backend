@@ -157,8 +157,17 @@ const pluginReturning = (result: PluginRunResult): PluginConstructor =>
     }
   };
 const loaderFor = (cls: PluginConstructor): LoadPlugin => async () => cls;
+// Terminal run/attempt updates flow through the generated v7 updateX mutation,
+// so their scalar fields are wrapped as { set: value }. The in-memory repository
+// stubs pass updates through verbatim (no setify), while flat extras added by the
+// lease wrappers (e.g. claim's RUNNING, skipped runs) stay plain. setValue reads
+// either shape so assertions compare the underlying value.
+const setValue = (value: unknown): unknown =>
+  value && typeof value === "object" && "set" in (value as Record<string, unknown>)
+    ? (value as { set: unknown }).set
+    : value;
 const statusesOf = (updates: RunUpdateArgs[]) =>
-  updates.map(update => update.update?.status);
+  updates.map(update => setValue(update.update?.status));
 
 const execRun = (
   models: Models,
@@ -238,13 +247,13 @@ test("stores structured public diagnostics separately from internal logs", async
   await execRun(models, loaderFor(Plugin));
 
   const completed = updates.find(
-    update => update.update?.status === "SUCCEEDED"
+    update => setValue(update.update?.status) === "SUCCEEDED"
   )?.update;
   assert.ok(completed);
   assert.deepEqual(
     {
-      publicDiagnostics: JSON.parse(String(completed.publicDiagnostics)),
-      internalPayload: JSON.parse(String(completed.payload)).logs,
+      publicDiagnostics: JSON.parse(String(setValue(completed.publicDiagnostics))),
+      internalPayload: JSON.parse(String(setValue(completed.payload))).logs,
     },
     {
       publicDiagnostics: [
@@ -276,10 +285,10 @@ test("creates and completes a first-class pipeline attempt", async () => {
     loaderFor(pluginReturning({ success: true, result: { message: "ok" } }))
   );
   const started = attemptUpdates.find(
-    update => update.update?.status === "RUNNING"
+    update => setValue(update.update?.status) === "RUNNING"
   );
   const completed = attemptUpdates.find(
-    update => update.update?.status === "SUCCEEDED"
+    update => setValue(update.update?.status) === "SUCCEEDED"
   );
 
   assert.deepEqual(
@@ -333,9 +342,9 @@ test("creates and completes a first-class pipeline attempt", async () => {
         startedAt: attemptUpdates[0]!.update?.startedAt,
       },
       completed: {
-        status: "SUCCEEDED",
+        status: { set: "SUCCEEDED" },
         finishedAt: completed!.update?.finishedAt,
-        timeoutAt: null,
+        timeoutAt: { set: null },
       },
       matchingPipelineId: true,
     }
@@ -418,8 +427,10 @@ test("gives plugins signed access to private objects without persisting the sign
 
   const completedPayload = JSON.parse(
     String(
-      updates.find(update => update.update?.status === "SUCCEEDED")
-        ?.update?.payload
+      setValue(
+        updates.find(update => setValue(update.update?.status) === "SUCCEEDED")
+          ?.update?.payload
+      )
     )
   );
   assert.deepEqual({
@@ -485,14 +496,14 @@ test("fails the security pipeline when no readable attachment is available", asy
   await execRun(models, loaderFor(Plugin));
 
   const completedRun = updates.find(
-    update => update.update?.status === "FAILED"
+    update => setValue(update.update?.status) === "FAILED"
   )?.update;
   assert.equal(handled, false);
   assert.equal(
-    completedRun?.message,
+    setValue(completedRun?.message),
     "No readable downloadable attachment is available to scan."
   );
-  assert.deepEqual(JSON.parse(String(completedRun?.publicDiagnostics)), [
+  assert.deepEqual(JSON.parse(String(setValue(completedRun?.publicDiagnostics))), [
     {
       level: "ERROR",
       code: "SCAN_ATTACHMENT_UNAVAILABLE",
@@ -505,7 +516,7 @@ test("fails the security pipeline when no readable attachment is available", asy
     },
   ]);
   assert.equal(
-    attemptUpdates[attemptUpdates.length - 1]?.update?.status,
+    setValue(attemptUpdates[attemptUpdates.length - 1]?.update?.status),
     "FAILED"
   );
   assert.deepEqual(fileUpdates[1], {
@@ -531,10 +542,10 @@ test("fails the security pipeline when a successful plugin omits its verdict", a
   );
 
   const completedRun = updates.find(
-    update => update.update?.status === "FAILED"
+    update => setValue(update.update?.status) === "FAILED"
   )?.update;
-  assert.equal(completedRun?.message, "Scan complete");
-  assert.equal(attemptUpdates[attemptUpdates.length - 1]?.update?.status, "FAILED");
+  assert.equal(setValue(completedRun?.message), "Scan complete");
+  assert.equal(setValue(attemptUpdates[attemptUpdates.length - 1]?.update?.status), "FAILED");
   assert.equal(fileUpdates[1]?.update?.scanStatus, "FAILED");
 });
 
@@ -554,7 +565,7 @@ test("clears the quarantine after a clean scanner verdict", async () => {
   );
 
   assert.ok(statusesOf(updates).includes("SUCCEEDED"));
-  assert.equal(attemptUpdates[attemptUpdates.length - 1]?.update?.status, "SUCCEEDED");
+  assert.equal(setValue(attemptUpdates[attemptUpdates.length - 1]?.update?.status), "SUCCEEDED");
   assert.deepEqual(fileUpdates[1], {
     where: { id: "f-1" },
     update: {
