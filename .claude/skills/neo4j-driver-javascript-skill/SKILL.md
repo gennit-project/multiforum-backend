@@ -14,10 +14,14 @@ metadata:
 allowed-tools: Bash WebFetch
 ---
 
-> **Project compatibility:** This repository currently pins `neo4j-driver` v5.
-> Do not introduce v6-only APIs or migrate the driver unless the task explicitly
-> requests that upgrade. Use this skill for concepts shared with v5, and verify
-> version-specific behavior against the installed package and official v5 docs.
+> **Project compatibility:** This repository pins `neo4j-driver` exactly to
+> `6.2.0` and declares `@neo4j/graphql ^7.6.4`. The Driver 6 upgrade is merged
+> (#402); use the installed v6 API and verify version-specific behavior against
+> its types and official documentation. `@neo4j/graphql-ogm` is removed: use
+> the driver-backed repositories in `services/persistence`. Preserve existing
+> transaction, bookmark, routing, and session-lifecycle behavior when adapting
+> the examples below. Repository tooling requires Node 26.x and the pnpm version
+> in `package.json`; the upstream driver minimum above is not the project minimum.
 
 ## When to Use
 - Writing JS/TS code that connects to Neo4j (Node.js or browser)

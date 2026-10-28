@@ -5,25 +5,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build/Run Commands
 - `pnpm run codegen` - Generate GraphQL code
 - `pnpm run tsc` - Run TypeScript compiler
-- `pnpm run build` - Build project (runs tsc + copies Cypher files)
+- `pnpm run build` - Build project (codegen + tsc + copies Cypher files)
 - `pnpm run start` - Start the server
 - `pnpm run logSchema` - Log GraphQL schema to console
-- No explicit test/lint commands defined (update when added)
+- `pnpm test` - Run unit tests
+- `pnpm run test:integration` - Run integration tests against disposable Neo4j via Testcontainers
+- `pnpm run lint` - Run ESLint
+- `pnpm run lint:circular` - Check for circular dependencies
+- `pnpm run coverage` - Run unit tests with coverage
 
 ## Dependency Constraints
-- **graphql** — pinned to `^16` (do not upgrade). `@neo4j/graphql` (all
-  versions, incl. 7.x) declares `peerDependencies: graphql ^16.0.0`, and
-  graphql 17 is ESM-only, which crashes CJS transitive deps (e.g.
-  `graphql-query-complexity`) with `ERR_REQUIRE_CYCLE_MODULE` during codegen.
-- **neo4j-driver** (`^5`) and **@neo4j/graphql** (`^5`) — previously pinned
-  because `@neo4j/graphql-ogm` peer-required `neo4j-driver ^5.8.0` and
-  `@neo4j/graphql ^5`. The OGM has now been removed (campaign #284): it is no
-  longer a dependency, and type generation uses plain `@graphql-codegen`
-  (`build_scripts/generateTypes.ts`). That blocker is gone — `@neo4j/graphql`
-  7.x supports `neo4j-driver 6` (peer `^5.8.0 || ^6.0.0`), so upgrading to
-  `@neo4j/graphql` 7 + `neo4j-driver` 6 is now unblocked. That upgrade is a
-  separate, deliberate migration (breaking changes + frontend document/type
-  regen); until it lands both stay on `^5`. graphql stays `^16` regardless.
+- **Current stack:** `@neo4j/graphql` is declared as `^7.6.4` and
+  `neo4j-driver` is pinned exactly to `6.2.0`. GraphQL 7 and Driver 6 landed
+  in #398 and #402; the former v5 guardrails no longer apply.
+- **graphql** stays on the manifest's `^16.14.2` range. The installed
+  `@neo4j/graphql` 7.6.4 declares `graphql ^16.0.0` and
+  `neo4j-driver ^5.8.0 || ^6.0.0` peers. Recheck installed package metadata
+  before future upgrades; do not infer compatibility for every release.
+- **No OGM:** `@neo4j/graphql-ogm` has been removed (campaign #284). Use
+  driver-backed repositories in `services/persistence`, including named
+  `executeGeneratedOperation` operations where appropriate. Do not restore
+  `ogm.model(...)` access or the OGM dependency.
+- **Type generation:** `build_scripts/generateTypes.ts` uses maintained
+  `@graphql-codegen` plugins against the in-process schema, without a database
+  or running server. It generates `ogm_types.ts` (a retained filename, not an
+  OGM dependency) and `src/generated/graphql.ts`.
+- **Public schema changes:** use the current GraphQL 7 schema and validate
+  frontend documents/types when changing its contract. Backend and frontend
+  compatibility work is merged (#398 and multiforum-nuxt#690); merged code and
+  green CI do not establish deployment or live browser-to-backend sign-off.
 
 ## Toolchain notes
 - **tsx (not ts-node)**: TypeScript scripts and tests run through `tsx`
