@@ -9,7 +9,8 @@ import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import { stripTags, ownTags } from "../../services/persistence/tagOwnership.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { createEventWriteRepository, type EventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
-import { eventVersionHistoryHandler } from "../../hooks/eventVersionHistoryHook.js";
+import { eventRevisionActivityHandler } from "../../hooks/eventVersionHistoryHook.js";
+import { createEventRevisionRepository } from "../../services/persistence/eventRevisionRepository.js";
 import { logger } from "../../logger.js";
 import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
 
@@ -69,7 +70,9 @@ const getResolver = (input: Input) => {
         eventUpdateInput as Record<string, any>
       );
 
-      await executeManagedWrite(driver, async (transaction) => {
+      const revisions = context.eventRevisionRepository ?? createEventRevisionRepository(driver);
+      const committed = await executeManagedWrite(driver, async (transaction) => {
+        const snapshot = updatedEventId ? await revisions.lockSnapshot(updatedEventId, transaction) : null;
         await repository.updateWithinTransaction(
           where,
           eventUpdateScalars as EventUpdateInput,
@@ -91,31 +94,17 @@ const getResolver = (input: Input) => {
           channelConnections,
           channelDisconnections,
         });
+        const changes = snapshot ? await revisions.recordChanges(snapshot, context.user?.username || null, transaction) : [];
+        return {snapshot, changes};
       });
-
-      // Version-history writes happen once after the retryable business write.
-      // They use the pre-update snapshot without putting logging or other
-      // non-database effects inside the managed callback.
-      if (where.id) {
-        await eventVersionHistoryHandler({
-          context,
-          params: {
-            where: { id: where.id?.eq },
-            update: {
-              title: eventUpdateInput.title?.set,
-              description: eventUpdateInput.description?.set,
-            },
-          },
-          eventSnapshot: existingEvent,
-        });
-      }
+      if (updatedEventId) await eventRevisionActivityHandler(context, updatedEventId, committed.changes);
       // Refetch the newly created event with the channel connections
       // and disconnections so that we can return it.
       const result = await repository.findUpdatedEvent(updatedEventId);
 
       const updatedEvent = result[0];
       const eventUpdateNotification = buildEventUpdateNotificationPayloadFn(
-        existingEvent,
+        committed.snapshot ? {...existingEvent, ...committed.snapshot} as typeof existingEvent : existingEvent,
         updatedEvent
       );
 

@@ -56,3 +56,10 @@ export async function executeGeneratedOperation<T>(
   if (result.errors?.length) throw new Error(result.errors[0].message);
   return result.data as T;
 }
+
+/** Public mutation adapters reuse the same unwrapped read schema. */
+export function getGeneratedSchema(driver: Driver): GraphQLSchema {
+  const registered = registeredSchemas.get(driver);
+  if (!registered) throw new Error("Generated schema operations are not initialized for this driver");
+  return registered.schema;
+}

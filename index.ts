@@ -252,7 +252,6 @@ async function initializeServer() {
       discussionPluginPipelineMiddleware as AppMiddleware,
       discussionMentionsMiddleware as AppMiddleware,
       commentVersionHistoryMiddleware as AppMiddleware,
-      eventVersionHistoryMiddleware as AppMiddleware,
       commentMentionsMiddleware as AppMiddleware,
       commentUserMentionsMiddleware as AppMiddleware,
       commentPluginPipelineMiddleware as AppMiddleware,
@@ -261,7 +260,10 @@ async function initializeServer() {
       issueSubscriptionNotificationMiddleware as AppMiddleware,
       channelBotsMiddleware as AppMiddleware,
       channelCreatorModeratorMiddleware as AppMiddleware,
-      filterGroupValidationMiddleware as AppMiddleware
+      filterGroupValidationMiddleware as AppMiddleware,
+      // Keep the event transaction innermost: outer activity/notification
+      // middleware must run once after commit, never inside a retried callback.
+      eventVersionHistoryMiddleware as AppMiddleware
     );
     /* c8 ignore next -- startup composition is verified by deployment smoke tests. */
     // v7's assertIndexesAndConstraints only checks @fulltext indexes; create them

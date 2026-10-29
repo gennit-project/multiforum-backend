@@ -151,7 +151,7 @@ test("updateEventWithChannelConnections notifies update watchers except the acto
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "editor" } } as unknown as GraphQLContext,
+    { user: { username: "editor" }, eventRevisionRepository: {lockSnapshot: async () => baseExistingEvent, recordChanges: async () => []} } as unknown as GraphQLContext,
     null as unknown as GraphQLResolveInfo
   );
 
@@ -220,7 +220,7 @@ test("updateEventWithChannelConnections skips notifications when no meaningful e
       channelConnections: [],
       channelDisconnections: [],
     },
-    { user: { username: "editor" } } as unknown as GraphQLContext,
+    { user: { username: "editor" }, eventRevisionRepository: {lockSnapshot: async () => baseExistingEvent, recordChanges: async () => []} } as unknown as GraphQLContext,
     null as unknown as GraphQLResolveInfo
   );
 
@@ -285,7 +285,7 @@ test("updateEventWithChannelConnections does not duplicate email when Neo4j retr
       channelConnections: ["events"],
       channelDisconnections: [],
     },
-    { user: { username: "editor" } } as unknown as GraphQLContext,
+    { user: { username: "editor" }, eventRevisionRepository: {lockSnapshot: async () => baseExistingEvent, recordChanges: async () => []} } as unknown as GraphQLContext,
     null as unknown as GraphQLResolveInfo
   );
 

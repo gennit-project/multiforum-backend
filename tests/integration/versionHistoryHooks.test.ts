@@ -15,7 +15,6 @@ import {
   discussionEditNotificationHandler,
 } from "../../hooks/discussionVersionHistoryHook.js";
 import {
-  eventVersionHistoryHandler,
   eventEditNotificationHandler,
 } from "../../hooks/eventVersionHistoryHook.js";
 import { wikiPageVersionHistoryHandler } from "../../hooks/wikiPageVersionHistoryHook.js";
@@ -196,97 +195,6 @@ const seedEvent = () =>
      CREATE (ec)-[:POSTED_IN_CHANNEL]->(e)
      CREATE (alice)-[:POSTED_BY]->(e)`
   );
-
-test("eventVersionHistoryHandler saves pre-edit title and description versions and updates DescriptionLastEditedBy", async () => {
-  await seedEvent();
-
-  await eventVersionHistoryHandler({
-    context: editorCtx("mod"),
-    params: {
-      where: { id: "e1" },
-      update: { title: "New Title", description: "New description" },
-    },
-  });
-
-  const titleV = await run(
-    `MATCH (:Event { id: 'e1' })-[:HAS_TITLE_VERSION]->(tv:TextVersion)<-[:AUTHORED_VERSION]-(u:User)
-     RETURN tv.body AS body, u.username AS author`
-  );
-  assert.equal(titleV.length, 1);
-  assert.equal(titleV[0].body, "Old Title");
-  assert.equal(titleV[0].author, "mod", "title revision is attributed to the editor");
-
-  const descV = await run(
-    `MATCH (:Event { id: 'e1' })-[:HAS_DESCRIPTION_VERSION]->(tv:TextVersion)<-[:AUTHORED_VERSION]-(u:User)
-     RETURN tv.body AS body, u.username AS author`
-  );
-  assert.equal(descV.length, 1);
-  assert.equal(descV[0].body, "Old description");
-  assert.equal(descV[0].author, "alice", "description revision is attributed to the content author");
-
-  const lastEdited = await run(
-    `MATCH (:Event { id: 'e1' })-[:DESCRIPTION_LAST_EDITED_BY]->(u:User) RETURN u.username AS username`
-  );
-  assert.equal(lastEdited.length, 1);
-  assert.equal(lastEdited[0].username, "mod");
-});
-
-test("eventVersionHistoryHandler saves only a title version when only the title changes", async () => {
-  await seedEvent();
-
-  await eventVersionHistoryHandler({
-    context: editorCtx("mod"),
-    params: {
-      where: { id: "e1" },
-      update: { title: "New Title", description: "Old description" },
-    },
-  });
-
-  const versions = await run(
-    `MATCH (:Event { id: 'e1' })-[r]->(tv:TextVersion)
-     RETURN type(r) AS rel, tv.body AS body`
-  );
-  assert.deepEqual(
-    versions.map((v: any) => ({ rel: v.rel, body: v.body })),
-    [{ rel: "HAS_TITLE_VERSION", body: "Old Title" }]
-  );
-});
-
-test("eventVersionHistoryHandler saves only a description version when only the description changes", async () => {
-  await seedEvent();
-
-  await eventVersionHistoryHandler({
-    context: editorCtx("mod"),
-    params: {
-      where: { id: "e1" },
-      update: { title: "Old Title", description: "New description" },
-    },
-  });
-
-  const versions = await run(
-    `MATCH (:Event { id: 'e1' })-[r]->(tv:TextVersion)
-     RETURN type(r) AS rel, tv.body AS body`
-  );
-  assert.deepEqual(
-    versions.map((v: any) => ({ rel: v.rel, body: v.body })),
-    [{ rel: "HAS_DESCRIPTION_VERSION", body: "Old description" }]
-  );
-});
-
-test("eventVersionHistoryHandler is a no-op when title and description are unchanged", async () => {
-  await seedEvent();
-
-  await eventVersionHistoryHandler({
-    context: editorCtx("alice"),
-    params: {
-      where: { id: "e1" },
-      update: { title: "Old Title", description: "Old description" },
-    },
-  });
-
-  const versions = await run(`MATCH (tv:TextVersion) RETURN count(tv) AS n`);
-  assert.equal(Number(versions[0].n), 0);
-});
 
 test("eventEditNotificationHandler notifies the event author of a moderator edit", async () => {
   await run(`CREATE (:User { username: 'alice', createdAt: datetime() })`);

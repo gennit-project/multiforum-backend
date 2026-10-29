@@ -2,7 +2,6 @@ import type { Driver } from "neo4j-driver";
 import { createPipelineNotificationRepository, type PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 import {
   PluginPipelineRunStatus,
-  type UserUpdateInput,
 } from "../../ogm_types.js";
 
 const TERMINAL = new Set<PluginPipelineRunStatus>([
@@ -52,8 +51,6 @@ export const notifyUploaderOfPipelineResult = async ({
   if (!username) return false;
 
   const timestamp = now();
-  const claim = await persistence.claimNotification(pipelineId, timestamp);
-  if (claim.pluginPipelineRuns.length === 0) return false;
 
   const channel = file.Discussion?.DiscussionChannels?.find(
     item => item.archived !== true
@@ -72,20 +69,8 @@ export const notifyUploaderOfPipelineResult = async ({
       : attempt.status === PluginPipelineRunStatus.TimedOut
         ? "timed out"
         : "did not pass";
-  await persistence.createNotification({
-    where: { username: { eq: username } },
-    update: {
-      Notifications: [{
-        create: [{
-          node: {
-            read: false,
-            notificationType: "plugin_pipeline",
-            text: `Checks for “${file.Discussion?.title || "your download"}” ${label}.`,
-            link,
-          },
-        }],
-      }],
-    } as UserUpdateInput,
+  return persistence.deliver({
+    pipelineId, timestamp, targetId: attempt.targetId, username, link,
+    text: `Checks for “${file.Discussion?.title || "your download"}” ${label}.`,
   });
-  return true;
 };
