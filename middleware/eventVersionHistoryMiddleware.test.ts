@@ -1,115 +1,43 @@
-// Unit tests for the event version-history middleware. It mirrors the discussion
-// version-history middleware: wraps updateEvents, captures a pre-update snapshot
-// when the title/description changes, and delegates the version + edit-notification
-// writes to hooks (which here run against a finite revision repository). These tests
-// drive its own branching — passthrough vs. snapshot-fetch vs. hook dispatch —
-// with a stubbed resolver and no DB.
-import assert from "node:assert/strict";
-import test from "node:test";
-import middleware from "./eventVersionHistoryMiddleware.js";
+import {buildSchema, parse} from 'graphql';
+import {registerGeneratedSchema} from '../services/persistence/generatedSchemaOperations.js';
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+import middleware from './eventVersionHistoryMiddleware.js';
 
-const M: any = (middleware as any).Mutation;
-const RESULT = { events: [{ id: "e-1" }] };
-
-// Finite snapshot seam records whether middleware reads before resolving.
-function makeCtx(models: Record<string, any> = {}) {
-  const calls: string[] = [];
-  const eventRevisionRepository = {
-    findSnapshot: async () => {calls.push("Event");return models.Event?.find?.() ?? [];},
-    findVersionAuthor: async () => [],
-    createPreviousText: async () => ({textVersions: []}),
-    connectTitleVersion: async () => {},
-    connectDescriptionVersion: async () => {},
-    replaceDescriptionEditor: async () => {},
-  };
-  return {ctx: {eventRevisionRepository, driver: {}, user: {username: "alice"}} as any, calls};
+for (const outcome of ['success', 'resolve-failure', 'history-failure', 'noop', 'retry']) {
+  test(`event transaction ${outcome} preserves write and effect ordering`, async () => {
+    const calls: string[] = [];
+    const tx = {};
+    const snapshot = {id:'e', title:'old', Poster:{username:'editor'}};
+    const context: any = {
+      driver: {session: () => ({
+        executeWrite: async (work: any) => {
+          if (outcome === 'retry') {await work(tx); calls.push('rollback');}
+          const result = await work(tx); calls.push('commit'); return result;
+        }, close: async () => {calls.push('close');},
+      })},
+      user:{username:'editor'},
+      eventRevisionRepository: {
+        lockSnapshot: async () => {calls.push('lock'); return snapshot;},
+        recordChanges: async () => {calls.push('history'); if(outcome==='history-failure')throw Error('history failure');return outcome==='noop'?[]:[{id:'v',type:'title'}];},
+      },
+      issueActivityRepository:{findRelatedIssueIds:async()=>{calls.push('activity');return [];}}
+    };
+    const schema = buildSchema('input EventWhere {id: IdFilter} input IdFilter {in:[ID!]} type Query {events(where:EventWhere):[Event!]!} type Event {id:ID!}');
+    schema.getQueryType()!.getFields().events.resolve=()=>[{id:'e'}];
+    registerGeneratedSchema(context.driver,schema);
+    const operation: any = parse('mutation {updateEvents {events {id}}}').definitions[0];
+    const info: any = {fieldNodes:operation.selectionSet.selections, operation, fragments:{}, variableValues:{}};
+    const resolve = async (_p: unknown, _a: unknown, ctx: any) => {
+      assert.equal(ctx.executionContext,tx);calls.push('resolve');
+      if(outcome==='resolve-failure')throw Error('resolve failure');return {events:[{id:'e'}]};
+    };
+    const pending = middleware.Mutation.updateEvents(resolve,null,{where:{id:{eq:'e'}},update:{title:{set:'new'}}},context,info);
+    if(outcome.endsWith('failure')) {
+      await assert.rejects(pending,/failure/); assert.ok(!calls.includes('commit')); assert.ok(!calls.includes('activity'));
+    } else {
+      assert.equal((await pending as any).events[0].id,'e');
+      assert.deepEqual(calls, outcome==='noop'?['lock','resolve','history','commit','close']:outcome==='retry'?['lock','resolve','history','rollback','lock','resolve','history','commit','close','activity']:['lock','resolve','history','commit','close','activity']);
+    }
+  });
 }
-
-function countingResolve() {
-  const state = { calls: 0 };
-  const resolve = async () => {
-    state.calls += 1;
-    return RESULT;
-  };
-  return { resolve, state };
-}
-
-const snapshot = {
-  id: "e-1",
-  title: "old title",
-  description: "old description",
-  Poster: { username: "alice" },
-  DescriptionLastEditedBy: { username: "alice" },
-  EventChannels: [{ channelUniqueName: "cats" }],
-  PastTitleVersions: [],
-  PastDescriptionVersions: [],
-};
-
-test("updateEvents: passes through to the resolver when there is no update", async () => {
-  const { ctx, calls } = makeCtx();
-  const { resolve, state } = countingResolve();
-  const out = await M.updateEvents(resolve, null, { where: { id: "e-1" } }, ctx, {});
-  assert.equal(out, RESULT);
-  assert.equal(state.calls, 1);
-  assert.deepEqual(calls, []); // no snapshot fetch
-});
-
-test("updateEvents: does not fetch a snapshot when neither title nor description changes", async () => {
-  const { ctx, calls } = makeCtx();
-  const { resolve, state } = countingResolve();
-  const out = await M.updateEvents(
-    resolve,
-    null,
-    { where: { id: "e-1" }, update: { canceled: true } },
-    ctx,
-    {}
-  );
-  assert.equal(out, RESULT);
-  assert.equal(state.calls, 1);
-  assert.deepEqual(calls, []);
-});
-
-test("updateEvents: skips snapshot/hooks when no event id is given", async () => {
-  const { ctx, calls } = makeCtx();
-  const { resolve, state } = countingResolve();
-  const out = await M.updateEvents(
-    resolve,
-    null,
-    { where: {}, update: { title: "new" } },
-    ctx,
-    {}
-  );
-  assert.equal(out, RESULT);
-  assert.equal(state.calls, 1);
-  assert.deepEqual(calls, []); // no id => no fetch, no hooks
-});
-
-test("updateEvents: fetches the snapshot but skips hooks when the event is not found", async () => {
-  const { ctx, calls } = makeCtx({ Event: { find: async () => [] } });
-  const { resolve, state } = countingResolve();
-  const out = await M.updateEvents(
-    resolve,
-    null,
-    { where: { id: "e-1" }, update: { title: "new title" } },
-    ctx,
-    {}
-  );
-  assert.equal(out, RESULT);
-  assert.equal(state.calls, 1);
-  assert.ok(calls.includes("Event"), "attempted the pre-update snapshot fetch");
-});
-
-test("updateEvents: fetches a snapshot and runs the update + notification path on a title change", async () => {
-  const { ctx, calls } = makeCtx({ Event: { find: async () => [snapshot] } });
-  const { resolve, state } = countingResolve();
-  const out = await M.updateEvents(
-    resolve,
-    null,
-    { where: { id: "e-1" }, update: { title: "new title", description: "new description" } },
-    ctx,
-    {}
-  );
-  assert.equal(out, RESULT);
-  assert.equal(state.calls, 1);
-  assert.ok(calls.includes("Event"), "fetched the pre-update snapshot");
-});

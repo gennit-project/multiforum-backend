@@ -51,8 +51,7 @@ test("terminal download attempts notify the uploader once with a stable link", a
     repository: {
       findAttempt: async () => models.PluginPipelineRun.find({}),
       findTargetFile: async () => models.DownloadableFile.find({}),
-      claimNotification: async () => models.PluginPipelineRun.update({}),
-      createNotification: async input => { await models.User.update(input); },
+      deliver: async input => { userUpdates.push(input); return true; },
     },
     pipelineId: "pipeline-1",
     now: () => "2026-01-01T00:00:00.000Z",
@@ -61,7 +60,7 @@ test("terminal download attempts notify the uploader once with a stable link", a
   assert.equal(notified, true);
   assert.equal(userUpdates.length, 1);
   const serialized = JSON.stringify(userUpdates[0]);
-  assert.match(serialized, /plugin_pipeline/);
+  assert.match(serialized, /pipeline-1/);
   assert.match(serialized, /attempt=pipeline-1/);
   assert.match(serialized, /timed out/);
 });
@@ -95,11 +94,10 @@ for (const outcome of ['missing', 'wrong-target', 'running', 'notified', 'no-upl
     const repository = {
       findAttempt: async () => {calls.push('attempt');return outcome === 'missing' ? [] : [{targetId:'file',targetType:outcome==='wrong-target'?'Comment':'DownloadableFile',status:outcome==='running'?'RUNNING':'FAILED',notifiedAt:outcome==='notified'?'already':null}];},
       findTargetFile: async () => {calls.push('file');return outcome==='no-uploader'?[]:[{uploadedByUsername:'owner'}];},
-      claimNotification: async () => {calls.push('claim');return {pluginPipelineRuns:outcome==='lost-claim'?[]:[{pipelineId:'p'}]};},
-      createNotification: async () => {calls.push('write');if(outcome==='write-failure')throw Error('write failed');},
+      deliver: async () => {calls.push('deliver');if(outcome==='write-failure')throw Error('write failed');return false;},
     } as unknown as import('../persistence/pipelineNotificationRepository.js').PipelineNotificationRepository;
     const result = notifyUploaderOfPipelineResult({repository,pipelineId:'p'});
     if(outcome==='write-failure')await assert.rejects(result,/write failed/);else assert.equal(await result,false);
-    assert.deepEqual(calls,['missing','wrong-target','running','notified'].includes(outcome)?['attempt']:outcome==='no-uploader'?['attempt','file']:outcome==='lost-claim'?['attempt','file','claim']:['attempt','file','claim','write']);
+    assert.deepEqual(calls,['missing','wrong-target','running','notified'].includes(outcome)?['attempt']:outcome==='no-uploader'?['attempt','file']:['attempt','file','deliver']);
   });
 }

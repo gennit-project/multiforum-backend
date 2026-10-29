@@ -1,3 +1,4 @@
+import {failManagedQuery} from './managedWriteFault.js';
 import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -29,3 +30,36 @@ for(const status of ['SUCCEEDED','FAILED','TIMED_OUT','CANCELLED'])test(`termina
 test('canonical author fallback and archived-only channel preserve null link',async(t)=>{await seed('FAILED',false);await driver.executeQuery('MATCH(c:DiscussionChannel) SET c.archived=true');const repo=createPipelineNotificationRepository(driver);assert.equal(await run(repo),true);const snapshot=await state();assert.equal(snapshot.rows[0].link,null);t.assert.snapshot(snapshot);});
 test('active and absent attempts do not claim or create; generated variable errors match',async()=>{const candidate=createPipelineNotificationRepository(driver);for(const repo of [candidate]){assert.equal(await run(repo),false);}await seed('RUNNING');for(const repo of [candidate])assert.equal(await run(repo),false);await assert.rejects(candidate.findAttempt(123 as any),/String cannot represent a non string value/);});
 test('projection failure retains committed claim and notification; retry does not deliver again',async(t)=>{await schema(true);try{await seed();const repo=createPipelineNotificationRepository(driver);await assert.rejects(run(repo),/notification projection failed/);const snapshot=await state();assert.ok(snapshot.rows[0].claimed);assert.equal(snapshot.rows[0].type,'plugin_pipeline');assert.equal(await run(repo),false);assert.deepEqual(await state(),snapshot);t.assert.snapshot(snapshot);}finally{await schema();}});
+
+test('concurrent delivery claims create exactly one notification, distinct attempts each deliver', async () => {
+ await seed();const repo=createPipelineNotificationRepository(driver);
+ const results=await Promise.all(Array.from({length:8},()=>run(repo)));
+ assert.equal(results.filter(Boolean).length,1);
+ await driver.executeQuery(`CREATE(p:PluginPipelineRun {pipelineId:'second',targetId:'file',targetType:'DownloadableFile',status:'SUCCEEDED'})`);
+ assert.equal(await notifyUploaderOfPipelineResult({repository:repo,pipelineId:'second',now}),true);
+ const count=(await driver.executeQuery('MATCH(n:Notification) RETURN count(n) AS n')).records[0].get('n').toNumber();assert.equal(count,2);
+});
+for (const missing of ['recipient','target']) test(`missing ${missing} leaves attempt unclaimed and recoverable`, async () => {
+ await seed();
+ if(missing==='recipient')await driver.executeQuery("MATCH(u:User {username:'owner'}) DETACH DELETE u");
+ else await driver.executeQuery("MATCH(f:DownloadableFile {id:'file'}) DETACH DELETE f");
+ const repo=createPipelineNotificationRepository(driver);assert.equal(await run(repo),false);
+ const marker=(await driver.executeQuery('MATCH(p:PluginPipelineRun) RETURN p.notifiedAt AS n')).records[0].get('n');assert.equal(marker,null);
+ if(missing==='recipient')await driver.executeQuery("CREATE(:User {username:'owner',createdAt:datetime()})");
+ else await driver.executeQuery("CREATE(:DownloadableFile {id:'file',uploadedByUsername:'owner'})");
+ assert.equal(await run(repo),true);
+});
+for(const boundary of ['_notificationLock','CREATE (n:Notification']) test(`failure at ${boundary} rolls back both notification and marker`, async t => {
+ await seed();const repo=createPipelineNotificationRepository(driver);
+ failManagedQuery(t,driver,boundary);
+ await assert.rejects(run(repo),/injected write failure/);
+ t.mock.restoreAll();
+ assert.equal((await driver.executeQuery('MATCH(n:Notification) RETURN count(n) AS n')).records[0].get('n').toNumber(),0);
+ assert.equal((await driver.executeQuery('MATCH(p:PluginPipelineRun) RETURN p.notifiedAt AS n')).records[0].get('n'),null);
+ assert.equal(await run(repo),true);
+});
+test('transient callback failure rolls back first delivery and retries without duplication', async t => {
+ await seed(); const failures=failManagedQuery(t,driver,'CREATE (n:Notification',true);
+ assert.equal(await run(createPipelineNotificationRepository(driver)),true);assert.equal(failures(),1);
+ assert.equal((await driver.executeQuery('MATCH(n:Notification) RETURN count(n) AS n')).records[0].get('n').toNumber(),1);
+});
