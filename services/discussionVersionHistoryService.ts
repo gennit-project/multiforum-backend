@@ -2,9 +2,8 @@ import { parse, subscribe } from 'graphql';
 import { trackTextVersion } from './textVersionHistory.js';
 import type { VersionHistoryRepository } from './persistence/versionHistoryRepository.js';
 import { logger } from "../logger.js";
-import type { GraphQLSchema } from "graphql";
-
-type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+import type { GraphQLSchema, ExecutionResult } from "graphql";
+import { SubscriptionConsumer } from './subscriptionConsumer.js';
 
 export interface DiscussionUpdatePayload {
   id: string;
@@ -108,118 +107,72 @@ export const handleDiscussionUpdateEvent = async (
 export class DiscussionVersionHistoryService {
   private schema: GraphQLSchema;
   private repository: VersionHistoryRepository;
-  private isRunning: boolean = false;
-  private subscriptionIterator: AsyncIterableIterator<any> | null = null;
+  private consumer: SubscriptionConsumer;
 
   constructor(schema: GraphQLSchema, repository: VersionHistoryRepository) {
     this.schema = schema;
     this.repository = repository;
+    this.consumer = new SubscriptionConsumer('discussionVersionHistory', () => this.subscribe(), (result) => this.processEvent(result));
     logger.info('Discussion version history service initialized');
   }
 
   /**
    * Start listening for discussion update events
    */
-  async start() {
-    if (this.isRunning) {
-      logger.info('Discussion version history service is already running');
+  start(): Promise<void> {
+    return this.consumer.start();
+  }
+
+  private async subscribe() {
+    const discussionSubscription = `
+      subscription {
+        discussionUpdated {
+          updatedDiscussion {
+            id
+            title
+            body
+            updatedAt
+            Author {
+              username
+            }
+          }
+          previousValues {
+            title
+            body
+          }
+        }
+      }
+    `;
+
+    // Subscribe to discussion update events
+    return subscribe({
+      schema: this.schema,
+      document: parse(discussionSubscription),
+    });
+
+  }
+
+  private async processEvent(result: ExecutionResult): Promise<void> {
+    const event = result.data?.discussionUpdated as { updatedDiscussion: DiscussionUpdatePayload; previousValues?: DiscussionPreviousValues | null } | undefined;
+    if (!event) {
+      logger.info('Received invalid discussion update event:');
       return;
     }
 
+    const updatedDiscussion = event.updatedDiscussion;
+    const previousValues = event.previousValues;
+
+    logger.info('Processing version history for updated discussion:', updatedDiscussion.id);
+
     try {
-      logger.info('Starting discussion version history service...');
-      this.isRunning = true;
-
-      // Define the subscription query to listen for discussion update events
-      const discussionSubscription = `
-        subscription {
-          discussionUpdated {
-            updatedDiscussion {
-              id
-              title
-              body
-              updatedAt
-              Author {
-                username
-              }
-            }
-            previousValues {
-              title
-              body
-            }
-          }
-        }
-      `;
-
-      // Subscribe to discussion update events
-      const result = await subscribe({
-        schema: this.schema,
-        document: parse(discussionSubscription),
-      });
-
-      // Check if result is an AsyncIterator (subscription succeeded)
-      if (Symbol.asyncIterator in result) {
-        this.subscriptionIterator = result as AsyncIterableIterator<any>;
-
-        // Start processing discussion update events
-        this.processDiscussionUpdateEvents();
-        logger.info('Discussion version history service started');
-      } else {
-        // If not an AsyncIterator, it's an error result
-        logger.error('Subscription failed:', result);
-        this.isRunning = false;
-      }
+      await handleDiscussionUpdateEvent(this.repository, updatedDiscussion, previousValues);
     } catch (error) {
-      logger.error('Error starting discussion version history service:', error);
-      this.isRunning = false;
+      logger.error('Error processing discussion version history:', error);
+      // Continue processing other events even if one fails
     }
   }
 
-  /**
-   * Process discussion update events and track version history
-   */
-  private async processDiscussionUpdateEvents() {
-    if (!this.subscriptionIterator) return;
-
-    try {
-      // Process each discussion update event as it arrives
-      for await (const result of this.subscriptionIterator) {
-        if (!result.data?.discussionUpdated) {
-          logger.info('Received invalid discussion update event:', result);
-          continue;
-        }
-
-        const updatedDiscussion = result.data.discussionUpdated.updatedDiscussion;
-        const previousValues = result.data.discussionUpdated.previousValues;
-
-        logger.info('Processing version history for updated discussion:', updatedDiscussion.id);
-
-        try {
-          await handleDiscussionUpdateEvent(this.repository, updatedDiscussion, previousValues);
-        } catch (error) {
-          logger.error('Error processing discussion version history:', error);
-          // Continue processing other events even if one fails
-        }
-      }
-    } catch (error) {
-      logger.error('Error in discussion update event processing:', error);
-      
-      // If the subscription fails, wait and restart
-      if (this.isRunning) {
-        logger.info('Restarting discussion version history service in 5 seconds...');
-        setTimeout(() => this.start(), 5000);
-      }
-    }
-  }
-
-  /**
-   * Stop the discussion version history service
-   */
-  stop() {
-    logger.info('Stopping discussion version history service');
-    this.isRunning = false;
-
-    // Clear the subscription iterator
-    this.subscriptionIterator = null;
+  stop(): Promise<void> {
+    return this.consumer.stop();
   }
 }

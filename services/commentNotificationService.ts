@@ -1,11 +1,10 @@
 import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
-import { execute, parse, subscribe } from 'graphql';
+import { parse, subscribe } from 'graphql';
 import { handleCommentCreatedNotification } from './commentNotificationHandler.js';
 import { logger } from "../logger.js";
-import type { GraphQLSchema } from "graphql";
+import type { GraphQLSchema, ExecutionResult } from "graphql";
 import type { Driver } from "neo4j-driver";
-
-type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+import { SubscriptionConsumer } from './subscriptionConsumer.js';
 
 /**
  * Comment notification service that listens to Comment creation events
@@ -14,123 +13,77 @@ type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
 export class CommentNotificationService {
   private schema: GraphQLSchema;
   private driver?: Driver;
-  private isRunning: boolean = false;
-  private subscriptionIterator: AsyncIterableIterator<any> | null = null;
+  private consumer: SubscriptionConsumer;
 
   constructor(schema: GraphQLSchema, driver?: Driver, private notificationSnapshotRepository?: NotificationSnapshotRepository) {
     this.schema = schema;
     this.driver = driver;
+    this.consumer = new SubscriptionConsumer('commentNotification', () => this.subscribe(), (result) => this.processEvent(result));
     logger.info('Comment notification service initialized');
   }
 
   /**
    * Start listening for comment creation events
    */
-  async start() {
-    if (this.isRunning) {
-      logger.info('Comment notification service is already running');
-      return;
-    }
+  start(): Promise<void> {
+    return this.consumer.start();
+  }
 
-    try {
-      logger.info('Starting comment notification service...');
-      this.isRunning = true;
-
-      // Define the subscription query to listen for comment creation events
-      const commentSubscription = `
-        subscription {
-          commentCreated {
-            createdComment {
-              id
-              text
-              CommentAuthor {
-                ... on User {
-                  __typename
-                  username
-                }
-                ... on ModerationProfile {
-                  __typename
-                  displayName
-                }
+  private async subscribe() {
+    const commentSubscription = `
+      subscription {
+        commentCreated {
+          createdComment {
+            id
+            text
+            CommentAuthor {
+              ... on User {
+                __typename
+                username
+              }
+              ... on ModerationProfile {
+                __typename
+                displayName
               }
             }
           }
         }
-      `;
-
-      // Subscribe to comment creation events
-      const result = await subscribe({
-        schema: this.schema,
-        document: parse(commentSubscription),
-        contextValue: {}
-      });
-
-      // Check if result is an AsyncIterator (subscription succeeded)
-      if (Symbol.asyncIterator in result) {
-        this.subscriptionIterator = result as AsyncIterableIterator<any>;
-
-        // Start processing comment events
-        this.processCommentEvents();
-        logger.info('=== DEBUG: Comment notification service started successfully');
-      } else {
-        // If not an AsyncIterator, it's an error result
-        logger.error('=== DEBUG ERROR: Subscription failed:', result);
-        this.isRunning = false;
       }
-    } catch (error) {
-      logger.error('Error starting comment notification service:', error);
-      this.isRunning = false;
-    }
+    `;
+
+    // Subscribe to comment creation events
+    return subscribe({
+      schema: this.schema,
+      document: parse(commentSubscription),
+      contextValue: {}
+    });
+
   }
 
-  /**
-   * Process comment creation events and send notifications
-   */
-  private async processCommentEvents() {
-    if (!this.subscriptionIterator) return;
+  private async processEvent(result: ExecutionResult): Promise<void> {
+    const event = result.data?.commentCreated as { createdComment?: { id: string } } | undefined;
+    if (!event?.createdComment) {
+      logger.info('Received invalid comment event:');
+      return;
+    }
+
+    const commentBasicInfo = event.createdComment;
+    const commentId = commentBasicInfo.id;
+
+    logger.info('Processing notification for newly created comment:', commentId);
 
     try {
-      // Process each comment event as it arrives
-      for await (const result of this.subscriptionIterator) {
-        if (!result.data?.commentCreated?.createdComment) {
-          logger.info('Received invalid comment event:', result);
-          continue;
-        }
-
-        const commentBasicInfo = result.data.commentCreated.createdComment;
-        const commentId = commentBasicInfo.id;
-
-        logger.info('Processing notification for newly created comment:', commentId);
-
-        try {
-          await handleCommentCreatedNotification(
-            { driver: this.driver, notificationSnapshotRepository: this.notificationSnapshotRepository },
-            commentId
-          );
-        } catch (error) {
-          logger.error('Error processing comment notification:', error);
-          // Continue processing other events even if one fails
-        }
-      }
+      await handleCommentCreatedNotification(
+        { driver: this.driver, notificationSnapshotRepository: this.notificationSnapshotRepository },
+        commentId
+      );
     } catch (error) {
-      logger.error('Error in comment event processing:', error);
-      
-      // If the subscription fails, wait and restart
-      if (this.isRunning) {
-        logger.info('Restarting comment notification service in 5 seconds...');
-        setTimeout(() => this.start(), 5000);
-      }
+      logger.error('Error processing comment notification:', error);
+      // Continue processing other events even if one fails
     }
   }
 
-  /**
-   * Stop the comment notification service
-   */
-  stop() {
-    logger.info('Stopping comment notification service');
-    this.isRunning = false;
-
-    // Clear the subscription iterator
-    this.subscriptionIterator = null;
+  stop(): Promise<void> {
+    return this.consumer.stop();
   }
 }
