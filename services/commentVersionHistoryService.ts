@@ -2,9 +2,8 @@ import { parse, subscribe } from 'graphql';
 import { trackTextVersion } from './textVersionHistory.js';
 import type { VersionHistoryRepository } from './persistence/versionHistoryRepository.js';
 import { logger } from "../logger.js";
-import type { GraphQLSchema } from "graphql";
-
-type AsyncIterableIterator<T> = AsyncIterable<T> & AsyncIterator<T>;
+import type { GraphQLSchema, ExecutionResult } from "graphql";
+import { SubscriptionConsumer } from './subscriptionConsumer.js';
 
 export interface CommentUpdatePayload {
   id: string;
@@ -81,121 +80,75 @@ export const handleCommentUpdateEvent = async (
 export class CommentVersionHistoryService {
   private schema: GraphQLSchema;
   private repository: VersionHistoryRepository;
-  private isRunning: boolean = false;
-  private subscriptionIterator: AsyncIterableIterator<any> | null = null;
+  private consumer: SubscriptionConsumer;
 
   constructor(schema: GraphQLSchema, repository: VersionHistoryRepository) {
     this.schema = schema;
     this.repository = repository;
+    this.consumer = new SubscriptionConsumer('commentVersionHistory', () => this.subscribe(), (result) => this.processEvent(result));
     logger.info('Comment version history service initialized');
   }
 
   /**
    * Start listening for comment update events
    */
-  async start() {
-    if (this.isRunning) {
-      logger.info('Comment version history service is already running');
+  start(): Promise<void> {
+    return this.consumer.start();
+  }
+
+  private async subscribe() {
+    const commentSubscription = `
+      subscription {
+        commentUpdated {
+          updatedComment {
+            id
+            text
+            updatedAt
+            CommentAuthor {
+              ... on User {
+                username
+              }
+              ... on ModerationProfile {
+                displayName
+              }
+            }
+          }
+          previousValues {
+            text
+          }
+        }
+      }
+    `;
+
+    // Subscribe to comment update events
+    return subscribe({
+      schema: this.schema,
+      document: parse(commentSubscription),
+    });
+
+  }
+
+  private async processEvent(result: ExecutionResult): Promise<void> {
+    const event = result.data?.commentUpdated as { updatedComment: CommentUpdatePayload; previousValues?: CommentPreviousValues | null } | undefined;
+    if (!event) {
+      logger.info('Received invalid comment update event:');
       return;
     }
 
+    const updatedComment = event.updatedComment;
+    const previousValues = event.previousValues;
+
+    logger.info('Processing version history for updated comment:', updatedComment.id);
+
     try {
-      logger.info('Starting comment version history service...');
-      this.isRunning = true;
-
-      // Define the subscription query to listen for comment update events
-      const commentSubscription = `
-        subscription {
-          commentUpdated {
-            updatedComment {
-              id
-              text
-              updatedAt
-              CommentAuthor {
-                ... on User {
-                  username
-                }
-                ... on ModerationProfile {
-                  displayName
-                }
-              }
-            }
-            previousValues {
-              text
-            }
-          }
-        }
-      `;
-
-      // Subscribe to comment update events
-      const result = await subscribe({
-        schema: this.schema,
-        document: parse(commentSubscription),
-      });
-
-      // Check if result is an AsyncIterator (subscription succeeded)
-      if (Symbol.asyncIterator in result) {
-        this.subscriptionIterator = result as AsyncIterableIterator<any>;
-
-        // Start processing comment update events
-        this.processCommentUpdateEvents();
-        logger.info('Comment version history service started');
-      } else {
-        // If not an AsyncIterator, it's an error result
-        logger.error('Subscription failed:', result);
-        this.isRunning = false;
-      }
+      await handleCommentUpdateEvent(this.repository, updatedComment, previousValues);
     } catch (error) {
-      logger.error('Error starting comment version history service:', error);
-      this.isRunning = false;
+      logger.error('Error processing comment version history:', error);
+      // Continue processing other events even if one fails
     }
   }
 
-  /**
-   * Process comment update events and track version history
-   */
-  private async processCommentUpdateEvents() {
-    if (!this.subscriptionIterator) return;
-
-    try {
-      // Process each comment update event as it arrives
-      for await (const result of this.subscriptionIterator) {
-        if (!result.data?.commentUpdated) {
-          logger.info('Received invalid comment update event:', result);
-          continue;
-        }
-
-        const updatedComment = result.data.commentUpdated.updatedComment;
-        const previousValues = result.data.commentUpdated.previousValues;
-
-        logger.info('Processing version history for updated comment:', updatedComment.id);
-
-        try {
-          await handleCommentUpdateEvent(this.repository, updatedComment, previousValues);
-        } catch (error) {
-          logger.error('Error processing comment version history:', error);
-          // Continue processing other events even if one fails
-        }
-      }
-    } catch (error) {
-      logger.error('Error in comment update event processing:', error);
-      
-      // If the subscription fails, wait and restart
-      if (this.isRunning) {
-        logger.info('Restarting comment version history service in 5 seconds...');
-        setTimeout(() => this.start(), 5000);
-      }
-    }
-  }
-
-  /**
-   * Stop the comment version history service
-   */
-  stop() {
-    logger.info('Stopping comment version history service');
-    this.isRunning = false;
-
-    // Clear the subscription iterator
-    this.subscriptionIterator = null;
+  stop(): Promise<void> {
+    return this.consumer.stop();
   }
 }
