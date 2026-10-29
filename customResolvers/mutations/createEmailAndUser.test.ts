@@ -2,45 +2,42 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { isDate } from "neo4j-driver";
 import { createUsersWithEmails } from "./createEmailAndUser.js";
+import type {
+  AccountRegistrationRepository,
+  CompleteRegistration,
+} from "../../services/persistence/accountRegistrationRepository.js";
+import type { UserCreateInput } from "../../ogm_types.js";
 
-// Validation runs before any DB access, so these stubs are never reached.
 const stubRepository = () =>
   ({
-    findExistingUsername: async () => [],
-    findExistingEmail: async () => [],
-    createAccount: async () => {},
-    findCreatedAccount: async () => [{ username: "x" }],
-  }) as any;
+    completeRegistration: async ({ createInput }: CompleteRegistration) => {
+      createInput();
+      return { username: "new_user" };
+    },
+  }) as AccountRegistrationRepository;
 
-test("rejects a username with invalid characters", async () => {
+for (const [username, message] of [
+  ["bad name", /letters, numbers, and underscores/],
+  ["a".repeat(51), /cannot exceed/],
+  ["", /required/],
+  ["bot-evil", /reserved/],
+] as const) {
+  test(`rejects invalid new username ${username}`, async () => {
+    await assert.rejects(
+      createUsersWithEmails(stubRepository(), "a@b.com", username),
+      message,
+    );
+  });
+}
+
+test("rejects missing email", async () => {
   await assert.rejects(
-    createUsersWithEmails(stubRepository(), "a@b.com", "bad name"),
-    /letters, numbers, and underscores/
+    createUsersWithEmails(stubRepository(), "", "valid"),
+    /required/,
   );
 });
 
-test("rejects an over-length username", async () => {
-  await assert.rejects(
-    createUsersWithEmails(stubRepository(), "a@b.com", "a".repeat(51)),
-    /cannot exceed/
-  );
-});
-
-test("rejects a missing username before validation", async () => {
-  await assert.rejects(
-    createUsersWithEmails(stubRepository(), "a@b.com", ""),
-    /required/
-  );
-});
-
-test("still reserves bot- usernames", async () => {
-  await assert.rejects(
-    createUsersWithEmails(stubRepository(), "a@b.com", "bot-evil"),
-    /reserved/
-  );
-});
-
-test("enforces the configured account minimum before database access", async () => {
+test("enforces account minimum age before creating a new profile", async () => {
   await assert.rejects(
     createUsersWithEmails(
       stubRepository(),
@@ -52,74 +49,149 @@ test("enforces the configured account minimum before database access", async () 
         minimumAccountAge: 13,
         sensitiveContentAgeGateEnabled: true,
         minimumSensitiveContentAge: 18,
-      }
+      },
     ),
-    /MINIMUM_AGE_NOT_MET/
+    /MINIMUM_AGE_NOT_MET/,
   );
 });
 
-test("persists birthday only through account creation", async () => {
-  let createdInput: any;
+test("passes a date-only birthday to atomic registration", async () => {
+  let created: UserCreateInput | undefined;
   const repository = {
-    findExistingUsername: async () => [],
-    findExistingEmail: async () => [],
-    createAccount: async (input: any) => { createdInput = input; },
-    findCreatedAccount: async () => [{username: "adult_user"}],
-    findOwnAccountSummary: async () => [],
+    ...stubRepository(),
+    completeRegistration: async ({ createInput }: CompleteRegistration) => {
+      created = createInput();
+      return { username: "adult_user" };
+    },
   };
-  await createUsersWithEmails(repository, "adult@example.com", "adult_user", "2000-01-01");
-
-  assert.equal(isDate(createdInput.dateOfBirth), true);
-  assert.equal(createdInput.dateOfBirth.toString(), "2000-01-01");
+  await createUsersWithEmails(
+    repository,
+    "adult@example.com",
+    "adult_user",
+    "2000-01-01",
+  );
+  assert.equal(isDate(created?.dateOfBirth), true);
+  assert.equal(String(created?.dateOfBirth), "2000-01-01");
 });
 
-test("registration preserves existence/create/read ordering and stops at each failure", async () => {
-  for (const failing of ["username", "email", "create", "created", "missing", "none"]) {
-    const calls: string[] = [];
-    const failure = new Error("database failed");
-    const repository = {
-      findExistingUsername: async () => { calls.push("username"); return failing === "username" ? [{}] : []; },
-      findExistingEmail: async () => { calls.push("email"); return failing === "email" ? [{}] : []; },
-      createAccount: async () => { calls.push("create"); if (failing === "create") throw failure; },
-      findCreatedAccount: async () => { calls.push("created"); if (failing === "created") throw failure; return failing === "missing" ? [] : [{username:"new_user"}]; },
-      findOwnAccountSummary: async () => [],
-    };
-    const work = createUsersWithEmails(repository,"new@example.test","new_user");
-    if (failing === "none") assert.deepEqual(await work,{username:"new_user"});
-    else await assert.rejects(work, failing === "username" ? /Username already taken/ : failing === "email" ? /Email already taken/ : failing === "missing" ? /Error creating user and linking email/ : error => error === failure);
-    assert.deepEqual(calls, failing === "username" ? ["username"] : failing === "email" ? ["username","email"] : failing === "create" ? ["username","email","create"] : ["username","email","create","created"]);
-  }
+test("restores the verified email's existing account without validating or overwriting signup inputs", async () => {
+  const existing = { username: "original_user", Email: { address: "a@b.com" } };
+  const repository = {
+    ...stubRepository(),
+    completeRegistration: async () => existing,
+  };
+  assert.equal(
+    await createUsersWithEmails(repository, "a@b.com", "", "invalid"),
+    existing,
+  );
 });
 
-test("registration resolver uses verified email spelling and rejects mismatches before persistence", async () => {
+test("propagates registration failures instead of claiming signup succeeded", async () => {
+  const failure = new Error("database failed");
+  const repository = {
+    ...stubRepository(),
+    completeRegistration: async () => {
+      throw failure;
+    },
+  };
+  await assert.rejects(
+    createUsersWithEmails(repository, "a@b.com", "valid_name"),
+    (error) => error === failure,
+  );
+});
+
+test("resolver uses the verified email and rejects mismatches or unverified sessions before registration", async () => {
   const { default: createResolver } = await import("./createEmailAndUser.js");
   const addresses: string[] = [];
-  const repository = { ...stubRepository(),
-    findExistingEmail: async (address: string) => { addresses.push(address); return []; },
+  const repository = {
+    ...stubRepository(),
+    completeRegistration: async ({ emailAddress }: CompleteRegistration) => {
+      addresses.push(emailAddress);
+      return { username: "existing_user" };
+    },
   };
-  const resolver = createResolver({accountRegistrationRepository:repository,agePolicyRepository:{findAgePolicyConfigs:async()=>[]}});
-  const context = { user:{username:"verified_identity",email:"Verified@Example.test",email_verified:true} } as never;
-  await resolver(null,{username:"new_user",emailAddress:"verified@example.TEST"},context,{} as never);
-  assert.deepEqual(addresses,["Verified@Example.test"]);
-  await assert.rejects(resolver(null,{username:"new_user",emailAddress:"different@example.test"},context,{} as never), /Account email must match the verified login/);
-  await assert.rejects(resolver(null,{username:"new_user",emailAddress:"verified@example.test"},{user:{username:"verified_identity",email:"Verified@Example.test",email_verified:false}} as never,{} as never), /A verified login is required/);
-  assert.equal(addresses.length,1);
+  const resolver = createResolver({
+    accountRegistrationRepository: repository,
+    agePolicyRepository: { findAgePolicyConfigs: async () => [] },
+  });
+  const context = {
+    user: {
+      username: "verified_identity",
+      email: "Verified@Example.test",
+      email_verified: true,
+    },
+  } as never;
+  assert.deepEqual(
+    await resolver(
+      null,
+      { username: "new_user", emailAddress: "verified@example.TEST" },
+      context,
+      {} as never,
+    ),
+    { username: "existing_user" },
+  );
+  await assert.rejects(
+    resolver(
+      null,
+      { username: "new_user", emailAddress: "different@example.test" },
+      context,
+      {} as never,
+    ),
+    /Account email must match/,
+  );
+  await assert.rejects(
+    resolver(
+      null,
+      { username: "new_user", emailAddress: "verified@example.test" },
+      {
+        user: {
+          username: "verified_identity",
+          email: "Verified@Example.test",
+          email_verified: false,
+        },
+      } as never,
+      {} as never,
+    ),
+    /A verified login is required/,
+  );
+  assert.deepEqual(addresses, ["Verified@Example.test"]);
 });
 
-test("Cypress identity and admin role inputs remain unchanged", async () => {
-  const oldName=process.env.SERVER_CONFIG_NAME;
-  const oldEmail=process.env.CYPRESS_ADMIN_TEST_EMAIL;
-  process.env.SERVER_CONFIG_NAME="Cypress Test Server";
-  process.env.CYPRESS_ADMIN_TEST_EMAIL="admin@example.test";
-  let created: any;
+test("Cypress identities, admin role, and new email spelling remain unchanged", async () => {
+  const previous = {
+    name: process.env.SERVER_CONFIG_NAME,
+    email: process.env.CYPRESS_ADMIN_TEST_EMAIL,
+  };
+  process.env.SERVER_CONFIG_NAME = "Cypress Test Server";
+  process.env.CYPRESS_ADMIN_TEST_EMAIL = "admin@example.test";
+  let created: UserCreateInput | undefined;
+  const repository = {
+    ...stubRepository(),
+    completeRegistration: async ({ createInput }: CompleteRegistration) => {
+      created = createInput();
+      return { username: "alice" };
+    },
+  };
   try {
-    const repository={...stubRepository(),createAccount:async(input:unknown)=>{created=input;}};
-    await createUsersWithEmails(repository,"admin@example.test","alice");
-    assert.equal(created.ModerationProfile.create.node.displayName,"testModProfile2");
-    assert.deepEqual(created.ServerRoles,{connect:[{where:{node:{name:{eq:"Admin Role"}}}}]});
-    assert.equal(created.Email.create.node.address,"admin@example.test");
+    await createUsersWithEmails(repository, "admin@example.test", "alice");
+    assert.equal(
+      created?.ModerationProfile?.create?.node.displayName,
+      "testModProfile2",
+    );
+    assert.deepEqual(created?.ServerRoles, {
+      connect: [{ where: { node: { name: { eq: "Admin Role" } } } }],
+    });
+    assert.equal(created?.Email?.create?.node.address, "admin@example.test");
+    await createUsersWithEmails(repository, "other@example.test", "cluse");
+    assert.equal(
+      created?.ModerationProfile?.create?.node.displayName,
+      "testModProfile1",
+    );
   } finally {
-    if(oldName===undefined) delete process.env.SERVER_CONFIG_NAME;else process.env.SERVER_CONFIG_NAME=oldName;
-    if(oldEmail===undefined) delete process.env.CYPRESS_ADMIN_TEST_EMAIL;else process.env.CYPRESS_ADMIN_TEST_EMAIL=oldEmail;
+    if (previous.name === undefined) delete process.env.SERVER_CONFIG_NAME;
+    else process.env.SERVER_CONFIG_NAME = previous.name;
+    if (previous.email === undefined)
+      delete process.env.CYPRESS_ADMIN_TEST_EMAIL;
+    else process.env.CYPRESS_ADMIN_TEST_EMAIL = previous.email;
   }
 });

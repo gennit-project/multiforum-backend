@@ -39,99 +39,75 @@ export const createUsersWithEmails = async (
   emailAddress: string,
   username: string,
   birthday?: string | null,
-  agePolicy: AgePolicy = DEFAULT_AGE_POLICY
+  agePolicy: AgePolicy = DEFAULT_AGE_POLICY,
 ) => {
-  if (!emailAddress || !username) {
+  if (!emailAddress)
     throw new Error("Both emailAddress and username are required");
-  }
-  validateRegistrationBirthday({ birthday, policy: agePolicy });
+  return repository.completeRegistration({
+    emailAddress,
+    createInput: () => {
+      if (!username)
+        throw new Error("Both emailAddress and username are required");
+      validateRegistrationBirthday({ birthday, policy: agePolicy });
+      if (username.toLowerCase().startsWith("bot-")) {
+        throw new Error('Usernames starting with "bot-" are reserved');
+      }
+      const usernameValidation = validateUserInput({
+        username,
+        isEditMode: false,
+      });
+      if (usernameValidation !== true) throw new Error(usernameValidation);
 
-  if (username.toLowerCase().startsWith("bot-")) {
-    throw new Error("Usernames starting with \"bot-\" are reserved");
-  }
+      let newDisplayName = "";
 
-  // Enforce username format/length rules at registration. The standard
-  // createUsers mutation (which createUserInputIsValid guards) is denied, so
-  // this custom registration path is where create-side validation must live.
-  const usernameValidation = validateUserInput({ username, isEditMode: false });
-  if (usernameValidation !== true) {
-    throw new Error(usernameValidation);
-  }
-
-  // Check if the user already exists
-  const existingUser = await repository.findExistingUsername(username);
-
-  if (existingUser.length > 0) {
-    throw new Error("Username already taken");
-  }
-
-  // Check if the email already exists
-  const existingEmail = await repository.findExistingEmail(emailAddress);
-
-  if (existingEmail.length > 0) {
-    throw new Error("Email already taken");
-  }
-
-  let newDisplayName = '';
-
-  // if we are in a test environment
-  if (process.env.SERVER_CONFIG_NAME === "Cypress Test Server") {
-    if (username === "cluse") {
-      newDisplayName = "testModProfile1";
-    }
-    else if (username === "alice") {
-      newDisplayName = "testModProfile2";
-    }
-    else {
-      newDisplayName = generateSlug(4, { format: "camel" });
-    }
-  } else {
-    // Generate a random display name
-    newDisplayName = generateSlug(4, { format: "camel" });
-  }
-  // Prepare user creation input
-  const userCreateInput: UserCreateInput = {
-    username,
-    // Neo4j GraphQL 5 parses yyyy-mm-dd through JavaScript Date and then uses
-    // local date components. On servers west of UTC that shifts the stored
-    // birthday back one day. Construct the driver's date-only value directly.
-    ...(birthday ? { dateOfBirth: toNeo4jDate(birthday) } : {}),
-    Email: {
-      create: {
-        node: { address: emailAddress },
-      },
-    },
-    ModerationProfile: {
-      create: {
-        node: { displayName: newDisplayName },
-      },
-    },
-  };
-
-  // Add admin role if email matches test admin email
-  if (emailAddress === process.env.CYPRESS_ADMIN_TEST_EMAIL) {
-    userCreateInput.ServerRoles = {
-      connect: [
-        {
-          where: {
-            node: { name: { eq: "Admin Role" } },
+      // if we are in a test environment
+      if (process.env.SERVER_CONFIG_NAME === "Cypress Test Server") {
+        if (username === "cluse") {
+          newDisplayName = "testModProfile1";
+        } else if (username === "alice") {
+          newDisplayName = "testModProfile2";
+        } else {
+          newDisplayName = generateSlug(4, { format: "camel" });
+        }
+      } else {
+        // Generate a random display name
+        newDisplayName = generateSlug(4, { format: "camel" });
+      }
+      // Prepare user creation input
+      const userCreateInput: UserCreateInput = {
+        username,
+        // Neo4j GraphQL 5 parses yyyy-mm-dd through JavaScript Date and then uses
+        // local date components. On servers west of UTC that shifts the stored
+        // birthday back one day. Construct the driver's date-only value directly.
+        ...(birthday ? { dateOfBirth: toNeo4jDate(birthday) } : {}),
+        Email: {
+          create: {
+            node: { address: emailAddress },
           },
         },
-      ],
-    };
-  }
+        ModerationProfile: {
+          create: {
+            node: { displayName: newDisplayName },
+          },
+        },
+      };
 
-  // Create the user
-  await repository.createAccount(userCreateInput);
+      // Add admin role if email matches test admin email
+      if (emailAddress === process.env.CYPRESS_ADMIN_TEST_EMAIL) {
+        userCreateInput.ServerRoles = {
+          connect: [
+            {
+              where: {
+                node: { name: { eq: "Admin Role" } },
+              },
+            },
+          ],
+        };
+      }
 
-  // Fetch and return the created user
-  const newUserArray = await repository.findCreatedAccount(username);
-
-  if (newUserArray.length === 0) {
-    throw new Error("Error creating user and linking email");
-  }
-
-  return newUserArray[0];
+      return userCreateInput;
+    },
+  });
 };
 
 /**
@@ -140,7 +116,12 @@ export const createUsersWithEmails = async (
 const getCreateEmailAndUserResolver = (input: Input) => {
   const { accountRegistrationRepository, agePolicyRepository } = input;
 
-  return async (parent: unknown, args: Args, context: GraphQLContext, resolveInfo: GraphQLResolveInfo) => {
+  return async (
+    parent: unknown,
+    args: Args,
+    context: GraphQLContext,
+    resolveInfo: GraphQLResolveInfo,
+  ) => {
     const { emailAddress, username, birthday } = args;
 
     try {
@@ -159,14 +140,14 @@ const getCreateEmailAndUserResolver = (input: Input) => {
         verifiedEmail,
         username,
         birthday,
-        agePolicy
+        agePolicy,
       );
       return newUser;
     } catch (e: unknown) {
       logger.error(e);
       const message = e instanceof Error ? e.message : String(e);
       throw new Error(
-        `An error occurred while creating the user and linking the email: ${message}`
+        `An error occurred while creating the user and linking the email: ${message}`,
       );
     }
   };

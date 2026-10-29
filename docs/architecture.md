@@ -243,3 +243,30 @@ to whatever `SHARD_TOTAL` it is given.
 | [`services/persistence/`](../services/persistence) | Application repository contracts and temporary database adapters |
 | [`tests/`](../tests) | Unit and Testcontainers-backed integration tests |
 | [`docs/`](.) | This documentation |
+
+
+## Account registration and retries
+
+`createEmailAndUser` requires a verified login whose email matches the request.
+The account-registration repository then completes the operation in one managed
+write transaction:
+
+1. Merge the verified email by its existing unique `Email.address` key and take
+   a write lock on it before inspecting ownership.
+2. If that email already has a user, return the existing account without changing
+   its username, birthday, moderation profile, or roles. Ignore new signup inputs
+   for this restore path.
+3. Otherwise validate the requested username and birthday, check username
+   availability, and create the profile connected to the locked email. This reuses
+   an orphan email instead of rejecting it or creating a second email node.
+4. Read the resulting account in the same transaction. Creation or projection
+   failures roll back the email, user, and moderation-profile writes together.
+
+`Email.address` and `User.username` uniqueness are installed by
+`coreSchemaConstraints`. The email lock serializes simultaneous submissions for
+one identity; the username constraint also prevents different emails claiming
+one username. A retry after a committed response is lost returns the original
+account. A retry after a rolled-back failure can create it normally. Inconsistent
+multiple-owner email records are rejected for manual repair rather than linked
+to yet another profile. Email address matching retains the existing exact-key
+semantics; this change does not introduce address normalization or alias merging.

@@ -501,6 +501,7 @@ test("Auth0 signup preserves verified email through identity lookup and cache", 
         const resolver = createRegistrationResolver({
           agePolicyRepository: { findAgePolicyConfigs: async () => [] },
           accountRegistrationRepository: {
+            completeRegistration: async ({ createInput }) => { createInput(); creates++; return { username: "new_user" }; },
             findExistingUsername: async () => [],
             findExistingEmail: async () => [],
             createAccount: async () => { creates++; },
