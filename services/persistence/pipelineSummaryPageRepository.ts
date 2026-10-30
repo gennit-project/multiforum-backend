@@ -14,6 +14,7 @@ export const summaryPageQueries = {
   flags: readQuery('pipelineSummaryFlags'),
   jobs: readQuery('pipelineSummaryJobsPage'),
   attempt: readQuery('pipelineSummaryAttempt'),
+  legacyAttempt: readQuery('pipelineSummaryLegacyAttempt'),
 };
 
 /** Split the lexicographic cursor into two index ranges, each bounded before UNION. */
@@ -60,7 +61,11 @@ export function createPipelineSummaryPageRepository(driver: Driver): PipelineSum
     },
     async findAttempt(id) {
       const result = await run(summaryPageQueries.attempt, { id });
-      return result.records.length ? normalizeRecord<PipelineAttemptRecord>(result.records[0].get('attempt')) : null;
+      if (result.records.length) return normalizeRecord<PipelineAttemptRecord>(result.records[0].get('attempt'));
+      // Old bookmarks used pipelineId. Never let a legacy match override an exact ID.
+      const legacy = await run(summaryPageQueries.legacyAttempt, {pipelineId: id});
+      if (legacy.records.length > 1) throw new Error('Pipeline run not found');
+      return legacy.records.length ? normalizeRecord<PipelineAttemptRecord>(legacy.records[0].get('attempt')) : null;
     },
     async findJobs(attempts, limit, after) {
       if (!attempts.length) return new Map();

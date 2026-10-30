@@ -46,10 +46,10 @@ export const createPipelineSummaryPage = ({driver, pipelineTargetRepository = cr
 export const createPipelineRunPage = ({driver, pipelineTargetRepository = createPipelineTargetRepository(driver), repository = createPipelineSummaryPageRepository(driver)}: Dependencies) =>
   async (_parent: unknown, {pipelineRunId, first: input, after: cursor}: {pipelineRunId: string; first?: number | null; after?: string | null}) => {
     const first = pageLimit(input, 20, 100);
-    const after = decodePipelineCursor(cursor, jobBinding(pipelineRunId));
     const attempt = await repository.findAttempt(pipelineRunId);
     if (!attempt) return null;
     await assertPublicPipelineTargetVisible({repository: pipelineTargetRepository, targetId: attempt.targetId, targetType: attempt.targetType});
+    const after = decodePipelineCursor(cursor, jobBinding(attempt.id));
     const jobs = await repository.findJobs([attempt], first + 1, after);
     return publicPage(attempt, jobs.get(attempt.id) ?? {jobs: [], statuses: []}, first);
   };

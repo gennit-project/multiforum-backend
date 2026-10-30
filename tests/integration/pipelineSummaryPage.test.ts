@@ -152,3 +152,24 @@ test('named-zone timestamps remain usable in attempt and job cursors', async () 
   const jobs = await detail(null, {pipelineRunId:'attempt-2',first:1,after:first.attempts[0].jobsPageInfo.endCursor});
   assert.deepEqual(jobs?.run.jobs.map(j=>j.executionOrder), [2]);
 });
+test('older legacy pipeline bookmarks paginate jobs and preserve target visibility', async () => {
+  await seed(2, 3);
+  const recent = await summary(null, {...args, first:1});
+  assert.equal(recent.attempts[0].run.id, 'attempt-2');
+  const legacy = await detail(null, {pipelineRunId:'pipeline-1',first:1});
+  assert.equal(legacy?.run.id, 'attempt-1');
+  const next = await detail(null, {pipelineRunId:'pipeline-1',first:1,after:legacy?.jobsPageInfo.endCursor});
+  assert.deepEqual(next?.run.jobs.map(j=>j.executionOrder), [2]);
+  const canonical = await detail(null, {pipelineRunId:'attempt-1',first:1,after:legacy?.jobsPageInfo.endCursor});
+  assert.deepEqual(canonical, next);
+  await driver.executeQuery(`MATCH (d:Discussion) SET d.deleted=true`);
+  await assert.rejects(detail(null, {pipelineRunId:'pipeline-1'}), /Pipeline target not found/);
+});
+test('an exact attempt ID takes precedence over a matching legacy pipeline identifier', async () => {
+  await seed(2, 1);
+  await driver.executeQuery(`MATCH (a:PluginPipelineRun {id:'attempt-1'}) CREATE (b:PluginPipelineRun)
+    SET b=properties(a), b.id='pipeline-2', b.pipelineId='exact-id-precedence'`);
+  const result = await detail(null, {pipelineRunId:'pipeline-2'});
+  assert.equal(result?.run.id, 'pipeline-2');
+  assert.equal(result?.run.pipelineId, 'exact-id-precedence');
+});

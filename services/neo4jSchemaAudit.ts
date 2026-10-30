@@ -62,7 +62,6 @@ export const requiredOnlineIndexNames = [
   "pipeline_summary_attempt_status",
   "pipeline_summary_job_status",
   "pipeline_summary_job_pipeline",
-  "pipeline_summary_job_pipeline_status",
   "channelFulltext",
   "discussionFulltext",
   "issueFulltext",

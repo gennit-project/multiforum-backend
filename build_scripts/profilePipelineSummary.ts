@@ -87,9 +87,10 @@ try {
       }
       // History-independent budgets cover selection and activity. Job ordering has a
       // separately reported fan-out cost: legacy null executionOrder requires coalesce/sort.
+      // The regular fan-out budget covers public projection plus one indexed full-status pass.
       const budget = name.startsWith('attempts') ? {baseDbHits:1000, dbHitsPerRequestedRow:200,baseIntermediateRows:20,intermediateRowsPerRequestedRow:5,requestedRows:10} :
         name==='flags' ? {baseDbHits:1000, dbHitsPerRequestedRow:0,baseIntermediateRows:20,intermediateRowsPerRequestedRow:0,requestedRows:1} :
-        name==='jobs' && fixture.jobs===20 ? {baseDbHits:1000,dbHitsPerRequestedRow:20,baseIntermediateRows:20,intermediateRowsPerRequestedRow:2,requestedRows:Math.min(fixture.attempts,10)*20} : null;
+        name==='jobs' && fixture.jobs===20 ? {baseDbHits:1000,dbHitsPerRequestedRow:40,baseIntermediateRows:20,intermediateRowsPerRequestedRow:2,requestedRows:Math.min(fixture.attempts,10)*20} : null;
       const evaluation = budget && metrics ? evaluateProfile(metrics,budget) : null;
       profiles.push({name,metrics,evaluation});
       console.log(JSON.stringify({fixture, name, metrics, evaluation}));
