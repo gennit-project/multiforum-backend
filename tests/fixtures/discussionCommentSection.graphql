@@ -1,0 +1,164 @@
+# Frontend graphQLData/comment/queries.js at 201d19b60, GET_DISCUSSION_COMMENTS
+query getCommentSection($channelUniqueName: String!, $discussionId: ID!, $modName: String, $offset: Int, $limit: Int, $sort: String) {
+  getCommentSection(
+    channelUniqueName: $channelUniqueName
+    discussionId: $discussionId
+    modName: $modName
+    offset: $offset
+    limit: $limit
+    sort: $sort
+  ) {
+    DiscussionChannel {
+      id
+      weightedVotesCount
+      discussionId
+      channelUniqueName
+      emoji
+      archived
+      locked
+      answered
+      UpvotedByUsers {
+        username
+      }
+      UpvotedByUsersConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      SuperUpvotedByUsers {
+        username
+      }
+      Channel {
+        uniqueName
+        feedbackEnabled
+        imageUploadsEnabled
+        markdownImagesEnabled
+        emojiEnabled
+        Bots {
+          username
+          displayName
+          botProfileId
+          isDeprecated
+        }
+        Moderators {
+          displayName
+        }
+      }
+      Discussion {
+        id
+        title
+        Author {
+          ...AuthorFields
+        }
+      }
+      CommentsConnection(
+        where: {node: {OR: [{isFeedbackComment: {eq: null}}, {isFeedbackComment: {eq: false}}]}}
+      ) {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      RootCommentsConnection: CommentsConnection(
+        where: {node: {isRootComment: {eq: true}, OR: [{isFeedbackComment: {eq: null}}, {isFeedbackComment: {eq: false}}]}}
+      ) {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      SubscribedToNotifications {
+        username
+      }
+      Answers {
+        id
+        text
+        createdAt
+        CommentAuthor {
+          ... on User {
+            username
+            displayName
+          }
+          ... on ModerationProfile {
+            displayName
+          }
+        }
+      }
+      detailAnswersPageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+    Comments {
+      id
+      text
+      emoji
+      weightedVotesCount
+      createdAt
+      updatedAt
+      textLastEdited
+      archived
+      isSticky
+      stickyAt
+      stickyByUsername
+      isFavoritedByUser
+      CommentAuthor {
+        ...AuthorFields
+      }
+      ChildCommentsConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      ParentComment {
+        id
+      }
+      FeedbackComments {
+        id
+      }
+      PastVersions {
+        id
+        body
+        createdAt
+        Author {
+          username
+        }
+      }
+      SubscribedToNotifications {
+        username
+      }
+      ...CommentVoteFields
+    }
+  }
+}
+
+fragment AuthorFields on User {
+  username
+  displayName
+  profilePicURL
+  createdAt
+  discussionKarma
+  commentKarma
+}
+
+fragment CommentVoteFields on Comment {
+  UpvotedByUsers {
+    username
+  }
+  UpvotedByUsersConnection {
+    aggregate {
+      count {
+        nodes
+      }
+    }
+  }
+  SuperUpvotedByUsers {
+    username
+  }
+}

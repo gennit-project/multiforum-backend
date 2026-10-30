@@ -71,9 +71,21 @@ RETURN entry {
   .archived, .locked, .answered,
   UpvotedByUsers: upvoters,
   UpvotedByUsersAggregate: {count: upvoteCount},
+  UpvotedByUsersConnection: {
+    totalCount: upvoteCount,
+    aggregate: {count: {nodes: upvoteCount}}
+  },
   SuperUpvotedByUsers: superUpvoters,
   CommentsAggregate: {count: commentCount},
+  CommentsConnection: {
+    totalCount: commentCount,
+    aggregate: {count: {nodes: commentCount}}
+  },
   RootCommentsAggregate: {count: rootCommentCount},
+  RootCommentsConnection: {
+    totalCount: rootCommentCount,
+    aggregate: {count: {nodes: rootCommentCount}}
+  },
   SubscribedToNotifications: viewerSubscription,
   Answers: answers,
   _detailAnswersHasNextPage: hasNextPage,

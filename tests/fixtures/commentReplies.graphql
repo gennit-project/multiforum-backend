@@ -1,0 +1,93 @@
+# Frontend graphQLData/comment/queries.js at 201d19b60, GET_COMMENT_REPLIES
+query getCommentWithReplies($commentId: ID!, $modName: String, $limit: Int, $offset: Int, $sort: SortType) {
+  getCommentReplies(
+    commentId: $commentId
+    modName: $modName
+    limit: $limit
+    offset: $offset
+    sort: $sort
+  ) {
+    aggregateChildCommentCount
+    ChildComments {
+      ...CommentFields
+      FeedbackComments {
+        id
+      }
+    }
+  }
+}
+
+fragment CommentVoteFields on Comment {
+  UpvotedByUsers {
+    username
+  }
+  UpvotedByUsersConnection {
+    aggregate {
+      count {
+        nodes
+      }
+    }
+  }
+  SuperUpvotedByUsers {
+    username
+  }
+}
+
+fragment CommentFields on Comment {
+  id
+  text
+  emoji
+  weightedVotesCount
+  createdAt
+  updatedAt
+  textLastEdited
+  archived
+  isSticky
+  stickyAt
+  stickyByUsername
+  isFavoritedByUser
+  CommentAuthor {
+    ... on ModerationProfile {
+      displayName
+    }
+    ... on User {
+      username
+      profilePicURL
+      createdAt
+      discussionKarma
+      commentKarma
+      isBot
+    }
+  }
+  ChildCommentsConnection {
+    aggregate {
+      count {
+        nodes
+      }
+    }
+  }
+  ParentComment {
+    id
+  }
+  PastVersions {
+    id
+    body
+    editReason
+    createdAt
+    Author {
+      username
+    }
+  }
+  SubscribedToNotifications {
+    username
+  }
+  Event {
+    id
+  }
+  DiscussionChannel {
+    id
+    channelUniqueName
+    discussionId
+  }
+  ...CommentVoteFields
+}

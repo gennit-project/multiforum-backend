@@ -1,0 +1,136 @@
+# Frontend graphQLData/comment/queries.js at 201d19b60, GET_EVENT_COMMENTS
+query getEventComments($eventId: ID!, $offset: Int, $limit: Int, $sort: SortType) {
+  getEventComments(eventId: $eventId, offset: $offset, limit: $limit, sort: $sort) {
+    Event {
+      id
+      title
+      description
+      startTime
+      endTime
+      locationName
+      address
+      virtualEventUrl
+      startTimeDayOfWeek
+      startTimeHourOfDay
+      canceled
+      isHostedByOP
+      isAllDay
+      coverImageURL
+      createdAt
+      updatedAt
+      isInPrivateResidence
+      location {
+        latitude
+        longitude
+      }
+      cost
+      Tags {
+        text
+      }
+      EventChannels {
+        id
+        eventId
+        channelUniqueName
+        Channel {
+          uniqueName
+          displayName
+          channelIconURL
+        }
+      }
+      SubscribedToNotifications {
+        username
+      }
+      SubscribedToEventUpdates {
+        username
+      }
+      Poster {
+        username
+        createdAt
+        discussionKarma
+        commentKarma
+      }
+    }
+    Comments {
+      ...CommentFields
+      ChildComments {
+        id
+        text
+      }
+    }
+  }
+}
+
+fragment CommentVoteFields on Comment {
+  UpvotedByUsers {
+    username
+  }
+  UpvotedByUsersConnection {
+    aggregate {
+      count {
+        nodes
+      }
+    }
+  }
+  SuperUpvotedByUsers {
+    username
+  }
+}
+
+fragment CommentFields on Comment {
+  id
+  text
+  emoji
+  weightedVotesCount
+  createdAt
+  updatedAt
+  textLastEdited
+  archived
+  isSticky
+  stickyAt
+  stickyByUsername
+  isFavoritedByUser
+  CommentAuthor {
+    ... on ModerationProfile {
+      displayName
+    }
+    ... on User {
+      username
+      profilePicURL
+      createdAt
+      discussionKarma
+      commentKarma
+      isBot
+    }
+  }
+  ChildCommentsConnection {
+    aggregate {
+      count {
+        nodes
+      }
+    }
+  }
+  ParentComment {
+    id
+  }
+  PastVersions {
+    id
+    body
+    editReason
+    createdAt
+    Author {
+      username
+    }
+  }
+  SubscribedToNotifications {
+    username
+  }
+  Event {
+    id
+  }
+  DiscussionChannel {
+    id
+    channelUniqueName
+    discussionId
+  }
+  ...CommentVoteFields
+}

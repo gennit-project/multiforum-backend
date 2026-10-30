@@ -115,6 +115,10 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
         UpvotedByUsersAggregate: {
           count: existingUpvotedByUsersCount - 1,
         },
+        UpvotedByUsersConnection: {
+          totalCount: existingUpvotedByUsersCount - 1,
+          aggregate: { count: { nodes: existingUpvotedByUsersCount - 1 } },
+        },
       };
     } catch (e) {
       if (tx) {

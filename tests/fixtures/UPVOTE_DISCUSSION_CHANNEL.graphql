@@ -1,0 +1,21 @@
+# Frontend graphQLData/discussion/mutations.js at 201d19b60
+
+  mutation upvoteDiscussionChannel($id: ID!, $username: String!) {
+    upvoteDiscussionChannel(discussionChannelId: $id, username: $username) {
+      id
+      weightedVotesCount
+      UpvotedByUsers {
+        username
+      }
+      UpvotedByUsersConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      SuperUpvotedByUsers {
+        username
+      }
+    }
+  }

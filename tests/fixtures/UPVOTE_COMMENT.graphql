@@ -1,0 +1,21 @@
+# Frontend graphQLData/comment/mutations.js at 201d19b60
+
+  mutation upvoteComment($id: ID!, $username: String!) {
+    upvoteComment(commentId: $id, username: $username) {
+      id
+      weightedVotesCount
+      UpvotedByUsers {
+        username
+      }
+      UpvotedByUsersConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      SuperUpvotedByUsers {
+        username
+      }
+    }
+  }
