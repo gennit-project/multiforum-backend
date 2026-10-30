@@ -9,6 +9,8 @@ test('cursor round trips nanosecond timestamps and rejects other targets, filter
   for (const binding of [['jobs','other'], ['attempts','attempt']]) assert.throws(() => decodePipelineCursor(cursor, binding), /Invalid/);
   for (const value of ['', '!', 'a'.repeat(2049), Buffer.from('{}').toString('base64url')]) assert.throws(() => decodePipelineCursor(value, []), /Invalid/);
   assert.equal(decodePipelineCursor(null, []), null);
+  const zoned = {...position, createdAt: '2026-01-01T12:00:00.123456789Z[Europe/London]'};
+  assert.deepEqual(decodePipelineCursor(encodePipelineCursor([], zoned), []), zoned);
 });
 test('page sizes cannot disable the bound', () => {
   for (const value of [0, -1, 51, 1.5, Infinity, NaN]) assert.throws(() => pageLimit(value, 10, 50), /Page size/);

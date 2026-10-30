@@ -141,3 +141,14 @@ test('event filters precede pagination and skipped status examines every job', a
   const changed = await summary(null, {...args,eventType:'downloadableFile.created',first:1,jobsFirst:1});
   assert.equal(changed.attempts[0].displayStatus, 'SUCCEEDED');
 });
+
+test('named-zone timestamps remain usable in attempt and job cursors', async () => {
+  await seed(2, 2);
+  await driver.executeQuery(`MATCH (a:PluginPipelineRun) SET a.createdAt=datetime('2026-01-01T12:00:00Z[Europe/London]')`);
+  await driver.executeQuery(`MATCH (j:PluginRun) SET j.createdAt=datetime('2026-01-01T12:00:00Z[Europe/London]')`);
+  const first = await summary(null, {...args,first:1,jobsFirst:1});
+  const second = await summary(null, {...args,first:1,after:first.pageInfo.endCursor});
+  assert.deepEqual(second.attempts.map(a=>a.run.id), ['attempt-1']);
+  const jobs = await detail(null, {pipelineRunId:'attempt-2',first:1,after:first.attempts[0].jobsPageInfo.endCursor});
+  assert.deepEqual(jobs?.run.jobs.map(j=>j.executionOrder), [2]);
+});

@@ -16,7 +16,7 @@ export function decodePipelineCursor(cursor: string | null | undefined, binding:
     if (cursor.length > 2048 || !/^[A-Za-z0-9_-]+$/.test(cursor)) throw new Error();
     const value = JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8'));
     if (value.v !== 1 || value.binding !== bindingKey(binding) || typeof value.id !== 'string' || !value.id || value.id.length > 512 ||
-      typeof value.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(value.createdAt) || !Number.isFinite(Date.parse(value.createdAt)) ||
+      typeof value.createdAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})(?:\[[A-Za-z0-9_+\/-]+\])?$/.test(value.createdAt) || !Number.isFinite(Date.parse(value.createdAt.replace(/\[[^\]]+\]$/, ''))) ||
       !Number.isSafeInteger(value.order)) throw new Error();
     return {id: value.id, createdAt: value.createdAt, order: value.order};
   } catch { throw new Error('Invalid pipeline page cursor'); }
