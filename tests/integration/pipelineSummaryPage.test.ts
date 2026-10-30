@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {before, after, beforeEach, test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql} from 'graphql';
+import {applyMiddleware} from 'graphql-middleware';
+import permissions from '../../permissions.js';
 import neo4j, {type Driver} from 'neo4j-driver';
 import typeDefs from '../../typeDefs.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
@@ -118,7 +120,7 @@ test('queued attempts without jobs keep polling; hidden targets block both publi
 });
 test('public GraphQL documents validate and legacy summary remains complete', async () => {
   await seed(2, 3);
-  const result = await graphql({schema, contextValue: {}, source:`{ getPipelineSummaryPage(targetId:"file", targetType:"DownloadableFile", first:1, jobsFirst:1) {
+  const result = await graphql({schema:applyMiddleware(schema, permissions), contextValue: {driver,req:{headers:{},body:{},isMutation:false}}, source:`{ getPipelineSummaryPage(targetId:"file", targetType:"DownloadableFile", first:1, jobsFirst:1) {
     hasActiveWork hasFailedWork pageInfo {hasNextPage endCursor} attempts {displayStatus hasActiveWork jobsPageInfo {hasNextPage endCursor} run {id status jobs {id status diagnostics {code}}}}
   } getPipelineSummary(targetId:"file", targetType:"DownloadableFile") {attempts {id jobs {id}}} }`});
   assert.equal(result.errors, undefined);

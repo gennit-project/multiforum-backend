@@ -66,3 +66,41 @@ time is fixture-specific. Status EXISTS lookups are measured separately. Optiona
 filters may examine more index entries; job page sorting must examine the selected
 attempt's fan-out (including legacy null execution orders), although returned jobs
 are bounded. Do not describe all database work as constant or page-size-only.
+
+## Disposable fixture results (2026-10-30)
+
+Node 26.5.1, Neo4j Community 5.26.32 in local Docker. Five warm resolver calls per
+case; medians below. Both paths used the same fixture and indexes; the baseline
+is the unchanged legacy resolver. Limits: 10 attempts and 20 jobs per attempt.
+These are development-container measurements, not production latency estimates.
+Other checks ran concurrently, so timings and heap growth are noisy. Heap growth
+is sampled after each call with GC before the call; it is not peak memory.
+
+| Retained attempts × jobs each | Legacy → bounded median ms | Legacy → bounded response bytes | Legacy → bounded heap growth MiB |
+| --- | ---: | ---: | ---: |
+| 100 × 20 | 258.88 → 133.73 | 1,023,936 → 103,412 | 27.28 → 12.54 |
+| 2,000 × 20 | 8,686.15 → 82.49 | 20,548,537 → 103,904 | 113.59 → 11.80 |
+| 1 × 10,000 | 372.00 → 114.92 | 4,878,408 → 10,632 | 43.44 → 2.31 |
+
+For both 100 and 2,000 attempts, the new first-page PROFILE used 221 db hits and
+11 intermediate rows; a deep cursor read used 224 and 11. The unfiltered status
+read used 8 hits and one row in these all-success fixtures. The selected-job read
+used 1,940 hits and 200 intermediate rows in both cases. Equivalent unbounded
+attempt/job reads at 2,000 attempts used 40,001/760,001 hits and 2,000/40,000 rows.
+The equivalent unbounded PROFILE reads are not the library's exact generated
+Cypher; elapsed/heap/response measurements do execute the actual legacy resolver.
+
+The 10,000-job attempt returns only 20 jobs, but its job query still visits 10,000
+rows (90,014 hits). An additional adversarial probe with 2,000 RUNNING SERVER
+attempts and a CHANNEL filter matching none used 4,001 hits for attempt selection
+and 4,008 for flags, each visiting 2,000 rows. Thus this change bounds returned
+history and removes unrelated-history job loading; it does **not** promise fixed
+work for arbitrary filtering or selected-attempt fan-out. Filter-specific indexes
+or an indexed normalized job-order key would require separate measured work.
+
+CI runs the reproducible profiler alongside `perf:cypher`. First/deep attempt-page
+and unfiltered indicator budgets are independent of retained history. The regular
+20-jobs-per-attempt cases also budget selected-job work by requested rows, detecting
+a regression to loading every historical job. The fan-out stress case enforces
+returned-job bounds and reports its larger database cost separately. CI uploads
+its raw JSON measurements in the existing performance-report artifact.

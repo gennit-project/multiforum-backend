@@ -244,6 +244,9 @@ jobs:
       - name: Profile critical Cypher queries
         run: pnpm run perf:cypher
 
+      - name: Profile bounded pipeline summaries
+        run: pnpm run perf:pipeline-summary
+
       - name: Upload Cypher performance report
         if: always()
         uses: actions/upload-artifact@v4

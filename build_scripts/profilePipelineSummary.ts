@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {performance} from 'node:perf_hooks';
 import neo4j from 'neo4j-driver';
@@ -6,7 +7,7 @@ import {Neo4jContainer} from '@testcontainers/neo4j';
 import typeDefs from '../typeDefs.js';
 import getCustomResolvers from '../tests/helpers/getTestResolvers.js';
 import {registerGeneratedSchema} from '../services/persistence/generatedSchemaOperations.js';
-import {summaryPageQueries, createPipelineSummaryPageRepository} from '../services/persistence/pipelineSummaryPageRepository.js';
+import {summaryPageQueries, summaryAttemptsPageQuery, createPipelineSummaryPageRepository} from '../services/persistence/pipelineSummaryPageRepository.js';
 import {ensurePipelineSummaryIndexes} from '../services/pipelineSummaryIndexes.js';
 import {summarizeProfile, evaluateProfile, type ProfilePlan} from '../services/cypherPerformanceBudget.js';
 import createLegacySummary from '../customResolvers/queries/getPluginPipelineSummary.js';
@@ -56,13 +57,22 @@ try {
       }
       return samples;
     };
+    console.log(`Measuring ${fixture.attempts} attempts x ${fixture.jobs} jobs`);
     const baseline = await measure(()=>old(null,args));
-    const after = await measure(()=>bounded(null,{...args,first:10,jobsFirst:20}));
+    const after = await measure(async()=>{
+      const response = await bounded(null,{...args,first:10,jobsFirst:20});
+      assert.ok(response.attempts.length <= 10);
+      assert.ok(response.attempts.every(attempt => attempt.run.jobs.length <= 20));
+      return response;
+    });
     const attempts = await repository.findAttempts(filter,10,null);
     const parameters = {...filter, limit:neo4j.int(11), afterId:null, afterCreatedAt:null, afterOrder:null};
+    const middle = Math.floor(fixture.attempts / 2);
+    const cursor = {id:`attempt-${middle}`,createdAt:new Date(Date.UTC(2026,0,1)+middle*1000).toISOString(),order:0};
     const profiles = [];
     for (const [name,query,params] of [
       ['attempts',summaryPageQueries.attempts,parameters],
+      ['attemptsAfter',summaryAttemptsPageQuery(cursor),{...parameters,afterId:cursor.id,afterCreatedAt:cursor.createdAt}],
       ['flags',summaryPageQueries.flags,filter],
       ['jobs',summaryPageQueries.jobs,{...parameters,limit:neo4j.int(21),attempts}],
       // Equivalent unbounded database reads; resolver measurements above use the actual legacy API.
@@ -73,11 +83,13 @@ try {
       for (let warm=0;warm<2;warm++) {
         const result = await driver.executeQuery('PROFILE '+query,params);
         metrics = summarizeProfile(result.summary.profile as ProfilePlan,result.records.length);
+        if (name === 'jobs') assert.ok(result.records.every(row => row.get('jobs').length <= 21));
       }
       // History-independent budgets cover selection and activity. Job ordering has a
       // separately reported fan-out cost: legacy null executionOrder requires coalesce/sort.
-      const budget = name==='attempts' ? {baseDbHits:1000, dbHitsPerRequestedRow:200,baseIntermediateRows:20,intermediateRowsPerRequestedRow:5,requestedRows:10} :
-        name==='flags' ? {baseDbHits:1000, dbHitsPerRequestedRow:0,baseIntermediateRows:20,intermediateRowsPerRequestedRow:0,requestedRows:1} : null;
+      const budget = name.startsWith('attempts') ? {baseDbHits:1000, dbHitsPerRequestedRow:200,baseIntermediateRows:20,intermediateRowsPerRequestedRow:5,requestedRows:10} :
+        name==='flags' ? {baseDbHits:1000, dbHitsPerRequestedRow:0,baseIntermediateRows:20,intermediateRowsPerRequestedRow:0,requestedRows:1} :
+        name==='jobs' && fixture.jobs===20 ? {baseDbHits:1000,dbHitsPerRequestedRow:20,baseIntermediateRows:20,intermediateRowsPerRequestedRow:2,requestedRows:Math.min(fixture.attempts,10)*20} : null;
       const evaluation = budget && metrics ? evaluateProfile(metrics,budget) : null;
       profiles.push({name,metrics,evaluation});
       if (evaluation && !evaluation.passed) process.exitCode=1;

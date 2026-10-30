@@ -16,6 +16,17 @@ export const summaryPageQueries = {
   attempt: readQuery('pipelineSummaryAttempt'),
 };
 
+/** Split the lexicographic cursor into two index ranges, each bounded before UNION. */
+export function summaryAttemptsPageQuery(after: PagePosition | null): string {
+  if (!after) return summaryPageQueries.attempts;
+  const tied = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+    'AND a.createdAt = datetime($afterCreatedAt) AND a.id < $afterId');
+  const older = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+    'AND a.createdAt < datetime($afterCreatedAt)');
+  return `CALL { ${tied} UNION ALL ${older} }
+    RETURN attempt ORDER BY attempt.createdAt DESC, attempt.id DESC LIMIT $limit`;
+}
+
 function normalizeRecord<T>(record: Record<string, unknown>): T {
   return Object.fromEntries(Object.entries(record).map(([key, value]) => [key,
     neo4j.isInt(value) ? value.toNumber() : neo4j.isDateTime(value) ? value.toString() : value,
@@ -40,7 +51,7 @@ export function createPipelineSummaryPageRepository(driver: Driver): PipelineSum
   };
   return {
     async findAttempts(filter, limit, after) {
-      const result = await run(summaryPageQueries.attempts, { ...filter, limit: neo4j.int(limit), ...positionParams(after) });
+      const result = await run(summaryAttemptsPageQuery(after), { ...filter, limit: neo4j.int(limit), ...positionParams(after) });
       return result.records.map(row => normalizeRecord<PipelineAttemptRecord>(row.get('attempt')));
     },
     async findFlags(filter) {
