@@ -2,6 +2,7 @@ UNWIND $attempts AS a
 CALL {
   WITH a
   MATCH (j:PluginRun {pipelineId: a.pipelineId, targetId: a.targetId, targetType: a.targetType})
+  USING INDEX j:PluginRun(pipelineId)
   WHERE j.eventType = a.eventType AND j.scope = a.scope AND coalesce(j.channelId, '') = coalesce(a.channelId, '')
     AND ($afterId IS NULL OR coalesce(j.executionOrder, 0) > $afterOrder
       OR (coalesce(j.executionOrder, 0) = $afterOrder AND j.createdAt < datetime($afterCreatedAt))
@@ -12,5 +13,6 @@ CALL {
 RETURN a.id AS id, jobs,
   [status IN ['PENDING', 'RUNNING', 'FAILED', 'TIMED_OUT', 'CANCELLED', 'SUCCEEDED', 'SKIPPED'] WHERE EXISTS {
     MATCH (j:PluginRun {pipelineId: a.pipelineId, targetId: a.targetId, targetType: a.targetType, status: status})
+    USING INDEX j:PluginRun(pipelineId, status)
     WHERE j.eventType = a.eventType AND j.scope = a.scope AND coalesce(j.channelId, '') = coalesce(a.channelId, '')
   }] AS statuses
