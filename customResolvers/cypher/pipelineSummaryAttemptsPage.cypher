@@ -1,5 +1,6 @@
 // Include the equality-prefix properties in ORDER BY so Neo4j 5 can stream index order.
 MATCH (a:PluginPipelineRun {targetId: $targetId, targetType: $targetType})
+USING INDEX a:PluginPipelineRun(targetId, targetType, createdAt, id)
 WHERE ($scope IS NULL OR a.scope = $scope)
     AND ($eventType IS NULL OR a.eventType = $eventType)
   AND ($channelId IS NULL OR a.channelId = $channelId)

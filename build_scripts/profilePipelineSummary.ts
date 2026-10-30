@@ -92,7 +92,11 @@ try {
         name==='jobs' && fixture.jobs===20 ? {baseDbHits:1000,dbHitsPerRequestedRow:20,baseIntermediateRows:20,intermediateRowsPerRequestedRow:2,requestedRows:Math.min(fixture.attempts,10)*20} : null;
       const evaluation = budget && metrics ? evaluateProfile(metrics,budget) : null;
       profiles.push({name,metrics,evaluation});
-      if (evaluation && !evaluation.passed) process.exitCode=1;
+      console.log(JSON.stringify({fixture, name, metrics, evaluation}));
+      if (evaluation && !evaluation.passed) {
+        console.error(`Budget failed: ${name}: ${evaluation.violations.join('; ')}`);
+        process.exitCode=1;
+      }
     }
     reports.push({fixture,baseline,after,profiles});
   }
