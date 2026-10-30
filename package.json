@@ -39,7 +39,8 @@
     "mfctl": "node --import tsx build_scripts/pluginConfigurationCli.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
     "heroku-postbuild": "NODE_OPTIONS=--max-old-space-size=2048 pnpm run build",
-    "start": "node ./ts_emitted/index.js"
+    "start": "node ./ts_emitted/index.js",
+    "perf:pipeline-summary": "node --expose-gc --import tsx build_scripts/profilePipelineSummary.ts"
   },
   "keywords": [],
   "author": "",

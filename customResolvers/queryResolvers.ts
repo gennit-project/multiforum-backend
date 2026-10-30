@@ -1,3 +1,4 @@
+import { createPipelineSummaryPage, createPipelineRunPage } from './queries/getPluginPipelinePage.js'
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Query resolvers. Extracted from customResolvers.ts; receives the shared
 // ResolverDeps and wires the custom query resolvers to their models/driver.
@@ -153,6 +154,8 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getApplicablePluginPipeline: getApplicablePluginPipeline({
       driver,
     }),
+    getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
+    getPipelineRunPage: createPipelineRunPage({ driver }),
     getPipelineSummary: getPipelineSummary({
       driver,
     }),

@@ -40,6 +40,7 @@ import ageGateWriteValidatorMiddleware from "./middleware/ageGateWriteValidatorM
 import { getAgeGateStatements } from "./services/ageGate/definitions.js";
 import { ensureAgeGateIndexes } from "./services/ageGate/indexes.js";
 import { ensureFulltextIndexes } from "./services/fulltextIndexes.js";
+import { ensurePipelineSummaryIndexes } from "./services/pipelineSummaryIndexes.js";
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
@@ -272,6 +273,7 @@ async function initializeServer() {
     await ensureSchemaConstraints(neoSchema);
     await ensureAgeGateIndexes(driver);
     await ensureDiscussionListIndexes(driver);
+    await ensurePipelineSummaryIndexes(driver);
     await backfillFilterGroupUploadSelection(driver);
     await provisionInstanceOnStartup({
       driver,

@@ -58,6 +58,10 @@ export const requiredOnlineIndexNames = [
   // same name. Requiring them here also verifies that each is ONLINE.
   ...requiredConstraintNames,
   "discussion_channel_by_channel",
+  "pipeline_summary_attempt_page",
+  "pipeline_summary_attempt_status",
+  "pipeline_summary_job_status",
+  "pipeline_summary_job_pipeline",
   "channelFulltext",
   "discussionFulltext",
   "issueFulltext",

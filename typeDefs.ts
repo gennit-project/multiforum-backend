@@ -2582,6 +2582,27 @@ const typeDefinitions = gql`
     attempts: [PublicPluginPipelineRun!]!
   }
 
+  type PluginPipelinePageInfo {
+    hasNextPage: Boolean!
+    endCursor: String
+  }
+
+  type PublicPluginPipelineRunPage {
+    run: PublicPluginPipelineRun!
+    displayStatus: PluginRunStatus!
+    hasActiveWork: Boolean!
+    jobsPageInfo: PluginPipelinePageInfo!
+  }
+
+  type PluginPipelineSummaryPage {
+    targetId: ID!
+    targetType: String!
+    hasActiveWork: Boolean!
+    hasFailedWork: Boolean!
+    pageInfo: PluginPipelinePageInfo!
+    attempts: [PublicPluginPipelineRunPage!]!
+  }
+
   type InternalPluginPipelineRunDetail {
     attempt: PluginPipelineRun!
     jobs: [PluginRun!]!
@@ -3335,6 +3356,23 @@ const typeDefinitions = gql`
       targetId: ID!
       targetType: String!
     ): PluginPipelineSummary!
+    """Bounded history. Activity/failure indicators cover all matching history, not just this page."""
+    getPipelineSummaryPage(
+      targetId: ID!
+      targetType: String!
+      first: Int = 10
+      after: String
+      jobsFirst: Int = 20
+      eventType: String
+      scope: String
+      channelId: String
+    ): PluginPipelineSummaryPage!
+    """One attempt with a bounded job page. Status considers every job."""
+    getPipelineRunPage(
+      pipelineRunId: ID!
+      first: Int = 20
+      after: String
+    ): PublicPluginPipelineRunPage
     getPublicPipelineRun(
       pipelineRunId: ID!
     ): PublicPluginPipelineRun

@@ -1,6 +1,6 @@
 import { parsePublicDiagnostics } from './publicDiagnostics.js'
 
-type PipelineAttemptRecord = {
+export type PipelineAttemptRecord = {
   id: string
   pipelineId: string
   targetId: string
@@ -26,7 +26,7 @@ type PipelineAttemptRecord = {
   updatedAt: string
 }
 
-type PluginJobRecord = {
+export type PluginJobRecord = {
   id: string
   pipelineId?: string | null
   pluginId: string
