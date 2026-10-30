@@ -9,14 +9,12 @@
  * Both are generated from an INTROSPECTION of the in-process Neo4jGraphQL
  * schema (no live Neo4j, no running server).
  */
-import { Neo4jGraphQL } from "@neo4j/graphql";
+import { buildPublicSchema } from "./publicSchema.js";
 import { generate as runCodegen } from "@graphql-codegen/cli";
 import { introspectionFromSchema } from "graphql";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import typeDefs from "../typeDefs.js";
-import { createSubscriptionEngine } from "../services/subscriptionEngine.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
@@ -54,18 +52,7 @@ export type ModelMap = Record<string, CrudModel>;
 
 async function main() {
   console.log("Building schema + introspection (no DB) ->", introspectionOut);
-  const neoSchema = new Neo4jGraphQL({
-    typeDefs,
-    features: {
-      filters: { String: { MATCHES: true } },
-      // v7's features.subscriptions type accepts only
-      // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`; the custom in-process
-      // engine still builds the full schema at runtime. Cast to satisfy the v7
-      // type (the app keeps the in-process engine — see index.ts).
-      subscriptions: createSubscriptionEngine() as unknown as boolean,
-    },
-  });
-  const schema = await neoSchema.getSchema();
+  const schema = await buildPublicSchema();
   const introspection = introspectionFromSchema(schema);
   fs.writeFileSync(introspectionOut, JSON.stringify(introspection));
 
