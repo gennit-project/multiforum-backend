@@ -44,9 +44,9 @@ test('full upvote then undo keeps raw transaction and separate generated karma w
   await resetDatabase(driver);await seed();events=[];
   const args={discussionChannelId:'c',username:'voter'};const context={user:{username:'not-voter'}} as GraphQLContext;
   const added=await upvote({driver,repository})(null,args,context,{} as GraphQLResolveInfo);const addedState=await state();
-  assert.ok(added);assert.equal(added.UpvotedByUsersAggregate.count,1);assert.deepEqual(addedState[0].voters,['voter']);assert.equal(addedState[0].karma,8);
+  assert.ok(added);assert.deepEqual(added.UpvotedByUsersConnection,{totalCount:1,aggregate:{count:{nodes:1}}});assert.equal(added.UpvotedByUsersAggregate.count,1);assert.deepEqual(addedState[0].voters,['voter']);assert.equal(addedState[0].karma,8);
   const removed=await undo({driver,repository})(null,args,context,{} as GraphQLResolveInfo);
-  assert.ok(removed);assert.equal(removed.UpvotedByUsersAggregate.count,0);assert.deepEqual(await state(),[{karma:7,weight:3,voters:[]}]);
+  assert.ok(removed);assert.deepEqual(removed.UpvotedByUsersConnection,{totalCount:0,aggregate:{count:{nodes:0}}});assert.equal(removed.UpvotedByUsersAggregate.count,0);assert.deepEqual(await state(),[{karma:7,weight:3,voters:[]}]);
   t.assert.snapshot(normalize({added,addedState,removed,state:await state(),events}));
  }
 });

@@ -62,6 +62,14 @@ exports[`full upvote then undo keeps raw transaction and separate generated karm
     "UpvotedByUsersAggregate": {
       "count": 1
     },
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 1
+        }
+      },
+      "totalCount": 1
+    },
     "id": "c",
     "weightedVotesCount": 4
   },
@@ -79,6 +87,14 @@ exports[`full upvote then undo keeps raw transaction and separate generated karm
     "UpvotedByUsers": [],
     "UpvotedByUsersAggregate": {
       "count": 0
+    },
+    "UpvotedByUsersConnection": {
+      "aggregate": {
+        "count": {
+          "nodes": 0
+        }
+      },
+      "totalCount": 0
     },
     "id": "c",
     "weightedVotesCount": 3
