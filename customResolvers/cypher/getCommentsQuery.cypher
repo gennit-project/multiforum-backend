@@ -93,8 +93,16 @@ RETURN comment {
   ParentComment: null,
   UpvotedByUsers: upvoters,
   UpvotedByUsersAggregate: {count: upvoteCount},
+  UpvotedByUsersConnection: {
+    totalCount: upvoteCount,
+    aggregate: {count: {nodes: upvoteCount}}
+  },
   SuperUpvotedByUsers: superUpvoters,
   ChildCommentsAggregate: {count: childCommentCount},
+  ChildCommentsConnection: {
+    totalCount: childCommentCount,
+    aggregate: {count: {nodes: childCommentCount}}
+  },
   FeedbackComments: feedbackComments,
   PastVersions: pastVersions,
   SubscribedToNotifications: viewerSubscription

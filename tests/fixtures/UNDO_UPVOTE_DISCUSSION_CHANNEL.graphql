@@ -1,0 +1,21 @@
+# Frontend graphQLData/discussion/mutations.js at 201d19b60
+
+  mutation undoUpvoteDiscussionChannel($id: ID!, $username: String!) {
+    undoUpvoteDiscussionChannel(discussionChannelId: $id, username: $username) {
+      id
+      weightedVotesCount
+      UpvotedByUsers {
+        username
+      }
+      UpvotedByUsersConnection {
+        aggregate {
+          count {
+            nodes
+          }
+        }
+      }
+      SuperUpvotedByUsers {
+        username
+      }
+    }
+  }

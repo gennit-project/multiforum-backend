@@ -119,6 +119,10 @@ const undoUpvoteCommentResolver = (input: Input) => {
         UpvotedByUsersAggregate: {
           count: existingUpvotedByUsersAggregate.count - 1,
         },
+        UpvotedByUsersConnection: {
+          totalCount: existingUpvotedByUsersAggregate.count - 1,
+          aggregate: { count: { nodes: existingUpvotedByUsersAggregate.count - 1 } },
+        },
       };
       return returnValue;
     } catch (e) {

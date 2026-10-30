@@ -114,8 +114,16 @@ CALL {
     isFavoritedByUser: isFavoritedByUser,
     UpvotedByUsers: upvoters,
     UpvotedByUsersAggregate: {count: upvoteCount},
+    UpvotedByUsersConnection: {
+      totalCount: upvoteCount,
+      aggregate: {count: {nodes: upvoteCount}}
+    },
     SuperUpvotedByUsers: superUpvoters,
     ChildCommentsAggregate: {count: grandchildCount},
+    ChildCommentsConnection: {
+      totalCount: grandchildCount,
+      aggregate: {count: {nodes: grandchildCount}}
+    },
     FeedbackComments: feedbackComments,
     PastVersions: pastVersions,
     SubscribedToNotifications: viewerSubscription,

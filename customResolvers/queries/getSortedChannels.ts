@@ -102,7 +102,15 @@ const getSortedChannelsResolver = (input: Input) => {
           isFavorited: CASE WHEN $loggedInUsername IS NULL OR $loggedInUsername = "" THEN null ELSE isFavorited END,
           Tags: [tag IN tags | { text: tag.text }],
           EventChannelsAggregate: { count: eventChannelsCount },
-          DiscussionChannelsAggregate: { count: validDiscussionChannelsCount }
+          EventChannelsConnection: {
+            totalCount: eventChannelsCount,
+            aggregate: { count: { nodes: eventChannelsCount } }
+          },
+          DiscussionChannelsAggregate: { count: validDiscussionChannelsCount },
+          DiscussionChannelsConnection: {
+            totalCount: validDiscussionChannelsCount,
+            aggregate: { count: { nodes: validDiscussionChannelsCount } }
+          }
         }) AS channels, COUNT(c) AS aggregateChannelCount
 
         // Paginate results
