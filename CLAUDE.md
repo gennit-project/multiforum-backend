@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build/Run Commands
+- `pnpm run schema:export` - Export the versioned public schema without a database; see [contract workflow](docs/graphql-schema-contract.md)
 - `pnpm run codegen` - Generate GraphQL code
 - `pnpm run tsc` - Run TypeScript compiler
 - `pnpm run build` - Build project (codegen + tsc + copies Cypher files)

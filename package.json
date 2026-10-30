@@ -18,6 +18,7 @@
     "test:integration:shard": "bash build_scripts/integration-shard.sh",
     "coverage:merged": "bash build_scripts/coverage-merged.sh",
     "prepare": "husky",
+    "schema:export": "node --import tsx build_scripts/exportSchemaContract.ts",
     "codegen": "node --import tsx build_scripts/generateTypes.ts",
     "lint": "eslint .",
     "lint:circular": "madge --circular --extensions ts --exclude 'ogm_types.ts|src/generated' index.ts customResolvers.ts permissions.ts",

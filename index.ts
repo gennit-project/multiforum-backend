@@ -1,3 +1,4 @@
+import { createSchemaFeatures } from "./services/schemaFeatures.js";
 import { registerGeneratedSchema } from "./services/persistence/generatedSchemaOperations.js";
 import { createSubscriptionEngine } from "./services/subscriptionEngine.js";
 import { createChannelCreatorModeratorService } from "./services/channelCreatorModerator.js";
@@ -181,22 +182,7 @@ const channelCreatorModeratorService = createChannelCreatorModeratorService(
   createChannelCreatorModeratorRepository(driver), subscriptionEngine
 );
 
-const features = {
-  filters: {
-    String: {
-      MATCHES: true,
-    },
-  },
-  // v7's features.subscriptions type accepts only
-  // `boolean | Neo4jGraphQLSubscriptionsCDCEngine`, but the app ships no
-  // subscription transport (no WebSocket server), so the custom in-process
-  // engine is kept as-is — it builds the schema's subscription types at runtime
-  // and the library accepts the engine object. The cast satisfies the v7 type
-  // without adopting CDC, which would be infrastructure with no client-facing
-  // benefit until a transport exists. See issue #284 and the real-delivery
-  // follow-up issue for the WebSocket + CDC feature work.
-  subscriptions: subscriptionEngine as unknown as boolean
-};
+const features = createSchemaFeatures(subscriptionEngine);
 
 // Create Neo4j GraphQL schema
 const neoSchema = new Neo4jGraphQL({

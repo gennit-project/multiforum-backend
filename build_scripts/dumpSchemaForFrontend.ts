@@ -3,11 +3,9 @@
  * and write the SDL + introspection JSON to the frontend scratchpad so frontend
  * operations can be validated and types regenerated. Safe to delete.
  */
-import { Neo4jGraphQL } from "@neo4j/graphql";
+import { buildPublicSchema } from "./publicSchema.js";
 import { introspectionFromSchema, printSchema } from "graphql";
 import fs from "fs";
-import typeDefs from "../typeDefs.js";
-import { createSubscriptionEngine } from "../services/subscriptionEngine.js";
 
 const OUT_DIR = process.env.FE_SCHEMA_OUT_DIR as string;
 if (!OUT_DIR) {
@@ -16,14 +14,7 @@ if (!OUT_DIR) {
 }
 
 async function main() {
-  const neoSchema = new Neo4jGraphQL({
-    typeDefs,
-    features: {
-      filters: { String: { MATCHES: true } },
-      subscriptions: createSubscriptionEngine() as unknown as boolean,
-    },
-  });
-  const schema = await neoSchema.getSchema();
+  const schema = await buildPublicSchema();
   fs.writeFileSync(`${OUT_DIR}/v7.schema.graphql`, printSchema(schema));
   fs.writeFileSync(
     `${OUT_DIR}/v7.introspection.json`,
