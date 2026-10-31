@@ -38,6 +38,7 @@
     "perf:cypher": "node --import tsx build_scripts/profileCriticalQueries.ts",
     "neo4j:cleanup-intermediate-nodes": "node --import tsx build_scripts/cleanupIntermediateNodes.ts",
     "mfctl": "node --import tsx build_scripts/pluginConfigurationCli.ts",
+    "plugin-config:render-production": "node --import tsx build_scripts/renderProductionPluginConfiguration.ts",
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
     "heroku-postbuild": "NODE_OPTIONS=--max-old-space-size=2048 pnpm run build",
     "start": "node ./ts_emitted/index.js",

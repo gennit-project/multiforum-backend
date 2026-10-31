@@ -1,0 +1,99 @@
+{
+  "apiVersion": "multiforum.gennit.dev/v1alpha1",
+  "registries": {
+    "mode": "MERGE",
+    "urls": [
+      "https://storage.googleapis.com/mf-plugins-prod/registry.json",
+      "https://storage.googleapis.com/mf-plugins-prod/registry-experimental.json"
+    ]
+  },
+  "plugins": [
+    {
+      "pluginId": "security-attachment-scan",
+      "version": "0.5.1",
+      "enabled": true,
+      "settingsJson": {
+        "serviceUrl": "__SCAN_SERVICE_URL__",
+        "blockOn": "malicious",
+        "onError": "block",
+        "policy": {}
+      },
+      "secretRefs": [
+        {
+          "key": "SCAN_SERVICE_API_KEY",
+          "valueFrom": "env:SCAN_API_KEY"
+        }
+      ]
+    },
+    {
+      "pluginId": "llm-moderation",
+      "version": "0.7.0",
+      "enabled": true,
+      "settingsJson": {
+        "serviceUrl": "__LLM_MODERATION_SERVICE_URL__",
+        "serverRuleCheckMode": "allowlist",
+        "serverRuleForumAllowlist": ["__LLM_MODERATION_TRIAL_FORUM__"],
+        "model": "gpt-4o-mini",
+        "temperature": 0,
+        "maxTokens": 800,
+        "confidenceThreshold": 0.7,
+        "serviceTimeoutMs": 30000,
+        "botName": "llm-moderator"
+      },
+      "secretRefs": [
+        {
+          "key": "MODERATION_SERVICE_API_KEY",
+          "valueFrom": "env:MOD_API_KEY"
+        }
+      ]
+    }
+  ],
+  "channelPlugins": [
+    {
+      "channelUniqueName": "__LLM_MODERATION_TRIAL_FORUM__",
+      "pluginId": "llm-moderation",
+      "version": "0.7.0",
+      "enabled": true
+    }
+  ],
+  "pipelines": [
+    {
+      "event": "downloadableFile.created",
+      "steps": [{ "pluginId": "security-attachment-scan", "version": "0.5.1" }],
+      "stopOnFirstFailure": true,
+      "applicability": "ALL_FILES_IMMEDIATE"
+    },
+    {
+      "event": "downloadableFile.updated",
+      "steps": [{ "pluginId": "security-attachment-scan", "version": "0.5.1" }],
+      "stopOnFirstFailure": true,
+      "applicability": "ALL_FILES_IMMEDIATE"
+    },
+    {
+      "event": "downloadableFile.downloaded",
+      "steps": [{ "pluginId": "security-attachment-scan", "version": "0.5.1" }],
+      "stopOnFirstFailure": true,
+      "applicability": "ALL_FILES_IMMEDIATE"
+    },
+    {
+      "event": "comment.created",
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "stopOnFirstFailure": true
+    },
+    {
+      "event": "comment.edited",
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "stopOnFirstFailure": true
+    },
+    {
+      "event": "discussionChannel.created",
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "stopOnFirstFailure": true
+    },
+    {
+      "event": "discussionChannel.edited",
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "stopOnFirstFailure": true
+    }
+  ]
+}
