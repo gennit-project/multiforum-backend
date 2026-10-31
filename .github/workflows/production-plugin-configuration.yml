@@ -1,0 +1,187 @@
+name: Reconcile production plugin configuration
+run-name: Plugin configuration ${{ inputs.operation || 'validate' }} ${{ inputs.correlation_id || github.sha }}
+
+on:
+  pull_request:
+    paths:
+      - "deployment/plugin-configuration/**"
+      - "build_scripts/renderProductionPluginConfiguration.*"
+      - "build_scripts/pluginConfigurationCli.*"
+      - ".github/workflows/production-plugin-configuration.yml"
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Preview drift or apply the reviewed desired state
+        required: true
+        default: plan
+        type: choice
+        options:
+          - plan
+          - apply
+      scan_service_url:
+        description: Optional deployed scanner HTTPS origin; defaults to the production environment variable
+        required: false
+        type: string
+      llm_moderation_service_url:
+        description: Optional deployed LLM moderation HTTPS origin; defaults to the production environment variable
+        required: false
+        type: string
+      correlation_id:
+        description: Optional deployment identifier shown in the workflow run name
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate and render
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the reviewed revision
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+
+      - name: Install dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+          pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Test the production renderer
+        run: node --import tsx --test build_scripts/renderProductionPluginConfiguration.test.ts
+
+      - name: Render a secret-free validation manifest
+        run: >-
+          pnpm plugin-config:render-production
+          --template deployment/plugin-configuration/production.template.json
+          --output "${RUNNER_TEMP}/plugin-configuration.json"
+          --scan-service-url https://scanner.validation.invalid
+          --moderation-service-url https://moderation.validation.invalid
+          --trial-forum moderation_validation
+
+      - name: Record validation summary
+        run: |
+          {
+            echo "### Production plugin configuration"
+            echo "- Reviewed mfctl revision: \`${GITHUB_SHA}\`"
+            echo "- Template and renderer tests: passed"
+            echo "- Secret values: not read during validation"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  reconcile:
+    name: ${{ inputs.operation }} production drift
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      MULTIFORUM_GRAPHQL_URL: ${{ vars.MULTIFORUM_GRAPHQL_URL }}
+      MULTIFORUM_OAUTH_TOKEN_URL: ${{ vars.MULTIFORUM_OAUTH_TOKEN_URL }}
+      MULTIFORUM_OAUTH_CLIENT_ID: ${{ vars.MULTIFORUM_OAUTH_CLIENT_ID }}
+      MULTIFORUM_OAUTH_CLIENT_SECRET: ${{ secrets.MULTIFORUM_OAUTH_CLIENT_SECRET }}
+      MULTIFORUM_OAUTH_AUDIENCE: ${{ vars.MULTIFORUM_OAUTH_AUDIENCE }}
+      MULTIFORUM_OAUTH_SCOPE: plugin-configuration:write
+    steps:
+      - name: Check out the reviewed mfctl revision
+        uses: actions/checkout@v4
+
+      - name: Require the default branch for apply
+        if: ${{ inputs.operation == 'apply' && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::Production apply must run from the main branch."
+          exit 1
+
+      - name: Validate protected configuration
+        env:
+          SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
+          LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
+          LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
+          SCAN_API_KEY: ${{ inputs.operation == 'apply' && secrets.SCAN_API_KEY || '' }}
+          MOD_API_KEY: ${{ inputs.operation == 'apply' && secrets.MOD_API_KEY || '' }}
+        run: |
+          set -euo pipefail
+          required=(
+            MULTIFORUM_GRAPHQL_URL
+            MULTIFORUM_OAUTH_TOKEN_URL
+            MULTIFORUM_OAUTH_CLIENT_ID
+            MULTIFORUM_OAUTH_CLIENT_SECRET
+            MULTIFORUM_OAUTH_AUDIENCE
+            SCAN_SERVICE_URL
+            LLM_MODERATION_SERVICE_URL
+            LLM_MODERATION_TRIAL_FORUM
+          )
+          if [[ "${{ inputs.operation }}" == "apply" ]]; then
+            required+=(SCAN_API_KEY MOD_API_KEY)
+          fi
+          for name in "${required[@]}"; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing production variable or secret: ${name}"
+              exit 1
+            fi
+          done
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+
+      - name: Install reviewed mfctl dependencies
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.28.2 --activate
+          pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Render production desired state
+        env:
+          SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
+          LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
+          LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
+        run: >-
+          pnpm plugin-config:render-production
+          --template deployment/plugin-configuration/production.template.json
+          --output "${RUNNER_TEMP}/plugin-configuration.json"
+          --scan-service-url "${SCAN_SERVICE_URL}"
+          --moderation-service-url "${LLM_MODERATION_SERVICE_URL}"
+          --trial-forum "${LLM_MODERATION_TRIAL_FORUM}"
+
+      - name: Reconcile production desired state
+        id: reconcile
+        env:
+          SCAN_API_KEY: ${{ inputs.operation == 'apply' && secrets.SCAN_API_KEY || '' }}
+          MOD_API_KEY: ${{ inputs.operation == 'apply' && secrets.MOD_API_KEY || '' }}
+        run: |
+          set +e
+          pnpm mfctl plugin-config "${{ inputs.operation }}" \
+            --manifest "${RUNNER_TEMP}/plugin-configuration.json" \
+            --json | tee "${RUNNER_TEMP}/reconciliation-result.json"
+          status=${PIPESTATUS[0]}
+          set -e
+          if [[ "${{ inputs.operation }}" == "plan" && "${status}" == "2" ]]; then
+            echo "drift=true" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          exit "${status}"
+
+      - name: Publish redacted reconciliation summary
+        if: ${{ always() }}
+        run: |
+          {
+            echo "### Production plugin reconciliation"
+            echo "- Operation: ${{ inputs.operation }}"
+            echo "- Reviewed mfctl revision: \`${GITHUB_SHA}\`"
+            echo "- Drift found: ${{ steps.reconcile.outputs.drift || 'false' }}"
+            if [[ -s "${RUNNER_TEMP}/reconciliation-result.json" ]]; then
+              echo "<details><summary>Redacted mfctl result</summary>"
+              echo
+              echo '```json'
+              cat "${RUNNER_TEMP}/reconciliation-result.json"
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "${GITHUB_STEP_SUMMARY}"
