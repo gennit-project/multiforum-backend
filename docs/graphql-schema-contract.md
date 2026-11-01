@@ -64,3 +64,81 @@ The frontend inventory and remaining gaps are documented in
 all extracted operations against this pinned contract. Phase 3 generates typed
 operation documents; phase 4 enforces custom response shapes. Schema validation
 alone does not catch runtime-invalid nullable filters or incomplete projections.
+
+## Candidate compatibility and publication gate (#701)
+
+`graphql-compatibility/supported-frontends.json` is the reviewed supported-client
+set. It pins the canonical frontend repository, full commit, operations SHA-256,
+document count and purpose. The first target is frontend #708 commit
+`3947cdf3a0d7f84918e81b75b2de433931dc084e` (355 production documents). This is a
+source compatibility target, not evidence of deployed revisions or permission
+to retire older/cached clients. Deployed and rollback revisions remain unknown.
+Before a rollout, maintainers must record those revisions and add every active
+and rollback client. Missing historical inventories are missing evidence, not a
+pass. #413 and live deployment discovery are outside this change.
+
+The existing exporter remains the only candidate schema producer. From a clean
+backend checkout with frozen dependencies:
+
+```sh
+pnpm schema:export
+pnpm schema:compatibility
+node --import tsx --test tests/contracts/frontendCompatibility.smoke.ts
+pnpm test:frontend-contracts
+```
+
+The backend-owned TypeScript checker implements the same operation validation,
+full breaking/dangerous schema diff, and original-baseline semantics as frontend
+`scripts/check-backend-compatibility.mjs`. It fetches only JSON, SDL and lockfile
+data from fixed public GitHub paths at each immutable supported SHA. It never
+installs frontend packages or executes frontend code. Checksums and original
+schema manifests bind every input; the candidate revision and lockfile must match
+the current clean checkout. Unknown/missing inputs, empty or duplicate support
+sets, malformed provenance and validation errors fail closed. There is no waiver,
+mutable-ref fallback, environment override or live endpoint introspection.
+
+The committed operation snapshot is produced and freshness-checked by frontend
+#708 CI using its strict extractor. Backend pins must be reviewed against that
+successful exact-source CI evidence, including generated-type freshness. The
+backend verifies its pinned snapshot checksum, individual document hashes,
+source references/count, original schema pin and frontend lockfile. It does not
+re-run a different extractor or claim to independently certify source coverage.
+Changing the frontend target or checksum is a reviewed dependency change, not
+routine baseline regeneration. A SHA checksum establishes integrity, not trust
+in an arbitrary producer.
+
+`.github/workflows/graphql-compatibility.yml` is one reusable, read-only gate
+called by Tests CI and Container image for the same checkout. It exports the
+candidate, validates every client and original baseline, proves real wiki/issue/
+album rejection and additive compatibility, and runs the existing four-family
+schema/permissions/persistence suite on disposable Neo4j. Only then is the
+`graphql-schema-<checkout SHA>` artifact uploaded. Both image-build paths depend
+on this gate; registry publication and multi-platform assembly cannot run after
+a failed gate. No secrets are inherited, no PAT is required, and no privileged
+`pull_request_target` or `workflow_run` execution is introduced. Existing full
+integration shards and image smoke are retained. No branch protection changes
+are made. Artifact publication is a technical CI gate, not deployment approval.
+
+`frontend-compatibility-<checkout SHA>` retains a deterministic report, supported
+operation snapshots and original schemas/manifests, or failure diagnostics.
+Reports identify candidate and client revisions/hashes, source file/line/document,
+and full breaking/dangerous changes. Missing data/network failures produce
+`failure.txt` and nonzero exit, never a partial pass. PR artifacts identify the
+synthetic merge checkout, not the PR head; reproduce with the exact commit and
+frozen lockfile. Each caller has its own run-scoped artifacts.
+
+For intentional breaks, both repository owners must review the affected clients,
+full diagnostics, retirement evidence, migration strategy and tested rollback
+pair before changing support. Never replace an existing client's original schema
+baseline to conceal a failure. There is no assumed N-1 expiry policy. Historical
+#415/#707 evidence shows both mixed pairs fail (old frontend/new backend issue
+input; new frontend/old backend five album/issue/wiki validation errors). Use an
+additive bridge or a coordinated paired cutover; do not assume backend-first is
+safe. Static validation cannot prove runtime values, authorization or persistence;
+the real-schema tests cover crosspost references, new/reused-image ownership,
+issue identity/numbering/targets and wiki home/history/editor attribution.
+
+See frontend [cross-repository release guidance](https://github.com/gennit-project/multiforum-nuxt/blob/3947cdf3a0d7f84918e81b75b2de433931dc084e/docs/cross-repository-releases.md)
+for evidence collection, intentional-break review and paired rollback. Shared
+staging/production writes, deployment, and live-version verification are not
+performed by this gate.

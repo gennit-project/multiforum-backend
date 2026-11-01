@@ -42,7 +42,9 @@
     "build": "pnpm run codegen && tsc && node build_scripts/copyCypherFiles.js",
     "heroku-postbuild": "NODE_OPTIONS=--max-old-space-size=2048 pnpm run build",
     "start": "node ./ts_emitted/index.js",
-    "perf:pipeline-summary": "node --expose-gc --import tsx build_scripts/profilePipelineSummary.ts"
+    "perf:pipeline-summary": "node --expose-gc --import tsx build_scripts/profilePipelineSummary.ts",
+    "schema:compatibility": "node --import tsx build_scripts/checkFrontendCompatibility.ts",
+    "test:frontend-contracts": "node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test tests/integration/frontendInputContracts.test.ts"
   },
   "keywords": [],
   "author": "",

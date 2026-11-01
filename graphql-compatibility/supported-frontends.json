@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "repository": "gennit-project/multiforum-nuxt",
+  "clients": [
+    {
+      "revision": "3947cdf3a0d7f84918e81b75b2de433931dc084e",
+      "operationsSha256": "5e09fbd891faa5dd0fcb5488b57f355fd0adc4134edac7924c8cd58b5664024c",
+      "documents": 355,
+      "purpose": "Migrated #707 source compatibility target, exported by draft #708. Deployed and rollback revisions remain unknown; this does not retire older clients."
+    }
+  ]
+}

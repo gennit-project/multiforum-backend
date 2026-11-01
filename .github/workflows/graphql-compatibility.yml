@@ -1,0 +1,46 @@
+name: GraphQL compatibility
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  candidate-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run codegen
+      - name: Export this exact candidate schema without a database
+        run: pnpm run schema:export
+      - name: Validate every explicitly supported frontend and original baseline
+        run: pnpm run schema:compatibility
+      - name: Prove real operation rejection and additive compatibility
+        run: node --import tsx --test tests/contracts/frontendCompatibility.smoke.ts
+      - name: Exercise crosspost, album, issue and wiki writes on disposable Neo4j
+        run: pnpm run test:frontend-contracts
+      - name: Preserve compatibility evidence and actionable failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-compatibility-${{ github.sha }}
+          path: artifacts/frontend-compatibility/
+          if-no-files-found: error
+          retention-days: 90
+      # A schema artifact is available only after static and persistence checks.
+      - name: Publish compatible public GraphQL schema contract
+        uses: actions/upload-artifact@v4
+        with:
+          name: graphql-schema-${{ github.sha }}
+          path: artifacts/graphql-schema/
+          if-no-files-found: error
+          retention-days: 90
