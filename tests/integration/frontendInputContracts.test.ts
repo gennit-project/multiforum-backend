@@ -71,7 +71,11 @@ test('wiki home, child, update and revision author relationships commit together
  await driver.executeQuery(`MATCH (u:User {username:'bob'}),(c:Channel {uniqueName:'forum'}) CREATE (u)-[:ADMIN_OF_CHANNEL]->(c)`);
  const updated=ok(await run(WIKI,{input:{id:home.id,channelUniqueName:'forum',title:'Home',body:'Edited'}},'bob')).writeWikiPage;
  assert.equal(updated.OriginalAuthor.username,'alice');assert.equal(updated.VersionAuthor.username,'bob');
- assert.deepEqual(updated.PastVersions.map((v:any)=>[v.body,v.Author.username]),[['Original','alice']]);
+ assert.deepEqual(updated.PastVersions.map((v:any)=>[v.body,v.Author.username]).sort(),[['Edited','bob'],['Home','alice'],['Original','alice']]);
+ const currentRevision=updated.PastVersions.find((v:any)=>v.body==='Edited');
+ assert.ok(currentRevision, 'current edit has a reportable revision immediately');
+ const contributions=(await driver.executeQuery('MATCH(:User {username:"bob"})-[:AUTHORED_VERSION]->(v:TextVersion)<-[:HAS_VERSION]-(:WikiPage {id:$id}) RETURN v.body AS body',{id:home.id})).records;
+ assert.deepEqual(contributions.map(r=>r.get('body')),['Edited']);
  ok(await run(`mutation($id:ID!){setWikiHomePage(channelUniqueName:"forum",pageId:$id)}`,{id:child.id}));
  assert.equal((await driver.executeQuery('MATCH(:Channel {uniqueName:"forum"})-[:HAS_WIKI_HOME_PAGE]->(p) RETURN p.id AS id')).records[0].get('id'),child.id);
 });
@@ -150,4 +154,13 @@ test('wiki update with missing historical author rolls back and preserves its or
  assert.ok((await run(WIKI,{input:{id:page.id,channelUniqueName:'forum',title:'Changed',body:'After'}})).errors);
  const row=(await driver.executeQuery('MATCH(p:WikiPage {id:$id}) RETURN p.title AS title,p.body AS body',{id:page.id})).records[0];
  assert.equal(row.get('title'),'Legacy');assert.equal(row.get('body'),'Before');
+});
+test('wiki no-op preserves the editor while clearing body creates an attributed revision',async()=>{
+ const page=ok(await run(WIKI,{input:{channelUniqueName:'forum',slug:'stable',title:'Stable',body:'Keep'}})).writeWikiPage;
+ await driver.executeQuery(`MATCH (u:User {username:'bob'}),(c:Channel {uniqueName:'forum'}) CREATE (u)-[:ADMIN_OF_CHANNEL]->(c)`);
+ const unchanged=ok(await run(WIKI,{input:{id:page.id,channelUniqueName:'forum',title:'Stable',body:'Keep'}},'bob')).writeWikiPage;
+ assert.equal(unchanged.VersionAuthor.username,'alice');assert.equal(unchanged.PastVersions.length,2);
+ const cleared=ok(await run(WIKI,{input:{id:page.id,channelUniqueName:'forum',title:'Stable',body:null}},'bob')).writeWikiPage;
+ assert.equal(cleared.VersionAuthor.username,'bob');assert.equal(cleared.PastVersions.length,3);
+ assert.equal(cleared.PastVersions.find((v:any)=>v.body===null).Author.username,'bob');
 });

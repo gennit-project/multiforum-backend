@@ -96,7 +96,9 @@ linking an already-created page without editing it. Home and parent pages must
 belong to the named channel. Existing wiki-enabled, channel permission and locked
 page moderation checks apply. The server assigns the editor from authenticated
 context. Previous changed title/body content retains its previous editor in
-`PastVersions`, and the revision writes commit with the edit. A legacy page with
+`PastVersions`. Creation and changed current text also receive authored revisions
+immediately, so contributions and revision reports do not wait for another edit.
+All revision writes commit with the edit; unchanged text does not reassign its editor. A legacy page with
 missing editor attribution must be repaired before its text can be changed;
 the mutation does not invent a historical author.
 
