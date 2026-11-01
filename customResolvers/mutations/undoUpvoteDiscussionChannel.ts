@@ -1,4 +1,3 @@
-import { User } from "../../src/generated/graphql.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { createDiscussionChannelVoteRepository, type DiscussionChannelVoteRepository } from "../../services/persistence/discussionChannelVoteRepository.js";
@@ -110,7 +109,7 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
         weightedVotesCount:
           (discussionChannel.weightedVotesCount ?? 0) - 1 - weightedVoteBonus,
         UpvotedByUsers: existingUpvotedByUsers.filter(
-          (user: User) => user.username !== username
+          (user) => user.username !== username
         ),
         UpvotedByUsersAggregate: {
           count: existingUpvotedByUsersCount - 1,

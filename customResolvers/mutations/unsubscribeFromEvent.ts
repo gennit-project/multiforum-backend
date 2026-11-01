@@ -1,6 +1,6 @@
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
-import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository, type EventSubscriptionTarget } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -22,7 +22,7 @@ const getResolver = (input: Input) => {
     args: Args,
     context: GraphQLContext,
     info: GraphQLResolveInfo
-  ) => {
+  ): Promise<EventSubscriptionTarget | undefined> => {
     const { eventId } = args;
     const { username } = context.user!;
 

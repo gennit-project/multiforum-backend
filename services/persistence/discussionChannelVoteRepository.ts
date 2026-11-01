@@ -1,11 +1,19 @@
+import type { Projection } from "../../customResolvers/contracts/selection.js";
 import type { Driver } from "neo4j-driver";
 import type { DiscussionChannel, User } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { NOTIFICATION_USER_SELECTION } from "./notificationWriter.js";
 
+export type DiscussionChannelVoteSnapshot = Pick<DiscussionChannel, "id" | "weightedVotesCount"> & {
+  Discussion?: { Author?: Pick<User, "username" | "discussionKarma" | "createdAt"> | null } | null;
+  UpvotedByUsers: Pick<User, "username">[];
+  UpvotedByUsersConnection: Projection<DiscussionChannel["UpvotedByUsersConnection"], { aggregate: { count: { nodes: true } } }>;
+};
+export type DiscussionVoterSnapshot = Pick<User, "username" | "discussionKarma">;
+
 export interface DiscussionChannelVoteRepository {
-  findDiscussionChannel(id: string): Promise<DiscussionChannel[]>;
-  findVoter(username: string): Promise<User[]>;
+  findDiscussionChannel(id: string): Promise<DiscussionChannelVoteSnapshot[]>;
+  findVoter(username: string): Promise<DiscussionVoterSnapshot[]>;
   setAuthorKarma(username: string, discussionKarma: number): Promise<void>;
 }
 export const DISCUSSION_CHANNEL_VOTE_SELECTION = `{
@@ -31,10 +39,10 @@ const KARMA = `mutation SetDiscussionChannelVoteAuthorKarma($where: UserWhere, $
 export function createDiscussionChannelVoteRepository(driver: Driver): DiscussionChannelVoteRepository {
   return {
     async findDiscussionChannel(id) {
-      return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver, DISCUSSION_CHANNEL, {where: {id: {eq: id}}})).discussionChannels;
+      return (await executeGeneratedOperation<{discussionChannels: DiscussionChannelVoteSnapshot[]}>(driver, DISCUSSION_CHANNEL, {where: {id: {eq: id}}})).discussionChannels;
     },
     async findVoter(username) {
-      return (await executeGeneratedOperation<{users: User[]}>(driver, VOTER, {where: {username: {eq: username}}})).users;
+      return (await executeGeneratedOperation<{users: DiscussionVoterSnapshot[]}>(driver, VOTER, {where: {username: {eq: username}}})).users;
     },
     async setAuthorKarma(username, discussionKarma) {
       await executeGeneratedOperation(driver, KARMA, {where: {username: {eq: username}}, update: {discussionKarma: {set: discussionKarma}}});

@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import { createSubscriptionTargetRepository, type SubscriptionTargetRepository } from "../../services/persistence/subscriptionTargetRepository.js";
+import { createSubscriptionTargetRepository, type SubscriptionTargetRepository, type EventUpdatesSubscriptionTarget } from "../../services/persistence/subscriptionTargetRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 
@@ -16,7 +16,7 @@ const getResolver = (input: Input) => {
   const { driver } = input;
   const subscriptionTargets = input.subscriptionTargetRepository ?? createSubscriptionTargetRepository(driver);
 
-  return async (parent: unknown, args: Args, context: GraphQLContext) => {
+  return async (parent: unknown, args: Args, context: GraphQLContext): Promise<EventUpdatesSubscriptionTarget | undefined> => {
     const { eventId } = args;
     const { username } = context.user!;
 

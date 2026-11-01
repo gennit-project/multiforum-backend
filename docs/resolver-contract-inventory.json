@@ -1,0 +1,841 @@
+{
+  "formatVersion": 1,
+  "fields": [
+    {
+      "field": "Album.Images",
+      "status": "deferred"
+    },
+    {
+      "field": "Album.detailImagesPageInfo",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.Admins",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.Bots",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.Comments",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.DiscussionChannels",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.EventChannels",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.InCollections",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.Moderators",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.PendingModInvites",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.PendingOwnerInvites",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.PinnedDiscussionChannels",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.PinnedWikiPages",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.RelatedChannels",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.SuspendedMods",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.SuspendedUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.Tags",
+      "status": "deferred"
+    },
+    {
+      "field": "Channel.variantUrls",
+      "status": "deferred"
+    },
+    {
+      "field": "Comment.SuperUpvotedByUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "CommentAuthor.__resolveType",
+      "status": "deferred"
+    },
+    {
+      "field": "Discussion.detailFilesPageInfo",
+      "status": "deferred"
+    },
+    {
+      "field": "DiscussionChannel.SuperUpvotedByUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "DiscussionChannel.detailAnswersPageInfo",
+      "status": "deferred"
+    },
+    {
+      "field": "DiscussionChannelListItem.Flairs",
+      "status": "deferred"
+    },
+    {
+      "field": "DiscussionChannelListItem.SuperUpvotedByUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "DiscussionChannelListItem.UpvotedByUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "DownloadableFile.url",
+      "status": "deferred"
+    },
+    {
+      "field": "Image.variantUrls",
+      "status": "deferred"
+    },
+    {
+      "field": "IssueAuthor.__resolveType",
+      "status": "deferred"
+    },
+    {
+      "field": "JSON",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.acceptForumModInvite",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.acceptForumOwnerInvite",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.acceptServerAdminInvite",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.acceptServerModInvite",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.addEmojiToComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.addEmojiToDiscussionChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.addImageToAlbum",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.addIssueActivityFeedItem",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.addToCollection",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.applyPluginConfiguration",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.archiveComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.archiveDiscussion",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.archiveEvent",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.archiveImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.becomeForumAdmin",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.cancelInviteForumMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.cancelInviteForumOwner",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.cancelInviteServerAdmin",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.cancelInviteServerMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.clearDownloadableFileScan",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createCommentWithOwnedConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createDiscussionWithChannelConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createDownloadableFiles",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createEmailAndUser",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createEventSeriesWithChannelConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createEventWithChannelConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createImageWithUploader",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createIssue",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createPluginPipelineCampaign",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createScratchpadEntry",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.createSignedStorageURL",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteCommentRevision",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteDiscussionBodyRevision",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteEventDescriptionRevision",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteEventInSeries",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteScratchpadEntry",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.deleteWikiRevision",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.dropDataForCypressTests",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.enableServerPlugin",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.installPluginVersion",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.inviteForumMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.inviteForumOwner",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.inviteServerAdmin",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.inviteServerMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.lockChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.lockIssue",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.lockWikiPage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.pausePluginPipelineCampaign",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyDeleteChannelBanner",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyDeleteChannelIcon",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyDeleteDownloadableFile",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyDeleteImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyDeleteProfileImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.permanentlyRemoveImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.pinWikiPageToChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.prepareDownload",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.refreshPlugins",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeEmojiFromComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeEmojiFromDiscussionChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeForumMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeForumOwner",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeFromCollection",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.removeImageFromAlbum",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reorderCollectionItem",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportChannelImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportDiscussion",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportEvent",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportProfilePicture",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.reportWikiEdit",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.requestDownloadableFileReview",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.rerunPluginPipeline",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.resumePluginPipelineCampaign",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.retryDownloadableFileScan",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.seedDataForCypressTests",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.sendBugReport",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setChannelDiscussionFlairConfig",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setChannelIcon",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setFeaturedWikiPages",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setMyBirthday",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setProfileImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setRankingSettings",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setServerPluginSecret",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.setWikiHomePage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.shareCollectionAsDiscussion",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.softDeleteComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.startPluginPipeline",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.stickyComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.subscribeToComment",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.subscribeToDiscussionChannel",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.subscribeToEvent",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.subscribeToEventUpdates",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.subscribeToIssue",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.suspendMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.suspendUser",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.trackDownload",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.triggerDownloadableFilePluginRuns",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unarchiveComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unarchiveDiscussion",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unarchiveEvent",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unarchiveImage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.undoSuperUpvote",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.undoUpvoteComment",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.undoUpvoteDiscussionChannel",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unlockChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unlockIssue",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unlockWikiPage",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unpinWikiPageFromChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unstickyComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unsubscribeFromComment",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unsubscribeFromDiscussionChannel",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unsubscribeFromEvent",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unsubscribeFromEventUpdates",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unsubscribeFromIssue",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.unsuspendMod",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.unsuspendUser",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateChannelPluginPipelines",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateDiscussionWithChannelConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateDownloadLabels",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateDownloadableFileSupportSettings",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateEventInSeries",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateEventWithChannelConnections",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updatePluginPipelines",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.updateScratchpadEntryVisibility",
+      "status": "deferred"
+    },
+    {
+      "field": "Mutation.upvoteComment",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.upvoteDiscussionChannel",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.writeWikiPage",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getAgePolicy",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getApplicablePluginPipeline",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getChannelContributions",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getChannelDiscussionFlairConfig",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getCommentReplies",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getCommentSection",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionAgeGateCheck",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionDetail",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionDetailAnswers",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionDetailFiles",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionDetailImages",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDiscussionsInChannel",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getDownloadScanReviewQueue",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getEventComments",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getImageAlbumUsage",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getInstalledPlugins",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getInstanceSetupStatus",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getInternalPluginPipelineRun",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getModContributions",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getMyAgeProfile",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getOwnEmail",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPipelineRunPage",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPipelineRuns",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPipelineSummary",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPipelineSummaryPage",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPluginConfigStatus",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPluginPipelineCampaignFailures",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPluginPipelineCampaigns",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPluginRunsForDownloadableFile",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getPublicPipelineRun",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getRankingSettings",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getServerHealthDashboard",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getServerPluginSecrets",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getSiteWideDiscussionList",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getSiteWideIssueList",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getSiteWideWikiList",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getSortedChannels",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getUploadedDownloadableFiles",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getUserContributions",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getUserFavoriteComment",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getUserWikiEditsCount",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.isOriginalPosterSuspended",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.previewPluginConfigurationReconciliation",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.previewPluginPipelineCampaign",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.publicCollectionsContaining",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.safetyCheck",
+      "status": "deferred"
+    },
+    {
+      "field": "ScratchpadEntry.superUpvotedByUsers",
+      "status": "deferred"
+    },
+    {
+      "field": "SiteWideDiscussionListItem.DownloadableFiles",
+      "status": "deferred"
+    },
+    {
+      "field": "User.Collections",
+      "status": "deferred"
+    },
+    {
+      "field": "User.variantUrls",
+      "status": "deferred"
+    }
+  ]
+}

@@ -34,14 +34,25 @@ for (const [name, factory] of Object.entries(factories)) {
         return { records: [] };
       }, close() { order.push("close-write"); return Promise.resolve(); } };
     } } as unknown as Driver;
-    const snapshot = { id: "target", createdAt: "2026-10-20T00:00:00.000Z", SubscribedToNotifications: [] };
-    const read = async (id: string) => {
+    const identity = { id: "target", createdAt: "2026-10-20T00:00:00.000Z" };
+    const notifications = { SubscribedToNotifications: [] };
+    const snapshots = {
+      Comment: { ...identity, text: null, ...notifications },
+      DiscussionChannel: { ...identity, discussionId: "d", channelUniqueName: "forum", archived: null, ...notifications },
+      Event: { ...identity, title: "Event", description: null, ...notifications },
+      EventUpdates: { ...identity, title: "Event", SubscribedToEventUpdates: [] },
+      Issue: { ...identity, issueNumber: 1, title: null, channelUniqueName: null, ...notifications },
+    };
+    const read = <Target>(snapshot: Target) => async (id: string): Promise<Target[]> => {
       assert.equal(id, "target"); order.push("read");
       if (failure === "read") throw new Error("read failed");
       return absent ? [] : [snapshot];
     };
-    const repository: SubscriptionTargetRepository = { findComment: read, findDiscussionChannel: read,
-      findEvent: read, findEventUpdates: read, findIssue: read };
+    const repository: SubscriptionTargetRepository = {
+      findComment: read(snapshots.Comment), findDiscussionChannel: read(snapshots.DiscussionChannel),
+      findEvent: read(snapshots.Event), findEventUpdates: read(snapshots.EventUpdates), findIssue: read(snapshots.Issue),
+    };
+    const snapshot = name.endsWith("Comment") ? snapshots.Comment : name.endsWith("DiscussionChannel") ? snapshots.DiscussionChannel : name.endsWith("EventUpdates") ? snapshots.EventUpdates : name.endsWith("Event") ? snapshots.Event : snapshots.Issue;
     return { resolver: factory({ driver, subscriptionTargetRepository: repository }), order, queries, snapshot };
   };
   test(`${name} retains raw write-before-read and returns the first snapshot`, async () => {
