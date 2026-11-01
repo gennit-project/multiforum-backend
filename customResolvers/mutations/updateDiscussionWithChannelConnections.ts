@@ -1,3 +1,7 @@
+import { writeDiscussionAlbumInput } from "../../services/persistence/discussionAlbumInput.js";
+import type { DiscussionAlbumInput } from "../../src/generated/graphql.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { createInstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
 import {createDiscussionUpdateRepository, type DiscussionUpdateRepository} from "../../services/persistence/discussionUpdateRepository.js";
 import type { Driver } from "neo4j-driver";
 import { updateDiscussionChannelQuery, severConnectionBetweenDiscussionAndChannelQuery } from "../cypher/cypherQueries.js";
@@ -32,6 +36,7 @@ type Args = {
   channelConnections?: string[];
   channelDisconnections?: string[];
   albumImageDisconnections?: string[];
+  album?: DiscussionAlbumInput | null;
   channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
 
@@ -97,6 +102,18 @@ const getResolver = (
     const albumUpdateNode = albumInput?.update?.node;
     const albumNode = albumCreateNode ?? albumUpdateNode;
 
+    if (args.album && (!where.id?.eq || Object.keys(where).length !== 1 || Object.keys(where.id).length !== 1)) {
+      throw new GraphQLError("Album edits require one exact discussion ID.");
+    }
+    if (args.album && albumImageDisconnections.length) throw new GraphQLError("Use album.imageIds for disconnections.");
+    let albumUsername: string | undefined;
+    let sensitive = false;
+    if (args.album) {
+      context.user = await setUserDataOnContext({context});
+      albumUsername = context.user?.username ?? undefined;
+      if (!albumUsername) throw new GraphQLError("Authentication required.");
+      sensitive = await mayAccessSensitiveContent({context, driver, agePolicyRepository:createInstancePolicyRepository(driver)});
+    }
     let albumWrite: DiscussionAlbumWrite | null = null;
     if (albumNode) {
       context.user = await setUserDataOnContext({
@@ -174,6 +191,9 @@ const getResolver = (
             tagTexts,
             { replace: true }
           );
+        }
+        if (args.album && albumUsername) {
+          await writeDiscussionAlbumInput(tx, updatedDiscussionId!, albumUsername, args.album, sensitive);
         }
         if (albumWrite) {
           await writeDiscussionAlbum(tx, albumWrite);

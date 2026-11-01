@@ -1,3 +1,6 @@
+import { createExistingDiscussionCrosspost } from "../../services/persistence/crosspostWrite.js";
+import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
+import { createInstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
 import {createDiscussionCreationRepository, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
@@ -23,6 +26,7 @@ const stripAlbumOwnerConnects = (node: unknown): unknown => {
   const { Owner, Images, ...rest } = node as Record<string, any>;
   void Owner;
   const out: Record<string, unknown> = { ...rest };
+  if (Images) out.Images = Images;
   if (Images && Images.create) {
     const entries = Array.isArray(Images.create) ? Images.create : [Images.create];
     out.Images = {
@@ -46,6 +50,7 @@ import {
 
 type DiscussionCreateInputWithChannels = {
   discussionCreateInput: DiscussionCreateInput;
+  crosspostedDiscussionId?: string | null;
   channelConnections: string[];
   channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
@@ -155,6 +160,19 @@ export const createDiscussionsFromInput = async (
   }
   const contextUsername = context?.user?.username;
 
+  // Connections must name an exact existing image so ownership can distinguish
+  // newly created nodes from reused ones, including images without an uploader.
+  for (const item of input) {
+    if (item.crosspostedDiscussionId != null && !item.crosspostedDiscussionId.trim()) {
+      throw new GraphQLError("Crossposted discussion ID cannot be empty.");
+    }
+    for (const connection of item.discussionCreateInput.Album?.create?.node?.Images?.connect ?? []) {
+      const filter = connection.where?.node;
+      if (!filter?.id?.eq || Object.keys(filter).length !== 1 || Object.keys(filter.id).length !== 1) {
+        throw new GraphQLError("Album image connections require one exact image ID.");
+      }
+    }
+  }
   const hasAlbumCreate = input.some(
     ({ discussionCreateInput }) =>
       discussionCreateInput?.Album?.create?.node
@@ -179,6 +197,7 @@ export const createDiscussionsFromInput = async (
     sanitizedInput = input.map(
       ({
         discussionCreateInput,
+        crosspostedDiscussionId,
         channelConnections,
         channelFlairSelections,
       }) => {
@@ -188,6 +207,7 @@ export const createDiscussionsFromInput = async (
         if (!albumCreateNode) {
           return {
             discussionCreateInput,
+            crosspostedDiscussionId,
             channelConnections,
             channelFlairSelections,
           };
@@ -204,6 +224,7 @@ export const createDiscussionsFromInput = async (
               },
             },
           },
+          crosspostedDiscussionId,
           channelConnections,
           channelFlairSelections,
         };
@@ -240,8 +261,19 @@ export const createDiscussionsFromInput = async (
         })
     );
 
-    for (const [inputIndex, { discussionCreateInput, channelConnections }] of
+    for (const [inputIndex, { discussionCreateInput, channelConnections, crosspostedDiscussionId }] of
       sanitizedInput.entries()) {
+      if (crosspostedDiscussionId) {
+        if (!contextUsername || !context) throw new GraphQLError("Authentication required.");
+        const sensitive = await mayAccessSensitiveContent({context,driver,agePolicyRepository:createInstancePolicyRepository(driver)});
+        const created = await createExistingDiscussionCrosspost(driver,discussionCreateInput,crosspostedDiscussionId,contextUsername,
+          channelConnections,flairIdsByInput[inputIndex],sensitive);
+        discussions.push(created);
+        const createdId = (created as {id:string}).id;
+        const files = discussionCreateInput.hasDownload ? await repository.findAttachedFiles(createdId) : [];
+        await triggerCreatedDiscussionPipelines({driver,discussionId:createdId,channelConnections,downloadableFileId:files[0]?.DownloadableFiles?.[0]?.id});
+        continue;
+      }
       // v7 removed the to-one connect, so strip the Author (POSTED_DISCUSSION)
       // every create sets and the SharedCollection (SHARES_COLLECTION) a shared
       // collection sets; the generated create makes the node, the owned write
@@ -277,6 +309,7 @@ export const createDiscussionsFromInput = async (
         await connectCreatedDiscussionAlbumOwnership(driver, {
           discussionId: newDiscussionId,
           username: albumOwnerUsername,
+          reusedImageIds: discussionCreateInput.Album.create.node.Images?.connect?.flatMap(c => c.where?.node?.id?.eq ? [c.where.node.id.eq] : []) ?? [],
         });
       }
 

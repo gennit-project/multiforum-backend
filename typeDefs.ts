@@ -1394,8 +1394,23 @@ const typeDefinitions = gql`
     flairIds: [ID!]!
   }
 
+  input DiscussionAlbumImageUpdateInput {
+    id: ID!
+    alt: String
+    caption: String
+    copyright: String
+  }
+  """Ordered IDs of already uploaded images. Omitted IDs are disconnected.
+  Metadata edits require uploader ownership; reusing an image never transfers it.
+  """
+  input DiscussionAlbumInput {
+    imageIds: [ID!]!
+    imageUpdates: [DiscussionAlbumImageUpdateInput!]
+  }
+
   input DiscussionCreateInputWithChannels {
     discussionCreateInput: DiscussionCreateInput!
+    crosspostedDiscussionId: ID
     channelConnections: [String!]!
     channelFlairSelections: [DiscussionChannelFlairSelectionInput!] = []
   }
@@ -1516,8 +1531,43 @@ const typeDefinitions = gql`
     storageObjectName: String
   }
 
+  input WriteWikiPageInput {
+    id: ID
+    channelUniqueName: String!
+    slug: String
+    parentId: ID
+    title: String!
+    body: String
+    editReason: String
+    setAsHome: Boolean = false
+  }
+  """A user-submitted request. Identity and numbering are assigned by the server.
+  Omit channelUniqueName for a server-wide request. Target fields are optional.
+  """
+  input SubmitIssueInput {
+    title: String!
+    body: String!
+    channelUniqueName: String
+    asModerationProfile: Boolean = false
+    relatedDiscussionId: ID
+    relatedCommentId: ID
+    relatedEventId: ID
+    relatedWikiPageId: ID
+    relatedWikiRevisionId: ID
+    relatedImageId: ID
+    relatedAlbumId: ID
+    relatedUsername: String
+    relatedModProfileName: String
+    relatedProfilePicUserId: String
+    relatedChannelUniqueName: String
+    relatedChannelIconName: String
+    relatedChannelBannerName: String
+  }
+
   type Mutation {
-    createIssue(input: IssueCreateInput!): Issue
+    createIssue(input: SubmitIssueInput!): Issue
+    writeWikiPage(input: WriteWikiPageInput!): WikiPage!
+    setWikiHomePage(channelUniqueName: String!, pageId: ID!): Boolean!
     # Collection custom mutations
     addToCollection(input: AddToCollectionInput!): Boolean!
     removeFromCollection(collectionId: ID!, itemId: ID!, itemType: CollectionItemType!): Boolean!
@@ -1621,6 +1671,7 @@ const typeDefinitions = gql`
       channelConnections: [String!]
       channelDisconnections: [String]
       albumImageDisconnections: [ID!]
+      album: DiscussionAlbumInput
       channelFlairSelections: [DiscussionChannelFlairSelectionInput!]
     ): Discussion
     createEventWithChannelConnections(

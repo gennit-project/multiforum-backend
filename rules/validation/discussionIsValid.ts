@@ -314,7 +314,9 @@ export const updateDiscussionInputIsValid = rule({ cache: "contextual" })(
 
     return validateDiscussionImagePreferences(
       {
-        discussionInput: discussionUpdateInput,
+        discussionInput: (args as any).album?.imageIds?.length
+          ? {...discussionUpdateInput, Album: {update: {node: {Images: {connect: (args as any).album.imageIds}}}}}
+          : discussionUpdateInput,
         channelConnections: args.channelConnections,
         where: (args as any).where,
       },

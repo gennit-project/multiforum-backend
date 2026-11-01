@@ -146,11 +146,11 @@ const assertMatchingConnection = (
 const populated = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
 
-export const validateIssueIdentityInput = (input: IssueInput) => {
+export const validateIssueIdentityInput = (input: IssueInput, options: { allowUntargeted?: boolean; requireNumber?: boolean } = {}) => {
   if (!input || typeof input !== "object") {
     throw new GraphQLError("Issue input is required.");
   }
-  if (!Number.isInteger(input.issueNumber) || input.issueNumber < 0) {
+  if (options.requireNumber !== false && (!Number.isInteger(input.issueNumber) || input.issueNumber < 0)) {
     throw new GraphQLError("Issue number must be a non-negative integer.");
   }
   if (!populated(input.authorName)) {
@@ -245,6 +245,7 @@ export const validateIssueIdentityInput = (input: IssueInput) => {
     throw new GraphQLError("An issue must have exactly one primary target.");
   }
   if (
+    !options.allowUntargeted &&
     primaryContentFields.length === 0 &&
     !populated(input.relatedUsername) &&
     !populated(input.relatedModProfileName)

@@ -242,6 +242,15 @@ export async function evaluateCanEditWikiPagesRule(
   });
 }
 
+/** Permission for the application-owned home-page link mutation. */
+export async function evaluateWikiHomeChannelPermission(channelUniqueName: string, ctx: GraphQLContext) {
+  if (!channelUniqueName) return new Error("A channel is required.");
+  const channelConnections = [channelUniqueName];
+  const enabled = await validateWikiChannelsEnabled(channelConnections, ctx);
+  if (enabled !== true) return enabled;
+  return checkChannelPermissions({channelConnections, context:ctx, permissionCheck:"canUpdateChannel"});
+}
+
 export async function evaluateCanEditWikiHomePageRule(
   args: MutationUpdateChannelsArgs,
   ctx: GraphQLContext

@@ -37,8 +37,8 @@ export const createIssueWithTargetIdentity = async (
   context: GraphQLContext,
   info: GraphQLResolveInfo
 ) => {
-  const [input] = sanitizeCreateInputs(args.input);
-  return resolve(parent, { ...args, input }, context, info);
+  // The application resolver assigns authenticated identity and number atomically.
+  return resolve(parent, args, context, info);
 };
 
 export const protectIssueIdentityUpdate = async (

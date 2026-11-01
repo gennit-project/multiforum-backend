@@ -1,3 +1,4 @@
+import { writeWikiPage, setWikiHomePage } from "./mutations/writeWikiPage.js";
 import { createScratchpadRepository } from "../services/persistence/scratchpadRepository.js";
 import { createStickyCommentRepository } from "../services/persistence/stickyCommentRepository.js";
 import { createReactionWriter } from "../services/persistence/reactionWriter.js";
@@ -160,6 +161,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     softDeleteComment: softDeleteComment({ driver }),
     addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
     createIssue: createIssue({ driver }),
+    writeWikiPage: writeWikiPage({driver}),
+    setWikiHomePage: setWikiHomePage({driver}),
     updateDiscussionWithChannelConnections:
       updateDiscussionWithChannelConnections({
         driver,

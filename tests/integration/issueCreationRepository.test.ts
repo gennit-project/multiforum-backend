@@ -43,11 +43,14 @@ test('invalid identity and generated input coercion retain errors and no writes'
   await assert.rejects(newCreate(value),message);assert.deepEqual((await snapshot()).rows,[]);
  }
 });
-test('real resolver consumes allocated numbers on identity rejection and catches up to existing numbers',async()=>{
+test('public resolver validates before allocation and catches up to existing numbers',async()=>{
  await seed();await driver.executeQuery(`CREATE (:Issue {issueNumber:40,channelUniqueName:'forum'})`);
- const resolver=createIssue({driver});await assert.rejects(resolver(null,{input:{...input(),authorName:'wrong'} as any}),/Error creating issue/);
- assert.equal((await driver.executeQuery(`MATCH (c:ChannelIssueCounter) RETURN c.current AS number`)).records[0].get('number').toNumber(),41);
- const result=await resolver(null,{input:{...input(),issueNumber:900} as any});assert.equal(result.issueNumber,42);
+ const context={driver,user:{username:'alice',email:null,email_verified:true,data:null}} as any;
+ const resolver=createIssue({driver});
+ await assert.rejects(resolver(null,{input:{title:'',body:'body',channelUniqueName:'forum'}},context),/Title and body/);
+ assert.equal((await driver.executeQuery(`MATCH (c:ChannelIssueCounter) RETURN c`)).records.length,0);
+ const result=await resolver(null,{input:{title:'Help',body:'Details',channelUniqueName:'forum'}},context);
+ assert.equal(result.issueNumber,41);
 });
 test('counter concurrency remains unique without combining allocation and creation',async()=>{
  await seed();await driver.executeQuery("CREATE (:ChannelIssueCounter {channelUniqueName:'forum',current:0})");

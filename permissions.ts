@@ -473,6 +473,8 @@ const permissionRules: IRules = {
       deleteEventDescriptionRevision: and(isAuthenticated, allow),
       deleteWikiRevision: and(isAuthenticated, allow),
       deleteWikiPages: and(isAuthenticated, canDeleteWikiPages),
+      writeWikiPage: isAuthenticated,
+      setWikiHomePage: isAuthenticated,
       createWikiPages: and(isAuthenticated, canEditWikiPages),
       updateWikiPages: and(isAuthenticated, canEditWikiPages),
       
@@ -511,7 +513,7 @@ const permissionRules: IRules = {
       createScratchpadEntry: and(isAuthenticated, canSuperUpvote), // Super upvote requires the same channel permission as a normal upvote (blocks suspended users)
       undoSuperUpvote: and(isAuthenticated, canSuperUpvote), // Reuse the same rule for undoing a super upvote
       
-      createIssue: and(isAuthenticated, issueIsValid),
+      createIssue: isAuthenticated, // Resolver validates the application-owned input.
       createIssues: and(isAuthenticated, issueIsValid),
       // Issue deletion restricted to a server admin or the issue's own author
       // (isIssueAuthor resolves the issue from where.id and matches User or
