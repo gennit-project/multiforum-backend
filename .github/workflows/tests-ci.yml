@@ -13,6 +13,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  graphql-compatibility:
+    uses: ./.github/workflows/graphql-compatibility.yml
+    permissions:
+      contents: read
+
   # Detect whether anything other than documentation changed. We do NOT use a
   # workflow-level `paths-ignore`, because `unit-tests` is a REQUIRED status
   # check on `main`: a path-filtered workflow never reports the check, which
@@ -93,17 +98,6 @@ jobs:
       # type checking and tests so imports resolve.
       - name: Generate GraphQL/OGM types
         run: pnpm run codegen
-
-      - name: Export versioned public GraphQL schema (no database)
-        run: pnpm run schema:export
-
-      - name: Publish public GraphQL schema contract
-        uses: actions/upload-artifact@v4
-        with:
-          name: graphql-schema-${{ github.sha }}
-          path: artifacts/graphql-schema/
-          if-no-files-found: error
-          retention-days: 90
 
       - name: Lint (enforces no console.* in runtime code)
         if: needs.changes.outputs.code == 'true'

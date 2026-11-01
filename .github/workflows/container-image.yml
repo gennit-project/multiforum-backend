@@ -22,9 +22,16 @@ env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
+  # Same-candidate, read-only gate runs before any registry publication.
+  graphql-compatibility:
+    uses: ./.github/workflows/graphql-compatibility.yml
+    permissions:
+      contents: read
+
   # Pull requests only need the native AMD64 image used by the smoke test. Keep
   # this as one job so Buildx can load the image directly into the local daemon.
   build-publish-smoke:
+    needs: graphql-compatibility
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -156,6 +163,7 @@ jobs:
   # emulation from the critical path; the two jobs publish content-addressed
   # manifests in parallel and the next job assembles their image index.
   build-publish:
+    needs: graphql-compatibility
     if: github.event_name != 'pull_request'
     name: Build and publish ${{ matrix.arch }}
     strategy:

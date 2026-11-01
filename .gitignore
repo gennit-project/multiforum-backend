@@ -28,3 +28,6 @@ v7-schema.graphql
 
 # Versioned GraphQL contract build output
 artifacts/graphql-schema/
+
+# Pinned frontend compatibility evidence
+artifacts/frontend-compatibility/
