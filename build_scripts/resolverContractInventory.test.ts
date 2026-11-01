@@ -1,3 +1,4 @@
+import { reactionMutationNames } from "../customResolvers/contracts/reactions.js";
 import { subscriptionMutationNames } from "../customResolvers/contracts/subscriptions.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -16,7 +17,10 @@ test("every custom composition field has an explicit migration status; pilot sta
   const selectedSubscriptions = subscriptionMutationNames.map(name => `Mutation.${name}`).sort();
   assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "subscriptionResolvers"), selectedSubscriptions);
   assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies SubscriptionMutationResolvers/);
-  const selected = [...selectedVoting, ...selectedSubscriptions].sort();
+  const selectedReactions = reactionMutationNames.map(name => `Mutation.${name}`).sort();
+  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "reactionResolvers"), selectedReactions);
+  assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies ReactionMutationResolvers/);
+  const selected = [...selectedVoting, ...selectedSubscriptions, ...selectedReactions].sort();
   assert.deepEqual(inventory.fields.filter((r) => r.status === "selected-response").map((r) => r.field), selected);
   assert.ok(inventory.fields.every((r) => ["deferred", "selected-response"].includes(r.status)));
   assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies VotingMutationResolvers/);

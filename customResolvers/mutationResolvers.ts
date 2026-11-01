@@ -1,3 +1,4 @@
+import type { ReactionMutationResolvers } from "./contracts/reactions.js";
 import type { SubscriptionMutationResolvers } from "./contracts/subscriptions.js";
 import type { VotingMutationResolvers } from "./contracts/voting.js";
 import { writeWikiPage, setWikiHomePage } from "./mutations/writeWikiPage.js";
@@ -149,6 +150,21 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     driver,
   } = deps;
 
+  const reactionResolvers = {
+    addEmojiToComment: addEmojiToComment({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    removeEmojiFromComment: removeEmojiFromComment({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
+      reactionWriter: createReactionWriter(driver),
+    }),
+  } satisfies ReactionMutationResolvers;
+
   const votingResolvers = {
     upvoteComment: upvoteComment({
       driver,
@@ -232,18 +248,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     deleteEventInSeries: deleteEventInSeries({
       driver,
     }),
-    addEmojiToComment: addEmojiToComment({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    removeEmojiFromComment: removeEmojiFromComment({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
-      reactionWriter: createReactionWriter(driver),
-    }),
+    ...reactionResolvers,
     ...votingResolvers,
     createSignedStorageURL: createSignedStorageURL(),
     setProfileImage: setProfileImage({

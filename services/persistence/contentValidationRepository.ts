@@ -1,13 +1,34 @@
 import type { Driver } from "neo4j-driver";
-import type { Comment, DiscussionChannel } from "../../ogm_types.js";
+import type { Scalars } from "../../src/generated/graphql.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+
+// Exact selections from the two emoji validation queries below. JSON retains
+// the schema scalar's unrestricted output type; this does not validate its shape.
+export type EmojiChannelPreference = { uniqueName: string; emojiEnabled: boolean | null };
+export type EmojiDiscussionContext = {
+  channelUniqueName: string;
+  locked: boolean | null;
+  archived: boolean | null;
+  Channel: EmojiChannelPreference | null;
+};
+export type DiscussionChannelEmojiState = EmojiDiscussionContext & {
+  id: string;
+  emoji: Scalars["JSON"]["output"];
+};
+export type CommentEmojiState = {
+  id: string;
+  emoji: Scalars["JSON"]["output"];
+  archived: boolean | null;
+  Channel: EmojiChannelPreference | null;
+  DiscussionChannel: EmojiDiscussionContext | null;
+};
 
 type DiscussionChannels = { DiscussionChannels?: Array<{channelUniqueName?: string | null}> | null };
 export interface ContentValidationRepository {
   findDiscussionChannels(where: unknown): Promise<DiscussionChannels[]>;
   findExistingDownloadableFiles(where: unknown): Promise<Array<{id: string; fileName: string}>>;
-  findDiscussionChannelEmojiState(id: string): Promise<DiscussionChannel[]>;
-  findCommentEmojiState(id: string): Promise<Comment[]>;
+  findDiscussionChannelEmojiState(id: string): Promise<DiscussionChannelEmojiState[]>;
+  findCommentEmojiState(id: string): Promise<CommentEmojiState[]>;
 }
 
 const DISCUSSION_CHANNELS = `query ValidationDiscussionChannels($where: DiscussionWhere) {
@@ -55,10 +76,10 @@ export function createContentValidationRepository(driver: Driver): ContentValida
    return (await executeGeneratedOperation<{downloadableFiles: Array<{id:string;fileName:string}>}>(driver,EXISTING_FILES,{where})).downloadableFiles;
   },
   async findDiscussionChannelEmojiState(id) {
-   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver,DISCUSSION_EMOJI,{where:{id:{eq:id}}})).discussionChannels;
+   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannelEmojiState[]}>(driver,DISCUSSION_EMOJI,{where:{id:{eq:id}}})).discussionChannels;
   },
   async findCommentEmojiState(id) {
-   return (await executeGeneratedOperation<{comments: Comment[]}>(driver,COMMENT_EMOJI,{where:{id:{eq:id}}})).comments;
+   return (await executeGeneratedOperation<{comments: CommentEmojiState[]}>(driver,COMMENT_EMOJI,{where:{id:{eq:id}}})).comments;
   },
  };
 }

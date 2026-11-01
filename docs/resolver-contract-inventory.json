@@ -139,11 +139,11 @@
     },
     {
       "field": "Mutation.addEmojiToComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.addEmojiToDiscussionChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.addImageToAlbum",
@@ -351,11 +351,11 @@
     },
     {
       "field": "Mutation.removeEmojiFromComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeEmojiFromDiscussionChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeForumMod",
