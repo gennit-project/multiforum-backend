@@ -157,3 +157,11 @@ relationships after failures so write-before-read semantics cannot silently chan
 The original repository integration snapshots and ordering tests remain active.
 Only this shared subscription boundary is added; other subscription queries and
 remaining #413 entries stay deferred.
+
+Run the subscription slice after codegen and type checking with:
+
+```sh
+node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-concurrency=1 \
+  tests/integration/subscriptionTargetRepository.test.ts \
+  tests/integration/subscriptionResponseContracts.test.ts
+```
