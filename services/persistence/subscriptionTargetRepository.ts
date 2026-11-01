@@ -3,26 +3,20 @@ import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString, type GraphQLScala
 import neo4j, { type Driver } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
-export type SubscriptionTarget = {
-  id: string;
-  createdAt: string;
-  text?: string | null;
-  title?: string | null;
-  description?: string | null;
-  discussionId?: string;
-  channelUniqueName?: string | null;
-  archived?: boolean | null;
-  issueNumber?: number | null;
-  SubscribedToNotifications?: { username: string }[];
-  SubscribedToEventUpdates?: { username: string }[];
-};
+type Subscribers = { username: string }[];
+type TargetIdentity = { id: string; createdAt: string };
+export type CommentSubscriptionTarget = TargetIdentity & { text: string | null; SubscribedToNotifications: Subscribers };
+export type DiscussionChannelSubscriptionTarget = TargetIdentity & { discussionId: string; channelUniqueName: string; archived: boolean | null; SubscribedToNotifications: Subscribers };
+export type EventSubscriptionTarget = TargetIdentity & { title: string; description: string | null; SubscribedToNotifications: Subscribers };
+export type EventUpdatesSubscriptionTarget = TargetIdentity & { title: string; SubscribedToEventUpdates: Subscribers };
+export type IssueSubscriptionTarget = TargetIdentity & { issueNumber: number; title: string | null; channelUniqueName: string | null; SubscribedToNotifications: Subscribers };
 
 export interface SubscriptionTargetRepository {
-  findComment(id: string): Promise<SubscriptionTarget[]>;
-  findDiscussionChannel(id: string): Promise<SubscriptionTarget[]>;
-  findEvent(id: string): Promise<SubscriptionTarget[]>;
-  findEventUpdates(id: string): Promise<SubscriptionTarget[]>;
-  findIssue(id: string): Promise<SubscriptionTarget[]>;
+  findComment(id: string): Promise<CommentSubscriptionTarget[]>;
+  findDiscussionChannel(id: string): Promise<DiscussionChannelSubscriptionTarget[]>;
+  findEvent(id: string): Promise<EventSubscriptionTarget[]>;
+  findEventUpdates(id: string): Promise<EventUpdatesSubscriptionTarget[]>;
+  findIssue(id: string): Promise<IssueSubscriptionTarget[]>;
 }
 
 type Projection = readonly [string, GraphQLScalarType, boolean];
@@ -58,6 +52,8 @@ export const SUBSCRIPTION_TARGET_QUERIES = Object.fromEntries(
   })
 ) as Record<keyof typeof projections, string>;
 
+function serialize<Internal, External>(value: unknown, scalar: GraphQLScalarType<Internal, External>, required: true, path: string): External;
+function serialize<Internal, External>(value: unknown, scalar: GraphQLScalarType<Internal, External>, required: false, path: string): External | null;
 function serialize(value: unknown, scalar: GraphQLScalarType, required: boolean, path: string): unknown {
   if (value == null) {
     if (required) throw new Error(`Cannot return null for non-nullable field ${path}.`);
@@ -77,37 +73,79 @@ function serialize(value: unknown, scalar: GraphQLScalarType, required: boolean,
   return scalar.serialize(value);
 }
 
+// The fixed Cypher map owns this raw shape. Scalar output types come from the
+// scalar's declared serializer, not an assertion that a partial map is an entity.
+function subscribers(raw: Record<string, unknown>): Subscribers {
+  const values = raw.subscribers as { username: unknown }[];
+  return values.map(value => ({ username: serialize(value.username, GraphQLString, true, "User.username") }));
+}
+function decodeComment(raw: Record<string, unknown>): CommentSubscriptionTarget {
+  return {
+    id: serialize(raw.id, GraphQLID, true, "Comment.id"),
+    text: serialize(raw.text, GraphQLString, false, "Comment.text"),
+    createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Comment.createdAt"),
+    SubscribedToNotifications: subscribers(raw),
+  };
+}
+function decodeDiscussionChannel(raw: Record<string, unknown>): DiscussionChannelSubscriptionTarget {
+  return {
+    id: serialize(raw.id, GraphQLID, true, "DiscussionChannel.id"),
+    discussionId: serialize(raw.discussionId, GraphQLID, true, "DiscussionChannel.discussionId"),
+    channelUniqueName: serialize(raw.channelUniqueName, GraphQLString, true, "DiscussionChannel.channelUniqueName"),
+    createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "DiscussionChannel.createdAt"),
+    archived: serialize(raw.archived, GraphQLBoolean, false, "DiscussionChannel.archived"),
+    SubscribedToNotifications: subscribers(raw),
+  };
+}
+function decodeEvent(raw: Record<string, unknown>): EventSubscriptionTarget {
+  return {
+    id: serialize(raw.id, GraphQLID, true, "Event.id"),
+    title: serialize(raw.title, GraphQLString, true, "Event.title"),
+    description: serialize(raw.description, GraphQLString, false, "Event.description"),
+    createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Event.createdAt"),
+    SubscribedToNotifications: subscribers(raw),
+  };
+}
+function decodeEventUpdates(raw: Record<string, unknown>): EventUpdatesSubscriptionTarget {
+  return {
+    id: serialize(raw.id, GraphQLID, true, "Event.id"),
+    title: serialize(raw.title, GraphQLString, true, "Event.title"),
+    createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Event.createdAt"),
+    SubscribedToEventUpdates: subscribers(raw),
+  };
+}
+function decodeIssue(raw: Record<string, unknown>): IssueSubscriptionTarget {
+  return {
+    id: serialize(raw.id, GraphQLID, true, "Issue.id"),
+    issueNumber: serialize(raw.issueNumber, GraphQLInt, true, "Issue.issueNumber"),
+    title: serialize(raw.title, GraphQLString, false, "Issue.title"),
+    channelUniqueName: serialize(raw.channelUniqueName, GraphQLString, false, "Issue.channelUniqueName"),
+    createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Issue.createdAt"),
+    SubscribedToNotifications: subscribers(raw),
+  };
+}
+
 export function createSubscriptionTargetRepository(
   driver: Driver,
   database = resolveNeo4jDatabase()
 ): SubscriptionTargetRepository {
-  const read = async (kind: keyof typeof projections, targetId: string): Promise<SubscriptionTarget[]> => {
+  const read = async <Target>(kind: keyof typeof projections, targetId: string, decode: (raw: Record<string, unknown>) => Target): Promise<Target[]> => {
     const session = driver.session({ database, defaultAccessMode: neo4j.session.READ,
       bookmarkManager: driver.executeQueryBookmarkManager });
     try {
       const result = await session.executeRead(tx => tx.run(SUBSCRIPTION_TARGET_QUERIES[kind], { id: targetId }));
-      const label = kind === "EventUpdates" ? "Event" : kind;
-      // Serialize every selected root, as GraphQL did before the caller chose [0].
-      return result.records.map(record => {
-        const raw = record.get("target") as Record<string, unknown>;
-        const output: Record<string, unknown> = {};
-        for (const [field, scalar, required] of projections[kind]) {
-          output[field] = serialize(raw[field], scalar, required, `${label}.${field}`);
-        }
-        const subscribers = raw.subscribers as { username: unknown }[];
-        output[kind === "EventUpdates" ? "SubscribedToEventUpdates" : "SubscribedToNotifications"] =
-          subscribers.map(subscriber => ({ username: serialize(subscriber.username, GraphQLString, true, "User.username") }));
-        return output as SubscriptionTarget;
-      });
+      // Decode every selected root before the caller chooses [0], preserving
+      // first-error ordering and validation of duplicate roots.
+      return result.records.map(record => decode(record.get("target")));
     } finally {
       await session.close();
     }
   };
   return {
-    findComment: id => read("Comment", id),
-    findDiscussionChannel: id => read("DiscussionChannel", id),
-    findEvent: id => read("Event", id),
-    findEventUpdates: id => read("EventUpdates", id),
-    findIssue: id => read("Issue", id),
+    findComment: id => read("Comment", id, decodeComment),
+    findDiscussionChannel: id => read("DiscussionChannel", id, decodeDiscussionChannel),
+    findEvent: id => read("Event", id, decodeEvent),
+    findEventUpdates: id => read("EventUpdates", id, decodeEventUpdates),
+    findIssue: id => read("Issue", id, decodeIssue),
   };
 }

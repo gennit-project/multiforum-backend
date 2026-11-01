@@ -1,3 +1,4 @@
+import type { SubscriptionMutationResolvers } from "./contracts/subscriptions.js";
 import type { VotingMutationResolvers } from "./contracts/voting.js";
 import { writeWikiPage, setWikiHomePage } from "./mutations/writeWikiPage.js";
 import { createScratchpadRepository } from "../services/persistence/scratchpadRepository.js";
@@ -162,6 +163,39 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
   } satisfies VotingMutationResolvers;
+
+  const subscriptionResolvers = {
+    subscribeToComment: subscribeToComment({
+      driver
+    }),
+    unsubscribeFromComment: unsubscribeFromComment({
+      driver
+    }),
+    subscribeToDiscussionChannel: subscribeToDiscussionChannel({
+      driver
+    }),
+    unsubscribeFromDiscussionChannel: unsubscribeFromDiscussionChannel({
+      driver
+    }),
+    subscribeToEvent: subscribeToEvent({
+      driver
+    }),
+    unsubscribeFromEvent: unsubscribeFromEvent({
+      driver
+    }),
+    subscribeToEventUpdates: subscribeToEventUpdates({
+      driver
+    }),
+    unsubscribeFromEventUpdates: unsubscribeFromEventUpdates({
+      driver
+    }),
+    subscribeToIssue: subscribeToIssue({
+      driver
+    }),
+    unsubscribeFromIssue: unsubscribeFromIssue({
+      driver
+    }),
+  } satisfies SubscriptionMutationResolvers;
 
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
@@ -354,36 +388,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     unarchiveEvent: unarchiveEvent({
       driver,
     }),
-    subscribeToComment: subscribeToComment({
-      driver
-    }),
-    unsubscribeFromComment: unsubscribeFromComment({
-      driver
-    }),
-    subscribeToDiscussionChannel: subscribeToDiscussionChannel({
-      driver
-    }),
-    unsubscribeFromDiscussionChannel: unsubscribeFromDiscussionChannel({
-      driver
-    }),
-    subscribeToEvent: subscribeToEvent({
-      driver
-    }),
-    unsubscribeFromEvent: unsubscribeFromEvent({
-      driver
-    }),
-    subscribeToEventUpdates: subscribeToEventUpdates({
-      driver
-    }),
-    unsubscribeFromEventUpdates: unsubscribeFromEventUpdates({
-      driver
-    }),
-    subscribeToIssue: subscribeToIssue({
-      driver
-    }),
-    unsubscribeFromIssue: unsubscribeFromIssue({
-      driver
-    }),
+    ...subscriptionResolvers,
     sendBugReport: sendBugReport(),
     refreshPlugins: refreshPlugins({
       driver

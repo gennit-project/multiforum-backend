@@ -1,4 +1,4 @@
-# Resolver response contracts: #413 foundation and regular voting pilot
+# Resolver response contracts: #413 foundation, voting and subscriptions
 
 GraphQL already validates requested response fields during execution. A nullable
 field may correctly complete as null (including an undefined resolver result);
@@ -10,7 +10,8 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. Four regular
-vote mutations have status `selected-response`; the other 205 are `deferred`.
+vote mutations and ten subscription mutations have status `selected-response`;
+the other 195 are `deferred`.
 This is not a statement that deferred resolvers are incorrect. Generated Neo4j
 CRUD resolvers are outside this custom-resolver inventory.
 
@@ -76,7 +77,7 @@ whole-backend migration:
   the existing coverage exclusions and thresholds are unchanged.
 - `resolverContractInventory.test.ts` checks all builder fields and the actual
   composition root against the reviewed inventory, prohibits duplicate entries,
-  and keeps selected status aligned with the four enforced mutations. New or
+  and keeps selected status aligned with the fourteen enforced mutations. New or
   removed custom fields require an explicit inventory decision. Inventory-only
   edits still run the existing unit/coverage check on docs-only CI.
 - `voteResponseContracts.test.ts` executes the real augmented schema, tests
@@ -105,6 +106,54 @@ Use disposable local Neo4j only. Full CI retains all integration shards and the
 For a later slice, choose explicit schema fields, accurate repository projections,
 compile-negative cases and real-schema response tests. Add its checked composition
 boundary, then promote only that inventory entry with reviewed evidence. Do not
-label a selected projection as full-object coverage. The remaining 205 entries,
+label a selected projection as full-object coverage. The remaining 195 entries,
 other repository projections, broader child-field coverage and custom scalar
-mapping remain outside this PR; #413 is not completed by this pilot.
+mapping remain outside this PR; #413 is not completed by these slices.
+
+
+## Subscription slice: ten mutations, five projections
+
+All subscribe/unsubscribe registrations for Comment, DiscussionChannel, Event,
+EventUpdates and Issue now pass `SubscriptionMutationResolvers` at composition.
+Each selection lists the actual response fields, including the correct subscriber
+relationship. `SubscribedToEventUpdates` is distinct from
+`SubscribedToNotifications`; neither is an optional catch-all property.
+
+`subscriptionTargetRepository.ts` returns five target-specific types. Required
+selected fields and subscriber arrays are required properties; nullable selected
+scalars explicitly admit null. Each decoder uses the existing scalar serializer
+with its declared output type, preserving projection/first-error order. There is
+no final cast from a dynamic property bag to a pretend full entity. The fixed
+Cypher query guarantees the raw `subscribers` list shape; its existing narrow raw
+shape assertion remains, and each username is still scalar-validated.
+
+The Cypher queries, numeric-ID/Int conversion, DateTime formatting, Boolean/String
+coercion and errors, 25-root/subscriber limits, duplicate behavior and visibility
+filters are unchanged. In particular, native Neo4j integers are not interchangeable
+with JavaScript floating numbers for every scalar. Existing repository snapshots
+retain those distinctions. Managed READ sessions retain their existing bookmark
+manager and database settings; this slice does not introduce replica routing.
+
+All ten mutations authenticate, perform their existing raw write, then read the
+selected response. Missing/filtered targets complete as nullable null. A read or
+serialization failure still follows an already committed write; it does not roll
+back that write. Write/read errors are still wrapped and rethrown with the existing
+operation-specific message. Comment, discussion-channel and issue reads filter
+`ageGateRestricted`; event and event-update reads retain their existing exception.
+No permission or subscription behavior is changed by this type migration.
+
+`tests/contracts/subscriptions.typecheck.ts` adds compile-negative examples for
+missing required fields/lists, target confusion, wrong arguments, non-null and
+scalar mismatches, and access to fields not selected by a target query. The
+inventory guard checks both typed composition blocks against the 14 selected
+entries, including all ten actual subscription registrations.
+
+`subscriptionResponseContracts.test.ts` executes both mutations for every target
+through the augmented GraphQL schema and authentication middleware. It covers
+populated/empty lists, repeated operations, missing targets, nullable scalars,
+anonymous denial, the 25-subscriber cap, age-gate filtering, malformed database
+fields/subscribers, and injected driver read/write failures. It verifies persisted
+relationships after failures so write-before-read semantics cannot silently change.
+The original repository integration snapshots and ordering tests remain active.
+Only this shared subscription boundary is added; other subscription queries and
+remaining #413 entries stay deferred.

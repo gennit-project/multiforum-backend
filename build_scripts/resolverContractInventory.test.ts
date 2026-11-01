@@ -1,3 +1,4 @@
+import { subscriptionMutationNames } from "../customResolvers/contracts/subscriptions.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
@@ -10,8 +11,12 @@ test("every custom composition field has an explicit migration status; pilot sta
   const actual = allResolverFields();
   assert.equal(new Set(actual).size, actual.length, "duplicate composition keys are not permitted");
   assert.deepEqual(inventory.fields.map((r) => r.field), actual, "Update the reviewed inventory when composition changes");
-  const selected = votingMutationNames.map((name) => `Mutation.${name}`).sort();
-  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "votingResolvers"), selected, "Every selected pilot must remain inside the checked composition map");
+  const selectedVoting = votingMutationNames.map((name) => `Mutation.${name}`).sort();
+  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "votingResolvers"), selectedVoting, "Every selected pilot must remain inside the checked composition map");
+  const selectedSubscriptions = subscriptionMutationNames.map(name => `Mutation.${name}`).sort();
+  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "subscriptionResolvers"), selectedSubscriptions);
+  assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies SubscriptionMutationResolvers/);
+  const selected = [...selectedVoting, ...selectedSubscriptions].sort();
   assert.deepEqual(inventory.fields.filter((r) => r.status === "selected-response").map((r) => r.field), selected);
   assert.ok(inventory.fields.every((r) => ["deferred", "selected-response"].includes(r.status)));
   assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies VotingMutationResolvers/);

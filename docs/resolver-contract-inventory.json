@@ -483,23 +483,23 @@
     },
     {
       "field": "Mutation.subscribeToComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.subscribeToDiscussionChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.subscribeToEvent",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.subscribeToEventUpdates",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.subscribeToIssue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.suspendMod",
@@ -567,23 +567,23 @@
     },
     {
       "field": "Mutation.unsubscribeFromComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsubscribeFromDiscussionChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsubscribeFromEvent",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsubscribeFromEventUpdates",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsubscribeFromIssue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsuspendMod",

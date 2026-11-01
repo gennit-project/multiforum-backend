@@ -146,7 +146,8 @@ for (const [index, item] of cases.entries()) {
     for (const action of [subscribe, subscribe, unsubscribe, unsubscribe]) {
       const result = await action({ driver, subscriptionTargetRepository: repository })(null, args, context, {} as GraphQLResolveInfo);
       t.assert.snapshot(result);
-      assert.equal(result?.[item.property]?.length, action === subscribe ? 1 : 0);
+      const subscribers = result && ("SubscribedToEventUpdates" in result ? result.SubscribedToEventUpdates : result.SubscribedToNotifications);
+      assert.equal(subscribers?.length, action === subscribe ? 1 : 0);
     }
   });
 }
