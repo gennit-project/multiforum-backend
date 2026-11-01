@@ -1,4 +1,4 @@
-# Resolver response contracts: #413 foundation, voting and subscriptions
+# Resolver response contracts: #413 foundation, voting, subscriptions and reactions
 
 GraphQL already validates requested response fields during execution. A nullable
 field may correctly complete as null (including an undefined resolver result);
@@ -10,8 +10,8 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. Four regular
-vote mutations and ten subscription mutations have status `selected-response`;
-the other 195 are `deferred`.
+vote mutations, ten subscription mutations and four emoji reaction mutations have
+status `selected-response` (18 total); the other 191 are `deferred`.
 This is not a statement that deferred resolvers are incorrect. Generated Neo4j
 CRUD resolvers are outside this custom-resolver inventory.
 
@@ -165,3 +165,35 @@ node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-c
   tests/integration/subscriptionTargetRepository.test.ts \
   tests/integration/subscriptionResponseContracts.test.ts
 ```
+
+## Emoji reaction slice
+
+All four add/remove emoji mutations for Comment and DiscussionChannel are checked
+at their actual composition registrations via `satisfies ReactionMutationResolvers`.
+The selected response is `id` and `emoji`; it is not a full entity. The two emoji
+validation reads in `contentValidationRepository` now describe their exact scalar
+and nested channel/discussion projections, including nullable relationships and
+flags. Other validation methods are outside this slice.
+
+The JSON scalar remains mapped to an unrestricted output by existing codegen.
+The selected signature checks presence of `emoji`, not its internal shape. Current
+reaction responses contain a JSON-encoded string, not a parsed object. Executable
+schema tests assert that representation, empty initialization and repeated changes.
+No JSON validation/coercion policy is added by this typing migration.
+
+Queries, scalar serializers, permission rules, argument checks, channel preference
+precedence, locked/archived checks and write projections remain unchanged. Read or
+JSON parse failures occur before writing; generated writer projection failures can
+follow committed writes. All four resolvers log/rethrow caught errors, which
+GraphQL reports with a nullable null response. The writer's unused default scalar
+projection remains intact because removing it would change errors and event behavior.
+The generated-operation adapter remains a trusted generic boundary; repository
+integration tests and GraphQL execution tests provide runtime projection evidence.
+
+Run the focused tests, then type-check:
+
+```sh
+node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-concurrency=1 tests/integration/reactionResponseContracts.test.ts tests/integration/reactionWriter.test.ts tests/integration/contentValidationRepository.test.ts
+pnpm run tsc
+```
+Compile-negative fixtures stay under `tests/contracts/reactions.typecheck.ts`.
