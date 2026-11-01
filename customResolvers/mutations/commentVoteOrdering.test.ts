@@ -13,8 +13,8 @@ for (const [name, factory] of [['upvote',upvote],['undo',undo]] as const) {
    const tx={run:async()=>{order.push('raw');return {records:[{get:()=>({upvotedByUser:name==='undo'})}]};},commit:async()=>{order.push('commit');},rollback:async()=>{order.push('rollback');}};
    const driver={session:()=>{order.push('session');return {beginTransaction:()=>{order.push('begin');return tx;},close:()=>{order.push('close');}};}} as unknown as Driver;
    const repository:CommentVoteRepository={
-    findComment:async()=>{order.push('comment');if(phase==='read-failure')throw error;return [{id:'c',CommentAuthor:phase==='moderator'?{displayName:'mod'}:{username:'author',commentKarma:7},weightedVotesCount:4}] as any;},
-    findVoter:async()=>{order.push('voter');return [{username:'voter',commentKarma:0}] as any;},
+    findComment:async()=>{order.push('comment');if(phase==='read-failure')throw error;return [{id:'c',CommentAuthor:phase==='moderator'?{displayName:'mod',createdAt:'2026-01-01T00:00:00Z'}:{username:'author',commentKarma:7,createdAt:'2026-01-01T00:00:00Z'},weightedVotesCount:4,UpvotedByUsers:[],UpvotedByUsersConnection:{aggregate:{count:{nodes:0}}}}];},
+    findVoter:async()=>{order.push('voter');return [{username:'voter',commentKarma:0}];},
     setAuthorKarma:async(username,karma)=>{assert.equal(username,'author');assert.equal(karma,name==='undo'?6:8);order.push('karma');if(phase==='karma-failure')throw error;},
    };
    const invoke=()=>factory({driver,repository})(null,{commentId:'c',username:'voter'},{user:{username:'different'}} as GraphQLContext,{} as GraphQLResolveInfo);
