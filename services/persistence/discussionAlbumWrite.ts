@@ -78,7 +78,7 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
  )
  WITH a, owner
  OPTIONAL MATCH (a)-[:HAS_IMAGE]->(img:Image)
- FOREACH (_ IN CASE WHEN (owner IS NULL OR img IS NULL) THEN [] ELSE [1] END |
+ FOREACH (_ IN CASE WHEN (owner IS NULL OR img IS NULL OR img.id IN $reusedImageIds OR EXISTS { MATCH (:User)-[:UPLOADED_IMAGE]->(img) }) THEN [] ELSE [1] END |
   MERGE (owner)-[:UPLOADED_IMAGE]->(img)
  )
 `;
@@ -88,11 +88,12 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
 // managed transaction.
 export async function connectCreatedDiscussionAlbumOwnership(
   driver: Driver,
-  params: { discussionId: string; username?: string | null }
+  params: { discussionId: string; username?: string | null; reusedImageIds?: string[] }
 ): Promise<void> {
   await driver.executeQuery(CONNECT_CREATED_ALBUM_OWNERSHIP, {
     discussionId: params.discussionId,
     username: params.username ?? null,
+    reusedImageIds: params.reusedImageIds ?? [],
   });
 }
 

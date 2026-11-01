@@ -47,7 +47,7 @@ test("custom issue creation preserves the singular input shape", async () => {
     info
   ) as Record<string, any>;
   assert.equal(Array.isArray(result.input), false);
-  assert.deepEqual(result.input.TargetDiscussion, connect("id", "discussion-1"));
+  assert.deepEqual(result.input, input); // Resolver owns authenticated identity and allocation.
 });
 
 test("generic updates may change lifecycle fields but not identity", async () => {
