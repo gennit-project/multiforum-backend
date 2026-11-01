@@ -13,7 +13,15 @@ export const getAccountAgeInMonths = (createdAt: Date) => {
   return accountAgeInMonths;
 };
 
-export const getWeightedVoteBonus = (user: User) => {
+// Some historical vote reads select karma without createdAt (and discussion
+// voting selects discussionKarma, not commentKarma). Preserve those inputs and
+// their existing zero age/comment bonus rather than silently expanding queries.
+export type VoteWeightInput = {
+  username?: User["username"];
+  createdAt?: User["createdAt"];
+  commentKarma?: User["commentKarma"];
+};
+export const getWeightedVoteBonus = (user: VoteWeightInput) => {
   let weightedVoteBonus = 0;
   let accountAgeInMonths = getAccountAgeInMonths(user.createdAt);
   let commentKarma = 1;

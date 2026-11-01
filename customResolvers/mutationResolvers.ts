@@ -1,3 +1,4 @@
+import type { VotingMutationResolvers } from "./contracts/voting.js";
 import { writeWikiPage, setWikiHomePage } from "./mutations/writeWikiPage.js";
 import { createScratchpadRepository } from "../services/persistence/scratchpadRepository.js";
 import { createStickyCommentRepository } from "../services/persistence/stickyCommentRepository.js";
@@ -147,6 +148,21 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     driver,
   } = deps;
 
+  const votingResolvers = {
+    upvoteComment: upvoteComment({
+      driver,
+    }),
+    undoUpvoteComment: undoUpvoteComment({
+      driver,
+    }),
+    upvoteDiscussionChannel: upvoteDiscussionChannel({
+      driver,
+    }),
+    undoUpvoteDiscussionChannel: undoUpvoteDiscussionChannel({
+      driver,
+    }),
+  } satisfies VotingMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -194,18 +210,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
       reactionWriter: createReactionWriter(driver),
     }),
-    upvoteComment: upvoteComment({
-      driver,
-    }),
-    undoUpvoteComment: undoUpvoteComment({
-      driver,
-    }),
-    upvoteDiscussionChannel: upvoteDiscussionChannel({
-      driver,
-    }),
-    undoUpvoteDiscussionChannel: undoUpvoteDiscussionChannel({
-      driver,
-    }),
+    ...votingResolvers,
     createSignedStorageURL: createSignedStorageURL(),
     setProfileImage: setProfileImage({
       driver,

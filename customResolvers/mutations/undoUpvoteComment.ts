@@ -1,4 +1,3 @@
-import { User } from "../../src/generated/graphql.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { createCommentVoteRepository, type CommentVoteRepository } from "../../services/persistence/commentVoteRepository.js";
@@ -114,7 +113,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
         id: commentId,
         weightedVotesCount: (comment.weightedVotesCount ?? 0) - 1 - weightedVoteBonus,
         UpvotedByUsers: existingUpvotedByUsers.filter(
-          (user: User) => user.username !== username
+          (user) => user.username !== username
         ),
         UpvotedByUsersAggregate: {
           count: existingUpvotedByUsersAggregate.count - 1,
