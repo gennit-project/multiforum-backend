@@ -1,7 +1,7 @@
 // Compiled by the existing tsc gate, never executed. Unused @ts-expect-error
 // directives fail compilation if these boundaries regress to permissive types.
-import type { VotingMutationResolvers } from "./voting.js";
-import type { SelectedResolver } from "./selection.js";
+import type { VotingMutationResolvers } from "../../customResolvers/contracts/voting.js";
+import type { SelectedResolver } from "../../customResolvers/contracts/selection.js";
 import type { ResolverFn } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { CommentVoterSnapshot } from "../../services/persistence/commentVoteRepository.js";

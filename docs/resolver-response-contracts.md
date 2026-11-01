@@ -16,7 +16,7 @@ CRUD resolvers are outside this custom-resolver inventory.
 
 The existing code generator already emits `MutationResolvers`, `ResolverFn` and
 schema entities into ignored `src/generated/graphql.ts`. No new schema generator
-or public schema is introduced. `customResolvers/contracts/selection.ts` derives
+or public schema is introduced. `customResolvers/contracts/selection.d.ts` derives
 a selected resolver signature from those generated types. It retains generated
 parent, arguments, context and GraphQLResolveInfo, recursively checks explicitly
 selected result fields, and preserves nullability. It permits undefined only for
@@ -67,10 +67,13 @@ Changes to these semantics need a separate reviewed task.
 CI's existing codegen, tsc and unit gates enforce this pilot without requiring a
 whole-backend migration:
 
-- `tsc` compiles `voting.typecheck.ts`, including negative cases for invalid
+- `tsc` compiles `tests/contracts/voting.typecheck.ts`, including negative cases for invalid
   argument/scalar types, missing selected connections, null non-null counts,
   undefined non-null results, unknown fields and access to unfetched properties.
   Unused `@ts-expect-error` directives fail if a boundary becomes permissive.
+  These compile-only fixtures live under tests, outside application runtime
+  coverage. The reusable type-only helpers use a `.d.ts` declaration file;
+  the existing coverage exclusions and thresholds are unchanged.
 - `resolverContractInventory.test.ts` checks all builder fields and the actual
   composition root against the reviewed inventory, prohibits duplicate entries,
   and keeps selected status aligned with the four enforced mutations. New or
