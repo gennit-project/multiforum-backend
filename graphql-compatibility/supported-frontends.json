@@ -3,10 +3,10 @@
   "repository": "gennit-project/multiforum-nuxt",
   "clients": [
     {
-      "revision": "3947cdf3a0d7f84918e81b75b2de433931dc084e",
-      "operationsSha256": "5e09fbd891faa5dd0fcb5488b57f355fd0adc4134edac7924c8cd58b5664024c",
+      "revision": "9a1ebadad127e58b023cc0764004b57588641c69",
+      "operationsSha256": "38af2d2656a981a92f5bcea50f38c4114c570999c4ef0546ac8ee72e88b2c391",
       "documents": 355,
-      "purpose": "Migrated #707 source compatibility target, exported by draft #708. Deployed and rollback revisions remain unknown; this does not retire older clients."
+      "purpose": "Advanced from 3947cdf3 to re-pin backend schema 73ef1844 (PR #420: plugin-configuration registries/channelPlugins reconciliation inputs + PluginRegistryManagementMode). Same 355-operation frontend contract, re-validated against the additive schema via operations:contract:check."
     }
   ]
 }
