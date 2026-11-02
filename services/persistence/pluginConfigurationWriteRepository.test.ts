@@ -42,7 +42,7 @@ test('connects an enabled channel plugin with serialized settings', async () => 
   })
 
   assert.deepEqual(variables, {
-    where: { uniqueName: 'moderation' },
+    where: { uniqueName: { eq: 'moderation' } },
     update: {
       EnabledPlugins: [{
         connect: [{
@@ -72,7 +72,7 @@ test('disconnects a disabled channel plugin without carrying settings', async ()
   })
 
   assert.deepEqual(variables, {
-    where: { uniqueName: 'moderation' },
+    where: { uniqueName: { eq: 'moderation' } },
     update: {
       EnabledPlugins: [{
         disconnect: [{

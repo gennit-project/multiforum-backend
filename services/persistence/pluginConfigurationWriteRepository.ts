@@ -61,7 +61,7 @@ export const createPluginConfigurationWriteRepository = (
         }]
       : [{ disconnect: [{ where }] }]
     await execute(driver, CONFIGURE_CHANNEL_PLUGIN, {
-      where: { uniqueName: input.channelUniqueName },
+      where: { uniqueName: { eq: input.channelUniqueName } },
       update: { EnabledPlugins: enabledPlugins },
     })
   },
