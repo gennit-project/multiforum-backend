@@ -63,7 +63,9 @@ exports[`reconciliation snapshots preserve global secret status and default appl
     "InstalledVersionsConnection": {
       "edges": []
     },
-    "pluginPipelines": "[]"
+    "pluginPipelines": "[]",
+    "pluginRegistries": null,
+    "serverName": "server"
   }
 ]
 `;
