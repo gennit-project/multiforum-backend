@@ -18,7 +18,7 @@ test('writes the complete registry list', async () => {
   await repository.setRegistries(['https://plugins.example.test/index.json'])
   assert.deepEqual(calls, [{
     where: {},
-    update: { pluginRegistries: ['https://plugins.example.test/index.json'] },
+    update: { pluginRegistries: { set: ['https://plugins.example.test/index.json'] } },
   }])
 })
 
@@ -47,7 +47,6 @@ test('connects an enabled channel plugin with serialized settings', async () => 
       EnabledPlugins: [{
         where: { node: { Plugin: { name: 'scanner' }, version: '1.0.0' } },
         edge: { enabled: true, settingsJson: '{"threshold":0.8}' },
-        overwrite: true,
       }],
     },
     disconnect: undefined,

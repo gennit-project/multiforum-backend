@@ -3,8 +3,7 @@
   "registries": {
     "mode": "MERGE",
     "urls": [
-      "https://storage.googleapis.com/mf-plugins-prod/registry.json",
-      "https://storage.googleapis.com/mf-plugins-prod/registry-experimental.json"
+      "gs://mf-plugins-prod/registry.json"
     ]
   },
   "plugins": [
