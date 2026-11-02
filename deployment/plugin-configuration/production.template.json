@@ -20,7 +20,7 @@
     },
     {
       "pluginId": "llm-moderation",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "enabled": true,
       "settingsJson": {
         "serviceUrl": "__LLM_MODERATION_SERVICE_URL__",
@@ -45,7 +45,7 @@
     {
       "channelUniqueName": "__LLM_MODERATION_TRIAL_FORUM__",
       "pluginId": "llm-moderation",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "enabled": true
     }
   ],
@@ -70,22 +70,22 @@
     },
     {
       "event": "comment.created",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "comment.edited",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "discussionChannel.created",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "discussionChannel.edited",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.0" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
       "stopOnFirstFailure": true
     }
   ]
