@@ -24,12 +24,15 @@ const SET_REGISTRIES = `mutation SetPluginConfigurationRegistries($where: Server
   updateServerConfigs(where: $where, update: $update) { serverConfigs { serverName pluginRegistries } }
 }`
 
-const CONFIGURE_CHANNEL_PLUGIN = `mutation ConfigureChannelPlugin($where: ChannelWhere, $connect: ChannelConnectInput, $disconnect: ChannelDisconnectInput) {
-  updateChannels(where: $where, connect: $connect, disconnect: $disconnect) { channels { uniqueName } }
+const CONFIGURE_CHANNEL_PLUGIN = `mutation ConfigureChannelPlugin($where: ChannelWhere, $update: ChannelUpdateInput) {
+  updateChannels(where: $where, update: $update) { channels { uniqueName } }
 }`
 
+// Neo4j GraphQL v7 removed the top-level connect/disconnect arguments from
+// update mutations and the generic scalar-equality shorthand. Relationship
+// edits nest inside `update`, and scalar filters use `{ eq: ... }`.
 const pluginVersionWhere = (pluginId: string, version: string) => ({
-  node: { Plugin: { name: pluginId }, version },
+  node: { Plugin: { name: { eq: pluginId } }, version: { eq: version } },
 })
 
 export const createPluginConfigurationWriteRepository = (
@@ -44,22 +47,22 @@ export const createPluginConfigurationWriteRepository = (
   },
   async configureChannelPlugin(input) {
     const where = pluginVersionWhere(input.pluginId, input.version)
+    const enabledPlugins = input.enabled
+      ? [{
+          connect: [{
+            where,
+            edge: {
+              enabled: true,
+              ...(input.settingsJson === undefined
+                ? {}
+                : { settingsJson: JSON.stringify(input.settingsJson) }),
+            },
+          }],
+        }]
+      : [{ disconnect: [{ where }] }]
     await execute(driver, CONFIGURE_CHANNEL_PLUGIN, {
       where: { uniqueName: input.channelUniqueName },
-      connect: input.enabled ? {
-        EnabledPlugins: [{
-          where,
-          edge: {
-            enabled: true,
-            ...(input.settingsJson === undefined
-              ? {}
-              : { settingsJson: JSON.stringify(input.settingsJson) }),
-          },
-        }],
-      } : undefined,
-      disconnect: input.enabled ? undefined : {
-        EnabledPlugins: [{ where }],
-      },
+      update: { EnabledPlugins: enabledPlugins },
     })
   },
 })

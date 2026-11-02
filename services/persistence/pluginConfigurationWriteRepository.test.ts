@@ -43,13 +43,14 @@ test('connects an enabled channel plugin with serialized settings', async () => 
 
   assert.deepEqual(variables, {
     where: { uniqueName: 'moderation' },
-    connect: {
+    update: {
       EnabledPlugins: [{
-        where: { node: { Plugin: { name: 'scanner' }, version: '1.0.0' } },
-        edge: { enabled: true, settingsJson: '{"threshold":0.8}' },
+        connect: [{
+          where: { node: { Plugin: { name: { eq: 'scanner' } }, version: { eq: '1.0.0' } } },
+          edge: { enabled: true, settingsJson: '{"threshold":0.8}' },
+        }],
       }],
     },
-    disconnect: undefined,
   })
 })
 
@@ -72,10 +73,11 @@ test('disconnects a disabled channel plugin without carrying settings', async ()
 
   assert.deepEqual(variables, {
     where: { uniqueName: 'moderation' },
-    connect: undefined,
-    disconnect: {
+    update: {
       EnabledPlugins: [{
-        where: { node: { Plugin: { name: 'scanner' }, version: '1.0.0' } },
+        disconnect: [{
+          where: { node: { Plugin: { name: { eq: 'scanner' } }, version: { eq: '1.0.0' } } },
+        }],
       }],
     },
   })
