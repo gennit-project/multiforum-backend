@@ -39,7 +39,7 @@ export const createPluginConfigurationWriteRepository = (
   async setRegistries(urls) {
     await execute(driver, SET_REGISTRIES, {
       where: {},
-      update: { pluginRegistries: urls },
+      update: { pluginRegistries: { set: urls } },
     })
   },
   async configureChannelPlugin(input) {
@@ -55,7 +55,6 @@ export const createPluginConfigurationWriteRepository = (
               ? {}
               : { settingsJson: JSON.stringify(input.settingsJson) }),
           },
-          overwrite: true,
         }],
       } : undefined,
       disconnect: input.enabled ? undefined : {
