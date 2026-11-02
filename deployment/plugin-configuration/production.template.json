@@ -1,11 +1,5 @@
 {
   "apiVersion": "multiforum.gennit.dev/v1alpha1",
-  "registries": {
-    "mode": "MERGE",
-    "urls": [
-      "gs://mf-plugins-prod/registry.json"
-    ]
-  },
   "plugins": [
     {
       "pluginId": "security-attachment-scan",
