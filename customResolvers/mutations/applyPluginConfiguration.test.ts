@@ -7,6 +7,7 @@ import type {
   MutationApplyPluginConfigurationArgs,
   PluginConfigurationDesiredStateInput,
 } from '../../src/generated/graphql.js'
+import { PluginRegistryManagementMode } from '../../src/generated/graphql.js'
 import type { GraphQLContext } from '../../types/context.js'
 import type {
   PluginConfigurationChange,
@@ -410,4 +411,57 @@ test('blocks legacy requiredSecrets that do not declare valueFrom', async () => 
 
   assert.equal(result.status, 'BLOCKED')
   assert.match(result.operations[0]?.message ?? '', /no valueFrom reference/)
+})
+
+test('updates registries before installing and then configures channel plugins', async () => {
+  const calls: string[] = []
+  let previews = 0
+  const manifestWithScope: PluginConfigurationDesiredStateInput = {
+    ...manifest,
+    registries: { mode: PluginRegistryManagementMode.Merge, urls: ['https://plugins.example.test/index.json'] },
+    channelPlugins: [{
+      channelUniqueName: 'moderation',
+      pluginId: 'security-attachment-scan',
+      version: '0.4.0',
+      enabled: true,
+      settingsJson: { threshold: 0.8 },
+    }],
+  }
+  const before = plan([
+    { ...change('UPDATE_REGISTRIES', 'registries'), desired: ['https://plugins.example.test/index.json'], blocked: false },
+    { ...change('INSTALL_VERSION', 'plugins.security-attachment-scan@0.4.0'), blocked: false },
+    { ...change('ENABLE_CHANNEL_PLUGIN', 'channels.moderation.plugins.security-attachment-scan@0.4.0.enabled'), blocked: false },
+  ])
+  const operations: PluginConfigurationApplyOperations = {
+    preview: async () => previews++ === 0 ? before : plan([]),
+    updateRegistries: async () => { calls.push('registries') },
+    install: async () => { calls.push('install') },
+    setSecret: async () => undefined,
+    configure: async () => undefined,
+    configureChannelPlugin: async () => { calls.push('channel') },
+    updatePipelines: async () => undefined,
+  }
+
+  const result = await invoke({ args: { manifest: manifestWithScope }, operations })
+  assert.equal(result.status, 'SUCCEEDED')
+  assert.deepEqual(calls, ['registries', 'install', 'channel'])
+})
+
+test('blocks all changes before mutation when a channel preflight fails', async () => {
+  let mutationCalls = 0
+  const blocked = {
+    ...change('ENABLE_CHANNEL_PLUGIN', 'channels.missing.plugins.scanner@1.enabled'),
+    blocked: true,
+  }
+  const operations: PluginConfigurationApplyOperations = {
+    preview: async () => plan([blocked]),
+    install: async () => { mutationCalls += 1 },
+    setSecret: async () => { mutationCalls += 1 },
+    configure: async () => { mutationCalls += 1 },
+    updatePipelines: async () => { mutationCalls += 1 },
+  }
+
+  const result = await invoke({ args: { manifest }, operations })
+  assert.equal(result.status, 'BLOCKED')
+  assert.equal(mutationCalls, 0)
 })

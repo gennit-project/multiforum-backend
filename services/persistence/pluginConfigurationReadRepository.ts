@@ -53,8 +53,17 @@ export type InstalledPluginConfigSnapshot = {
   InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] };
 };
 export type ReconciliationConfigSnapshot = {
+  serverName?: string | null;
+  pluginRegistries?: string[] | null;
   pluginPipelines?: unknown;
   InstalledVersionsConnection?: { edges?: Array<{
+    properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
+    node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
+  }> };
+};
+export type ReconciliationChannelSnapshot = {
+  uniqueName?: string | null;
+  EnabledPluginsConnection?: { edges?: Array<{
     properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
     node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
   }> };
@@ -64,6 +73,7 @@ export interface PluginConfigurationReadRepository {
   listPluginSecretStatuses(pluginId: string): Promise<PluginSecretStatusSnapshot[]>;
   listInstalledPluginConfigs(): Promise<InstalledPluginConfigSnapshot[]>;
   listReconciliationConfigs(): Promise<ReconciliationConfigSnapshot[]>;
+  listReconciliationChannels?(uniqueNames: string[]): Promise<ReconciliationChannelSnapshot[]>;
   listReconciliationSecretStatuses(): Promise<ReconciliationSecretSnapshot[]>;
 }
 
@@ -119,8 +129,20 @@ const INSTALLED_PLUGIN_CONFIGS = `query InstalledPluginConfiguration { serverCon
         } }`;
 
 const RECONCILIATION_CONFIGS = `query PluginConfigurationReconciliationSnapshot { serverConfigs {
+        serverName
+        pluginRegistries
         pluginPipelines
         InstalledVersionsConnection {
+          edges {
+            properties { enabled settingsJson }
+            node { version Plugin { name } }
+          }
+        }
+      } }`;
+
+const RECONCILIATION_CHANNELS = `query PluginConfigurationReconciliationChannels($where: ChannelWhere) { channels(where: $where) {
+        uniqueName
+        EnabledPluginsConnection {
           edges {
             properties { enabled settingsJson }
             node { version Plugin { name } }
@@ -150,6 +172,13 @@ export function createPluginConfigurationReadRepository(driver: Driver): PluginC
         driver, RECONCILIATION_CONFIGS, {}
       );
       return data.serverConfigs;
+    },
+    async listReconciliationChannels(uniqueNames) {
+      if (uniqueNames.length === 0) return [];
+      const data = await executeGeneratedOperation<{ channels: ReconciliationChannelSnapshot[] }>(
+        driver, RECONCILIATION_CHANNELS, { where: { uniqueName_IN: uniqueNames } }
+      );
+      return data.channels;
     },
     async listReconciliationSecretStatuses() {
       const data = await executeGeneratedOperation<{ serverSecrets: ReconciliationSecretSnapshot[] }>(

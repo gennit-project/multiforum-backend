@@ -81,6 +81,27 @@ export const mapPluginConfigurationDesiredStateInput = (
       ? { secretRefs: plugin.secretRefs }
       : {}),
   })),
+  ...(manifest.registries !== undefined && manifest.registries !== null
+    ? {
+        registries: {
+          mode: manifest.registries.mode ?? 'MERGE',
+          urls: manifest.registries.urls,
+        },
+      }
+    : {}),
+  ...(manifest.channelPlugins !== undefined
+    ? {
+        channelPlugins: manifest.channelPlugins?.map(plugin => ({
+          channelUniqueName: plugin.channelUniqueName,
+          pluginId: plugin.pluginId,
+          version: plugin.version,
+          enabled: plugin.enabled,
+          ...(plugin.settingsJson !== undefined
+            ? { settingsJson: plugin.settingsJson }
+            : {}),
+        })) ?? null,
+      }
+    : {}),
   ...(manifest.pipelines !== undefined
     ? {
         pipelines: manifest.pipelines?.map(pipeline => ({
@@ -143,10 +164,17 @@ const getResolver = (input: Input) => {
       config.InstalledVersionsConnection?.edges ?? []
     ) as InstalledVersionEdge[]
     const secrets = await repository.listReconciliationSecretStatuses()
+    const desired = mapPluginConfigurationDesiredStateInput(args.manifest)
+    const channels = repository.listReconciliationChannels
+      ? await repository.listReconciliationChannels(
+          [...new Set((desired.channelPlugins ?? []).map(plugin => plugin.channelUniqueName))]
+        )
+      : []
 
     return buildPluginConfigurationReconciliationPlan({
-      desired: mapPluginConfigurationDesiredStateInput(args.manifest),
+      desired,
       live: {
+        registries: config.pluginRegistries ?? [],
         plugins: edges.flatMap(edge => {
           const pluginId = edge.node?.Plugin?.name
           const version = edge.node?.version
@@ -159,6 +187,23 @@ const getResolver = (input: Input) => {
           }]
         }),
         secrets: secrets.map(mapSecretStatus),
+        channels: channels.flatMap(channel => {
+          if (!channel.uniqueName) return []
+          return [{
+            channelUniqueName: channel.uniqueName,
+            plugins: (channel.EnabledPluginsConnection?.edges ?? []).flatMap(edge => {
+              const pluginId = edge.node?.Plugin?.name
+              const version = edge.node?.version
+              if (!pluginId || !version) return []
+              return [{
+                pluginId,
+                version,
+                enabled: edge.properties?.enabled ?? false,
+                settingsJson: edge.properties?.settingsJson ?? {},
+              }]
+            }),
+          }]
+        }),
         pipelines: parseStoredPipelines(config.pluginPipelines),
       },
     })
