@@ -1,3 +1,6 @@
+import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
+import type { GraphQLContext } from "../types/context.js";
+import type { VariantUrlsDomainResolver } from "./contracts/variantUrlsDomain.js";
 // Type/interface and object-field resolvers (union __resolveType discriminators,
 // the JSON scalar, and empty-array fallbacks). Extracted from customResolvers.ts.
 import GraphQLJSON from "graphql-type-json";
@@ -102,10 +105,10 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     IssueAuthor: { ...checkedIssueAuthor },
     User: {
       ...checkedUser,
-      variantUrls: userVariantUrls,
+      variantUrls: userVariantUrls satisfies VariantUrlsDomainResolver<UserResolvers<GraphQLContext>["variantUrls"]>,
     },
     Image: {
-      variantUrls: imageVariantUrls,
+      variantUrls: imageVariantUrls satisfies VariantUrlsDomainResolver<ImageResolvers<GraphQLContext>["variantUrls"]>,
     },
     DownloadableFile: {
       ...checkedDownloadableFile,
@@ -137,7 +140,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       ...checkedDiscussion,
     },
     Channel: {
-      variantUrls: channelVariantUrls,
+      variantUrls: channelVariantUrls satisfies VariantUrlsDomainResolver<ChannelResolvers<GraphQLContext>["variantUrls"]>,
       Moderators: emptyArrayFallback('Moderators'),
       Admins: emptyArrayFallback('Admins'),
       Bots: emptyArrayFallback('Bots'),

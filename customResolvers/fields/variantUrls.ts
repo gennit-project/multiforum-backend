@@ -1,13 +1,11 @@
-type VariantParent = Record<string, unknown> & {
-  variantUrls?: Record<string, string | null | undefined> | null;
-};
+import type { VariantUrlsDomain } from "../contracts/variantUrlsDomain.js";
 
 const asNonEmptyString = (value: unknown): string | null => {
   return typeof value === "string" && value.trim() ? value : null;
 };
 
 export const createVariantUrlsResolver = (fields: Record<string, string>) => {
-  return (parent: VariantParent) => {
+  return (parent: Record<string, unknown>): VariantUrlsDomain => {
     const directVariants = Object.entries(fields).reduce<Record<string, string>>(
       (accumulator, [variantKey, fieldName]) => {
         const value = asNonEmptyString(parent[fieldName]);
