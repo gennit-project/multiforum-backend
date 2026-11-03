@@ -69,3 +69,19 @@ test("prefers explicit direct fields over stored map entries", () => {
     }
   );
 });
+
+test("decodes persisted JSON text without losing URLs and retains direct-field precedence", () => {
+  const resolver = createVariantUrlsResolver({ avatar32: "avatar32Url" });
+  assert.deepEqual(resolver({
+    variantUrls: JSON.stringify({ avatar32: "old", avatar48: "https://img.test/48?x=1&y=two", futureSize: "https://img.test/future" }),
+    avatar32Url: "https://img.test/new",
+  }), { avatar32: "https://img.test/new", avatar48: "https://img.test/48?x=1&y=two", futureSize: "https://img.test/future" });
+});
+
+test("legacy invalid JSON and empty/null maps retain scalar fallback or null", () => {
+  const resolver = createVariantUrlsResolver({ avatar32: "avatar32Url" });
+  for (const variantUrls of [null, undefined, "{}", "null", "not json", "[]", "42"]) {
+    assert.equal(resolver({ variantUrls }), null);
+    assert.deepEqual(resolver({ variantUrls, avatar32Url: "https://img.test/legacy" }), { avatar32: "https://img.test/legacy" });
+  }
+});
