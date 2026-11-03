@@ -57,7 +57,9 @@ export type PluginConfigurationApplyOperations = {
   updatePipelines: (pipelines: EventPipeline[]) => Promise<unknown>
 }
 
-const buildDefaultOperations = ({
+// Shared composition lets integration tests replace artifact IO while retaining
+// every production reconciliation operation.
+export const buildDefaultOperations = ({
   input,
   context,
   info,
