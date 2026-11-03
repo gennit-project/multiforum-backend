@@ -1,4 +1,5 @@
 import { createChannelBotRepository } from "../services/persistence/channelBotRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import { GraphQLResolveInfo } from 'graphql';
 import {
   buildBotUsername,
@@ -80,7 +81,8 @@ const channelBotsMiddleware = {
 async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChannelsArgs, context: GraphQLContext) {
   try {
     const channelUniqueName =
-      args.where?.uniqueName || result?.updateChannels?.channels?.[0]?.uniqueName;
+      stringFromScalarFilter(args.where?.uniqueName) ||
+      result?.updateChannels?.channels?.[0]?.uniqueName;
 
     if (!channelUniqueName) {
       return;

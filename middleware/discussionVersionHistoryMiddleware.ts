@@ -1,4 +1,5 @@
 import { createDiscussionRevisionRepository } from "../services/persistence/discussionRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 /**
  * Middleware for tracking discussion version history
  * This middleware runs before discussion update operations to capture the previous
@@ -57,7 +58,7 @@ const discussionVersionHistoryMiddleware = {
       if (!update) {
         return resolve(parent, args, context, info);
       }
-      const discussionId = where?.id;
+      const discussionId = stringFromScalarFilter(where?.id);
       let discussionSnapshot: DiscussionSnapshot | null = null;
 
       // Check if title or body is being updated
@@ -112,7 +113,7 @@ const discussionVersionHistoryMiddleware = {
       if (!discussionUpdateInput) {
         return resolve(parent, args, context, info);
       }
-      const discussionId = where?.id;
+      const discussionId = stringFromScalarFilter(where?.id);
       let discussionSnapshot: DiscussionSnapshot | null = null;
 
       const isTitleUpdated = discussionUpdateInput.title !== undefined;

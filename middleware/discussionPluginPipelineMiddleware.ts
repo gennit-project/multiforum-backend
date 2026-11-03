@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo } from "graphql";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 
 import { logger } from "../logger.js";
 import {
@@ -53,7 +54,7 @@ const wrapDiscussionEdit = (
   info: GraphQLResolveInfo
 ) => {
   const update = getUpdate(args);
-  const discussionId = args.where?.id;
+  const discussionId = stringFromScalarFilter(args.where?.id);
   if (!hasTextUpdate(update) || !discussionId || !context?.driver) {
     return resolve(parent, args, context, info);
   }

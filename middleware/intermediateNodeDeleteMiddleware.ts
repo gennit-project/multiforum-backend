@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo } from "graphql";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import type { GraphQLContext } from "../types/context.js";
 import {
   quarantineConnectorsForDeletedParent,
@@ -20,7 +21,7 @@ const wrapDelete = (kind: DeletedParent["kind"]) =>
     context: GraphQLContext,
     info: GraphQLResolveInfo
   ): Promise<{ nodesDeleted?: number }> => {
-    const id = args.where?.id;
+    const id = stringFromScalarFilter(args.where?.id);
     if (!id) {
       throw new Error(`Deleting an entire ${kind} set is not supported; provide where.id`);
     }
