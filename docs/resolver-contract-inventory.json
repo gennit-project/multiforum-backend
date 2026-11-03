@@ -655,11 +655,11 @@
     },
     {
       "field": "Query.getCommentReplies",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getCommentSection",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionAgeGateCheck",
@@ -667,7 +667,7 @@
     },
     {
       "field": "Query.getDiscussionDetail",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionDetailAnswers",
@@ -683,7 +683,7 @@
     },
     {
       "field": "Query.getDiscussionsInChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
@@ -691,7 +691,7 @@
     },
     {
       "field": "Query.getEventComments",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getImageAlbumUsage",
@@ -783,7 +783,7 @@
     },
     {
       "field": "Query.getSortedChannels",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getUploadedDownloadableFiles",

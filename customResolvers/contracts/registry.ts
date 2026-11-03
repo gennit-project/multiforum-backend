@@ -1,3 +1,4 @@
+import { viewerReadQueryNames } from "./viewerReadSources.js";
 import { imageWriteSourceMutationNames } from "./imageWriteSources.js";
 import { accountWriteSourceQueryNames } from "./accountWriteSources.js";
 import { accountWriteSourceMutationNames } from "./accountWriteSources.js";
@@ -62,6 +63,7 @@ export const checkedRootGroups = [
   ["Mutation", "accountWriteSourceResolvers", "AccountWriteSourceMutationResolvers", accountWriteSourceMutationNames],
   ["Query", "accountWriteSourceResolvers", "AccountWriteSourceQueryResolvers", accountWriteSourceQueryNames],
   ["Mutation", "imageWriteSourceResolvers", "ImageWriteSourceMutationResolvers", imageWriteSourceMutationNames],
+  ["Query", "viewerReadResolvers", "ViewerReadQueryResolvers", viewerReadQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

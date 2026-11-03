@@ -20,44 +20,74 @@
     },
     {
       "field": "Query.getCommentReplies",
-      "selectedPaths": [],
-      "residualPaths": [
-        "ChildComments.*",
+      "status": "selected-response",
+      "selectedPaths": [
+        "ChildComments.ParentComment.id",
+        "ChildComments.isFavoritedByUser",
+        "ChildComments.SubscribedToNotifications.username",
         "aggregateChildCommentCount"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getCommentReplies.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Raw ChildComments maps are forwarded and aggregate is asserted as a driver Integer before toNumber; neither proves all selected comment fields.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getCommentSection",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "DiscussionChannel.discussionId",
+        "DiscussionChannel.channelUniqueName",
+        "DiscussionChannel.SubscribedToNotifications.username",
+        "DiscussionChannel.Channel.uniqueName",
+        "DiscussionChannel.Discussion.id",
+        "Comments.isFavoritedByUser",
+        "Comments.SubscribedToNotifications.username"
+      ],
       "residualPaths": [
-        "DiscussionChannel.*",
-        "Comments.*"
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getCommentSection.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Metadata and root comment hydration maps are forwarded from raw managed-transaction records; eager validation would move failures into the resolver catch wrapper.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getDiscussionDetail",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isFavorited",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.UpvotedByUsers.username",
+        "DiscussionChannels.SuperUpvotedByUsers.username"
+      ],
       "residualPaths": [
-        "*"
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getDiscussionDetail.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "DiscussionDetail is currently a Record<string, unknown> intersection with unknown arrays and a raw record cast, then spread with independently hydrated channel/files.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getDiscussionDetailAnswers",
@@ -115,31 +145,48 @@
     },
     {
       "field": "Query.getDiscussionsInChannel",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "discussionChannels.UpvotedByUsers.username",
+        "discussionChannels.SuperUpvotedByUsers.username",
+        "discussionChannels.isFavorited",
+        "discussionChannels.Discussion.authorIsChannelModerator"
+      ],
       "residualPaths": [
-        "discussionChannels.*",
-        "aggregateDiscussionChannelsCount"
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getDiscussionsInChannel.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Raw hydration maps and count are forwarded; the first query casts channel IDs before the second read. A generated satisfies alone would retain unchecked any.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getEventComments",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "Event.id",
+        "Event.SubscribedToNotifications.username",
+        "Event.SubscribedToEventUpdates.username",
+        "Comments.isFavoritedByUser",
+        "Comments.SubscribedToNotifications.username"
+      ],
       "residualPaths": [
-        "Event.*",
-        "Comments.*"
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getEventComments.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Raw metadata and comment maps are forwarded. The resolver swallows query failures and returns empty results; eager validation inside that catch would hide errors currently raised by GraphQL field completion.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getImageAlbumUsage",
@@ -222,17 +269,22 @@
     },
     {
       "field": "Query.getSortedChannels",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "channels.isFavorited"
+      ],
       "residualPaths": [
-        "channels.*",
-        "aggregateChannelCount"
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
       ],
       "evidence": [
         "customResolvers/queries/getSortedChannels.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Raw channel fields, tags, aggregate/connection maps and count are forwarded. Executable-schema evidence shows malformed displayName does not fail count-only requests but does fail when displayName is selected.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
       "field": "Query.getUserContributions",

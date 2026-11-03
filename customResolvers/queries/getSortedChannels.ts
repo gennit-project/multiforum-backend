@@ -1,4 +1,5 @@
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { SortedViewerChannel } from "../contracts/viewerReadProjections.js";
+import type { Driver, Integer } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -13,10 +14,10 @@ type Input = {
 };
 
 type Args = {
-  limit?: string;
-  offset?: string;
-  tags?: string[];
-  searchInput?: string;
+  limit?: string | number | null;
+  offset?: string | number | null;
+  tags?: (string | null)[] | null;
+  searchInput?: string | null;
   countDownloads?: boolean | null;
 };
 
@@ -52,7 +53,7 @@ const getSortedChannelsResolver = (input: Input) => {
          WITH c, 0.0 AS score`;
 
     try {
-      const result = await session.run(
+      const result = await session.run<{channel: SortedViewerChannel; aggregateChannelCount: Integer}>(
         `
         // Select the candidate channels (full-text search or all channels)
         ${matchClause}
@@ -132,7 +133,7 @@ const getSortedChannelsResolver = (input: Input) => {
         }
       );
 
-      const channels = result.records.map((record: Neo4jRecord) =>
+      const channels = result.records.map((record) =>
         record.get("channel")
       );
 

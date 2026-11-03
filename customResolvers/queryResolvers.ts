@@ -1,3 +1,4 @@
+import type { ViewerReadQueryResolvers } from "./contracts/viewerReadSources.js";
 import type { AccountWriteSourceQueryResolvers } from "./contracts/accountWriteSources.js";
 import type { PluginSummaryMetadataQueryResolvers } from "./contracts/pluginSummaryMetadata.js";
 import type { PluginPolicyQueryResolvers } from "./contracts/pluginPolicies.js";
@@ -193,17 +194,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies AccountWriteSourceQueryResolvers;
 
-  return {
-    ...contentPageResolvers,
-    ...accountResolvers,
-    ...accountWriteSourceResolvers,
-    getSiteWideIssueList: getSiteWideIssueList({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-    }),
-    getSiteWideWikiList: getSiteWideWikiList({
-      driver,
-    }),
+  const viewerReadResolvers = {
     getDiscussionsInChannel: getDiscussionsInChannel({
       driver,
       agePolicyRepository: instancePolicyRepository,
@@ -223,10 +214,24 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    ...contentScalarResolvers,
     getSortedChannels: getSortedChannels({
       driver,
     }),
+  } satisfies ViewerReadQueryResolvers;
+
+  return {
+    ...contentPageResolvers,
+    ...accountResolvers,
+    ...accountWriteSourceResolvers,
+    getSiteWideIssueList: getSiteWideIssueList({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+    }),
+    getSiteWideWikiList: getSiteWideWikiList({
+      driver,
+    }),
+    ...viewerReadResolvers,
+    ...contentScalarResolvers,
     getUserContributions: getUserContributions({
       driver,
       agePolicyRepository: instancePolicyRepository,

@@ -1,6 +1,7 @@
+import type { CommentRepliesRow } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Integer } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -19,10 +20,10 @@ type Input = {
 
 type Args = {
   commentId: string;
-  modName: string;
-  offset: string;
-  limit: string;
-  sort: string;
+  modName?: string | null;
+  offset?: string | number | null;
+  limit?: string | number | null;
+  sort?: string | null;
 };
 
 const getResolver = (input: Input) => {
@@ -64,7 +65,7 @@ const getResolver = (input: Input) => {
         serverName,
       });
 
-      const commentRepliesResult = await session.run(getCommentRepliesQuery, {
+      const commentRepliesResult = await session.run<CommentRepliesRow>(getCommentRepliesQuery, {
         commentId,
         modName,
         offset,
@@ -82,7 +83,7 @@ const getResolver = (input: Input) => {
         };
       }
 
-      const aggregateCount = record.get("aggregateChildCommentCount") as Integer;
+      const aggregateCount = record.get("aggregateChildCommentCount");
 
       return {
         ChildComments: record.get("ChildComments") || [],

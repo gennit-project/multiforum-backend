@@ -1,3 +1,4 @@
+import type { EventViewerMetadata, RootViewerComment } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import {
@@ -17,9 +18,9 @@ type Input = {
 
 type Args = {
   eventId: string;
-  offset: string;
-  limit: string;
-  sort: string;
+  offset?: string | number | null;
+  limit?: string | number | null;
+  sort?: string | null;
 };
 
 const getResolver = (input: Input) => {
@@ -50,7 +51,7 @@ const getResolver = (input: Input) => {
       });
 
       return await session.executeWrite(async (transaction) => {
-        const eventResult = await transaction.run(
+        const eventResult = await transaction.run<{Event: EventViewerMetadata}>(
           getEventCommentsMetadataQuery,
           {
             eventId,
@@ -60,7 +61,7 @@ const getResolver = (input: Input) => {
         const event = eventResult.records[0]?.get("Event");
         if (!event) return { Event: null, Comments: [] };
 
-        const commentsResult = await transaction.run(getEventCommentsQuery, {
+        const commentsResult = await transaction.run<{comment: RootViewerComment}>(getEventCommentsQuery, {
           eventId,
           offset,
           limit,
