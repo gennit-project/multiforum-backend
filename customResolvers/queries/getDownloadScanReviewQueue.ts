@@ -18,7 +18,7 @@ const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
         WHERE file.scanStatus IN ['SUSPICIOUS', 'INFECTED', 'FAILED']
           AND coalesce(file.permanentlyRemoved, false) = false
           AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
-        OPTIONAL MATCH (author:User)-[:AUTHORED_DISCUSSION]->(discussion)
+        OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
         OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
         WITH file, discussion, author, head(collect(dc.channelUniqueName)) AS channelUniqueName
         ORDER BY
