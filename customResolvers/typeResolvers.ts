@@ -1,3 +1,5 @@
+import type { DiscussionChannelResolvers, DiscussionChannelListItemResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
+import type { OpaqueListSource } from "./contracts/deferredSources.js";
 import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
 import type { VariantUrlsDomainResolver } from "./contracts/variantUrlsDomain.js";
@@ -114,26 +116,26 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       ...checkedDownloadableFile,
     },
     DiscussionChannel: {
-      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<DiscussionChannelResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,
       ...checkedDiscussionChannel,
     },
     DiscussionChannelListItem: {
-      Flairs: emptyArrayFallback('Flairs'),
-      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
-      UpvotedByUsers: emptyArrayFallback('UpvotedByUsers'),
+      Flairs: emptyArrayFallback('Flairs') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["Flairs"]>,
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,
+      UpvotedByUsers: emptyArrayFallback('UpvotedByUsers') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["UpvotedByUsers"]>,
     },
     SiteWideDiscussionListItem: {
-      DownloadableFiles: emptyArrayFallback('DownloadableFiles'),
+      DownloadableFiles: emptyArrayFallback('DownloadableFiles') satisfies OpaqueListSource<SiteWideDiscussionListItemResolvers<GraphQLContext>["DownloadableFiles"]>,
     },
     Comment: {
-      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
+      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<CommentResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,
     },
     ScratchpadEntry: {
-      superUpvotedByUsers: (parent: { superUpvotedByUsers?: unknown[] }) =>
-        parent.superUpvotedByUsers || [],
+      superUpvotedByUsers: ((parent: { superUpvotedByUsers?: unknown[] | null }) =>
+        parent.superUpvotedByUsers || []) satisfies OpaqueListSource<ScratchpadEntryResolvers<GraphQLContext>["superUpvotedByUsers"]>,
     },
     Album: {
-      Images: emptyArrayFallback('Images'),
+      Images: emptyArrayFallback('Images') satisfies OpaqueListSource<AlbumResolvers<GraphQLContext>["Images"]>,
       ...checkedAlbum,
     },
     Discussion: {
@@ -141,21 +143,21 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     Channel: {
       variantUrls: channelVariantUrls satisfies VariantUrlsDomainResolver<ChannelResolvers<GraphQLContext>["variantUrls"]>,
-      Moderators: emptyArrayFallback('Moderators'),
-      Admins: emptyArrayFallback('Admins'),
-      Bots: emptyArrayFallback('Bots'),
-      Tags: emptyArrayFallback('Tags'),
-      PendingOwnerInvites: emptyArrayFallback('PendingOwnerInvites'),
-      PendingModInvites: emptyArrayFallback('PendingModInvites'),
-      RelatedChannels: emptyArrayFallback('RelatedChannels'),
-      PinnedDiscussionChannels: emptyArrayFallback('PinnedDiscussionChannels'),
-      PinnedWikiPages: emptyArrayFallback('PinnedWikiPages'),
-      InCollections: emptyArrayFallback('InCollections'),
-      EventChannels: emptyArrayFallback('EventChannels'),
-      DiscussionChannels: emptyArrayFallback('DiscussionChannels'),
-      Comments: emptyArrayFallback('Comments'),
-      SuspendedUsers: emptyArrayFallback('SuspendedUsers'),
-      SuspendedMods: emptyArrayFallback('SuspendedMods'),
+      Moderators: emptyArrayFallback('Moderators') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["Moderators"]>,
+      Admins: emptyArrayFallback('Admins') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["Admins"]>,
+      Bots: emptyArrayFallback('Bots') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["Bots"]>,
+      Tags: emptyArrayFallback('Tags') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["Tags"]>,
+      PendingOwnerInvites: emptyArrayFallback('PendingOwnerInvites') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["PendingOwnerInvites"]>,
+      PendingModInvites: emptyArrayFallback('PendingModInvites') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["PendingModInvites"]>,
+      RelatedChannels: emptyArrayFallback('RelatedChannels') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["RelatedChannels"]>,
+      PinnedDiscussionChannels: emptyArrayFallback('PinnedDiscussionChannels') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["PinnedDiscussionChannels"]>,
+      PinnedWikiPages: emptyArrayFallback('PinnedWikiPages') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["PinnedWikiPages"]>,
+      InCollections: emptyArrayFallback('InCollections') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["InCollections"]>,
+      EventChannels: emptyArrayFallback('EventChannels') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["EventChannels"]>,
+      DiscussionChannels: emptyArrayFallback('DiscussionChannels') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["DiscussionChannels"]>,
+      Comments: emptyArrayFallback('Comments') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["Comments"]>,
+      SuspendedUsers: emptyArrayFallback('SuspendedUsers') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["SuspendedUsers"]>,
+      SuspendedMods: emptyArrayFallback('SuspendedMods') satisfies OpaqueListSource<ChannelResolvers<GraphQLContext>["SuspendedMods"]>,
     },
   };
 }

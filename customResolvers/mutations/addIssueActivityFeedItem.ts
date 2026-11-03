@@ -93,7 +93,7 @@ const getResolver = (deps: Input) => {
     // The write remains above this resolver so multiple payload aliases cannot
     // create duplicate actions or comments.
     return {
-      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo) =>
+      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo): unknown =>
         delegateToSchema({
           schema: getGeneratedSchema(driver),
           operation: OperationTypeNode.QUERY,

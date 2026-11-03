@@ -1,3 +1,4 @@
+import type { DelegatedActivitySource } from "./contracts/deferredSources.js";
 import type { ImageWriteSourceMutationResolvers } from "./contracts/imageWriteSources.js";
 import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
 import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
@@ -570,7 +571,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...accountWriteSourceResolvers,
     ...contentResolvers,
     ...moderationResolvers,
-    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
+    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }) satisfies DelegatedActivitySource,
     ...reactionResolvers,
     ...votingResolvers,
     ...accountSafetyResolvers,
