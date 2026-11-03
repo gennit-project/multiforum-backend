@@ -1,3 +1,4 @@
+import type { ContentMutationResolvers } from "./contracts/content.js";
 import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
 import type { AccountScalarMutationResolvers } from "./contracts/accounts.js";
 import type { PluginMutationResolvers } from "./contracts/plugins.js";
@@ -323,19 +324,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies AccountObjectMutationResolvers;
 
-  return {
-    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
-      driver,
-    }),
-    createDiscussionWithChannelConnections:
-      createDiscussionWithChannelConnections({
-        driver,
-      }),
+  const contentResolvers = {
     createCommentWithOwnedConnections: createCommentWithOwnedConnections({
       driver,
     }),
-    ...moderationResolvers,
-    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
     createIssue: createIssue({ driver }),
     writeWikiPage: writeWikiPage({driver}),
     setWikiHomePage: setWikiHomePage({driver}),
@@ -343,9 +335,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       updateDiscussionWithChannelConnections({
         driver,
       }),
-    createEventWithChannelConnections: createEventWithChannelConnections({
-      driver,
-    }),
     createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
       driver,
     }),
@@ -356,6 +345,44 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     deleteEventInSeries: deleteEventInSeries({
+      driver,
+    }),
+    deleteCommentRevision: redactTextVersionRevision({
+      driver,
+      revisionType: 'comment',
+    }),
+    deleteDiscussionBodyRevision: redactTextVersionRevision({
+      driver,
+      revisionType: 'discussion body',
+    }),
+    deleteEventDescriptionRevision: redactTextVersionRevision({
+      driver,
+      revisionType: 'event description',
+    }),
+    deleteWikiRevision: redactTextVersionRevision({
+      driver,
+      revisionType: 'wiki',
+    }),
+    addImageToAlbum: addImageToAlbum({
+      driver
+    }),
+    removeImageFromAlbum: removeImageFromAlbum({
+      driver
+    }),
+  } satisfies ContentMutationResolvers;
+
+  return {
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
+    createDiscussionWithChannelConnections:
+      createDiscussionWithChannelConnections({
+        driver,
+      }),
+    ...contentResolvers,
+    ...moderationResolvers,
+    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
+    createEventWithChannelConnections: createEventWithChannelConnections({
       driver,
     }),
     ...reactionResolvers,
@@ -375,22 +402,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     reportWikiEdit: reportWikiEdit({
       driver
-    }),
-    deleteCommentRevision: redactTextVersionRevision({
-      driver,
-      revisionType: 'comment',
-    }),
-    deleteDiscussionBodyRevision: redactTextVersionRevision({
-      driver,
-      revisionType: 'discussion body',
-    }),
-    deleteEventDescriptionRevision: redactTextVersionRevision({
-      driver,
-      revisionType: 'event description',
-    }),
-    deleteWikiRevision: redactTextVersionRevision({
-      driver,
-      revisionType: 'wiki',
     }),
     reportChannel: reportChannel({
       driver
@@ -498,12 +509,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     createImageWithUploader: createImageWithUploader({
-      driver
-    }),
-    addImageToAlbum: addImageToAlbum({
-      driver
-    }),
-    removeImageFromAlbum: removeImageFromAlbum({
       driver
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({

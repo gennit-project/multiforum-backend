@@ -147,7 +147,7 @@
     },
     {
       "field": "Mutation.addImageToAlbum",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.addIssueActivityFeedItem",
@@ -203,7 +203,7 @@
     },
     {
       "field": "Mutation.createCommentWithOwnedConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createDiscussionWithChannelConnections",
@@ -219,7 +219,7 @@
     },
     {
       "field": "Mutation.createEventSeriesWithChannelConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createEventWithChannelConnections",
@@ -231,7 +231,7 @@
     },
     {
       "field": "Mutation.createIssue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createPluginPipelineCampaign",
@@ -247,19 +247,19 @@
     },
     {
       "field": "Mutation.deleteCommentRevision",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteDiscussionBodyRevision",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteEventDescriptionRevision",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteEventInSeries",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteScratchpadEntry",
@@ -267,7 +267,7 @@
     },
     {
       "field": "Mutation.deleteWikiRevision",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.dropDataForCypressTests",
@@ -371,7 +371,7 @@
     },
     {
       "field": "Mutation.removeImageFromAlbum",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reorderCollectionItem",
@@ -463,7 +463,7 @@
     },
     {
       "field": "Mutation.setWikiHomePage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.shareCollectionAsDiscussion",
@@ -599,7 +599,7 @@
     },
     {
       "field": "Mutation.updateDiscussionWithChannelConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updateDownloadLabels",
@@ -611,11 +611,11 @@
     },
     {
       "field": "Mutation.updateEventInSeries",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updateEventWithChannelConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updatePluginPipelines",
@@ -635,7 +635,7 @@
     },
     {
       "field": "Mutation.writeWikiPage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getAgePolicy",

@@ -1,3 +1,4 @@
+import type { OwnedCommentProjection } from "../contracts/content.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -45,7 +46,7 @@ const getResolver = (deps: Input) => {
     const split = inputs.map((input) => splitOwnedCommentInput(input));
 
     const result = await executeGeneratedOperation<{
-      createComments: { comments: Array<{ id: string }> };
+      createComments: { comments: OwnedCommentProjection[] };
     }>(driver, CREATE_COMMENTS, { input: split.map((entry) => entry.scalars) });
 
     const comments = result.createComments.comments ?? [];

@@ -2,9 +2,7 @@ import { createRevisionRedactionRepository, REDACTED_REVISION_BODY, type Revisio
 export { REDACTED_REVISION_BODY } from "../../services/persistence/revisionRedactionRepository.js";
 import { GraphQLError, type GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
-import type {
-  TextVersion
-} from '../../ogm_types.js'
+import type { RevisionProjection } from "../contracts/content.js";
 import type { GraphQLContext } from '../../types/context.js'
 import {
   checkChannelModPermissions,
@@ -226,7 +224,7 @@ const redactTextVersionRevision = (input: Input) => {
     args: Args,
     context: GraphQLContext,
     resolveInfo: GraphQLResolveInfo
-  ): Promise<TextVersion> => {
+  ): Promise<RevisionProjection> => {
     const { textVersionId } = args
 
     if (!textVersionId) {

@@ -27,8 +27,8 @@ type Input = {
 type Args = {
   where: EventWhere;
   eventUpdateInput: EventUpdateInput;
-  channelConnections: string[];
-  channelDisconnections: string[];
+  channelConnections?: string[] | null;
+  channelDisconnections?: (string | null)[] | null;
 };
 
 type NotifiableUser = {

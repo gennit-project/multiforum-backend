@@ -1,3 +1,4 @@
+import type { CreatedEventProjection } from "../contracts/contentProjections.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import { createEventChannelQuery } from "../cypher/cypherQueries.js";
@@ -31,13 +32,13 @@ export const createEventsFromInput = async (
   driver: Driver,
   input: EventCreateInputWithChannels[],
   context: GraphQLContext
-): Promise<unknown[]> => {
+): Promise<Array<CreatedEventProjection | undefined>> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
 
   const session = driver.session();
-  const events: unknown[] = [];
+  const events: Array<CreatedEventProjection | undefined> = [];
 
   try {
     for (const { eventCreateInput, channelConnections } of input) {

@@ -1,3 +1,4 @@
+import type { WrittenWikiProjection } from "../../customResolvers/contracts/content.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { WriteWikiPageInput } from "../../src/generated/graphql.js";
@@ -56,7 +57,7 @@ export async function writeWikiPageRecord(driver:Driver,input:WriteWikiPageInput
       if (input.parentId) await tx.run(`MATCH (parent:WikiPage {id:$parent}), (p:WikiPage {id:$id}) CREATE (parent)-[:HAS_CHILD_PAGE]->(p)`,{parent:input.parentId,id});
     }
     if (input.setAsHome) await linkWikiHome(tx,input.channelUniqueName,id!);
-    const result = await executeGeneratedOperation<{wikiPages:unknown[]}>(driver,`query WrittenWikiPage($id:ID!){wikiPages(where:{id:{eq:$id}}){id title body slug channelUniqueName editReason createdAt updatedAt locked OriginalAuthor{username} VersionAuthor{username} Channel{uniqueName} ChildPages{id title slug} PastVersions{id body editReason createdAt Author{username}}}}`,{id},tx);
+    const result = await executeGeneratedOperation<{wikiPages:WrittenWikiProjection[]}>(driver,`query WrittenWikiPage($id:ID!){wikiPages(where:{id:{eq:$id}}){id title body slug channelUniqueName editReason createdAt updatedAt locked OriginalAuthor{username} VersionAuthor{username} Channel{uniqueName} ChildPages{id title slug} PastVersions{id body editReason createdAt Author{username}}}}`,{id},tx);
     return result.wikiPages[0];
   });
 }

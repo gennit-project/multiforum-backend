@@ -1,3 +1,4 @@
+import { contentMutationNames } from "./content.js";
 import { checkedTypeFieldGroups, checkedTypeFieldNames } from "./typeFields.js";
 import { accountCollectionQueryNames } from "./accounts.js";
 import { accountQueryNames } from "./accounts.js";
@@ -22,6 +23,7 @@ export const checkedRootGroups = [
   ["Mutation", "accountObjectResolvers", "AccountObjectMutationResolvers", accountObjectMutationNames],
   ["Query", "accountResolvers", "AccountQueryResolvers", accountQueryNames],
   ["Query", "collectionResolvers", "AccountCollectionQueryResolvers", accountCollectionQueryNames],
+  ["Mutation", "contentResolvers", "ContentMutationResolvers", contentMutationNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

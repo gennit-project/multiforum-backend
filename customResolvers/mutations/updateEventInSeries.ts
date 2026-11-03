@@ -25,8 +25,8 @@ type Args = {
   eventId: string;
   scope: "THIS_ONLY" | "THIS_AND_FUTURE" | "ALL_IN_SERIES";
   eventUpdateInput: EventUpdateInput;
-  channelConnections: string[];
-  channelDisconnections: string[];
+  channelConnections?: string[] | null;
+  channelDisconnections?: (string | null)[] | null;
 };
 
 type NotifiableUser = {

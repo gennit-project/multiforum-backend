@@ -1,0 +1,726 @@
+{
+  "family": "content",
+  "scope": "15 checked mutation signatures; 3 concrete exceptions with preserved behavior",
+  "entries": [
+    {
+      "field": "Mutation.addImageToAlbum",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.addImageToAlbum",
+      "selection": null,
+      "selectedPaths": [
+        "$Boolean"
+      ],
+      "residualPaths": [],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/albumImageReuse.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "The actual Boolean return is constructed after status/permission checks rather than asserted from a raw driver projection.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.createCommentWithOwnedConnections",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.createCommentWithOwnedConnections",
+      "selection": "ownedCommentSelection",
+      "selectedPaths": [
+        "comments.id",
+        "comments.text",
+        "comments.isRootComment",
+        "comments.isFeedbackComment",
+        "comments.deleted",
+        "comments.archived",
+        "comments.weightedVotesCount",
+        "comments.botMentions",
+        "comments.createdAt"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/createCommentWithOwnedConnections.ts",
+          "customResolvers/contracts/content.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.createDiscussionWithChannelConnections",
+      "status": "exception",
+      "signature": null,
+      "selection": "createdDiscussionSelection",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Non-null array element can be undefined after a missing post-commit refetch.",
+        "Precise entity projection types and fixed-query selection drift guards are implemented, but do not certify total list elements."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/discussionCreationRepository.ts",
+          "services/persistence/crosspostWrite.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ]
+      },
+      "reason": "The write commits before the generated-operation refetch. A concurrent deletion between those operations makes the real refetch return an empty array; the resolver pushes fetched[0] and GraphQL reports an outer non-null list-element error with path [createDiscussionWithChannelConnections, 0]. TypeScript noUncheckedIndexedAccess=false previously hid this possibility; return annotations now retain undefined explicitly.",
+      "decision": "Choose a separately reviewed atomic/refetch or missing-item policy. Preserve existing commit timing and outer GraphQL non-null error path until that decision; do not filter missing items, throw early, or cast away undefined."
+    },
+    {
+      "field": "Mutation.createEventSeriesWithChannelConnections",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.createEventSeriesWithChannelConnections",
+      "selection": "createdEventSeriesSelection",
+      "selectedPaths": [
+        "id",
+        "title",
+        "description",
+        "locationName",
+        "address",
+        "virtualEventUrl",
+        "cost",
+        "free",
+        "isHostedByOP",
+        "coverImageURL",
+        "canceled",
+        "createdAt",
+        "updatedAt",
+        "repeatPattern.type",
+        "repeatPattern.count",
+        "repeatPattern.daysOfWeek",
+        "repeatPattern.endType",
+        "repeatPattern.endCount",
+        "repeatPattern.endDate",
+        "Poster.username",
+        "Tags.text",
+        "Occurrences.id",
+        "Occurrences.title",
+        "Occurrences.startTime",
+        "Occurrences.endTime",
+        "Occurrences.canceled",
+        "Occurrences.occurrenceIndex",
+        "Occurrences.EventChannels.id",
+        "Occurrences.EventChannels.channelUniqueName",
+        "Occurrences.EventChannels.Channel.uniqueName",
+        "EventChannels.id",
+        "EventChannels.channelUniqueName",
+        "EventChannels.Channel.uniqueName"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/createEventSeriesWithChannelConnections.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/eventSeriesCreationRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.createEventWithChannelConnections",
+      "status": "exception",
+      "signature": null,
+      "selection": "createdEventSelection",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Non-null array element can be undefined after a missing post-commit refetch.",
+        "Precise entity projection types and fixed-query selection drift guards are implemented, but do not certify total list elements."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/createEventWithChannelConnections.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/eventWriteRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ]
+      },
+      "reason": "The write commits before the generated-operation refetch. A concurrent deletion between those operations makes the real refetch return an empty array; the resolver pushes fetched[0] and GraphQL reports an outer non-null list-element error with path [createEventWithChannelConnections, 0]. TypeScript noUncheckedIndexedAccess=false previously hid this possibility; return annotations now retain undefined explicitly.",
+      "decision": "Choose a separately reviewed atomic/refetch or missing-item policy. Preserve existing commit timing and outer GraphQL non-null error path until that decision; do not filter missing items, throw early, or cast away undefined."
+    },
+    {
+      "field": "Mutation.createImageWithUploader",
+      "status": "exception",
+      "signature": null,
+      "selection": null,
+      "selectedPaths": [],
+      "residualPaths": [
+        "All Image fields from dynamically converted raw stored properties."
+      ],
+      "evidence": {
+        "source": [
+          "services/persistence/imageWriteRepository.ts",
+          "customResolvers/mutations/createImageWithUploader.ts"
+        ],
+        "execution": [
+          "tests/integration/imageWriteRepository.test.ts"
+        ]
+      },
+      "reason": "createImage copies arbitrary raw node properties through convertNeo4jValue into Record<string, unknown>, then asserts the object as Image. Missing/malformed stored scalar values currently reach GraphQL only when requested, after the write commits. Replacing that assertion with another declared Image projection would hide the same mismatch.",
+      "decision": "Choose a field-lazy raw-source resolver typing/validation boundary, or separately authorize eager validation and its changed error timing. Preserve current post-commit, requested-field-only GraphQL scalar handling meanwhile."
+    },
+    {
+      "field": "Mutation.createIssue",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.createIssue",
+      "selection": "submittedIssueSelection",
+      "selectedPaths": [
+        "id",
+        "issueNumber",
+        "title",
+        "body",
+        "isOpen",
+        "channelUniqueName",
+        "authorName",
+        "createdAt",
+        "updatedAt",
+        "relatedCommentId",
+        "relatedDiscussionId",
+        "relatedEventId",
+        "relatedWikiPageId",
+        "relatedWikiRevisionId",
+        "relatedImageId",
+        "relatedAlbumId",
+        "relatedUsername",
+        "relatedModProfileName",
+        "relatedChannelUniqueName",
+        "flaggedServerRuleViolation",
+        "Channel.uniqueName"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation.",
+        "Author union: repository projects username or displayName, but this selective generated signature does not certify union member resolution."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/createIssue.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/issueSubmissionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.deleteCommentRevision",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.deleteCommentRevision",
+      "selection": "revisionSelection",
+      "selectedPaths": [
+        "id",
+        "body",
+        "editReason",
+        "createdAt",
+        "updatedAt",
+        "Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/redactTextVersionRevision.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/revisionRedactionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.deleteDiscussionBodyRevision",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.deleteDiscussionBodyRevision",
+      "selection": "revisionSelection",
+      "selectedPaths": [
+        "id",
+        "body",
+        "editReason",
+        "createdAt",
+        "updatedAt",
+        "Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/redactTextVersionRevision.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/revisionRedactionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.deleteEventDescriptionRevision",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.deleteEventDescriptionRevision",
+      "selection": "revisionSelection",
+      "selectedPaths": [
+        "id",
+        "body",
+        "editReason",
+        "createdAt",
+        "updatedAt",
+        "Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/redactTextVersionRevision.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/revisionRedactionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.deleteEventInSeries",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.deleteEventInSeries",
+      "selection": "deleteEventSelection",
+      "selectedPaths": [
+        "success",
+        "deletedCount",
+        "message"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/deleteEventInSeries.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/eventSeriesDeletionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.deleteWikiRevision",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.deleteWikiRevision",
+      "selection": "revisionSelection",
+      "selectedPaths": [
+        "id",
+        "body",
+        "editReason",
+        "createdAt",
+        "updatedAt",
+        "Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/redactTextVersionRevision.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/revisionRedactionRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.removeImageFromAlbum",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.removeImageFromAlbum",
+      "selection": null,
+      "selectedPaths": [
+        "$Boolean"
+      ],
+      "residualPaths": [],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/albumImageReuse.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "The actual Boolean return is constructed after status/permission checks rather than asserted from a raw driver projection.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.setWikiHomePage",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.setWikiHomePage",
+      "selection": null,
+      "selectedPaths": [
+        "$Boolean"
+      ],
+      "residualPaths": [],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/writeWikiPage.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "The actual Boolean return is constructed after status/permission checks rather than asserted from a raw driver projection.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.updateDiscussionWithChannelConnections",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.updateDiscussionWithChannelConnections",
+      "selection": "updatedDiscussionSelection",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "Author.username",
+        "DiscussionChannels.id",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.Flairs.id",
+        "DiscussionChannels.Flairs.channelUniqueName",
+        "DiscussionChannels.Flairs.displayName",
+        "DiscussionChannels.Flairs.color",
+        "DiscussionChannels.Flairs.order",
+        "DiscussionChannels.Flairs.archived",
+        "DiscussionChannels.Channel.uniqueName",
+        "DiscussionChannels.Discussion.id",
+        "createdAt",
+        "updatedAt",
+        "Tags.text",
+        "PastTitleVersions.id",
+        "PastTitleVersions.body",
+        "PastTitleVersions.createdAt",
+        "PastTitleVersions.Author.username",
+        "PastBodyVersions.id",
+        "PastBodyVersions.body",
+        "PastBodyVersions.createdAt",
+        "PastBodyVersions.Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/updateDiscussionWithChannelConnections.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/discussionUpdateRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.updateEventInSeries",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.updateEventInSeries",
+      "selection": "updatedSeriesOccurrenceSelection",
+      "selectedPaths": [
+        "id",
+        "title",
+        "description",
+        "startTime",
+        "startTimeDayOfWeek",
+        "startTimeHourOfDay",
+        "endTime",
+        "locationName",
+        "address",
+        "virtualEventUrl",
+        "canceled",
+        "cost",
+        "isAllDay",
+        "isHostedByOP",
+        "coverImageURL",
+        "occurrenceIndex",
+        "Poster.username",
+        "EventSeries.id",
+        "EventSeries.title",
+        "EventChannels.id",
+        "EventChannels.channelUniqueName",
+        "EventChannels.eventId",
+        "EventChannels.Channel.uniqueName",
+        "SubscribedToEventUpdates.username",
+        "SubscribedToEventUpdates.Email.address",
+        "Tags.text",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/updateEventInSeries.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/eventSeriesUpdateRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.updateEventWithChannelConnections",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.updateEventWithChannelConnections",
+      "selection": "updatedEventSelection",
+      "selectedPaths": [
+        "id",
+        "title",
+        "description",
+        "startTime",
+        "startTimeDayOfWeek",
+        "startTimeHourOfDay",
+        "endTime",
+        "locationName",
+        "address",
+        "virtualEventUrl",
+        "canceled",
+        "cost",
+        "isAllDay",
+        "isHostedByOP",
+        "coverImageURL",
+        "Poster.username",
+        "EventChannels.id",
+        "EventChannels.channelUniqueName",
+        "EventChannels.eventId",
+        "EventChannels.Channel.uniqueName",
+        "EventChannels.Event.id",
+        "SubscribedToNotifications.username",
+        "SubscribedToEventUpdates.username",
+        "SubscribedToEventUpdates.Email.address",
+        "createdAt",
+        "updatedAt",
+        "Tags.text"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/updateEventWithChannelConnections.ts",
+          "customResolvers/contracts/contentProjections.ts",
+          "services/persistence/eventWriteRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.writeWikiPage",
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.writeWikiPage",
+      "selection": "writtenWikiSelection",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "slug",
+        "channelUniqueName",
+        "editReason",
+        "createdAt",
+        "updatedAt",
+        "locked",
+        "OriginalAuthor.username",
+        "VersionAuthor.username",
+        "Channel.uniqueName",
+        "ChildPages.id",
+        "ChildPages.title",
+        "ChildPages.slug",
+        "PastVersions.id",
+        "PastVersions.body",
+        "PastVersions.editReason",
+        "PastVersions.createdAt",
+        "PastVersions.Author.username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths (including unfetched relationships and connection edges/pageInfo).",
+        "Custom scalar internal representation remains the existing schema scalar implementation."
+      ],
+      "evidence": {
+        "source": [
+          "customResolvers/mutations/writeWikiPage.ts",
+          "customResolvers/contracts/content.ts",
+          "services/persistence/wikiPageWriteRepository.ts"
+        ],
+        "compile": [
+          "tests/contracts/content.typecheck.ts"
+        ],
+        "execution": [
+          "tests/integration/contentResponseContracts.test.ts",
+          "tests/integration/frontendInputContracts.test.ts"
+        ],
+        "drift": [
+          "customResolvers/contracts/contentProjectionSelections.test.ts"
+        ]
+      },
+      "reason": "Exact generated-operation projections replace unknown/full-entity annotations; actual factory signature and response serialization are checked. The generated-operation adapter remains trusted to execute its fixed selection through GraphQL; this is not a validator for arbitrary driver rows.",
+      "decision": null
+    }
+  ]
+}

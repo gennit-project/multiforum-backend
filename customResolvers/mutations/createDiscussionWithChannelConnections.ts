@@ -1,3 +1,4 @@
+import type { CreatedDiscussionProjection } from "../contracts/contentProjections.js";
 import { createExistingDiscussionCrosspost } from "../../services/persistence/crosspostWrite.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { createInstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
@@ -146,7 +147,7 @@ export const createDiscussionsFromInput = async (
   driver: Driver,
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext
-): Promise<unknown[]> => {
+): Promise<Array<CreatedDiscussionProjection | undefined>> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
@@ -234,7 +235,7 @@ export const createDiscussionsFromInput = async (
   }
 
   const session = driver.session();
-  const discussions: unknown[] = [];
+  const discussions: Array<CreatedDiscussionProjection | undefined> = [];
 
   try {
     for (const { channelConnections } of sanitizedInput) {
@@ -270,7 +271,7 @@ export const createDiscussionsFromInput = async (
         const created = await createExistingDiscussionCrosspost(driver,discussionCreateInput,crosspostedDiscussionId,contextUsername,
           channelConnections,flairIdsByInput[inputIndex],sensitive);
         discussions.push(created);
-        const createdId = (created as {id:string}).id;
+        const createdId = created.id;
         const files = discussionCreateInput.hasDownload ? await repository.findAttachedFiles(createdId) : [];
         await triggerCreatedDiscussionPipelines({driver,discussionId:createdId,channelConnections,downloadableFileId:files[0]?.DownloadableFiles?.[0]?.id});
         continue;

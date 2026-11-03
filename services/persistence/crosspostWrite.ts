@@ -1,3 +1,4 @@
+import type { CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { DiscussionCreateInput } from "../../src/generated/graphql.js";
@@ -38,7 +39,7 @@ export async function createExistingDiscussionCrosspost(driver:Driver, input:Dis
       if (Number(exists.records[0].get("count")) !== 1) throw new GraphQLError("Channel not found.");
       await tx.run(createDiscussionChannelQuery,{discussionId:id,channelUniqueName:channel,upvotedBy:username,flairIds:flairs.get(channel) ?? []});
     }
-    const read = await executeGeneratedOperation<{discussions:unknown[]}>(driver,
+    const read = await executeGeneratedOperation<{discussions:CreatedDiscussionProjection[]}>(driver,
       `query CrosspostResult($id:ID!){discussions(where:{id:{eq:$id}})${DISCUSSION_CREATE_SELECTION}}`,{id},tx,{mayAccessSensitiveContent:sensitive});
     return read.discussions[0];
   });
