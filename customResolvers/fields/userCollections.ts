@@ -4,6 +4,7 @@ import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { CollectionWhere } from "../../ogm_types.js";
+import { SortDirection } from "../../src/generated/graphql.js";
 import { CollectionVisibility } from "../../ogm_types.js";
 
 type UserCollectionsArgs = {
@@ -18,8 +19,8 @@ type UserCollectionsArgs = {
  * - Respects additional where filters passed from GraphQL queries (e.g., filtering by item relationships)
  */
 type CollectionsArgs = {
-  where?: CollectionWhere;
-  options?: { sort?: unknown[]; [key: string]: unknown };
+  where?: CollectionWhere | null;
+  options?: CollectionReadOptions | null;
 };
 
 export default function ({ driver, collectionReadRepository = createCollectionReadRepository(driver) }: UserCollectionsArgs) {
@@ -67,12 +68,12 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     // Merge incoming options with defaults
     const options = args.options || {};
     if (!options.sort) {
-      options.sort = [{ createdAt: "DESC" }];
+      options.sort = [{ createdAt: SortDirection.Desc }];
     }
 
     // Get collections with the merged filter
     // Include all relationship fields that clients might request
-    const collections = await collectionReadRepository.findProfileCollections(filter, options as CollectionReadOptions);
+    const collections = await collectionReadRepository.findProfileCollections(filter, options);
 
     return collections;
   };

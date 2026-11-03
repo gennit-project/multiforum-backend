@@ -1,8 +1,7 @@
 // Type/interface and object-field resolvers (union __resolveType discriminators,
 // the JSON scalar, and empty-array fallbacks). Extracted from customResolvers.ts.
 import GraphQLJSON from "graphql-type-json";
-import type { GraphQLResolveInfo } from "graphql";
-import type { GraphQLContext } from "../types/context.js";
+import type { CheckedAlbumFields, CheckedDiscussionFields, CheckedDiscussionChannelFields, CheckedAuthorFields, CheckedIssueAuthorFields, CheckedDownloadableFileFields, CheckedUserFields } from "./contracts/typeFields.js";
 import type { ResolverDeps } from "./resolverDeps.js";
 import userCollections from "./fields/userCollections.js";
 import createDownloadableFileUrlResolver from "./fields/downloadableFileUrl.js";
@@ -18,28 +17,28 @@ type DetailCollectionItem = {
   id?: string;
 };
 
-const detailCollectionPageInfo = ({
+const detailCollectionPageInfo = <CollectionKey extends string, NextKey extends string>({
   collectionKey,
   hasNextPageKey,
   kind,
 }: {
-  collectionKey: string;
-  hasNextPageKey: string;
+  collectionKey: CollectionKey;
+  hasNextPageKey: NextKey;
   kind: DetailCollectionKind;
-}) => (parent: Record<string, unknown>) => {
-  const collection = Array.isArray(parent[collectionKey])
-    ? (parent[collectionKey] as DetailCollectionItem[])
-    : [];
+}) => (parent: { [Key in CollectionKey]?: DetailCollectionItem[] | null } & { [Key in NextKey]?: unknown }) => {
+  const value = parent[collectionKey];
+  const collection = Array.isArray(value) ? value : [];
   const lastItem = collection[collection.length - 1];
   const createdAt = lastItem?.createdAt ? String(lastItem.createdAt) : "";
   const id = lastItem?.id;
 
+  const hasNextPage: unknown = parent[hasNextPageKey];
   return {
     endCursor:
       createdAt && id
         ? encodeDetailCollectionCursor({ kind, createdAt, id })
         : null,
-    hasNextPage: parent[hasNextPageKey] === true,
+    hasNextPage: hasNextPage === true,
   };
 };
 
@@ -69,51 +68,51 @@ const channelVariantUrls = createVariantUrlsResolver({
 export default function buildTypeResolvers(deps: ResolverDeps) {
   const { driver } = deps;
 
+  const checkedCommentAuthor = {
+    __resolveType(obj: { username?: unknown; displayName?: unknown }) {
+      if (obj.username) return "User";
+      if (obj.displayName) return "ModerationProfile";
+      return "User";
+    },
+  } satisfies CheckedAuthorFields;
+  const checkedIssueAuthor = {
+    __resolveType(obj: { username?: unknown; displayName?: unknown }) {
+      if (obj.username) return "User";
+      if (obj.displayName) return "ModerationProfile";
+      return "User";
+    },
+  } satisfies CheckedIssueAuthorFields;
+  const checkedAlbum = {
+    detailImagesPageInfo: detailCollectionPageInfo({ collectionKey: "Images", hasNextPageKey: "_detailImagesHasNextPage", kind: "image" }),
+  } satisfies CheckedAlbumFields;
+  const checkedDiscussion = {
+    detailFilesPageInfo: detailCollectionPageInfo({ collectionKey: "DownloadableFiles", hasNextPageKey: "_detailFilesHasNextPage", kind: "file" }),
+  } satisfies CheckedDiscussionFields;
+  const checkedDiscussionChannel = {
+    detailAnswersPageInfo: detailCollectionPageInfo({ collectionKey: "Answers", hasNextPageKey: "_detailAnswersHasNextPage", kind: "answer" }),
+  } satisfies CheckedDiscussionChannelFields;
+  const checkedUser = { Collections: userCollections({ driver }) } satisfies CheckedUserFields;
+  const checkedDownloadableFile = {
+    url: createDownloadableFileUrlResolver(),
+  } satisfies CheckedDownloadableFileFields;
+
   return {
     JSON: GraphQLJSON,
-    CommentAuthor: {
-      __resolveType(obj: unknown, context: GraphQLContext, info: GraphQLResolveInfo) {
-        const author = obj as { username?: string; displayName?: string };
-        if (author.username) {
-          return "User";
-        }
-        // Both user and mod profiles have this field so the order matters.
-        if (author.displayName) {
-          return "ModerationProfile";
-        }
-        return "User";
-      },
-    },
-    IssueAuthor: {
-      __resolveType(obj: unknown, context: GraphQLContext, info: GraphQLResolveInfo) {
-        const author = obj as { username?: string; displayName?: string };
-        if (author.username) {
-          return "User";
-        }
-        // Both user and mod profiles have this field so the order matters.
-        if (author.displayName) {
-          return "ModerationProfile";
-        }
-        return "User";
-      },
-    },
+    CommentAuthor: { ...checkedCommentAuthor },
+    IssueAuthor: { ...checkedIssueAuthor },
     User: {
-      Collections: userCollections({ driver }),
+      ...checkedUser,
       variantUrls: userVariantUrls,
     },
     Image: {
       variantUrls: imageVariantUrls,
     },
     DownloadableFile: {
-      url: createDownloadableFileUrlResolver(),
+      ...checkedDownloadableFile,
     },
     DiscussionChannel: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers'),
-      detailAnswersPageInfo: detailCollectionPageInfo({
-        collectionKey: "Answers",
-        hasNextPageKey: "_detailAnswersHasNextPage",
-        kind: "answer",
-      }),
+      ...checkedDiscussionChannel,
     },
     DiscussionChannelListItem: {
       Flairs: emptyArrayFallback('Flairs'),
@@ -132,18 +131,10 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     Album: {
       Images: emptyArrayFallback('Images'),
-      detailImagesPageInfo: detailCollectionPageInfo({
-        collectionKey: "Images",
-        hasNextPageKey: "_detailImagesHasNextPage",
-        kind: "image",
-      }),
+      ...checkedAlbum,
     },
     Discussion: {
-      detailFilesPageInfo: detailCollectionPageInfo({
-        collectionKey: "DownloadableFiles",
-        hasNextPageKey: "_detailFilesHasNextPage",
-        kind: "file",
-      }),
+      ...checkedDiscussion,
     },
     Channel: {
       variantUrls: channelVariantUrls,

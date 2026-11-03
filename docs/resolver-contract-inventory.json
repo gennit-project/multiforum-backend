@@ -7,7 +7,7 @@
     },
     {
       "field": "Album.detailImagesPageInfo",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Channel.Admins",
@@ -79,11 +79,11 @@
     },
     {
       "field": "CommentAuthor.__resolveType",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Discussion.detailFilesPageInfo",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "DiscussionChannel.SuperUpvotedByUsers",
@@ -91,7 +91,7 @@
     },
     {
       "field": "DiscussionChannel.detailAnswersPageInfo",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "DiscussionChannelListItem.Flairs",
@@ -107,7 +107,7 @@
     },
     {
       "field": "DownloadableFile.url",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Image.variantUrls",
@@ -115,7 +115,7 @@
     },
     {
       "field": "IssueAuthor.__resolveType",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "JSON",
@@ -831,7 +831,7 @@
     },
     {
       "field": "User.Collections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "User.variantUrls",

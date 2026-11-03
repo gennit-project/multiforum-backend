@@ -11,7 +11,7 @@
  * @returns A resolver function that returns the field value or an empty array
  */
 export default function emptyArrayFallback(fieldName: string) {
-  return (parent: Record<string, unknown> | null | undefined) => {
+  return (parent: Record<string, unknown> | null | undefined): unknown[] => {
     const value = parent?.[fieldName];
 
     // If the value is an array (even empty), return it directly

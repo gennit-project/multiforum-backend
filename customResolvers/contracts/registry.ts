@@ -1,3 +1,4 @@
+import { checkedTypeFieldGroups, checkedTypeFieldNames } from "./typeFields.js";
 import { accountCollectionQueryNames } from "./accounts.js";
 import { accountQueryNames } from "./accounts.js";
 import { accountObjectMutationNames } from "./accounts.js";
@@ -22,8 +23,7 @@ export const checkedRootGroups = [
   ["Query", "accountResolvers", "AccountQueryResolvers", accountQueryNames],
   ["Query", "collectionResolvers", "AccountCollectionQueryResolvers", accountCollectionQueryNames],
 ] as const;
-export const checkedTypeFieldGroups: readonly (readonly [string, string])[] = [];
-export const checkedTypeFieldNames: readonly string[] = [];
+export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [
   ...checkedRootGroups.flatMap(([prefix, , , names]) => names.map(name => `${prefix}.${name}`)),
   ...checkedTypeFieldNames,

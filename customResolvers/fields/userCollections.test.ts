@@ -1,3 +1,5 @@
+import type { ProfileCollectionProjection } from "../contracts/accountProjections.js";
+import { CollectionType } from "../../src/generated/graphql.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Driver } from "neo4j-driver";
@@ -8,7 +10,7 @@ import type { CollectionReadRepository } from "../../services/persistence/collec
 
 const setup = () => {
   const calls: unknown[] = [];
-  const rows = [{ id: "collection" }];
+  const rows: ProfileCollectionProjection[] = [{ id: "collection", name: "Collection", description: null, visibility: CollectionVisibility.Public, collectionType: CollectionType.Downloads, itemCount: 0, itemOrder: [], createdAt: "2026-01-01", updatedAt: null, Channels: [], Discussions: [], Comments: [], Downloads: [], Images: [] }];
   const repository: CollectionReadRepository = {
     findProfileCollections: async (where, options) => { calls.push({ where, options }); return rows; },
     findPublicContaining: async () => [], findOwnedShareTarget: async () => [], findShareChannel: async () => [],

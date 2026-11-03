@@ -1,0 +1,539 @@
+{
+  "family": "typeFields",
+  "fields": [
+    {
+      "field": "Album.Images",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Album.detailImagesPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "Channel.Admins",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.Bots",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.Comments",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.DiscussionChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.EventChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.InCollections",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.Moderators",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.PendingModInvites",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.PendingOwnerInvites",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.PinnedDiscussionChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.PinnedWikiPages",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.RelatedChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.SuspendedMods",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.SuspendedUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.Tags",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "Channel.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
+      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+    },
+    {
+      "field": "Comment.SuperUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "CommentAuthor.__resolveType",
+      "selectedPaths": [
+        "User | ModerationProfile"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "Discussion.detailFilesPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "DiscussionChannel.SuperUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "DiscussionChannel.detailAnswersPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "DiscussionChannelListItem.Flairs",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "DiscussionChannelListItem.SuperUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "DiscussionChannelListItem.UpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "DownloadableFile.url",
+      "selectedPaths": [
+        "String"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "Image.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
+      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+    },
+    {
+      "field": "IssueAuthor.__resolveType",
+      "selectedPaths": [
+        "User | ModerationProfile"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "JSON",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
+      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+    },
+    {
+      "field": "ScratchpadEntry.superUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "SiteWideDiscussionListItem.DownloadableFiles",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+    },
+    {
+      "field": "User.Collections",
+      "selectedPaths": [
+        "id",
+        "name",
+        "description",
+        "visibility",
+        "collectionType",
+        "itemCount",
+        "itemOrder",
+        "createdAt",
+        "updatedAt",
+        "Channels.uniqueName",
+        "Channels.displayName",
+        "Channels.channelIconURL",
+        "Discussions.id",
+        "Discussions.title",
+        "Comments.id",
+        "Comments.text",
+        "Downloads.id",
+        "Downloads.title",
+        "Images.id",
+        "Images.url"
+      ],
+      "residualPaths": [
+        "unselected Collection fields; custom scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "User.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
+      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+    }
+  ]
+}
