@@ -535,7 +535,7 @@
     },
     {
       "field": "Mutation.undoSuperUpvote",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.undoUpvoteComment",

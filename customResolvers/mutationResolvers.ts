@@ -1,3 +1,4 @@
+import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
 import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
 import type { DownloadWriteMutationResolvers } from "./contracts/downloadWrites.js";
 import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
@@ -451,6 +452,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     unlockIssue: unlockIssue(),
   } satisfies ModerationLockMutationResolvers;
 
+  const moderationUndoResolvers = {
+    undoSuperUpvote: undoSuperUpvote({
+      driver,
+    }),
+  } satisfies ModerationUndoMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -566,8 +573,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       scratchpadRepository: createScratchpadRepository(driver),
       driver,
     }),
-    undoSuperUpvote: undoSuperUpvote({
-      driver,
-    }),
+    ...moderationUndoResolvers,
   };
 }

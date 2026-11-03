@@ -622,23 +622,28 @@
     },
     {
       "field": "Mutation.undoSuperUpvote",
-      "status": "needs-response-boundary",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "success",
         "message",
         "sourceId",
-        "sourceType",
-        "superUpvotedByUsers[].username"
+        "sourceType"
+      ],
+      "residualPaths": [
+        "superUpvotedByUsers",
+        "superUpvotedByUsers.username"
       ],
       "evidence": [
+        "customResolvers/contracts/moderationUndo.ts",
+        "tests/contracts/moderationUndo.typecheck.ts",
         "customResolvers/mutations/undoSuperUpvote.ts",
         "services/persistence/superVoteUndoRepository.ts",
+        "tests/integration/moderationUndoResponseContracts.test.ts",
         "tests/integration/superVoteUndoRepository.test.ts",
-        "tests/integration/superUpvote.test.ts"
+        "customResolvers/mutations/superVoteUndoOrdering.test.ts"
       ],
-      "reason": "The post-write tx.run users value is assigned from driver any directly to Array<{username:string}> before commit. Preliminary generated snapshots apply a default25 cap, while the in-transaction final list is unbounded. The resolver sourceType annotation is a two-value union while the schema accepts String and validates values at runtime.",
-      "decision": "A future safe subset can check resolver-owned success/message/sourceId/sourceType and widen the argument annotation to generated String without changing runtime validation. Keep raw usernames as an explicit residual until late coercion/error behavior is preserved; do not certify the entire list from its annotation or preliminary capped read."
+      "reason": "Resolver-owned success/message and validated source identity/type are checked against the generated response subset. Exact generated preliminary comment/discussion snapshots replace full models. The final in-transaction raw username list is explicitly unknown rather than asserted to User data. Real-schema tests exercise permissions, repeated/missing requests, read/write failures, persisted vote/karma/scratchpad effects, nullable authors that skip karma, post-snapshot malformed usernames and the uncapped final list.",
+      "decision": "Preserve authorization, the preliminary nested default25 limit, in-transaction unbounded final list, commit/rollback/close and GraphQL selected-field completion. Only the computed four fields are certified. Raw usernames remain residual: malformed values may fail selected serialization after commit while an unselected list must not fail earlier. No eager validation or normalization is introduced."
     },
     {
       "field": "Mutation.unlockChannel",

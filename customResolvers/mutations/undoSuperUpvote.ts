@@ -7,7 +7,7 @@ import { createSuperVoteUndoRepository, type SuperVoteUndoRepository } from "../
 type Input = { driver: Driver; repository?: SuperVoteUndoRepository; };
 
 type Args = {
-  sourceType: 'comment' | 'discussion';
+  sourceType: string;
   sourceId: string;
 };
 
@@ -114,8 +114,8 @@ const undoSuperUpvoteResolver = (input: Input) => {
              RETURN collect({ username: u.username }) AS users`
           : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
              RETURN collect({ username: u.username }) AS users`;
-      const superUpvotersResult = await tx.run(readSuperUpvotersQuery, { sourceId });
-      const superUpvotedByUsers: Array<{ username: string }> =
+      const superUpvotersResult = await tx.run<{users:unknown}>(readSuperUpvotersQuery, { sourceId });
+      const superUpvotedByUsers: unknown =
         superUpvotersResult.records[0]?.get('users') || [];
 
       await tx.commit();
