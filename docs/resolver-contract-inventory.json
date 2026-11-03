@@ -199,7 +199,7 @@
     },
     {
       "field": "Mutation.clearDownloadableFileScan",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createCommentWithOwnedConnections",
@@ -411,7 +411,7 @@
     },
     {
       "field": "Mutation.requestDownloadableFileReview",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.rerunPluginPipeline",
@@ -459,7 +459,7 @@
     },
     {
       "field": "Mutation.setServerPluginSecret",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setWikiHomePage",
@@ -511,7 +511,7 @@
     },
     {
       "field": "Mutation.trackDownload",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.triggerDownloadableFilePluginRuns",
@@ -607,7 +607,7 @@
     },
     {
       "field": "Mutation.updateDownloadableFileSupportSettings",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updateEventInSeries",
@@ -707,7 +707,7 @@
     },
     {
       "field": "Query.getInternalPluginPipelineRun",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getModContributions",
@@ -727,11 +727,11 @@
     },
     {
       "field": "Query.getPipelineRuns",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPipelineSummary",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPipelineSummaryPage",
@@ -751,11 +751,11 @@
     },
     {
       "field": "Query.getPluginRunsForDownloadableFile",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPublicPipelineRun",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getRankingSettings",
@@ -767,7 +767,7 @@
     },
     {
       "field": "Query.getServerPluginSecrets",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getSiteWideDiscussionList",

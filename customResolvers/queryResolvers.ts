@@ -1,3 +1,4 @@
+import type { PluginQueryResolvers } from "./contracts/plugins.js";
 import { createPipelineSummaryPage, createPipelineRunPage } from './queries/getPluginPipelinePage.js'
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Query resolvers. Extracted from customResolvers.ts; receives the shared
@@ -53,6 +54,27 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     instancePolicyRepository,
     driver,
   } = deps;
+
+  const pluginResolvers = {
+    getServerPluginSecrets: getServerPluginSecrets({
+      driver
+    }),
+    getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
+      driver
+    }),
+    getPipelineRuns: getPipelineRuns({
+      driver
+    }),
+    getPipelineSummary: getPipelineSummary({
+      driver,
+    }),
+    getPublicPipelineRun: getPublicPipelineRun({
+      driver,
+    }),
+    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
+      driver,
+    }),
+  } satisfies PluginQueryResolvers;
 
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
@@ -135,9 +157,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       agePolicyRepository: instancePolicyRepository
     }),
     safetyCheck: safetyCheck,
-    getServerPluginSecrets: getServerPluginSecrets({
-      driver
-    }),
+    ...pluginResolvers,
     getPluginConfigStatus: getPluginConfigStatus({ driver }),
     getInstalledPlugins: getInstalledPlugins({
       driver
@@ -145,26 +165,11 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
       driver,
     }),
-    getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
-      driver
-    }),
-    getPipelineRuns: getPipelineRuns({
-      driver
-    }),
     getApplicablePluginPipeline: getApplicablePluginPipeline({
       driver,
     }),
     getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
     getPipelineRunPage: createPipelineRunPage({ driver }),
-    getPipelineSummary: getPipelineSummary({
-      driver,
-    }),
-    getPublicPipelineRun: getPublicPipelineRun({
-      driver,
-    }),
-    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
-      driver,
-    }),
     previewPluginPipelineCampaign: previewPluginPipelineCampaign({
       driver,
     }),

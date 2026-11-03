@@ -1,3 +1,5 @@
+import { pluginQueryNames } from "./plugins.js";
+import { pluginMutationNames } from "./plugins.js";
 import { moderationMutationNames } from "./moderation.js";
 import { votingMutationNames } from "./voting.js";
 import { subscriptionMutationNames } from "./subscriptions.js";
@@ -9,6 +11,8 @@ export const checkedRootGroups = [
   ["Mutation", "subscriptionResolvers", "SubscriptionMutationResolvers", subscriptionMutationNames],
   ["Mutation", "reactionResolvers", "ReactionMutationResolvers", reactionMutationNames],
   ["Mutation", "moderationResolvers", "ModerationMutationResolvers", moderationMutationNames],
+  ["Mutation", "pluginResolvers", "PluginMutationResolvers", pluginMutationNames],
+  ["Query", "pluginResolvers", "PluginQueryResolvers", pluginQueryNames],
 ] as const;
 export const checkedTypeFieldGroups: readonly (readonly [string, string])[] = [];
 export const checkedTypeFieldNames: readonly string[] = [];

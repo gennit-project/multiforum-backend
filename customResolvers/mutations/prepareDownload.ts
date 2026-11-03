@@ -1,4 +1,4 @@
-import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
+import { createDownloadReviewRepository, type DownloadReviewRepository, type DownloadPreparationRow } from "../../services/persistence/downloadReviewRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
@@ -17,21 +17,7 @@ type Input = {
   driver: Driver;
 };
 
-type FileRecord = {
-  id: string;
-  url?: string | null;
-  storageBucket?: string | null;
-  storageObjectName?: string | null;
-  scanStatus?: string | null;
-  scanReason?: string | null;
-  scanCheckedAt?: string | null;
-  uploadedByUsername?: string | null;
-  Discussion?: {
-    id?: string | null;
-    Author?: { username?: string | null } | null;
-    hasSensitiveContent?: boolean | null;
-  } | null;
-};
+type FileRecord = DownloadPreparationRow;
 
 type PluginRunRecord = {
   pluginId?: string | null;
@@ -78,7 +64,7 @@ const selectFile = async (
   repository: DownloadReviewRepository,
   downloadableFileId: string
 ): Promise<FileRecord | null> => {
-  const files = await repository.findPreparation(downloadableFileId) as FileRecord[];
+  const files = await repository.findPreparation(downloadableFileId);
 
   return files[0] || null;
 };

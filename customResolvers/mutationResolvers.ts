@@ -1,3 +1,4 @@
+import type { PluginMutationResolvers } from "./contracts/plugins.js";
 import type { ModerationMutationResolvers } from "./contracts/moderation.js";
 import type { ReactionMutationResolvers } from "./contracts/reactions.js";
 import type { SubscriptionMutationResolvers } from "./contracts/subscriptions.js";
@@ -239,6 +240,25 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ModerationMutationResolvers;
 
+  const pluginResolvers = {
+    clearDownloadableFileScan: clearDownloadableFileScan({
+      driver
+    }),
+    requestDownloadableFileReview: requestDownloadableFileReview({
+      driver
+    }),
+    trackDownload: trackDownload({
+      driver,
+      agePolicyRepository: instancePolicyRepository
+    }),
+    updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
+      driver
+    }),
+    setServerPluginSecret: setServerPluginSecret({
+      driver
+    }),
+  } satisfies PluginMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -432,30 +452,15 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     resumePluginPipelineCampaign: resumePluginPipelineCampaign({
       driver,
     }),
-    clearDownloadableFileScan: clearDownloadableFileScan({
-      driver
-    }),
-    requestDownloadableFileReview: requestDownloadableFileReview({
-      driver
-    }),
-    trackDownload: trackDownload({
-      driver,
-      agePolicyRepository: instancePolicyRepository
-    }),
+    ...pluginResolvers,
     prepareDownload: prepareDownload({
       agePolicyRepository: instancePolicyRepository,
-      driver
-    }),
-    updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
       driver
     }),
     createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
       driver
     }),
     enableServerPlugin: enableServerPlugin({
-      driver
-    }),
-    setServerPluginSecret: setServerPluginSecret({
       driver
     }),
     updatePluginPipelines: updatePluginPipelines({

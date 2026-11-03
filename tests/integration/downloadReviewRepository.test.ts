@@ -53,7 +53,7 @@ for(const {action,legacyNotificationEdge} of [{action:'clear',legacyNotification
   const response=await resolver(null,{downloadableFileId:'f',reason:' Reviewed '},{user:{username:'alice'}} as never);
   const row=await state();
   const timeField=action==='clear'?'scanCheckedAt':'reviewRequestedAt';
-  assert.equal(Date.parse(String(response[timeField])),row.properties[timeField].toStandardDate().getTime());
+  assert.equal(Date.parse(String(timeField === "scanCheckedAt" ? response.scanCheckedAt : "reviewRequestedAt" in response ? response.reviewRequestedAt : undefined)),row.properties[timeField].toStandardDate().getTime());
   const notifications=(await driver.executeQuery('MATCH(u:User)-[:HAS_NOTIFICATION]->(n:Notification) RETURN u.username AS author,n.text AS text,n.notificationType AS type,n.read AS read')).records.map(r=>r.toObject());
   assert.deepEqual(notifications,action==='clear'&&legacyNotificationEdge?[{author:'alice',text:'Your downloadable file passed human security review and is now available. Cleared by alice: Reviewed',type:'moderation',read:false}]:[]);
   const actual=JSON.parse(JSON.stringify({response,properties:row.properties,notifications},function(key,value){if(this.event&&key==='id')return 'file-node';return ['timestamp','ageGateTouchedAt',timeField].includes(key)?'<time>':value;}));
