@@ -10,8 +10,8 @@ function fixture(options:{existing?:boolean;fail?:string;missing?:string;revisio
   async findReportedWiki(id){enter('page');values.page=id;return options.missing==='page'?[]:[{id:'page',title:'Page title',body:'Page body',Channel:{uniqueName:options.wrongChannel?'other':'forum'},VersionAuthor:{username:'current-author'}}];},
   async findReportedRevision(id){enter('revision');values.revision=id;return options.missing==='revision'?[]:[{id,body:options.revisionBody,Author:options.revisionAuthor?{username:options.revisionAuthor}:null}];},
   async findPriorWikiReport(where){enter('prior');values.prior=where;return options.existing?[{id:'issue',issueNumber:2,flaggedServerRuleViolation:true}]:[];},
-  async createWikiReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7}]};},
-  async appendWikiReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7}]};},
+  async createWikiReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7,isOpen:true,flaggedServerRuleViolation:input.flaggedServerRuleViolation}]};},
+  async appendWikiReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,isOpen:params.isOpen,flaggedServerRuleViolation:params.flaggedServerRuleViolation}]};},
  };
  const driver={session:()=>{enter('session');return{executeWrite:async(fn:any)=>{enter('counter');return fn({run:async()=>({records:[{get:()=>7}]})});},close:async()=>enter('close')};}};
  return {calls,values,resolver:reportWikiEdit({driver:driver as never,wikiEditReportRepository:repository})};

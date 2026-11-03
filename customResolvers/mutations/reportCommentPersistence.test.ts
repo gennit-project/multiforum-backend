@@ -29,6 +29,7 @@ class ModelStub {
         {
           id: "issue-1",
           issueNumber: 1,
+          isOpen: true,
           flaggedServerRuleViolation: false,
         },
       ],
@@ -42,6 +43,7 @@ class ModelStub {
         {
           id: args.issueId ?? args.where?.id ?? "issue-1",
           issueNumber: 1,
+          isOpen: true,
           flaggedServerRuleViolation:
             args.flaggedServerRuleViolation ?? args.update?.flaggedServerRuleViolation ?? false,
         },

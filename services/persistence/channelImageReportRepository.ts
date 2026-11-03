@@ -5,7 +5,7 @@ import {
   createModerationIssue,
   appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
+  type ReportModerationActionsParams, type ReportModerationIssueRow,
 } from './moderationIssueWrites.js';
 type ReportIssue={id:string;issueNumber:number;flaggedServerRuleViolation?:boolean|null;relatedChannelUniqueName?:string|null;relatedChannelIconName?:string|null;relatedChannelBannerName?:string|null};
 export interface ChannelImageReportRepository {
@@ -13,14 +13,14 @@ export interface ChannelImageReportRepository {
  findPriorChannelImageReport(where:IssueWhere):Promise<ReportIssue[]>;
  // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
  // owned Cypher (moderationIssueWrites); reads stay on the generated API.
- createChannelImageReportIssue(params:CreateModerationIssueParams):Promise<{issues:ReportIssue[]}>;
- appendChannelImageReport(params:AppendModerationActionsParams):Promise<{issues:ReportIssue[]}>;
+ createChannelImageReportIssue(params:CreateModerationIssueParams):Promise<{issues:ReportModerationIssueRow[]}>;
+ appendChannelImageReport(params:ReportModerationActionsParams):Promise<{issues:ReportModerationIssueRow[]}>;
 }
 const CHANNEL=`query ChannelImageReportTarget($where:ChannelWhere){channels(where:$where){uniqueName displayName channelIconURL channelBannerURL}}`;
 const PRIOR=`query PriorChannelImageReport($where:IssueWhere){issues(where:$where){id issueNumber flaggedServerRuleViolation}}`;
 export function createChannelImageReportRepository(driver:Driver):ChannelImageReportRepository{return{
  async findReportedChannel(name){return(await executeGeneratedOperation<{channels:Awaited<ReturnType<ChannelImageReportRepository['findReportedChannel']>>}>(driver,CHANNEL,{where:{uniqueName:{eq:name}}})).channels;},
  async findPriorChannelImageReport(where){return(await executeGeneratedOperation<{issues:ReportIssue[]}>(driver,PRIOR,{where})).issues;},
- async createChannelImageReportIssue(params){const issue=await createModerationIssue(driver,params);return{issues:[issue as ReportIssue]};},
- async appendChannelImageReport(params){const result=await appendModerationActions(driver,params);return{issues:result.issues as ReportIssue[]};},
+ async createChannelImageReportIssue(params){const issue=await createModerationIssue(driver,params);return{issues:[issue]};},
+ async appendChannelImageReport(params){const result=await appendModerationActions(driver,params);return{issues:result.issues};},
 };}

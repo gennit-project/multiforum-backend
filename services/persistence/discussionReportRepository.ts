@@ -4,7 +4,7 @@ import {
   createModerationIssue,
   appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
+  type ReportModerationActionsParams, type ReportModerationIssueRow,
 } from "./moderationIssueWrites.js";
 
 export type DiscussionReportIssue = { id: string; issueNumber: number; flaggedServerRuleViolation?: boolean | null };
@@ -14,8 +14,8 @@ export interface DiscussionReportRepository {
   findChannel(channelUniqueName: string): Promise<Array<{uniqueName: string}>>;
   // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
   // owned Cypher (moderationIssueWrites); reads stay on the generated API.
-  createIssue(params: CreateModerationIssueParams): Promise<{issues: DiscussionReportIssue[]}>;
-  appendReport(params: AppendModerationActionsParams): Promise<{issues: DiscussionReportIssue[]}>;
+  createIssue(params: CreateModerationIssueParams): Promise<{issues: ReportModerationIssueRow[]}>;
+  appendReport(params: ReportModerationActionsParams): Promise<{issues: ReportModerationIssueRow[]}>;
 }
 const ISSUE_FIELDS = `id issueNumber flaggedServerRuleViolation`;
 export function createDiscussionReportRepository(driver: Driver): DiscussionReportRepository {
@@ -38,11 +38,11 @@ export function createDiscussionReportRepository(driver: Driver): DiscussionRepo
     },
     async createIssue(params) {
       const issue = await createModerationIssue(driver, params);
-      return { issues: [issue as DiscussionReportIssue] };
+      return { issues: [issue] };
     },
     async appendReport(params) {
       const result = await appendModerationActions(driver, params);
-      return { issues: result.issues as DiscussionReportIssue[] };
+      return { issues: result.issues };
     },
   };
 }

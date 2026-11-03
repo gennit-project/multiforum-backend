@@ -1,3 +1,4 @@
+import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
 import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
 import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
 import type { DownloadWriteMutationResolvers } from "./contracts/downloadWrites.js";
@@ -458,25 +459,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ModerationUndoMutationResolvers;
 
-  return {
-    createDiscussionWithChannelConnections:
-      createDiscussionWithChannelConnections({
-        driver,
-      }),
-    createEventWithChannelConnections: createEventWithChannelConnections({
-      driver,
-    }),
-    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
-      driver,
-    }),
-    ...contentResolvers,
-    ...moderationResolvers,
-    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
-    ...reactionResolvers,
-    ...votingResolvers,
-    ...accountSafetyResolvers,
-    ...accountObjectResolvers,
-    ...accountScalarResolvers,
+  const moderationReportResolvers = {
     reportComment: reportComment({
       driver
     }),
@@ -501,6 +484,28 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     reportChannelImage: reportChannelImage({
       driver
     }),
+  } satisfies ModerationReportMutationResolvers;
+
+  return {
+    createDiscussionWithChannelConnections:
+      createDiscussionWithChannelConnections({
+        driver,
+      }),
+    createEventWithChannelConnections: createEventWithChannelConnections({
+      driver,
+    }),
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
+    ...contentResolvers,
+    ...moderationResolvers,
+    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
+    ...reactionResolvers,
+    ...votingResolvers,
+    ...accountSafetyResolvers,
+    ...accountObjectResolvers,
+    ...accountScalarResolvers,
+    ...moderationReportResolvers,
     archiveImage: archiveImage({
       driver
     }),

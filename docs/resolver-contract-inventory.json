@@ -379,35 +379,35 @@
     },
     {
       "field": "Mutation.reportChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportChannelImage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportDiscussion",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportEvent",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportImage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportProfilePicture",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportWikiEdit",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.requestDownloadableFileReview",

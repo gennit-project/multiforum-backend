@@ -4,7 +4,7 @@ import {
   createModerationIssue,
   appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
+  type ReportModerationActionsParams, type ReportModerationIssueRow,
 } from "./moderationIssueWrites.js";
 
 export type EventReportIssue = { id: string; issueNumber: number; flaggedServerRuleViolation?: boolean | null };
@@ -13,8 +13,8 @@ export interface EventReportRepository {
   findEvent(eventId: string): Promise<Array<{id: string; title?: string | null}>>;
   // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
   // owned Cypher (moderationIssueWrites); reads stay on the generated API.
-  createIssue(params: CreateModerationIssueParams): Promise<{issues: EventReportIssue[]}>;
-  appendReport(params: AppendModerationActionsParams): Promise<{issues: EventReportIssue[]}>;
+  createIssue(params: CreateModerationIssueParams): Promise<{issues: ReportModerationIssueRow[]}>;
+  appendReport(params: ReportModerationActionsParams): Promise<{issues: ReportModerationIssueRow[]}>;
 }
 const ISSUE_FIELDS = `id issueNumber flaggedServerRuleViolation`;
 export function createEventReportRepository(driver: Driver): EventReportRepository {
@@ -32,11 +32,11 @@ export function createEventReportRepository(driver: Driver): EventReportReposito
     },
     async createIssue(params) {
       const issue = await createModerationIssue(driver, params);
-      return { issues: [issue as EventReportIssue] };
+      return { issues: [issue] };
     },
     async appendReport(params) {
       const result = await appendModerationActions(driver, params);
-      return { issues: result.issues as EventReportIssue[] };
+      return { issues: result.issues };
     },
   };
 }
