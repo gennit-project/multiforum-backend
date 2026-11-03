@@ -8,7 +8,7 @@ import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunct
 import {
   checkChannelPermissions as defaultCheckChannelPermissions,
 } from "../../rules/permission/hasChannelPermission.js";
-import { createDiscussionsFromInput } from "./createDiscussionWithChannelConnections.js";
+import { createDiscussionsFromInput, type triggerCreatedDiscussionPipelines } from "./createDiscussionWithChannelConnections.js";
 import { logger } from "../../logger.js";
 
 type Args = {
@@ -30,6 +30,7 @@ type Input = {
   driver: Driver;
   checkChannelPermissions?: CheckChannelPermissions;
   createDiscussions?: CreateDiscussions;
+  triggerPipelines?: typeof triggerCreatedDiscussionPipelines;
 };
 
 const getTrimmed = (value: string | null | undefined) => value?.trim() || "";
@@ -139,7 +140,8 @@ const getResolver = (input: Input) => {
             ],
           },
         ],
-        context
+        context,
+        input.triggerPipelines
       );
 
       return discussions[0];

@@ -62,6 +62,7 @@ type Args = {
 type Input = {
   discussionCreationRepository?: DiscussionCreationRepository;
   driver: Driver;
+  triggerPipelines?: typeof triggerCreatedDiscussionPipelines;
 };
 
 export const triggerCreatedDiscussionPipelines = async ({
@@ -145,7 +146,8 @@ export const createDiscussionsFromInput = async (
   repository: DiscussionCreationRepository,
   driver: Driver,
   input: DiscussionCreateInputWithChannels[],
-  context?: GraphQLContext
+  context?: GraphQLContext,
+  triggerPipelines = triggerCreatedDiscussionPipelines
 ): Promise<unknown[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
@@ -272,7 +274,7 @@ export const createDiscussionsFromInput = async (
         discussions.push(created);
         const createdId = (created as {id:string}).id;
         const files = discussionCreateInput.hasDownload ? await repository.findAttachedFiles(createdId) : [];
-        await triggerCreatedDiscussionPipelines({driver,discussionId:createdId,channelConnections,downloadableFileId:files[0]?.DownloadableFiles?.[0]?.id});
+        await triggerPipelines({driver,discussionId:createdId,channelConnections,downloadableFileId:files[0]?.DownloadableFiles?.[0]?.id});
         continue;
       }
       // v7 removed the to-one connect, so strip the Author (POSTED_DISCUSSION)
@@ -285,63 +287,58 @@ export const createDiscussionsFromInput = async (
       // HAS_TAG edges (create-if-missing) after the generated create.
       const { cleaned: cleanedNoTags, tagTexts } = stripTags(cleaned as Record<string, any>);
       const resolvedAuthor = authorUsername ?? contextUsername ?? null;
-      const response = await repository.createDiscussion(cleanedNoTags as DiscussionCreateInput);
+      const { newDiscussionId, createdChannelConnections } = await session.executeWrite(async (tx) => {
+        const response = await repository.createDiscussion(
+          cleanedNoTags as DiscussionCreateInput,
+          tx
+        );
+        const newDiscussionId = response.discussions[0]?.id;
+        if (!newDiscussionId) {
+          throw new Error("Discussion creation returned no discussion");
+        }
 
-      const newDiscussion = response.discussions[0];
-      const newDiscussionId = newDiscussion.id;
-
-      // Wire the discussion's Author (POSTED_DISCUSSION) / SharedCollection edges.
-      await connectDiscussionAuthorAndCollection(driver, {
-        discussionId: newDiscussionId,
-        authorUsername: resolvedAuthor,
-        sharedCollectionId,
-      });
-
-      // Own the Tags (HAS_TAG) edges, creating any tag missing by text.
-      await ownTags(
-        (cypher, params) => driver.executeQuery(cypher, params),
-        { label: "Discussion", id: newDiscussionId },
-        tagTexts
-      );
-
-      // The generated create made the nested album + images; wire their ownership
-      // edges (HAS_ALBUM owner, UPLOADED_IMAGE) that v7 can't express as a connect.
-      if (albumOwnerUsername && discussionCreateInput?.Album?.create?.node) {
-        await connectCreatedDiscussionAlbumOwnership(driver, {
+        await connectDiscussionAuthorAndCollection(driver, {
           discussionId: newDiscussionId,
-          username: albumOwnerUsername,
-          reusedImageIds: discussionCreateInput.Album.create.node.Images?.connect?.flatMap(c => c.where?.node?.id?.eq ? [c.where.node.id.eq] : []) ?? [],
-        });
-      }
-
-      // Check if this discussion has a download attached
-      const hasDownload = discussionCreateInput.hasDownload === true;
-      const createdChannelConnections: string[] = [];
-
-      // Link the discussion to channels
-      for (const channelUniqueName of channelConnections) {
-        try {
-          // A managed write, so the age-gate reconcile step runs before commit.
-          await session.executeWrite((tx) =>
-            tx.run(createDiscussionChannelQuery, {
-              discussionId: newDiscussionId,
-              channelUniqueName,
-              upvotedBy: resolvedAuthor,
-              flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
-            })
+          authorUsername: resolvedAuthor,
+          sharedCollectionId,
+        }, tx);
+        await ownTags((cypher, params) => tx.run(cypher, params),
+          { label: "Discussion", id: newDiscussionId }, tagTexts);
+        if (albumOwnerUsername && discussionCreateInput?.Album?.create?.node) {
+          await connectCreatedDiscussionAlbumOwnership(driver, {
+            discussionId: newDiscussionId,
+            username: albumOwnerUsername,
+            reusedImageIds: discussionCreateInput.Album.create.node.Images?.connect?.flatMap(c => c.where?.node?.id?.eq ? [c.where.node.id.eq] : []) ?? [],
+          }, tx);
+        }
+        if (sharedCollectionId) {
+          const linked = await tx.run(
+            `MATCH (:Discussion {id: $id})-[:SHARES_COLLECTION]->(collection:Collection {id: $collectionId})
+             RETURN collection.id`,
+            { id: newDiscussionId, collectionId: sharedCollectionId }
           );
-          createdChannelConnections.push(channelUniqueName);
-
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : String(error);
-          if (message.includes("Constraint validation failed")) {
-            logger.warn(`Skipping duplicate DiscussionChannel: ${channelUniqueName}`);
-            continue;
-          } else {
-            throw error;
+          if (linked.records.length !== 1) {
+            throw new GraphQLError("Shared collection is no longer available.");
           }
         }
-      }
+        const createdChannelConnections: string[] = [];
+        for (const channelUniqueName of channelConnections) {
+          const result = await tx.run(createDiscussionChannelQuery, {
+            discussionId: newDiscussionId,
+            channelUniqueName,
+            upvotedBy: resolvedAuthor,
+            flairIds: flairIdsByInput[inputIndex].get(channelUniqueName) ?? [],
+          });
+          if (result.records.length !== 1) {
+            throw new GraphQLError("Could not connect the discussion to the selected forum.");
+          }
+          createdChannelConnections.push(channelUniqueName);
+        }
+        return { newDiscussionId, createdChannelConnections };
+      });
+      // Plugin work is deliberately outside the retryable transaction. Failure
+      // here cannot roll back the item and does not imply durable delivery.
+      const hasDownload = discussionCreateInput.hasDownload === true;
 
       let downloadableFileId: string | undefined;
       if (hasDownload) {
@@ -363,7 +360,7 @@ export const createDiscussionsFromInput = async (
       // Every successful DiscussionChannel creation emits its own channel event,
       // including ordinary text discussions. Downloads additionally emit the
       // file event once so attachment scanning remains independent.
-      await triggerCreatedDiscussionPipelines({
+      await triggerPipelines({
         driver,
         discussionId: newDiscussionId,
         downloadableFileId,
@@ -383,7 +380,7 @@ export const createDiscussionsFromInput = async (
     const message = error instanceof Error ? error.message : String(error);
     throw new Error(`Failed to create discussions: ${message}`);
   } finally {
-    session.close();
+    await session.close();
   }
 
   return discussions;
@@ -393,7 +390,7 @@ export const createDiscussionsFromInput = async (
  * Main resolver that uses createDiscussionsFromInput
  */
 const getResolver = (input: Input) => {
-  const { driver } = input;
+  const { driver, triggerPipelines } = input;
 
   const repository = input.discussionCreationRepository ?? createDiscussionCreationRepository(driver);
 
@@ -406,7 +403,8 @@ const getResolver = (input: Input) => {
         repository,
         driver,
         input,
-        context
+        context,
+        triggerPipelines
       );
       return discussions;
     } catch (error: unknown) {

@@ -83,18 +83,19 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
  )
 `;
 
-// Create-side post-connects are edge-only (no age-gate-relevant content), so
-// they run as standalone leader-routed owned writes rather than inside the
-// managed transaction.
+// Callers creating an item pass their transaction so ownership commits with it.
 export async function connectCreatedDiscussionAlbumOwnership(
   driver: Driver,
-  params: { discussionId: string; username?: string | null; reusedImageIds?: string[] }
+  params: { discussionId: string; username?: string | null; reusedImageIds?: string[] },
+  transaction?: ManagedTransaction
 ): Promise<void> {
-  await driver.executeQuery(CONNECT_CREATED_ALBUM_OWNERSHIP, {
+  const parameters = {
     discussionId: params.discussionId,
     username: params.username ?? null,
     reusedImageIds: params.reusedImageIds ?? [],
-  });
+  };
+  if (transaction) await transaction.run(CONNECT_CREATED_ALBUM_OWNERSHIP, parameters);
+  else await driver.executeQuery(CONNECT_CREATED_ALBUM_OWNERSHIP, parameters);
 }
 
 // Discussion to-one connects v7 removed: the Author (POSTED_DISCUSSION) every
@@ -115,13 +116,16 @@ const CONNECT_AUTHOR_COLLECTION = `
 
 export async function connectDiscussionAuthorAndCollection(
   driver: Driver,
-  params: { discussionId: string; authorUsername?: string | null; sharedCollectionId?: string | null }
+  params: { discussionId: string; authorUsername?: string | null; sharedCollectionId?: string | null },
+  transaction?: ManagedTransaction
 ): Promise<void> {
-  await driver.executeQuery(CONNECT_AUTHOR_COLLECTION, {
+  const parameters = {
     discussionId: params.discussionId,
     authorUsername: params.authorUsername ?? null,
     sharedCollectionId: params.sharedCollectionId ?? null,
-  });
+  };
+  if (transaction) await transaction.run(CONNECT_AUTHOR_COLLECTION, parameters);
+  else await driver.executeQuery(CONNECT_AUTHOR_COLLECTION, parameters);
 }
 
 // Pull the to-one Author / SharedCollection connect identifiers out of a
