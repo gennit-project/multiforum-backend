@@ -66,7 +66,8 @@ export const FINDREQUESTED_SELECTION = `{
         reviewRequestedAt reviewRequestReason reviewRequestedByUsername
       }`;
 // Fixed generated-operation projections; nullable selected keys are present.
-export type DownloadPreparationRow = Required<Pick<DownloadableFile, "id" | "url" | "storageBucket" | "storageObjectName" | "scanStatus" | "scanReason" | "scanCheckedAt" | "uploadedByUsername">> & {
+export type DownloadPreparationRow = Required<Pick<DownloadableFile, "id" | "url" | "storageBucket" | "storageObjectName" | "scanStatus" | "scanReason" | "uploadedByUsername">> & {
+  scanCheckedAt: string | null;
   Discussion: { id: string; hasSensitiveContent: boolean | null; Author: { username: string } | null } | null;
 };
 export type DownloadReleaseRow = Required<Pick<DownloadableFile, "id" | "scanStatus">>;

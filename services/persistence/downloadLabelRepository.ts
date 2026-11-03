@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { Discussion, DiscussionChannel, FilterOption, DiscussionChannelUpdateInput } from "../../ogm_types.js";
+import type { DiscussionChannelUpdateInput, FilterSelection } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const FINDDISCUSSION_SELECTION = `{
         id
@@ -56,33 +56,40 @@ export const CREATEMODERATIONACTION_SELECTION = `{ moderationActions {
   actionDescription
   createdAt
 } }`;
+// Successful generated-operation results contain every selected key; only
+// nullable schema values/relationships can be null.
+export type DownloadLabelDiscussion = {id: string; title: string; Author: {username: string} | null};
+export type DownloadLabelSummary = {id: string; value: string; displayName: string};
+export type DownloadLabelChannel = {id: string; LabelOptions: DownloadLabelSummary[]};
+export type DownloadLabelOption = DownloadLabelSummary & {group: {id: string; key: string; displayName: string; uploadSelection: FilterSelection} | null};
+export type DownloadLabelResult = {id: string; LabelOptions: Array<DownloadLabelSummary & {order: number; group: {id: string; key: string; displayName: string} | null}>};
 export interface DownloadLabelRepository {
- findDiscussion(id: string): Promise<Discussion[]>;
- findChannel(discussionId: string, channelUniqueName: string): Promise<DiscussionChannel[]>;
- findOptions(ids: string[]): Promise<FilterOption[]>;
- updateLabels(id: string, update: DiscussionChannelUpdateInput): Promise<{discussionChannels: DiscussionChannel[]}>;
+ findDiscussion(id: string): Promise<DownloadLabelDiscussion[]>;
+ findChannel(discussionId: string, channelUniqueName: string): Promise<DownloadLabelChannel[]>;
+ findOptions(ids: string[]): Promise<DownloadLabelOption[]>;
+ updateLabels(id: string, update: DiscussionChannelUpdateInput): Promise<{discussionChannels: DownloadLabelResult[]}>;
  createHistory(input: Array<Record<string, unknown>>): Promise<void>;
  createModerationAction(input: Array<Record<string, unknown>>): Promise<void>;
 }
 export function createDownloadLabelRepository(driver: Driver): DownloadLabelRepository {
  return {
     async findDiscussion(id) {
-      const result = await executeGeneratedOperation<{discussions:Discussion[]}>(driver,
+      const result = await executeGeneratedOperation<{discussions:DownloadLabelDiscussion[]}>(driver,
         `query DownloadLabels_findDiscussion($where: DiscussionWhere) { discussions(where: $where) ${FINDDISCUSSION_SELECTION} }`, {where:{id:{eq:id}}});
       return result.discussions;
     },
     async findChannel(discussionId, channelUniqueName) {
-      const result = await executeGeneratedOperation<{discussionChannels:DiscussionChannel[]}>(driver,
+      const result = await executeGeneratedOperation<{discussionChannels:DownloadLabelChannel[]}>(driver,
         `query DownloadLabels_findChannel($where: DiscussionChannelWhere) { discussionChannels(where: $where) ${FINDCHANNEL_SELECTION} }`, {where:{discussionId:{eq:discussionId}, channelUniqueName:{eq:channelUniqueName}}});
       return result.discussionChannels;
     },
     async findOptions(ids) {
-      const result = await executeGeneratedOperation<{filterOptions:FilterOption[]}>(driver,
+      const result = await executeGeneratedOperation<{filterOptions:DownloadLabelOption[]}>(driver,
         `query DownloadLabels_findOptions($where: FilterOptionWhere) { filterOptions(where: $where) ${FINDOPTIONS_SELECTION} }`, {where:{id:{in:ids}}});
       return result.filterOptions;
     },
     async updateLabels(id, update) {
-      const result = await executeGeneratedOperation<{updateDiscussionChannels:{discussionChannels:DiscussionChannel[]}}>(driver,
+      const result = await executeGeneratedOperation<{updateDiscussionChannels:{discussionChannels:DownloadLabelResult[]}}>(driver,
         `mutation DownloadLabels_updateLabels($where: DiscussionChannelWhere, $update: DiscussionChannelUpdateInput) { updateDiscussionChannels(where: $where, update: $update) ${UPDATELABELS_SELECTION} }`, {where:{id:{eq:id}}, update});
       return result.updateDiscussionChannels;
     },

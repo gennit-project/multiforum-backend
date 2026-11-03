@@ -254,9 +254,8 @@
     },
     {
       "field": "Mutation.prepareDownload",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "ready",
         "url",
         "scanStatus",
@@ -265,12 +264,17 @@
         "reviewAccess",
         "message"
       ],
+      "residualPaths": [],
       "evidence": [
+        "customResolvers/contracts/downloadActions.ts",
+        "tests/contracts/downloadActions.typecheck.ts",
+        "tests/integration/downloadActionResponseContracts.test.ts",
         "customResolvers/mutations/prepareDownload.ts",
-        "services/persistence/downloadReviewRepository.ts"
+        "services/persistence/downloadReviewRepository.ts",
+        "tests/integration/downloadReviewRepository.test.ts"
       ],
-      "reason": "File preparation projection is now exact; remaining triggerRuns cast and scanStatus string passthrough differ from enum output. Storage URL creation is an external boundary.",
-      "decision": "Check selected Boolean/string/null response fields and characterize enum coercion, stale/held scan and mocked signing through GraphQL; do not eagerly reject status before selection."
+      "reason": "Explicit generated response projection checks every assembled field. The exact generated-operation preparation read validates scanStatus enum and serialized nullable DateTime; malformed persisted enum fails before permission, scanning or signing. The trigger dependency now uses a precise consumed result without a cast. Real-schema tests cover stale and held scans, missing/inaccessible targets, scanner/read/sign/track errors and result ordering with mocked providers.",
+      "decision": "Preserve public schema and behavior. All response paths selected; provider internals and independent scan pipeline side effects are outside this response contract. Signing is mocked and external HTTP prohibited in tests."
     },
     {
       "field": "Mutation.refreshPlugins",
@@ -625,17 +629,68 @@
     },
     {
       "field": "Mutation.updateDownloadLabels",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "LabelOptions.id",
+        "LabelOptions.value",
+        "LabelOptions.displayName",
+        "LabelOptions.order",
+        "LabelOptions.group.id",
+        "LabelOptions.group.key",
+        "LabelOptions.group.displayName"
+      ],
       "residualPaths": [
-        "DiscussionChannel.*"
+        "Answers",
+        "AnswersConnection",
+        "Channel",
+        "ChannelConnection",
+        "Comments",
+        "CommentsConnection",
+        "Discussion",
+        "DiscussionConnection",
+        "Flairs",
+        "FlairsConnection",
+        "LabelChangeHistory",
+        "LabelChangeHistoryConnection",
+        "LabelOptionsConnection",
+        "RelatedIssues",
+        "RelatedIssuesConnection",
+        "SubscribedToNotifications",
+        "SubscribedToNotificationsConnection",
+        "SuperUpvotedByUsers",
+        "SuperUpvotedByUsersConnection",
+        "UpvotedByUsers",
+        "UpvotedByUsersConnection",
+        "answered",
+        "archived",
+        "botMentions",
+        "channelUniqueName",
+        "createdAt",
+        "detailAnswersPageInfo",
+        "discussionId",
+        "emoji",
+        "locked",
+        "weightedVotesCount",
+        "LabelOptions.groupConnection",
+        "LabelOptions.group.channel",
+        "LabelOptions.group.channelConnection",
+        "LabelOptions.group.mode",
+        "LabelOptions.group.options",
+        "LabelOptions.group.optionsConnection",
+        "LabelOptions.group.order",
+        "LabelOptions.group.uploadSelection"
       ],
       "evidence": [
+        "customResolvers/contracts/downloadActions.ts",
+        "tests/contracts/downloadActions.typecheck.ts",
+        "tests/integration/downloadActionResponseContracts.test.ts",
         "customResolvers/mutations/updateDownloadLabels.ts",
-        "services/persistence/downloadLabelRepository.ts"
+        "services/persistence/downloadLabelRepository.ts",
+        "tests/integration/downloadLabelRepository.test.ts"
       ],
-      "reason": "Label snapshots are asserted and returned updatedDiscussionChannel comes from generated narrow selection typed as full entity; history writes use separate operations.",
-      "decision": "Narrow label and result projections; test selected scalar/list responses and committed-update/history-failure sequence."
+      "reason": "Exact generated-operation validation and update projections replace full entity types and remove the selected-label cast. Real-schema tests cover nested and empty label responses, nullable groups, repeats, authorization and selection rejection before writes, swallowed history failure after committed update, and selected-field projection failure after committed update.",
+      "decision": "Preserve schema, permissions and write ordering. Remaining DiscussionChannel and nested FilterOption/FilterGroup paths are not returned by this selection and need independent completion evidence; do not certify them from the full schema model. Existing raw history/moderation-action input adapters are unchanged and not certified by this response boundary."
     },
     {
       "field": "Mutation.updateDownloadableFileSupportSettings",

@@ -1,3 +1,4 @@
+import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
 import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
 import type { PluginPolicyDomainMutationResolvers } from "./contracts/pluginPolicies.js";
 import type { PluginInstallationMutationResolvers } from "./contracts/pluginInstallation.js";
@@ -418,6 +419,16 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     rerunPluginPipeline: rerunPluginPipeline({}),
   } satisfies PluginExecutionMutationResolvers;
 
+  const downloadActionResolvers = {
+    prepareDownload: prepareDownload({
+      agePolicyRepository: instancePolicyRepository,
+      driver
+    }),
+    updateDownloadLabels: updateDownloadLabels({
+      driver,
+    }),
+  } satisfies DownloadActionMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -529,10 +540,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     ...pluginResolvers,
-    prepareDownload: prepareDownload({
-      agePolicyRepository: instancePolicyRepository,
-      driver
-    }),
+    ...downloadActionResolvers,
     createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
       driver
     }),
@@ -543,9 +551,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       driver
-    }),
-    updateDownloadLabels: updateDownloadLabels({
-      driver,
     }),
     createScratchpadEntry: createScratchpadEntry({
       scratchpadRepository: createScratchpadRepository(driver),

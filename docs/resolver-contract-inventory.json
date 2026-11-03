@@ -343,7 +343,7 @@
     },
     {
       "field": "Mutation.prepareDownload",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.refreshPlugins",
@@ -603,7 +603,7 @@
     },
     {
       "field": "Mutation.updateDownloadLabels",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updateDownloadableFileSupportSettings",

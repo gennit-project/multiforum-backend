@@ -1,3 +1,4 @@
+import type { PreparedDownload } from "../contracts/downloadActions.js";
 import { createDownloadReviewRepository, type DownloadReviewRepository, type DownloadPreparationRow } from "../../services/persistence/downloadReviewRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
@@ -23,6 +24,8 @@ type PluginRunRecord = {
   pluginId?: string | null;
   status?: string | null;
 };
+
+type ScanTrigger = (...args: Parameters<typeof triggerPluginRunsForDownloadableFile>) => Promise<PluginRunRecord[]>;
 
 type TrackDownloadResolver = ReturnType<typeof trackDownload>;
 
@@ -71,7 +74,7 @@ const selectFile = async (
 
 export const createPrepareDownloadResolver = (
   input: Input,
-  triggerRuns: typeof triggerPluginRunsForDownloadableFile =
+  triggerRuns: ScanTrigger =
     triggerPluginRunsForDownloadableFile,
   checkServerModPermission: typeof hasServerModPermission =
     hasServerModPermission,
@@ -95,7 +98,7 @@ export const createPrepareDownloadResolver = (
       driver: input.driver,
       downloadableFileId,
       event: "downloadableFile.downloaded",
-    }) as Promise<PluginRunRecord[]>).finally(() => {
+    })).finally(() => {
       inFlightScans.delete(downloadableFileId);
     });
     inFlightScans.set(downloadableFileId, scan);
@@ -109,7 +112,7 @@ export const createPrepareDownloadResolver = (
       discussionId,
     }: { downloadableFileId: string; discussionId: string },
     context: GraphQLContext
-  ) => {
+  ): Promise<PreparedDownload> => {
     if (!downloadableFileId) throw new Error("Downloadable file ID is required");
     if (!discussionId) throw new Error("Discussion ID is required");
 
