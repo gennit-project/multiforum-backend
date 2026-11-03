@@ -1,3 +1,5 @@
+import type { GraphQLResolveInfo } from "graphql";
+
 /**
  * Creates a field resolver that ensures array fields return [] instead of null.
  *
@@ -11,8 +13,12 @@
  * @returns A resolver function that returns the field value or an empty array
  */
 export default function emptyArrayFallback(fieldName: string) {
-  return (parent: Record<string, unknown> | null | undefined) => {
-    const value = parent?.[fieldName];
+  return (parent: Record<string, unknown> | null | undefined, _args?: unknown, _context?: unknown, info?: GraphQLResolveInfo) => {
+    // Generated projections use response keys; owned Cypher uses schema names.
+    const responseKey = info?.path.key;
+    const value = typeof responseKey === "string" && parent && Object.prototype.hasOwnProperty.call(parent, responseKey)
+      ? parent[responseKey]
+      : parent?.[fieldName];
 
     // If the value is an array (even empty), return it directly
     // This ensures pre-populated data from Cypher queries is used
