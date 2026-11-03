@@ -226,3 +226,25 @@ The example manifest is at `examples/plugin-configuration.json`. Machine
 identities are intentionally narrower than `canManagePlugins`: even a valid
 allowlisted service token is accepted only by the two reconciliation
 operations.
+
+### Regression checks
+
+`node --import tsx --test tests/pluginConfigurationContracts.test.ts` validates
+both the documents and representative variables emitted by mfctl and the plugin
+configuration write repository against the generated public schema, without a
+backend. Negative cases cover v7 top-level relationship arguments, scalar filter
+shorthand and raw list updates.
+
+With Docker running, use
+`node --import tsx --test tests/integration/pluginConfigurationReconciliation.test.ts`
+to exercise the rendered production template through mfctl, the permissioned
+schema and disposable Neo4j. Registry downloads and manifests are deterministic
+fixtures; installation, encryption, enablement, pipelines and reconciliation use
+real resolvers and repositories. The suite verifies plan, apply, persisted state,
+repeat apply, and channel disable isolation. Repeat CLI applies intentionally
+refresh supplied secrets; configuration operations must not recur. This tests an
+already authenticated automation context, not OIDC token verification or live
+plugin services.
+
+Both files are discovered by the existing unit and integration CI jobs. Run
+`pnpm run codegen` before tests in a fresh checkout and `pnpm run tsc` after edits.

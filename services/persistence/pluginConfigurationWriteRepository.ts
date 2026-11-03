@@ -47,22 +47,32 @@ export const createPluginConfigurationWriteRepository = (
   },
   async configureChannelPlugin(input) {
     const where = pluginVersionWhere(input.pluginId, input.version)
-    const enabledPlugins = input.enabled
-      ? [{
-          connect: [{
+    const channelWhere = { uniqueName: { eq: input.channelUniqueName } }
+    const settingsJson = input.enabled && input.settingsJson !== undefined
+      ? JSON.stringify(input.settingsJson)
+      : undefined
+    if (input.enabled) {
+      // v7 connect uses CREATE, not MERGE. Connect only when this channel does
+      // not already have the requested version, then update its edge in place.
+      await execute(driver, CONFIGURE_CHANNEL_PLUGIN, {
+        where: { ...channelWhere, EnabledPlugins: { none: where.node } },
+        update: { EnabledPlugins: [{ connect: [{ where, edge: { enabled: true, ...(settingsJson === undefined ? {} : { settingsJson }) } }] }] },
+      })
+    }
+    await execute(driver, CONFIGURE_CHANNEL_PLUGIN, {
+      where: channelWhere,
+      update: { EnabledPlugins: input.enabled
+        ? [{ update: {
             where,
             edge: {
-              enabled: true,
-              ...(input.settingsJson === undefined
+              enabled: { set: true },
+              ...(settingsJson === undefined
                 ? {}
-                : { settingsJson: JSON.stringify(input.settingsJson) }),
+                : { settingsJson: { set: settingsJson } }),
             },
-          }],
-        }]
-      : [{ disconnect: [{ where }] }]
-    await execute(driver, CONFIGURE_CHANNEL_PLUGIN, {
-      where: { uniqueName: { eq: input.channelUniqueName } },
-      update: { EnabledPlugins: enabledPlugins },
+          } }]
+        : [{ disconnect: [{ where }] }],
+      },
     })
   },
 })
