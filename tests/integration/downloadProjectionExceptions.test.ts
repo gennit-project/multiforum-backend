@@ -7,7 +7,7 @@ import getStoredUploadDeleteResolver from '../../customResolvers/mutations/perma
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {mockToken,modContext,resetDb,run,startImageModEnv,stopImageModEnv,type ImageModEnv} from './imageModerationHarness.js';
 
-// Exception witnesses: real resolver, executable application schema and disposable
+// Regression witnesses fixed by #440: real resolver, executable application schema and disposable
 // database; only the external object deletion is replaced with a local seam.
 let env:ImageModEnv,schema:GraphQLSchema,deletedObjects:string[]=[];
 before(async()=>{
@@ -23,8 +23,8 @@ async function assertCreatedAndClaimed(){const rows=await run("MATCH(f:Downloada
 test('upload selected file response succeeds and claims audit metadata',async()=>{
  const result=await execute(create('downloadableFiles{id fileName kind createdAt priceModel}'));assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.ok(result.data);await assertCreatedAndClaimed();
 });
-test('upload missing non-null info fails GraphQL completion after file and audit claim commit',async()=>{
- const result=await execute(create('downloadableFiles{id} info{nodesCreated}'));assert.equal(result.data,null);assert.match(result.errors?.[0].message??'',/Cannot return null for non-nullable field CreateDownloadableFilesMutationResponse.info/);assert.deepEqual(result.errors?.[0].path,['createDownloadableFiles','info']);await assertCreatedAndClaimed();
+test('upload returns actual creation info after file and audit claim commit',async()=>{
+ const result=await execute(create('downloadableFiles{id} info{nodesCreated relationshipsCreated}'));assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(JSON.parse(JSON.stringify(result.data)).createDownloadableFiles.info,{nodesCreated:1,relationshipsCreated:0});await assertCreatedAndClaimed();
 });
 async function seedFile(){await run("CREATE(:DownloadableFile{id:'file',fileName:'file.zip',kind:'ZIP',url:'https://example.invalid/file.zip',storageBucket:'fixture',storageObjectName:'uploads/alice/file.zip',uploadedByUsername:'alice',createdAt:datetime('2026-01-01T00:00:00Z'),priceModel:'FREE'})");}
 async function assertDeleted(){assert.deepEqual(deletedObjects,['uploads/alice/file.zip']);const rows=await run("MATCH(f:DownloadableFile{id:'file'}) RETURN f.permanentlyRemoved AS removed,f.permanentlyRemovedByUsername AS actor");assert.deepEqual(rows,[{removed:true,actor:'alice'}]);}
@@ -32,7 +32,20 @@ test('permanent deletion selected removal response succeeds after local storage 
  await seedFile();const result=await execute('mutation{permanentlyDeleteDownloadableFile(downloadableFileId:"file"){id fileName kind permanentlyRemoved permanentlyRemovedAt}}');assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.ok(result.data);await assertDeleted();
 });
 for(const field of ['createdAt','priceModel']){
- test(`permanent deletion omits existing non-null ${field} from response after committing deletion`,async()=>{
-  await seedFile();const result=await execute(`mutation{permanentlyDeleteDownloadableFile(downloadableFileId:"file"){id ${field}}}`);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{permanentlyDeleteDownloadableFile:null});assert.match(result.errors?.[0].message??'',new RegExp(`Cannot return null for non-nullable field DownloadableFile.${field}`));assert.deepEqual(result.errors?.[0].path,['permanentlyDeleteDownloadableFile',field]);await assertDeleted();
+ test(`permanent deletion returns existing non-null ${field} after committing deletion`,async()=>{
+  await seedFile();const result=await execute(`mutation{permanentlyDeleteDownloadableFile(downloadableFileId:"file"){id ${field}}}`);assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.equal(JSON.parse(JSON.stringify(result.data)).permanentlyDeleteDownloadableFile[field],field==='priceModel'?'FREE':'2026-01-01T00:00:00.000Z');await assertDeleted();
  });
 }
+
+test('removal boundary preserves late errors for unselected malformed persisted fields',async()=>{
+ await seedFile();await run("MATCH(f:DownloadableFile{id:'file'}) SET f.fileName=['malformed']");
+ const result=await execute('mutation{permanentlyDeleteDownloadableFile(downloadableFileId:"file"){id permanentlyRemoved permanentlyRemovedAt permanentlyRemovedByUsername permanentlyRemovedByModName}}');
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const removed=JSON.parse(JSON.stringify(result.data)).permanentlyDeleteDownloadableFile;
+ assert.equal(removed.id,'file');assert.equal(removed.permanentlyRemoved,true);assert.equal(removed.permanentlyRemovedByUsername,'alice');assert.equal(removed.permanentlyRemovedByModName,null);assert.ok(Number.isFinite(Date.parse(removed.permanentlyRemovedAt)));await assertDeleted();
+});
+test('selecting a malformed persisted field still fails after removal has committed',async()=>{
+ await seedFile();await run("MATCH(f:DownloadableFile{id:'file'}) SET f.fileName=['malformed']");
+ const result=await execute('mutation{permanentlyDeleteDownloadableFile(downloadableFileId:"file"){id fileName}}');
+ assert.deepEqual(result.errors?.[0].path,['permanentlyDeleteDownloadableFile','fileName']);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{permanentlyDeleteDownloadableFile:null});await assertDeleted();
+});

@@ -2,6 +2,7 @@ import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
 import type {
+  CreateInfo,
   DownloadableFile,
   DownloadableFileCreateInput,
 } from "../../ogm_types.js";
@@ -56,7 +57,7 @@ const createDownloadableFiles = async ({
 }: {
   driver: Driver;
   inputs: DownloadableFileCreateInput[];
-}): Promise<CreatedDownloadableFile[]> => {
+}): Promise<{ downloadableFiles: CreatedDownloadableFile[]; info: CreateInfo }> => {
   const session = driver.session({ defaultAccessMode: "WRITE" });
   const persistenceInputs = inputs.map((input) => ({
     fileName: input.fileName,
@@ -160,9 +161,15 @@ const createDownloadableFiles = async ({
       )
     );
 
-    return result.records.map(
-      (record) => record.get("file") as CreatedDownloadableFile
-    );
+    const { nodesCreated, relationshipsCreated } = result.summary.counters.updates();
+    return {
+      downloadableFiles: result.records.map(
+        (record) => record.get("file") as CreatedDownloadableFile
+      ),
+      // Use the committed create query's counters, as the generated mutation
+      // does. Claiming an existing upload audit creates no nodes/relationships.
+      info: { nodesCreated, relationshipsCreated },
+    };
   } finally {
     await session.close();
   }
@@ -213,7 +220,7 @@ const createDownloadableFilesWithUploadMetadata = ({ driver }: Input) => {
     });
 
     try {
-      const downloadableFiles = await createDownloadableFiles({
+      const { downloadableFiles, info } = await createDownloadableFiles({
         driver,
         inputs: sanitizedInputs as DownloadableFileCreateInput[],
       });
@@ -235,7 +242,7 @@ const createDownloadableFilesWithUploadMetadata = ({ driver }: Input) => {
         })
       );
 
-      return { downloadableFiles };
+      return { downloadableFiles, info };
     } catch (error: unknown) {
       logger.error("Error creating downloadable files:", error);
       const message = error instanceof Error ? error.message : String(error);

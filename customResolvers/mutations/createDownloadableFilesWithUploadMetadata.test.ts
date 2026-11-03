@@ -55,6 +55,7 @@ const buildDriver = ({
             };
 
             return {
+              summary: { counters: { updates: () => ({ nodesCreated: 1, relationshipsCreated: 0 }) } },
               records: [
                 {
                   get: (key: string) => (key === "file" ? file : undefined),
