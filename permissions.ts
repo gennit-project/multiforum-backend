@@ -397,6 +397,10 @@ const permissionRules: IRules = {
       // identity-bearing edge does not silently inherit an allow wildcard.
       createdAt: allow,
       displayName: allow,
+      // Bots are not pseudonymous, so their real user is public. BotUser resolves
+      // to the account only when it is a bot (null for humans), so this never
+      // reopens the forbidden mod -> user identity edge for a human moderator.
+      BotUser: allow,
       AuthoredIssues: allow,
       AuthoredComments: allow,
       ModChannelRoles: allow,
