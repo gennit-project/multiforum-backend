@@ -123,19 +123,19 @@
     },
     {
       "field": "Mutation.acceptForumModInvite",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.acceptForumOwnerInvite",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.acceptServerAdminInvite",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.acceptServerModInvite",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.addEmojiToComment",
@@ -155,7 +155,7 @@
     },
     {
       "field": "Mutation.addToCollection",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.applyPluginConfiguration",
@@ -179,23 +179,23 @@
     },
     {
       "field": "Mutation.becomeForumAdmin",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.cancelInviteForumMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.cancelInviteForumOwner",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.cancelInviteServerAdmin",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.cancelInviteServerMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.clearDownloadableFileScan",
@@ -215,7 +215,7 @@
     },
     {
       "field": "Mutation.createEmailAndUser",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createEventSeriesWithChannelConnections",
@@ -263,7 +263,7 @@
     },
     {
       "field": "Mutation.deleteScratchpadEntry",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteWikiRevision",
@@ -271,7 +271,7 @@
     },
     {
       "field": "Mutation.dropDataForCypressTests",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.enableServerPlugin",
@@ -283,19 +283,19 @@
     },
     {
       "field": "Mutation.inviteForumMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.inviteForumOwner",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.inviteServerAdmin",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.inviteServerMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.lockChannel",
@@ -359,15 +359,15 @@
     },
     {
       "field": "Mutation.removeForumMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeForumOwner",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeFromCollection",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeImageFromAlbum",
@@ -375,7 +375,7 @@
     },
     {
       "field": "Mutation.reorderCollectionItem",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.reportChannel",
@@ -427,11 +427,11 @@
     },
     {
       "field": "Mutation.seedDataForCypressTests",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.sendBugReport",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setChannelDiscussionFlairConfig",
@@ -439,7 +439,7 @@
     },
     {
       "field": "Mutation.setChannelIcon",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setFeaturedWikiPages",
@@ -451,11 +451,11 @@
     },
     {
       "field": "Mutation.setProfileImage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setRankingSettings",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setServerPluginSecret",
@@ -623,7 +623,7 @@
     },
     {
       "field": "Mutation.updateScratchpadEntryVisibility",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.upvoteComment",
@@ -639,7 +639,7 @@
     },
     {
       "field": "Query.getAgePolicy",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getApplicablePluginPipeline",
@@ -703,7 +703,7 @@
     },
     {
       "field": "Query.getInstanceSetupStatus",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getInternalPluginPipelineRun",
@@ -719,7 +719,7 @@
     },
     {
       "field": "Query.getOwnEmail",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPipelineRunPage",
@@ -759,7 +759,7 @@
     },
     {
       "field": "Query.getRankingSettings",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getServerHealthDashboard",
@@ -815,7 +815,7 @@
     },
     {
       "field": "Query.publicCollectionsContaining",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.safetyCheck",

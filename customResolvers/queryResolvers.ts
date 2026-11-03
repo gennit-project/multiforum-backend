@@ -1,3 +1,5 @@
+import type { AccountCollectionQueryResolvers } from "./contracts/accounts.js";
+import type { AccountQueryResolvers } from "./contracts/accounts.js";
 import type { PluginQueryResolvers } from "./contracts/plugins.js";
 import { createPipelineSummaryPage, createPipelineRunPage } from './queries/getPluginPipelinePage.js'
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
@@ -76,19 +78,34 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginQueryResolvers;
 
+  const accountResolvers = {
+    getRankingSettings: getRankingSettings({
+      driver,
+    }),
+    getInstanceSetupStatus: getInstanceSetupStatus({
+      instancePolicyRepository,
+    }),
+    getOwnEmail: getOwnEmail({
+      accountRegistrationRepository: createAccountRegistrationRepository(driver)
+    }),
+    getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountQueryResolvers;
+
+  const collectionResolvers = {
+    publicCollectionsContaining: publicCollectionsContaining({
+      driver,
+      agePolicyRepository: instancePolicyRepository
+    }),
+  } satisfies AccountCollectionQueryResolvers;
+
   return {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    getRankingSettings: getRankingSettings({
-      driver,
-    }),
+    ...accountResolvers,
     getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
       driver,
-    }),
-    getInstanceSetupStatus: getInstanceSetupStatus({
-      instancePolicyRepository,
     }),
     getSiteWideIssueList: getSiteWideIssueList({
       driver,
@@ -179,14 +196,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
       driver,
     }),
-    publicCollectionsContaining: publicCollectionsContaining({
-      driver,
-      agePolicyRepository: instancePolicyRepository
-    }),
-    getOwnEmail: getOwnEmail({
-      accountRegistrationRepository: createAccountRegistrationRepository(driver)
-    }),
-    getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
+    ...collectionResolvers,
     getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
     getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({

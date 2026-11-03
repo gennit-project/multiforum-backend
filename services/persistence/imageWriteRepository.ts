@@ -1,3 +1,4 @@
+import type { ProfileImageProjection, ChannelIconProjection } from "../../customResolvers/contracts/accountProjections.js";
 import neo4j, { type Driver } from "neo4j-driver";
 import type { Image, UserUpdateInput, ChannelUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
@@ -68,8 +69,8 @@ export interface ImageCreationRepository {
   findUploader(username: string): Promise<Array<{username: string}>>;
   createImage(input: ImageCreateLike): Promise<{images: Image[]}>;
 }
-export interface ProfileImageRepository {setProfileImage(username: string, update: UserUpdateInput): Promise<{users: Array<Record<string, unknown>>}>;}
-export interface ChannelIconRepository {setChannelIcon(uniqueName: string, update: ChannelUpdateInput): Promise<{channels: Array<Record<string, unknown>>}>;}
+export interface ProfileImageRepository {setProfileImage(username: string, update: UserUpdateInput): Promise<{users: ProfileImageProjection[]}>;}
+export interface ChannelIconRepository {setChannelIcon(uniqueName: string, update: ChannelUpdateInput): Promise<{channels: ChannelIconProjection[]}>;}
 const UPLOADER = `query ImageUploader($where: UserWhere) {users(where: $where) {username}}`;
 const PROFILE = `mutation SetUploadedProfileImage($where: UserWhere, $update: UserUpdateInput) {updateUsers(where: $where, update: $update) {users ${PROFILE_IMAGE_SELECTION}}}`;
 const ICON = `mutation SetUploadedChannelIcon($where: ChannelWhere, $update: ChannelUpdateInput) {updateChannels(where: $where, update: $update) {channels ${CHANNEL_ICON_SELECTION}}}`;
@@ -156,8 +157,8 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
  };
 }
 export function createProfileImageRepository(driver: Driver): ProfileImageRepository {
- return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:Array<Record<string,unknown>>}}>(driver,PROFILE,{where:{username:{eq:username}},update})).updateUsers;}};
+ return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:ProfileImageProjection[]}}>(driver,PROFILE,{where:{username:{eq:username}},update})).updateUsers;}};
 }
 export function createChannelIconRepository(driver: Driver): ChannelIconRepository {
- return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:Array<Record<string,unknown>>}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update})).updateChannels;}};
+ return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:ChannelIconProjection[]}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update})).updateChannels;}};
 }

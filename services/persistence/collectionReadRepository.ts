@@ -1,3 +1,4 @@
+import type { ProfileCollectionProjection, PublicCollectionProjection } from "../../customResolvers/contracts/accountProjections.js";
 import type { Driver } from "neo4j-driver";
 import type { CollectionSort, CollectionWhere } from "../../src/generated/graphql.js";
 
@@ -16,8 +17,8 @@ export type CollectionShareSnapshot = {
   CreatedBy?: { username?: string | null } | null;
 };
 export interface CollectionReadRepository {
-  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions): Promise<Record<string, unknown>[]>;
-  findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<Record<string, unknown>[]>;
+  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions): Promise<ProfileCollectionProjection[]>;
+  findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<PublicCollectionProjection[]>;
   findOwnedShareTarget(id: string, username: string): Promise<CollectionShareSnapshot[]>;
   findShareChannel(uniqueName: string): Promise<Array<{ uniqueName: string }>>;
 }
@@ -147,7 +148,7 @@ const SHARE_CHANNEL = `query CollectionShareChannel($where: ChannelWhere) {
 export function createCollectionReadRepository(driver: Driver): CollectionReadRepository {
   return {
     async findProfileCollections(where, options) {
-      const result = await executeGeneratedOperation<{collections: Record<string, unknown>[]}>(driver,
+      const result = await executeGeneratedOperation<{collections: ProfileCollectionProjection[]}>(driver,
         PROFILE_COLLECTIONS, { where, ...options });
       return result.collections;
     },
@@ -155,7 +156,7 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
       // The caller has already resolved age-gate eligibility; convey it as the
       // jwt so the generated schema's @authorization sensitive-content filters
       // agree (otherwise an eligible viewer's sensitive rows are excluded).
-      const result = await executeGeneratedOperation<{collections: Record<string, unknown>[]}>(driver,
+      const result = await executeGeneratedOperation<{collections: PublicCollectionProjection[]}>(driver,
         PUBLIC_COLLECTIONS[canViewSensitiveContent ? 1 : 0], { where }, undefined,
         { mayAccessSensitiveContent: canViewSensitiveContent });
       return result.collections;

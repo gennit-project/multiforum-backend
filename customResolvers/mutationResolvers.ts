@@ -1,3 +1,5 @@
+import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
+import type { AccountScalarMutationResolvers } from "./contracts/accounts.js";
 import type { PluginMutationResolvers } from "./contracts/plugins.js";
 import type { ModerationMutationResolvers } from "./contracts/moderation.js";
 import type { ReactionMutationResolvers } from "./contracts/reactions.js";
@@ -259,6 +261,68 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginMutationResolvers;
 
+  const accountScalarResolvers = {
+    inviteForumOwner: inviteForumOwner({
+      driver
+    }),
+    cancelInviteForumOwner: cancelInviteOwner(),
+    removeForumOwner: removeForumOwner(),
+    acceptForumOwnerInvite: acceptForumOwnerInvite(),
+    becomeForumAdmin: becomeForumAdmin(),
+    inviteForumMod: inviteForumMod({
+      driver
+    }),
+    cancelInviteForumMod: cancelInviteForumMod(),
+    removeForumMod: removeForumMod(),
+    acceptForumModInvite: acceptForumModInvite(),
+    inviteServerAdmin: inviteServerAdmin({
+      driver
+    }),
+    cancelInviteServerAdmin: cancelInviteServerAdmin(),
+    acceptServerAdminInvite: acceptServerAdminInvite(),
+    inviteServerMod: inviteServerMod({
+      driver
+    }),
+    cancelInviteServerMod: cancelInviteServerMod(),
+    acceptServerModInvite: acceptServerModInvite(),
+    sendBugReport: sendBugReport(),
+    addToCollection: addToCollection({
+      driver
+    }),
+    removeFromCollection: removeFromCollection({
+      driver
+    }),
+    reorderCollectionItem: reorderCollectionItem({
+      driver
+    }),
+    deleteScratchpadEntry: deleteScratchpadEntry({
+      scratchpadRepository: createScratchpadRepository(driver),
+    }),
+  } satisfies AccountScalarMutationResolvers;
+
+  const accountObjectResolvers = {
+    setProfileImage: setProfileImage({
+      driver,
+    }),
+    setChannelIcon: setChannelIcon({
+      driver,
+    }),
+    createEmailAndUser: getCreateEmailAndUserResolver({
+      accountRegistrationRepository: createAccountRegistrationRepository(driver),
+      agePolicyRepository: instancePolicyRepository,
+    }),
+    dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
+    seedDataForCypressTests: seedDataForCypressTestsResolver({
+      driver,
+    }),
+    setRankingSettings: setRankingSettings({
+      driver,
+    }),
+    updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
+      scratchpadRepository: createScratchpadRepository(driver),
+    }),
+  } satisfies AccountObjectMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -297,45 +361,9 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...reactionResolvers,
     ...votingResolvers,
     createSignedStorageURL: createSignedStorageURL(),
-    setProfileImage: setProfileImage({
-      driver,
-    }),
-    setChannelIcon: setChannelIcon({
-      driver,
-    }),
-    createEmailAndUser: getCreateEmailAndUserResolver({
-      accountRegistrationRepository: createAccountRegistrationRepository(driver),
-      agePolicyRepository: instancePolicyRepository,
-    }),
+    ...accountObjectResolvers,
     setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
-    inviteForumOwner: inviteForumOwner({
-      driver
-    }),
-    cancelInviteForumOwner: cancelInviteOwner(),
-    removeForumOwner: removeForumOwner(),
-    acceptForumOwnerInvite: acceptForumOwnerInvite(),
-    becomeForumAdmin: becomeForumAdmin(),
-    inviteForumMod: inviteForumMod({
-      driver
-    }),
-    cancelInviteForumMod: cancelInviteForumMod(),
-    removeForumMod: removeForumMod(),
-    acceptForumModInvite: acceptForumModInvite(),
-    // Server admin/mod invite workflow
-    inviteServerAdmin: inviteServerAdmin({
-      driver
-    }),
-    cancelInviteServerAdmin: cancelInviteServerAdmin(),
-    acceptServerAdminInvite: acceptServerAdminInvite(),
-    inviteServerMod: inviteServerMod({
-      driver
-    }),
-    cancelInviteServerMod: cancelInviteServerMod(),
-    acceptServerModInvite: acceptServerModInvite(),
-    dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
-    seedDataForCypressTests: seedDataForCypressTestsResolver({
-      driver,
-    }),
+    ...accountScalarResolvers,
     reportComment: reportComment({
       driver
     }),
@@ -434,7 +462,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     ...subscriptionResolvers,
-    sendBugReport: sendBugReport(),
     refreshPlugins: refreshPlugins({
       driver
     }),
@@ -473,15 +500,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createImageWithUploader: createImageWithUploader({
       driver
     }),
-    addToCollection: addToCollection({
-      driver
-    }),
-    removeFromCollection: removeFromCollection({
-      driver
-    }),
-    reorderCollectionItem: reorderCollectionItem({
-      driver
-    }),
     addImageToAlbum: addImageToAlbum({
       driver
     }),
@@ -490,9 +508,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       driver
-    }),
-    setRankingSettings: setRankingSettings({
-      driver,
     }),
     updateDownloadLabels: updateDownloadLabels({
       driver,
@@ -503,12 +518,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     undoSuperUpvote: undoSuperUpvote({
       driver,
-    }),
-    updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
-      scratchpadRepository: createScratchpadRepository(driver),
-    }),
-    deleteScratchpadEntry: deleteScratchpadEntry({
-      scratchpadRepository: createScratchpadRepository(driver),
     }),
   };
 }

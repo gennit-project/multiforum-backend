@@ -4,7 +4,7 @@ type Username = {username:string};
 export type ScratchpadCommentSource = {id:string;UpvotedByUsers?:Username[];SuperUpvotedByUsers?:Username[];DiscussionChannel?:{discussionId?:string;channelUniqueName?:string}|null;CommentAuthor?:Username|Record<string,never>|null};
 export type ScratchpadDiscussionSource = {id:string;discussionId?:string;channelUniqueName?:string;UpvotedByUsers?:Username[];SuperUpvotedByUsers?:Username[];Discussion?:{Author?:Username|null}|null};
 export type ScratchpadOwnership = {id:string;Recipient?:Username|null};
-export type ScratchpadVisibility = ScratchpadOwnership & {isPublic:boolean;text:string;sourceType:string;sourceId:string;sourceChannelUniqueName?:string|null;discussionId?:string|null;createdAt:string;Author?:{username:string;displayName?:string|null;profilePicURL?:string|null}|null};
+export type ScratchpadVisibility = ScratchpadOwnership & {isPublic:boolean;text:string;sourceType:string;sourceId:string;sourceChannelUniqueName:string|null;discussionId:string|null;createdAt:string;Author?:{username:string;displayName?:string|null;profilePicURL?:string|null}|null};
 export interface ScratchpadRepository {
  findRecipient(username:string):Promise<Array<Username & {displayName?:string|null}>>;
  findCommentSource(id:string):Promise<ScratchpadCommentSource[]>;

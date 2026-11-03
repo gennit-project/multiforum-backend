@@ -1,3 +1,7 @@
+import { accountCollectionQueryNames } from "./accounts.js";
+import { accountQueryNames } from "./accounts.js";
+import { accountObjectMutationNames } from "./accounts.js";
+import { accountScalarMutationNames } from "./accounts.js";
 import { pluginQueryNames } from "./plugins.js";
 import { pluginMutationNames } from "./plugins.js";
 import { moderationMutationNames } from "./moderation.js";
@@ -13,6 +17,10 @@ export const checkedRootGroups = [
   ["Mutation", "moderationResolvers", "ModerationMutationResolvers", moderationMutationNames],
   ["Mutation", "pluginResolvers", "PluginMutationResolvers", pluginMutationNames],
   ["Query", "pluginResolvers", "PluginQueryResolvers", pluginQueryNames],
+  ["Mutation", "accountScalarResolvers", "AccountScalarMutationResolvers", accountScalarMutationNames],
+  ["Mutation", "accountObjectResolvers", "AccountObjectMutationResolvers", accountObjectMutationNames],
+  ["Query", "accountResolvers", "AccountQueryResolvers", accountQueryNames],
+  ["Query", "collectionResolvers", "AccountCollectionQueryResolvers", accountCollectionQueryNames],
 ] as const;
 export const checkedTypeFieldGroups: readonly (readonly [string, string])[] = [];
 export const checkedTypeFieldNames: readonly string[] = [];
