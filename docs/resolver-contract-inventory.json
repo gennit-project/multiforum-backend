@@ -307,7 +307,7 @@
     },
     {
       "field": "Mutation.lockWikiPage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.pausePluginPipelineCampaign",
@@ -339,7 +339,7 @@
     },
     {
       "field": "Mutation.pinWikiPageToChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.prepareDownload",
@@ -443,7 +443,7 @@
     },
     {
       "field": "Mutation.setFeaturedWikiPages",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setMyBirthday",
@@ -471,7 +471,7 @@
     },
     {
       "field": "Mutation.softDeleteComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.startPluginPipeline",
@@ -479,7 +479,7 @@
     },
     {
       "field": "Mutation.stickyComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.subscribeToComment",
@@ -555,15 +555,15 @@
     },
     {
       "field": "Mutation.unlockWikiPage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unpinWikiPageFromChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unstickyComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsubscribeFromComment",

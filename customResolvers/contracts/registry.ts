@@ -1,3 +1,4 @@
+import { moderationMutationNames } from "./moderation.js";
 import { votingMutationNames } from "./voting.js";
 import { subscriptionMutationNames } from "./subscriptions.js";
 import { reactionMutationNames } from "./reactions.js";
@@ -7,6 +8,7 @@ export const checkedRootGroups = [
   ["Mutation", "votingResolvers", "VotingMutationResolvers", votingMutationNames],
   ["Mutation", "subscriptionResolvers", "SubscriptionMutationResolvers", subscriptionMutationNames],
   ["Mutation", "reactionResolvers", "ReactionMutationResolvers", reactionMutationNames],
+  ["Mutation", "moderationResolvers", "ModerationMutationResolvers", moderationMutationNames],
 ] as const;
 export const checkedTypeFieldGroups: readonly (readonly [string, string])[] = [];
 export const checkedTypeFieldNames: readonly string[] = [];

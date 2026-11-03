@@ -23,6 +23,7 @@ const DISCONNECT_AUTHOR = `
 
 type Args = { where?: { id?: { eq?: string | null } | null } | null };
 type Input = { driver: Driver };
+export type SoftDeletedComment = { id: string; text: string | null; weightedVotesCount: number | null; createdAt: string; updatedAt: string | null };
 
 const getResolver = (deps: Input) => {
   const { driver } = deps;
@@ -32,7 +33,7 @@ const getResolver = (deps: Input) => {
     // Own the author disconnect first so the returned comment projects a null
     // CommentAuthor, then set the deleted text via the generated mutation.
     await driver.executeQuery(DISCONNECT_AUTHOR, { id });
-    const result = await executeGeneratedOperation<{ updateComments: { comments: Array<{ id: string }> } }>(
+    const result = await executeGeneratedOperation<{ updateComments: { comments: SoftDeletedComment[] } }>(
       driver,
       UPDATE_TEXT,
       { where: { id: { eq: id } }, update: { text: { set: "[Deleted]" } } }

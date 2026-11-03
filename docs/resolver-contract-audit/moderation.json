@@ -1,0 +1,638 @@
+{
+  "formatVersion": 1,
+  "family": "moderation",
+  "fields": [
+    {
+      "field": "Mutation.addIssueActivityFeedItem",
+      "status": "needs-dynamic-selection-contract",
+      "selectedPaths": [],
+      "residualPaths": [
+        "issues[] caller-selected fields and fragments"
+      ],
+      "evidence": [
+        "customResolvers/mutations/addIssueActivityFeedItem.ts",
+        "tests/integration/issueActivityAndSoftDelete.test.ts"
+      ],
+      "reason": "buildIssuesRefetchQuery derives the generated read from GraphQLResolveInfo, retaining caller fields/fragments after owned writes. executeGeneratedOperation returns issues:unknown[] because the shape is request-dependent, not a fixed Issue projection. GraphQL execution tests already cover persistence and requested response but do not make unknown[] a generated static entity.",
+      "decision": "Use operation/selection-aware result typing or a dedicated dynamic-response contract. Do not replace with a full Issue cast, empty selection, or a fixed eager selection that changes privacy, queries, and failure behavior."
+    },
+    {
+      "field": "Mutation.archiveComment",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/archiveComment.ts",
+        "services/persistence/commentModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.archiveDiscussion",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/archiveDiscussion.ts",
+        "services/persistence/discussionModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.archiveEvent",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/archiveEvent.ts",
+        "services/persistence/eventModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.archiveImage",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/archiveImage.ts",
+        "services/persistence/imageModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.lockChannel",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "uniqueName",
+        "displayName",
+        "locked",
+        "lockedAt",
+        "lockReason",
+        "LockedBy.displayName"
+      ],
+      "evidence": [
+        "customResolvers/mutations/lockChannel.ts",
+        "services/persistence/channelModerationRepository.ts",
+        "tests/integration/channelModerationRepository.test.ts"
+      ],
+      "reason": "updateLockState maps raw record.get values using string/boolean assertions; its exact output keys are known but scalar coercion and malformed values remain owned by outer GraphQL. Existing tests preserve that the owned lock write is insulated from a broken Channel projection resolver, while issue action failures may be swallowed after commit.",
+      "decision": "Replace raw assertions with a response-boundary design preserving outer GraphQL selected-field coercion, null bubbling, and write/error timing; an eager generated re-read would change existing behavior and is not authorized by this typing-only slice."
+    },
+    {
+      "field": "Mutation.lockIssue",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/lockIssue.ts",
+        "services/persistence/issueLockRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/issueLockRepository.test.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.lockWikiPage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "slug",
+        "channelUniqueName",
+        "locked",
+        "lockedAt",
+        "lockReason",
+        "lockedByUsername"
+      ],
+      "residualPaths": [
+        "all other schema response fields",
+        "custom DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/wikiActionRepository.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.pinWikiPageToChannel",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$result"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/wikiActionRepository.ts"
+      ],
+      "reason": "Resolver-owned Boolean return is checked against the complete generated resolver signature. Actual raw-schema responses and existing secured default-deny behavior are tested.",
+      "decision": "Preserve the existing missing shield registration: pin/unpin remain default-deny; enabling them is a separate authorization change."
+    },
+    {
+      "field": "Mutation.reportChannel",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportChannel.ts",
+        "services/persistence/channelReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportChannelImage",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportChannelImage.ts",
+        "services/persistence/channelImageReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportComment",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportComment.ts",
+        "services/persistence/commentReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationOutcome.test.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportDiscussion",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportDiscussion.ts",
+        "services/persistence/discussionReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationOutcome.test.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportEvent",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportEvent.ts",
+        "services/persistence/eventReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportImage",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportImage.ts",
+        "services/persistence/imageReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportProfilePicture",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportProfilePicture.ts",
+        "services/persistence/profilePictureReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.reportWikiEdit",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/reportWikiEdit.ts",
+        "services/persistence/wikiEditReportRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.setFeaturedWikiPages",
+      "status": "selected-response",
+      "selectedPaths": [
+        "serverName",
+        "featuredWikiPageIds[]"
+      ],
+      "residualPaths": [
+        "all other ServerConfig fields"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/wikiActionRepository.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.softDeleteComment",
+      "status": "selected-response",
+      "selectedPaths": [
+        "comments[].id",
+        "comments[].text",
+        "comments[].weightedVotesCount",
+        "comments[].createdAt",
+        "comments[].updatedAt"
+      ],
+      "residualPaths": [
+        "all other schema response fields",
+        "custom DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "customResolvers/mutations/softDeleteComment.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.stickyComment",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isSticky",
+        "stickyAt",
+        "stickyByUsername"
+      ],
+      "residualPaths": [
+        "all other schema response fields",
+        "custom DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/stickyCommentRepository.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.suspendMod",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/suspendMod.ts",
+        "services/persistence/suspensionWriteRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "customResolvers/mutations/shared/createSuspensionResolver.ts",
+        "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.suspendUser",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/suspendUser.ts",
+        "services/persistence/suspensionWriteRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "customResolvers/mutations/shared/createSuspensionResolver.ts",
+        "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unarchiveComment",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unarchiveComment.ts",
+        "services/persistence/commentModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unarchiveDiscussion",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unarchiveDiscussion.ts",
+        "services/persistence/discussionModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unarchiveEvent",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unarchiveEvent.ts",
+        "services/persistence/eventModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unarchiveImage",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unarchiveImage.ts",
+        "services/persistence/imageModerationRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.undoSuperUpvote",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "success",
+        "message",
+        "sourceId",
+        "sourceType",
+        "superUpvotedByUsers[].username"
+      ],
+      "evidence": [
+        "customResolvers/mutations/undoSuperUpvote.ts",
+        "services/persistence/superVoteUndoRepository.ts",
+        "tests/integration/superVoteUndoRepository.test.ts",
+        "tests/integration/superUpvote.test.ts"
+      ],
+      "reason": "The post-write tx.run users value is assigned from driver any directly to Array<{username:string}> before commit. Preliminary generated snapshots apply a default25 cap, while the in-transaction final list is unbounded. The resolver sourceType annotation is a two-value union while the schema accepts String and validates values at runtime.",
+      "decision": "A future safe subset can check resolver-owned success/message/sourceId/sourceType and widen the argument annotation to generated String without changing runtime validation. Keep raw usernames as an explicit residual until late coercion/error behavior is preserved; do not certify the entire list from its annotation or preliminary capped read."
+    },
+    {
+      "field": "Mutation.unlockChannel",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "uniqueName",
+        "displayName",
+        "locked",
+        "lockedAt",
+        "lockReason",
+        "LockedBy.displayName"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unlockChannel.ts",
+        "services/persistence/channelModerationRepository.ts",
+        "tests/integration/channelModerationRepository.test.ts"
+      ],
+      "reason": "updateLockState maps raw record.get values using string/boolean assertions; its exact output keys are known but scalar coercion and malformed values remain owned by outer GraphQL. Existing tests preserve that the owned lock write is insulated from a broken Channel projection resolver, while issue action failures may be swallowed after commit.",
+      "decision": "Replace raw assertions with a response-boundary design preserving outer GraphQL selected-field coercion, null bubbling, and write/error timing; an eager generated re-read would change existing behavior and is not authorized by this typing-only slice."
+    },
+    {
+      "field": "Mutation.unlockIssue",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unlockIssue.ts",
+        "services/persistence/issueLockRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "tests/integration/issueLockRepository.test.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unlockWikiPage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "slug",
+        "channelUniqueName",
+        "locked",
+        "lockedAt",
+        "lockReason",
+        "lockedByUsername"
+      ],
+      "residualPaths": [
+        "all other schema response fields",
+        "custom DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/wikiActionRepository.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.unpinWikiPageFromChannel",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$result"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/wikiActionRepository.ts"
+      ],
+      "reason": "Resolver-owned Boolean return is checked against the complete generated resolver signature. Actual raw-schema responses and existing secured default-deny behavior are tested.",
+      "decision": "Preserve the existing missing shield registration: pin/unpin remain default-deny; enabling them is a separate authorization change."
+    },
+    {
+      "field": "Mutation.unstickyComment",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isSticky",
+        "stickyAt",
+        "stickyByUsername"
+      ],
+      "residualPaths": [
+        "all other schema response fields",
+        "custom DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/moderation.ts",
+        "tests/contracts/moderation.typecheck.ts",
+        "tests/integration/moderationResponseContracts.test.ts",
+        "services/persistence/stickyCommentRepository.ts"
+      ],
+      "reason": "Exact fixed generated-operation selections now have required nullable projection properties and generated resolver checks; tests execute the actual GraphQL response and verify persisted effects.",
+      "decision": "Only the listed selected paths are certified. Generated execution validates the fixed read/write selection; no claim is made for unselected lazy fields or scalar internals."
+    },
+    {
+      "field": "Mutation.unsuspendMod",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unsuspendMod.ts",
+        "services/persistence/suspensionWriteRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "customResolvers/mutations/shared/createSuspensionResolver.ts",
+        "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    },
+    {
+      "field": "Mutation.unsuspendUser",
+      "status": "needs-response-boundary",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Issue.* raw node properties",
+        "Issue relationship fields resolved by GraphQL"
+      ],
+      "evidence": [
+        "customResolvers/mutations/unsuspendUser.ts",
+        "services/persistence/suspensionWriteRepository.ts",
+        "services/persistence/moderationIssueWrites.ts",
+        "customResolvers/mutations/shared/createSuspensionResolver.ts",
+        "customResolvers/mutations/shared/createUnsuspendResolver.ts",
+        "tests/integration/moderationResponseContracts.test.ts"
+      ],
+      "reason": "The returned Issue comes from a raw Cypher node-property bag converted by toIssueRow and asserted to ModerationIssueRow or a fuller Issue type. Return annotations do not establish scalar/required-field validity. Generated preliminary reads cover only their own projections. The raw result deliberately bypasses a generated default Issue projection (issueLockRepository tests explicitly preserve insulation from broken default projection resolvers). Executable lock/unlock evidence stores malformed Issue.body: an id-only lock succeeds, then selecting body on unlock yields a field-path String error after the unlock commits. Eager all-property decoding would fail the earlier id-only request and shift errors inside resolver wrappers.",
+      "decision": "Do not promote on existing casts. Design a selected-field/lazy response boundary, or explicitly approve eager normalization that changes error timing and which unrequested fields can fail. Preserve existing transaction/notification ordering and caller-specific error wrappers. This is outstanding implementation scope, not proof of a production bug."
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import type { ModerationMutationResolvers } from "./contracts/moderation.js";
 import type { ReactionMutationResolvers } from "./contracts/reactions.js";
 import type { SubscriptionMutationResolvers } from "./contracts/subscriptions.js";
 import type { VotingMutationResolvers } from "./contracts/voting.js";
@@ -213,6 +214,31 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies SubscriptionMutationResolvers;
 
+  const moderationResolvers = {
+    softDeleteComment: softDeleteComment({ driver }),
+    stickyComment: stickyComment({
+      stickyCommentRepository: createStickyCommentRepository(driver),
+    }),
+    unstickyComment: unstickyComment({
+      stickyCommentRepository: createStickyCommentRepository(driver),
+    }),
+    pinWikiPageToChannel: pinWikiPageToChannel({
+      driver,
+    }),
+    unpinWikiPageFromChannel: unpinWikiPageFromChannel({
+      driver,
+    }),
+    lockWikiPage: lockWikiPage({
+      driver,
+    }),
+    unlockWikiPage: unlockWikiPage({
+      driver,
+    }),
+    setFeaturedWikiPages: setFeaturedWikiPages({
+      driver,
+    }),
+  } satisfies ModerationMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -224,7 +250,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createCommentWithOwnedConnections: createCommentWithOwnedConnections({
       driver,
     }),
-    softDeleteComment: softDeleteComment({ driver }),
+    ...moderationResolvers,
     addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
     createIssue: createIssue({ driver }),
     writeWikiPage: writeWikiPage({driver}),
@@ -372,12 +398,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     archiveComment: archiveComment({
       driver,
     }),
-    stickyComment: stickyComment({
-      stickyCommentRepository: createStickyCommentRepository(driver),
-    }),
-    unstickyComment: unstickyComment({
-      stickyCommentRepository: createStickyCommentRepository(driver),
-    }),
     archiveDiscussion: archiveDiscussion({
       driver,
     }),
@@ -465,21 +485,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       driver
-    }),
-    pinWikiPageToChannel: pinWikiPageToChannel({
-      driver,
-    }),
-    unpinWikiPageFromChannel: unpinWikiPageFromChannel({
-      driver,
-    }),
-    lockWikiPage: lockWikiPage({
-      driver,
-    }),
-    unlockWikiPage: unlockWikiPage({
-      driver,
-    }),
-    setFeaturedWikiPages: setFeaturedWikiPages({
-      driver,
     }),
     setRankingSettings: setRankingSettings({
       driver,
