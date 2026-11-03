@@ -299,11 +299,11 @@
     },
     {
       "field": "Mutation.lockChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.lockIssue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.lockWikiPage",
@@ -547,11 +547,11 @@
     },
     {
       "field": "Mutation.unlockChannel",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unlockIssue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unlockWikiPage",

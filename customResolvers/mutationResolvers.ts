@@ -1,3 +1,4 @@
+import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
 import type { DownloadWriteMutationResolvers } from "./contracts/downloadWrites.js";
 import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
 import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
@@ -439,6 +440,17 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies DownloadWriteMutationResolvers;
 
+  const moderationLockResolvers = {
+    lockChannel: lockChannel({
+      driver
+    }),
+    unlockChannel: unlockChannel({
+      driver
+    }),
+    lockIssue: lockIssue(),
+    unlockIssue: unlockIssue(),
+  } satisfies ModerationLockMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -504,12 +516,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
       driver
     }),
-    lockChannel: lockChannel({
-      driver
-    }),
-    unlockChannel: unlockChannel({
-      driver
-    }),
+    ...moderationLockResolvers,
     suspendUser: suspendUser({
       includeWikiPage: true,
       includeTextVersion: true
@@ -517,8 +524,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     unsuspendUser: unsuspendUser(),
     suspendMod: suspendMod(),
     unsuspendMod: unsuspendMod(),
-    lockIssue: lockIssue(),
-    unlockIssue: unlockIssue(),
     archiveComment: archiveComment({
       driver,
     }),

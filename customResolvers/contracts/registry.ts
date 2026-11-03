@@ -1,3 +1,4 @@
+import { moderationLockMutationNames } from "./moderationLocks.js";
 import { downloadWriteMutationNames } from "./downloadWrites.js";
 import { pluginExecutionMutationNames } from "./pluginExecution.js";
 import { pluginSummaryMetadataQueryNames } from "./pluginSummaryMetadata.js";
@@ -46,6 +47,7 @@ export const checkedRootGroups = [
   ["Query", "pluginSummaryMetadataResolvers", "PluginSummaryMetadataQueryResolvers", pluginSummaryMetadataQueryNames],
   ["Mutation", "pluginExecutionResolvers", "PluginExecutionMutationResolvers", pluginExecutionMutationNames],
   ["Mutation", "downloadWriteResolvers", "DownloadWriteMutationResolvers", downloadWriteMutationNames],
+  ["Mutation", "moderationLockResolvers", "ModerationLockMutationResolvers", moderationLockMutationNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [
