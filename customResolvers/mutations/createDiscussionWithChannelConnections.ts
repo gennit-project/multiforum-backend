@@ -287,7 +287,7 @@ export const createDiscussionsFromInput = async (
       // HAS_TAG edges (create-if-missing) after the generated create.
       const { cleaned: cleanedNoTags, tagTexts } = stripTags(cleaned as Record<string, any>);
       const resolvedAuthor = authorUsername ?? contextUsername ?? null;
-      const { newDiscussionId, createdChannelConnections } = await session.executeWrite(async (tx) => {
+      const { newDiscussionId, createdChannelConnections, createdDiscussion } = await session.executeWrite(async (tx) => {
         const response = await repository.createDiscussion(
           cleanedNoTags as DiscussionCreateInput,
           tx
@@ -334,7 +334,13 @@ export const createDiscussionsFromInput = async (
           }
           createdChannelConnections.push(channelUniqueName);
         }
-        return { newDiscussionId, createdChannelConnections };
+        // Validate the existing fixed projection while failures can still roll
+        // back this item. Keep the repository's existing authorization context.
+        const projected = await repository.findCreatedDiscussion(newDiscussionId, tx);
+        if (projected.length !== 1 || !projected[0] || projected[0].id !== newDiscussionId) {
+          throw new GraphQLError("Created discussion is unavailable for the response.");
+        }
+        return { newDiscussionId, createdChannelConnections, createdDiscussion: projected[0] };
       });
       // Plugin work is deliberately outside the retryable transaction. Failure
       // here cannot roll back the item and does not imply durable delivery.
@@ -367,10 +373,9 @@ export const createDiscussionsFromInput = async (
         channelConnections: createdChannelConnections,
       });
 
-      // Refetch the discussion with all related data
-      const fetchedDiscussion = await repository.findCreatedDiscussion(newDiscussionId);
-
-      discussions.push(fetchedDiscussion[0]);
+      // Return the creation snapshot, independent of subsequent plugin writes.
+      // Outer GraphQL completion and network delivery still happen after commit.
+      discussions.push(createdDiscussion);
     }
   } catch (error: unknown) {
     logger.error("Error creating discussions:", error);

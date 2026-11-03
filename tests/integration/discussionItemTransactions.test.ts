@@ -11,6 +11,7 @@ import { getAgeGateStatements } from '../../services/ageGate/definitions.js';
 import getResolvers from '../helpers/getTestResolvers.js';
 import createResolver, { triggerCreatedDiscussionPipelines } from '../../customResolvers/mutations/createDiscussionWithChannelConnections.js';
 import shareResolver from '../../customResolvers/mutations/shareCollectionAsDiscussion.js';
+import { createDiscussionCreationRepository } from '../../services/persistence/discussionCreationRepository.js';
 import { registerGeneratedSchema } from '../../services/persistence/generatedSchemaOperations.js';
 import { startNeo4j, stopNeo4j, resetDatabase } from './neo4jHarness.js';
 
@@ -18,6 +19,10 @@ let driver: Driver, instrumented: Driver, schema: GraphQLSchema;
 let failAfter = '', retry = false, attempts = 0, pluginFailure = false;
 let failOnMatch = 1, matches = 0;
 let failProjection = false;
+let responseFailure: 'error' | 'empty' | undefined;
+let responseRead = 0, failResponseOn = 1;
+let pluginEdit = false, outerCompletionFailure = false;
+let responseSnapshot: unknown;
 let beforeWrite: (() => Promise<void>) | undefined;
 let tasks: Promise<unknown[]>[] = [];
 let observed: Array<{ id: string; channel: string; links: number }> = [];
@@ -53,7 +58,9 @@ before(async () => {
     };
     return (object as any)[key];
   }});
-  const triggerPipelines: typeof triggerCreatedDiscussionPipelines = args => triggerCreatedDiscussionPipelines({
+  const triggerPipelines: typeof triggerCreatedDiscussionPipelines = async args => {
+    if (pluginEdit) await driver.executeQuery('MATCH(d:Discussion {id:$id}) SET d.title="Plugin edit"', {id:args.discussionId});
+    return triggerCreatedDiscussionPipelines({
     ...args,
     triggerDownload: async () => { throw new Error('Unexpected download'); },
     triggerChannel: ({ discussionId, channelUniqueName }) => {
@@ -71,14 +78,35 @@ before(async () => {
       return task;
     },
   });
+  };
+  const repository = createDiscussionCreationRepository(instrumented);
+  const discussionCreationRepository: typeof repository = {
+    ...repository,
+    async findCreatedDiscussion(id, transaction) {
+      const result = await repository.findCreatedDiscussion(id, transaction);
+      responseSnapshot = JSON.parse(JSON.stringify(result));
+      return result;
+    },
+  };
   const resolvers = getResolvers(driver).resolvers;
-  resolvers.Mutation.createDiscussionWithChannelConnections = createResolver({ driver: instrumented, triggerPipelines });
-  resolvers.Mutation.shareCollectionAsDiscussion = shareResolver({ driver: instrumented, triggerPipelines });
+  resolvers.Mutation.createDiscussionWithChannelConnections = createResolver({ driver: instrumented, triggerPipelines, discussionCreationRepository });
+  resolvers.Mutation.shareCollectionAsDiscussion = shareResolver({ driver: instrumented, triggerPipelines, discussionCreationRepository });
   const raw = await new Neo4jGraphQL({ driver, typeDefs, resolvers, features: { filters: { String: { MATCHES: true } } } }).getSchema();
   const titleField = (raw.getType('Discussion') as GraphQLObjectType).getFields().title;
   titleField.resolve = (source, args, context, info) => {
     if (failProjection) throw new Error('Injected generated response failure');
+    if (outerCompletionFailure && !info.operation.name) throw new Error('Injected outer completion failure');
     return defaultFieldResolver(source, args, context, info);
+  };
+  const discussionsField = raw.getQueryType()!.getFields().discussions;
+  const readDiscussions = discussionsField.resolve!;
+  discussionsField.resolve = async (source, args, context, info) => {
+    const result = await readDiscussions(source, args, context, info);
+    if (info.operation.name?.value === 'CreatedDiscussionWithChannels' && ++responseRead === failResponseOn) {
+      if (responseFailure === 'error') throw new Error('Injected final projection failure');
+      if (responseFailure === 'empty') return [];
+    }
+    return result;
   };
   registerGeneratedSchema(driver, raw);
   registerGeneratedSchema(instrumented, raw);
@@ -86,7 +114,7 @@ before(async () => {
 }, { timeout: 240_000 });
 after(async () => stopNeo4j());
 beforeEach(async () => {
-  failAfter = ''; retry = false; attempts = 0; pluginFailure = false; observed = []; tasks = []; failOnMatch = 1; matches = 0; beforeWrite = undefined; failProjection = false;
+  failAfter = ''; retry = false; attempts = 0; pluginFailure = false; observed = []; tasks = []; failOnMatch = 1; matches = 0; beforeWrite = undefined; failProjection = false; responseFailure = undefined; responseRead = 0; failResponseOn = 1; pluginEdit = false; outerCompletionFailure = false; responseSnapshot = undefined;
   await resetDatabase(driver);
   await driver.executeQuery(`CREATE (u:User {username:'alice',createdAt:datetime(),notifyOnReplyToDiscussionByDefault:true}),
     (b:User {username:'bob',createdAt:datetime()}), (c:Channel {uniqueName:'forum',imageUploadsEnabled:true}),
@@ -101,8 +129,8 @@ const SHARE = `mutation{shareCollectionAsDiscussion(collectionId:"collection",se
 const item = (title = 'Created') => ({ discussionCreateInput: { title, Tags: { create: [{ node: { text: 'new-tag' } }] },
   Album: { create: { node: { imageOrder: [], Images: { create: [{ node: { url: 'new.jpg' } }], connect: [{ where: { node: { id: { eq: 'reused' } } } }] } } } } },
   channelConnections: ['forum', 'second'] });
-const execute = async (source: string, variables: Record<string, unknown> = {}, username = 'alice') => { const result = await graphql({ schema, source, variableValues: variables,
-  contextValue: { driver: instrumented, req: { headers: {} }, user: { username, email: null, email_verified: true, data: null }, mayAccessSensitiveContent: false } });
+const execute = async (source: string, variables: Record<string, unknown> = {}, username = 'alice', mayAccessSensitiveContent = false) => { const result = await graphql({ schema, source, variableValues: variables,
+  contextValue: { driver: instrumented, req: { headers: {} }, user: { username, email: null, email_verified: true, data: null }, mayAccessSensitiveContent } });
   await Promise.allSettled(tasks);
   return result;
 };
@@ -197,4 +225,68 @@ test('generated create response errors roll back the generated write and nested 
   failProjection = true;
   assert.match(JSON.stringify((await execute(CREATE, {input:[item()]})).errors), /Injected generated response failure/);
   await assertEmptyItem();
+});
+
+for (const failure of ['error', 'empty'] as const) {
+  for (const operation of ['create', 'share']) {
+    test(`${operation} response ${failure} rolls back owned writes before any plugin effect`, async () => {
+      responseFailure = failure;
+      const result = operation === 'create' ? await execute(CREATE, {input:[item()]}) : await execute(SHARE);
+      assert.ok(result.errors);
+      await assertEmptyItem();
+      assert.match(JSON.stringify(result.errors), failure === 'error' ? /Injected final projection failure/ : /unavailable for the response/);
+    });
+  }
+  test(`later response ${failure} preserves only the earlier batch item`, async () => {
+    responseFailure = failure; failResponseOn = 2;
+    assert.ok((await execute(CREATE, {input:[item('First'),item('Failed'),item('Unattempted')]})).errors);
+    assert.deepEqual((await driver.executeQuery('MATCH(d:Discussion) RETURN d.title AS title')).records.map(r=>r.get('title')), ['First']);
+    assert.deepEqual(observed.map(x=>x.links), [2,2]);
+    assert.equal((await driver.executeQuery('MATCH(a:Album) RETURN a')).records.length, 1);
+  });
+}
+test('an incomplete active flair fails the real final projection and rolls back the share', async () => {
+  await driver.executeQuery(`MATCH(c:Channel {uniqueName:'forum'}) CREATE(c)-[:HAS_DISCUSSION_FLAIR]->(:DiscussionFlair {id:'legacy',displayName:'Legacy',order:0})`);
+  const result = await execute(SHARE.replace('title:"Shared"', 'title:"Shared",flairIds:["legacy"]'));
+  assert.match(JSON.stringify(result.errors), /DiscussionFlair.archived/);
+  await assertEmptyItem();
+});
+test('the response is the creation snapshot even if a post-commit plugin edits the item', async () => {
+  pluginEdit = true;
+  const created = ok(await execute(CREATE, {input:[item()]})).createDiscussionWithChannelConnections[0];
+  assert.equal(created.title, 'Created');
+  assert.equal((await driver.executeQuery('MATCH(d:Discussion {id:$id}) RETURN d.title AS title',{id:created.id})).records[0].get('title'), 'Plugin edit');
+});
+test('ordinary response matches the same post-reconciliation query and excludes sensitive peers', async () => {
+  await driver.executeQuery(`CREATE(d:Discussion {id:'sensitive',title:'Hidden',hasSensitiveContent:true,createdAt:datetime()})`);
+  const created = ok(await execute(CREATE, {input:[item()]})).createDiscussionWithChannelConnections[0];
+  const repo = createDiscussionCreationRepository(driver);
+  const afterCommit = await repo.findCreatedDiscussion(created.id);
+  const beforeCommit = (responseSnapshot as typeof afterCommit)[0];
+  const committed = JSON.parse(JSON.stringify(afterCommit[0])) as typeof beforeCommit;
+  // This relationship has no ORDER BY. Compare membership and every projected
+  // value without treating Neo4j's transaction-local traversal order as an API.
+  assert.equal(beforeCommit.DiscussionChannels.length, committed.DiscussionChannels.length);
+  assert.deepEqual(
+    {...beforeCommit, DiscussionChannels:new Map(beforeCommit.DiscussionChannels.map(c=>[c.id,c]))},
+    {...committed, DiscussionChannels:new Map(committed.DiscussionChannels.map(c=>[c.id,c]))},
+    "the complete fixed projection agrees after reconciliation and commit"
+  );
+  assert.deepEqual(created.DiscussionChannels.map((c:{channelUniqueName:string})=>c.channelUniqueName).sort(), afterCommit[0].DiscussionChannels.map(c=>c.channelUniqueName).sort());
+  assert.deepEqual(await repo.findCreatedDiscussion('sensitive'), []);
+  assert.equal((await driver.executeQuery('MATCH(dc:DiscussionChannel) WHERE dc.ageGateRestricted=true RETURN dc')).records.length,0);
+});
+test('sensitive creation does not gain an internal authorization bypass and rolls back an invisible result', async () => {
+  const input = {...item(), discussionCreateInput:{...item().discussionCreateInput,hasSensitiveContent:true}};
+  const result = await execute(CREATE, {input:[input]}, 'alice', true);
+  assert.ok(result.errors);
+  await assertEmptyItem();
+  assert.match(JSON.stringify(result.errors), /unavailable for the response/);
+});
+
+test('outer GraphQL completion remains after commit, outside the response-read guarantee', async () => {
+  outerCompletionFailure = true;
+  assert.match(JSON.stringify((await execute(CREATE, {input:[item()]})).errors), /Injected outer completion failure/);
+  assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length, 1);
+  assert.deepEqual(observed.map(x=>x.links), [2,2]);
 });
