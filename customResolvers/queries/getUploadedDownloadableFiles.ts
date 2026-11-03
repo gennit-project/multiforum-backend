@@ -62,7 +62,7 @@ const getUploadedDownloadableFiles = ({
         WHERE file.uploadedByUsername = $username
           AND coalesce(file.permanentlyRemoved, false) = false
           AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
-        OPTIONAL MATCH (discussion)-[:POSTED_IN_CHANNEL]->(discussionChannel:DiscussionChannel)
+        OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(discussionChannel:DiscussionChannel)
         WITH discussion, file, collect(DISTINCT discussionChannel.channelUniqueName) AS channelUniqueNames
         ORDER BY coalesce(file.createdAt, file.uploadedAt) DESC, file.fileName ASC
         WITH discussion, channelUniqueNames, collect(file {
