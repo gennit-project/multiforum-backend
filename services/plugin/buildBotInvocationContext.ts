@@ -56,12 +56,38 @@ export type BotInvocationContext = {
   }
 }
 
+// Channel and server rules are stored as { summary, detail } objects (serialized
+// to JSON on the node). Plugins receive rules as plain strings, so flatten each
+// rule to "summary\ndetail". A bare string is passed through unchanged, and a
+// JSON string is parsed defensively in case an unparsed value reaches here.
+const ruleToText = (rule: unknown): string => {
+  if (typeof rule === 'string') {
+    return rule.trim()
+  }
+  if (rule && typeof rule === 'object') {
+    const { summary, detail } = rule as { summary?: unknown; detail?: unknown }
+    return [summary, detail]
+      .map(part => (typeof part === 'string' ? part.trim() : ''))
+      .filter(Boolean)
+      .join('\n')
+  }
+  return ''
+}
+
 const normalizeRules = (rules: unknown): string[] => {
-  if (!Array.isArray(rules)) {
+  let source = rules
+  if (typeof source === 'string') {
+    try {
+      source = JSON.parse(source)
+    } catch {
+      return []
+    }
+  }
+  if (!Array.isArray(source)) {
     return []
   }
 
-  return rules.filter((rule): rule is string => typeof rule === 'string')
+  return source.map(ruleToText).filter(Boolean)
 }
 
 const getCommentAuthorInfo = (author: BotCommentAuthorSnapshot) => {
