@@ -8,21 +8,26 @@ import typeDefs from '../../typeDefs.js';
 import getResolvers from '../helpers/getTestResolvers.js';
 import permissions from '../../permissions.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {createCampaignControlRepository} from '../../services/persistence/campaignControlRepository.js';
+import {createCampaignControlRepository,type CampaignTransitionTarget,type CampaignTransitionResult} from '../../services/persistence/campaignControlRepository.js';
 import {pausePluginPipelineCampaign,resumePluginPipelineCampaign} from '../../customResolvers/mutations/pluginPipelineCampaigns.js';
 import {campaignSelection,campaignPreviewSelection,campaignFailureSelection} from '../../customResolvers/contracts/pluginCampaigns.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema;
-let deleteAfterStatus=false;
-let completeAfterStatus=false;
+let missingTransitionResult=false;
+let conflictingTransitionResult=false;
 before(async()=>{
  driver=await startNeo4j();const app=getResolvers(driver).resolvers;
  const base=createCampaignControlRepository(driver);
- const controlRepository={...base,findStatus:async(id:string)=>{const result=await base.findStatus(id);if(deleteAfterStatus)await driver.executeQuery('MATCH(c:PluginPipelineCampaign{id:$id}) DELETE c',{id});if(completeAfterStatus)await driver.executeQuery("MATCH(c:PluginPipelineCampaign{id:$id}) SET c.status='COMPLETED', c.finishedAt=datetime('2026-01-02T00:00:00Z')",{id});return result;}};
+ // Deterministic resolver-result seams; physical race coverage lives in campaignStatusConcurrency.test.ts.
+ const controlRepository={...base,transitionStatus:async(id:string,status:CampaignTransitionTarget):Promise<CampaignTransitionResult>=>{
+  if(missingTransitionResult){await driver.executeQuery('MATCH(c:PluginPipelineCampaign{id:$id}) DELETE c',{id});return {kind:'missing'};}
+  if(conflictingTransitionResult){await driver.executeQuery("MATCH(c:PluginPipelineCampaign{id:$id}) SET c.status='COMPLETED', c.finishedAt=datetime('2026-01-02T00:00:00Z')",{id});return {kind:'conflict',status:'COMPLETED'};}
+  return base.transitionStatus(id,status);
+ }};
  schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app,Mutation:{...app.Mutation,pausePluginPipelineCampaign:pausePluginPipelineCampaign({driver,controlRepository}),resumePluginPipelineCampaign:resumePluginPipelineCampaign({driver,controlRepository})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();
  registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
 },{timeout:240000});
-after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);deleteAfterStatus=false;completeAfterStatus=false;});
+after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);missingTransitionResult=false;conflictingTransitionResult=false;});
 const fields=Object.keys(campaignSelection).join(' '),previewFields=Object.keys(campaignPreviewSelection).join(' '),failureFields=Object.keys(campaignFailureSelection).join(' ');
 const user={username:'actor',email:null,email_verified:true,data:null};
 const execute=(source:string,secure=false,authenticated=true)=>graphql({schema:secure?secured:schema,source,contextValue:{driver,req:{headers:{}},user:authenticated?user:undefined}});
@@ -48,7 +53,7 @@ test('pause and resume serialize all fields and preserve repeat/missing transiti
  assert.match((await execute('mutation{resumePluginPipelineCampaign(campaignId:"missing"){id}}')).errors?.[0].message??'',/Campaign not found/);
 });
 for(const [field,status] of [['pausePluginPipelineCampaign','RUNNING'],['resumePluginPipelineCampaign','PAUSED']]){
- test(`${field}: concurrent deletion preserves existing non-null completion error`,async()=>{await seed(status);deleteAfterStatus=true;const result=await execute(`mutation{${field}(campaignId:"campaign"){id}}`);assert.equal(result.data,null);assert.match(result.errors?.[0].message??'',/Cannot return null for non-nullable field Mutation/);assert.deepEqual(result.errors?.[0].path,[field]);assert.deepEqual(data(await execute('{getPluginPipelineCampaigns{id}}')),{getPluginPipelineCampaigns:[]});});
+ test(`${field}: missing transition result exposes NOT_FOUND without retry`,async()=>{await seed(status);missingTransitionResult=true;const result=await execute(`mutation{${field}(campaignId:"campaign"){id}}`);assert.equal(result.data,null);assert.equal(result.errors?.[0].extensions.code,'NOT_FOUND');assert.deepEqual(result.errors?.[0].path,[field]);assert.deepEqual(data(await execute('{getPluginPipelineCampaigns{id}}')),{getPluginPipelineCampaigns:[]});});
 }
 test('generated projection failure after transition retains committed write',async()=>{
  await seed();await driver.executeQuery('MATCH(c:PluginPipelineCampaign) REMOVE c.enforcementBehavior');const result=await execute('mutation{pausePluginPipelineCampaign(campaignId:"campaign"){id}}');assert.equal(result.data,null);assert.ok(result.errors?.some(e=>e.message.includes('enforcementBehavior')));assert.equal((await createCampaignControlRepository(driver).findStatus('campaign'))[0].status,'PAUSED');
@@ -64,18 +69,16 @@ test('permission middleware denies all six anonymous campaign operations',async(
  for(const source of ['{getPluginPipelineCampaigns{id}}','{getPluginPipelineCampaignFailures(campaignId:"campaign"){pipelineId}}','{previewPluginPipelineCampaign(policyId:"policy"){policyId}}','mutation{createPluginPipelineCampaign(policyId:"policy",concurrency:1,rateLimitPerMinute:5){id}}','mutation{pausePluginPipelineCampaign(campaignId:"campaign"){id}}','mutation{resumePluginPipelineCampaign(campaignId:"campaign"){id}}'])assert.ok((await execute(source,true,false)).errors,source);
 });
 
-// Failure witnesses, not desired transition semantics. A committed competing
-// update is placed after the status read to reproduce the race deterministically.
-for(const [field,initial,overwritten] of [
- ['pausePluginPipelineCampaign','RUNNING','PAUSED'],
- ['resumePluginPipelineCampaign','PAUSED','RUNNING'],
+// Missing/conflicting repository results must propagate without a second update.
+for(const [field,initial] of [
+ ['pausePluginPipelineCampaign','RUNNING'],
+ ['resumePluginPipelineCampaign','PAUSED'],
 ] as const){
- test(`${field}: stale validation currently overwrites completed status`,async()=>{
-  await seed(initial);completeAfterStatus=true;
-  const result=data(await execute(`mutation{${field}(campaignId:"campaign"){id status finishedAt}}`))[field];
-  assert.equal(result.status,overwritten);
-  assert.equal(result.finishedAt,'2026-01-02T00:00:00.000Z');
-  completeAfterStatus=false;
-  assert.equal((await createCampaignControlRepository(driver).findStatus('campaign'))[0].status,overwritten);
+ test(`${field}: conflict preserves the competing completed state`,async()=>{
+  await seed(initial);conflictingTransitionResult=true;
+  const result=await execute(`mutation{${field}(campaignId:"campaign"){id status finishedAt}}`);
+  assert.equal(result.errors?.[0].extensions.code,'CONFLICT');assert.equal(result.data,null);
+  conflictingTransitionResult=false;
+  assert.equal((await createCampaignControlRepository(driver).findStatus('campaign'))[0].status,'COMPLETED');
  });
 }
