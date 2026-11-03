@@ -211,7 +211,7 @@
     },
     {
       "field": "Mutation.createDownloadableFiles",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createEmailAndUser",
@@ -323,7 +323,7 @@
     },
     {
       "field": "Mutation.permanentlyDeleteDownloadableFile",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.permanentlyDeleteImage",

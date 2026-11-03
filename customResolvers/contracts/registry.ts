@@ -1,3 +1,4 @@
+import { downloadWriteMutationNames } from "./downloadWrites.js";
 import { pluginExecutionMutationNames } from "./pluginExecution.js";
 import { pluginSummaryMetadataQueryNames } from "./pluginSummaryMetadata.js";
 import { downloadActionMutationNames } from "./downloadActions.js";
@@ -44,6 +45,7 @@ export const checkedRootGroups = [
   ["Mutation", "downloadActionResolvers", "DownloadActionMutationResolvers", downloadActionMutationNames],
   ["Query", "pluginSummaryMetadataResolvers", "PluginSummaryMetadataQueryResolvers", pluginSummaryMetadataQueryNames],
   ["Mutation", "pluginExecutionResolvers", "PluginExecutionMutationResolvers", pluginExecutionMutationNames],
+  ["Mutation", "downloadWriteResolvers", "DownloadWriteMutationResolvers", downloadWriteMutationNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

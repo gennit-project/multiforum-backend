@@ -1,3 +1,4 @@
+import type { DownloadWriteMutationResolvers } from "./contracts/downloadWrites.js";
 import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
 import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
 import type { PluginPolicyDomainMutationResolvers } from "./contracts/pluginPolicies.js";
@@ -429,6 +430,15 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     rerunPluginPipeline: rerunPluginPipeline({}),
   } satisfies PluginExecutionMutationResolvers;
 
+  const downloadWriteResolvers = {
+    permanentlyDeleteDownloadableFile: permanentlyDeleteDownloadableFile({
+      driver
+    }),
+    createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
+      driver
+    }),
+  } satisfies DownloadWriteMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -484,9 +494,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     permanentlyDeleteImage: permanentlyDeleteImage({
       driver
     }),
-    permanentlyDeleteDownloadableFile: permanentlyDeleteDownloadableFile({
-      driver
-    }),
+    ...downloadWriteResolvers,
     permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
       driver
     }),
@@ -541,9 +549,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     ...pluginResolvers,
     ...downloadActionResolvers,
-    createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
-      driver
-    }),
     ...pluginPolicyDomainResolvers,
     ...pluginConfigurationResolvers,
     createImageWithUploader: createImageWithUploader({
