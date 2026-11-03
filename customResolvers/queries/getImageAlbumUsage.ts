@@ -56,7 +56,7 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
         OPTIONAL MATCH (album)<-[:HAS_ALBUM]-(discussion:Discussion)
         WHERE $mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false
         OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
-        OPTIONAL MATCH (discussion)-[:POSTED_IN_CHANNEL]->(discussionChannel:DiscussionChannel)
+        OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(discussionChannel:DiscussionChannel)
         WITH image, uploader, album, owner, discussion, author,
           collect(DISTINCT discussionChannel {
             .id,
