@@ -22,6 +22,7 @@ let driver: Driver;
 let schema: GraphQLSchema;
 let manifest: PluginConfigurationDesiredStateInput;
 let downloads: string[] = [];
+let installFailure: Error | null = null;
 const registry = 'https://registry.example.test/index.json';
 const originalEncryptionKey = process.env.PLUGIN_SECRET_ENCRYPTION_KEY;
 
@@ -56,7 +57,10 @@ before(async () => {
   });
   resolvers.Mutation.applyPluginConfiguration = createApplyPluginConfigurationResolver({}, parameters => ({
     ...buildDefaultOperations(parameters),
-    install: args => install({}, args, parameters.context, parameters.info),
+    install: args => {
+      if (installFailure) throw installFailure;
+      return install({}, args, parameters.context, parameters.info);
+    },
   }));
   const generated = await new Neo4jGraphQL({ typeDefs, driver, resolvers,
     features: { filters: { String: { MATCHES: true } }, subscriptions: true },
@@ -67,6 +71,7 @@ before(async () => {
 beforeEach(async () => {
   await resetDatabase(driver);
   downloads = [];
+  installFailure = null;
   await driver.executeQuery("CREATE (:ServerConfig {serverName: 'fixture', pluginRegistries: [], pluginPipelines: '[]'}) CREATE (:Channel {uniqueName: 'trial'}) CREATE (:Channel {uniqueName: 'other'})");
 });
 after(async () => {
@@ -172,4 +177,73 @@ test('channel enable, settings update and disable target only the requested vers
   await writes.setRegistries([registry]);
   await writes.setRegistries([]);
   assert.deepEqual((await createPluginConfigurationReadRepository(driver).listReconciliationConfigs())[0].pluginRegistries, []);
+});
+
+
+const planFields = `apiVersion inSync warnings changes { kind path message current desired blocked }`;
+const applyFields = `status message operations { kind path status message } planBefore { ${planFields} } planAfter { ${planFields} }`;
+const previewOperation = (desired: PluginConfigurationDesiredStateInput): Operation => ({
+  query: `query($manifest:PluginConfigurationDesiredStateInput!){result:previewPluginConfigurationReconciliation(manifest:$manifest){${planFields}}}`,
+  variables: {manifest:desired},
+});
+const applyOperation = (desired: PluginConfigurationDesiredStateInput, secretResolutions: {valueFrom:string;value:string}[]=[]): Operation => ({
+  query: `mutation($manifest:PluginConfigurationDesiredStateInput!,$secrets:[PluginSecretResolutionInput!]){result:applyPluginConfiguration(manifest:$manifest,secretResolutions:$secrets){${applyFields}}}`,
+  variables:{manifest:desired,secrets:secretResolutions},
+});
+const emptyDesired: PluginConfigurationDesiredStateInput = {apiVersion:'multiforum.gennit.dev/v1alpha1',plugins:[]};
+const response = (result:Awaited<ReturnType<typeof execute>>) => {
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  return JSON.parse(JSON.stringify(result.data)).result;
+};
+test('generated recursive response serializes empty and nullable live configuration without writes',async()=>{
+  await driver.executeQuery('MATCH(s:ServerConfig) REMOVE s.pluginRegistries,s.pluginPipelines');
+  const plan=response(await execute(previewOperation(emptyDesired)));
+  assert.deepEqual(plan,{apiVersion:emptyDesired.apiVersion,inSync:true,warnings:['Plugin registries are unmanaged because registries was omitted','Channel plugins are unmanaged because channelPlugins was omitted','Server pipelines are unmanaged because pipelines was omitted'],changes:[]});
+  const applied=response(await execute(applyOperation(emptyDesired)));
+  assert.deepEqual(applied,{status:'NO_CHANGES',message:'Plugin configuration is already in sync',operations:[],planBefore:plan,planAfter:plan});
+  assert.equal(downloads.length,0);
+});
+test('nullable Plugin relationship is omitted from live reconciliation rather than fabricated',async()=>{
+  await driver.executeQuery("MATCH(s:ServerConfig) CREATE(s)-[:INSTALLED {enabled:true}]->(:PluginVersion {version:'1'})");
+  const repository=createPluginConfigurationReadRepository(driver);
+  const edge=(await repository.listReconciliationConfigs())[0].InstalledVersionsConnection.edges[0];
+  assert.deepEqual(JSON.parse(JSON.stringify(edge)),{properties:{enabled:true,settingsJson:null},node:{version:'1',Plugin:null}});
+  assert.equal(response(await execute(previewOperation(emptyDesired))).inSync,true);
+});
+test('blocked response preserves nested changes and leaves the graph untouched',async()=>{
+  const desired:PluginConfigurationDesiredStateInput={...emptyDesired,plugins:[{pluginId:'fixture',version:'1',enabled:true,requiredSecrets:['API_KEY']}]};
+  const applied=response(await execute(applyOperation(desired)));
+  assert.equal(applied.status,'BLOCKED');assert.equal(applied.planBefore.inSync,false);
+  assert.deepEqual(applied.planAfter,applied.planBefore);
+  assert.ok(applied.operations.some((item:{status:string;kind:string})=>item.status==='BLOCKED'&&item.kind==='SET_SECRET'));
+  assert.equal(downloads.length,0);
+  assert.equal((await driver.executeQuery('MATCH(p:Plugin) RETURN count(p) AS count')).records[0].get('count').toNumber(),0);
+});
+test('partial failure serializes APPLIED then FAILED and redacts secret values while preserving prior writes',async()=>{
+  const secret='disposable-response-contract-secret';
+  installFailure=new Error(`fixture install failed ${secret}`);
+  const desired:PluginConfigurationDesiredStateInput={...emptyDesired,registries:{urls:[registry]},plugins:[{pluginId:'fixture',version:'1',enabled:true,secretRefs:[{key:'API_KEY',valueFrom:'env:FIXTURE'}]}]};
+  const applied=response(await execute(applyOperation(desired,[{valueFrom:'env:FIXTURE',value:secret}])));
+  assert.equal(applied.status,'FAILED');
+  assert.deepEqual(applied.operations.map((item:{status:string})=>item.status),['APPLIED','FAILED']);
+  assert.match(applied.operations[1].message,/\[REDACTED\]/);
+  assert.ok(!JSON.stringify(applied).includes(secret));
+  assert.deepEqual((await createPluginConfigurationReadRepository(driver).listReconciliationConfigs())[0].pluginRegistries,[registry]);
+  assert.equal(applied.planAfter.inSync,false);assert.equal(downloads.length,0);
+});
+test('permission middleware denies anonymous preview and apply before writes',async()=>{
+  for(const operation of [previewOperation(emptyDesired),applyOperation({...emptyDesired,registries:{urls:[registry]}})]) {
+    const result=await graphql({schema,source:operation.query,variableValues:operation.variables,contextValue:{driver,req:{headers:{}}}});
+    assert.ok(result.errors);
+  }
+  assert.deepEqual((await createPluginConfigurationReadRepository(driver).listReconciliationConfigs())[0].pluginRegistries,[]);
+});
+test('malformed selected live configuration fields retain errors before applying changes',async()=>{
+  await driver.executeQuery("MATCH(s:ServerConfig) CREATE (s)-[:INSTALLED]->(:PluginVersion {version:'1'})");
+  for(const operation of [previewOperation(emptyDesired),applyOperation(emptyDesired)]) {
+    const result=await execute(operation);
+    assert.equal(result.data,null);
+    assert.ok(result.errors?.some(error=>error.message.includes('enabled')));
+  }
+  assert.equal(downloads.length,0);
 });

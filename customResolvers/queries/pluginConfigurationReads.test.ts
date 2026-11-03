@@ -101,6 +101,7 @@ test("reconciliation reads registry and requested channel state", async () => {
   const requestedChannels: string[][] = [];
   const resolver = previewReconciliation(input({
     listReconciliationConfigs: async () => [{
+      serverName: "fixture",
       pluginRegistries: ["https://plugins.example.test/core.json"],
       pluginPipelines: [],
       InstalledVersionsConnection: { edges: [{

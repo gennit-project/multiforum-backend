@@ -1,3 +1,5 @@
+import { pluginConfigurationQueryNames } from "./pluginConfiguration.js";
+import { pluginConfigurationMutationNames } from "./pluginConfiguration.js";
 import { contentPageQueryNames } from "./contentQueries.js";
 import { contentScalarQueryNames } from "./contentQueries.js";
 import { contentMutationNames } from "./content.js";
@@ -28,6 +30,8 @@ export const checkedRootGroups = [
   ["Mutation", "contentResolvers", "ContentMutationResolvers", contentMutationNames],
   ["Query", "contentScalarResolvers", "ContentScalarQueryResolvers", contentScalarQueryNames],
   ["Query", "contentPageResolvers", "ContentPageQueryResolvers", contentPageQueryNames],
+  ["Mutation", "pluginConfigurationResolvers", "PluginConfigurationMutationResolvers", pluginConfigurationMutationNames],
+  ["Query", "pluginConfigurationResolvers", "PluginConfigurationQueryResolvers", pluginConfigurationQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

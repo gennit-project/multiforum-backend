@@ -1,3 +1,4 @@
+import type { PluginConfigurationMutationResolvers } from "./contracts/pluginConfiguration.js";
 import type { ContentMutationResolvers } from "./contracts/content.js";
 import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
 import type { AccountScalarMutationResolvers } from "./contracts/accounts.js";
@@ -371,6 +372,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ContentMutationResolvers;
 
+  const pluginConfigurationResolvers = {
+    applyPluginConfiguration: applyPluginConfiguration({}),
+  } satisfies PluginConfigurationMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -504,7 +509,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     updatePluginPipelines: updatePluginPipelines({
       driver
     }),
-    applyPluginConfiguration: applyPluginConfiguration({}),
+    ...pluginConfigurationResolvers,
     updateChannelPluginPipelines: updateChannelPluginPipelines({
       driver,
     }),

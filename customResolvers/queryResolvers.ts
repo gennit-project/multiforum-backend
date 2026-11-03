@@ -1,3 +1,4 @@
+import type { PluginConfigurationQueryResolvers } from "./contracts/pluginConfiguration.js";
 import type { ContentPageQueryResolvers } from "./contracts/contentQueries.js";
 import type { ContentScalarQueryResolvers } from "./contracts/contentQueries.js";
 import type { AccountCollectionQueryResolvers } from "./contracts/accounts.js";
@@ -135,6 +136,12 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies ContentPageQueryResolvers;
 
+  const pluginConfigurationResolvers = {
+    previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
+      driver,
+    }),
+  } satisfies PluginConfigurationQueryResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -189,9 +196,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getInstalledPlugins: getInstalledPlugins({
       driver
     }),
-    previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
-      driver,
-    }),
+    ...pluginConfigurationResolvers,
     getApplicablePluginPipeline: getApplicablePluginPipeline({
       driver,
     }),

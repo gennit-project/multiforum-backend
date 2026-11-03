@@ -5,21 +5,45 @@
   "fields": [
     {
       "field": "Mutation.applyPluginConfiguration",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "status",
         "message",
-        "operations.*",
-        "planBefore.*",
-        "planAfter.*"
+        "operations.kind",
+        "operations.path",
+        "operations.status",
+        "operations.message",
+        "planBefore.apiVersion",
+        "planBefore.inSync",
+        "planBefore.warnings",
+        "planBefore.changes.kind",
+        "planBefore.changes.path",
+        "planBefore.changes.message",
+        "planBefore.changes.current",
+        "planBefore.changes.desired",
+        "planBefore.changes.blocked",
+        "planAfter.apiVersion",
+        "planAfter.inSync",
+        "planAfter.warnings",
+        "planAfter.changes.kind",
+        "planAfter.changes.path",
+        "planAfter.changes.message",
+        "planAfter.changes.current",
+        "planAfter.changes.desired",
+        "planAfter.changes.blocked"
+      ],
+      "residualPaths": [
+        "planBefore/planAfter changes.current/desired JSON scalar internals",
+        "atomicity of multi-operation application (existing partial writes)"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginConfiguration.ts",
+        "tests/contracts/pluginConfiguration.typecheck.ts",
         "customResolvers/mutations/applyPluginConfiguration.ts",
-        "services/plugin/configurationReconciliation.ts"
+        "tests/integration/pluginConfigurationReconciliation.test.ts"
       ],
-      "reason": "Latest main expanded server/channel reconciliation. Its internal plan/change unions and operation result enums need a generated recursive response boundary; latest inherited tests do not establish this new boundary.",
-      "decision": "Next safe slice: derive exact plan/result selected shape and exercise preview/no-change/blocked/partial-failure responses through GraphQL, preserving partial application."
+      "reason": "Contextual generated response projection checks every return branch, including exact status/kind enum values and recursive plans. Real GraphQL tests cover successful/no-op/blocked/partial-failure results, auth denial and redaction.",
+      "decision": "Wire the generated signature. Preserve existing partial application and read-back behavior; no transaction or semantics change."
     },
     {
       "field": "Mutation.clearDownloadableFileScan",
@@ -847,21 +871,30 @@
     },
     {
       "field": "Query.previewPluginConfigurationReconciliation",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "apiVersion",
         "inSync",
-        "changes.*",
-        "warnings"
+        "warnings",
+        "changes.kind",
+        "changes.path",
+        "changes.message",
+        "changes.current",
+        "changes.desired",
+        "changes.blocked"
+      ],
+      "residualPaths": [
+        "changes.current/desired JSON scalar internals"
       ],
       "evidence": [
-        "customResolvers/queries/previewPluginConfigurationReconciliation.ts",
+        "customResolvers/contracts/pluginConfiguration.ts",
+        "tests/contracts/pluginConfiguration.typecheck.ts",
         "services/persistence/pluginConfigurationReadRepository.ts",
-        "services/plugin/configurationReconciliation.ts"
+        "tests/integration/pluginConfigurationReconciliation.test.ts",
+        "tests/integration/pluginConfigurationReadRepository.test.ts"
       ],
-      "reason": "Latest main expanded desired/live channel handling; live installed edges are asserted and result uses domain enum/string unions. Exact generated args and nested response boundary not yet checked.",
-      "decision": "Implement together with applyPluginConfiguration using latest main channel rules and no-write/secret-redaction GraphQL cases."
+      "reason": "Actual factory output matches the full generated recursive custom response. Schema-executed live snapshots have exact nullable fields and non-null connection shapes; nullable Plugin links remain filtered by existing logic.",
+      "decision": "Wire the generated signature at composition. JSON internals remain scalar-owned; no schema/behavior change."
     },
     {
       "field": "Query.previewPluginPipelineCampaign",

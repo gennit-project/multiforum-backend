@@ -52,21 +52,21 @@ export type InstalledPluginConfigSnapshot = {
   pluginRegistries?: string[] | null;
   InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] };
 };
+// Exact selected relationships. Only Plugin is nullable; edges/node/properties
+// are non-null GraphQL connection results. JSON values intentionally stay unknown.
+export type ReconciliationInstalledEdge = {
+  properties: { enabled: boolean; settingsJson: unknown };
+  node: { version: string; Plugin: { name: string } | null };
+};
 export type ReconciliationConfigSnapshot = {
-  serverName?: string | null;
-  pluginRegistries?: string[] | null;
-  pluginPipelines?: unknown;
-  InstalledVersionsConnection?: { edges?: Array<{
-    properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
-    node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
-  }> };
+  serverName: string | null;
+  pluginRegistries: string[] | null;
+  pluginPipelines: unknown;
+  InstalledVersionsConnection: { edges: ReconciliationInstalledEdge[] };
 };
 export type ReconciliationChannelSnapshot = {
-  uniqueName?: string | null;
-  EnabledPluginsConnection?: { edges?: Array<{
-    properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
-    node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
-  }> };
+  uniqueName: string;
+  EnabledPluginsConnection: { edges: ReconciliationInstalledEdge[] };
 };
 
 export interface PluginConfigurationReadRepository {
