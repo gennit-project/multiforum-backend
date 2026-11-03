@@ -1,7 +1,8 @@
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import { createCommentModerationRepository, type CommentModerationRepository } from "../../services/persistence/commentModerationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
-  Issue,
   CommentUpdateInput,
   CommentWhere
 } from '../../ogm_types.js'
@@ -15,7 +16,7 @@ import { logger } from "../../logger.js";
 
 type Args = {
   commentId: string
-  explanation: string
+  explanation?: string | null
 }
 
 type Input = {
@@ -52,7 +53,7 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = ''
-    let existingIssue: Issue | null = null
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null
 
     const commentData = await repository.findUnarchiveTarget(commentId)
     const channelUniqueName =

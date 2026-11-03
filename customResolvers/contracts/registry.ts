@@ -1,3 +1,4 @@
+import { moderationArchiveMutationNames } from "./moderationArchives.js";
 import { moderationSuspensionMutationNames } from "./moderationSuspensions.js";
 import { moderationReportMutationNames } from "./moderationReports.js";
 import { moderationUndoMutationNames } from "./moderationUndo.js";
@@ -54,6 +55,7 @@ export const checkedRootGroups = [
   ["Mutation", "moderationUndoResolvers", "ModerationUndoMutationResolvers", moderationUndoMutationNames],
   ["Mutation", "moderationReportResolvers", "ModerationReportMutationResolvers", moderationReportMutationNames],
   ["Mutation", "moderationSuspensionResolvers", "ModerationSuspensionMutationResolvers", moderationSuspensionMutationNames],
+  ["Mutation", "moderationArchiveResolvers", "ModerationArchiveMutationResolvers", moderationArchiveMutationNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

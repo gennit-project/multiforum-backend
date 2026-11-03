@@ -1,3 +1,4 @@
+import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
 import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
 import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
 import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
@@ -497,6 +498,33 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     unsuspendMod: unsuspendMod(),
   } satisfies ModerationSuspensionMutationResolvers;
 
+  const moderationArchiveResolvers = {
+    archiveImage: archiveImage({
+      driver
+    }),
+    unarchiveImage: unarchiveImage({
+      driver,
+    }),
+    archiveComment: archiveComment({
+      driver,
+    }),
+    archiveDiscussion: archiveDiscussion({
+      driver,
+    }),
+    archiveEvent: archiveEvent({
+      driver,
+    }),
+    unarchiveComment: unarchiveComment({
+      driver,
+    }),
+    unarchiveDiscussion: unarchiveDiscussion({
+      driver,
+    }),
+    unarchiveEvent: unarchiveEvent({
+      driver,
+    }),
+  } satisfies ModerationArchiveMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -517,12 +545,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...accountObjectResolvers,
     ...accountScalarResolvers,
     ...moderationReportResolvers,
-    archiveImage: archiveImage({
-      driver
-    }),
-    unarchiveImage: unarchiveImage({
-      driver,
-    }),
+    ...moderationArchiveResolvers,
     permanentlyRemoveImage: permanentlyRemoveImage({
       driver
     }),
@@ -541,24 +564,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     ...moderationLockResolvers,
     ...moderationSuspensionResolvers,
-    archiveComment: archiveComment({
-      driver,
-    }),
-    archiveDiscussion: archiveDiscussion({
-      driver,
-    }),
-    archiveEvent: archiveEvent({
-      driver,
-    }),
-    unarchiveComment: unarchiveComment({
-      driver,
-    }),
-    unarchiveDiscussion: unarchiveDiscussion({
-      driver,
-    }),
-    unarchiveEvent: unarchiveEvent({
-      driver,
-    }),
     ...subscriptionResolvers,
     ...pluginInstallationResolvers,
     ...pluginExecutionResolvers,

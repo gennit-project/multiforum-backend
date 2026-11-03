@@ -163,19 +163,19 @@
     },
     {
       "field": "Mutation.archiveComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.archiveDiscussion",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.archiveEvent",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.archiveImage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.becomeForumAdmin",
@@ -519,19 +519,19 @@
     },
     {
       "field": "Mutation.unarchiveComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unarchiveDiscussion",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unarchiveEvent",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unarchiveImage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.undoSuperUpvote",

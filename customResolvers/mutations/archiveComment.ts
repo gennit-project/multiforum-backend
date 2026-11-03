@@ -1,6 +1,7 @@
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import { createCommentModerationRepository, type CommentModerationRepository } from "../../services/persistence/commentModerationRepository.js";
 import type {
-  Issue,
   CommentUpdateInput,
   CommentWhere,
 } from "../../ogm_types.js";
@@ -133,7 +134,7 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const commentData = await repository.findArchiveTarget(commentId);
     const channelUniqueName =
@@ -285,7 +286,7 @@ const getResolver = (input: Input) => {
 
       // Notify the comment author that their content was archived
       const commentAuthorUsername = getCommentAuthorUsername(
-        commentData[0]?.CommentAuthor as CommentAuthorForNotification
+        commentData[0]?.CommentAuthor
       );
       const issueNumber = existingIssue?.issueNumber;
 
@@ -294,7 +295,7 @@ const getResolver = (input: Input) => {
           baseUrl: process.env.FRONTEND_URL || "",
           channelUniqueName,
           commentId,
-          comment: commentData[0] as ArchivedCommentContext,
+          comment: commentData[0],
         });
 
         if (contentUrl) {
