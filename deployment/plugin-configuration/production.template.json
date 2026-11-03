@@ -26,7 +26,7 @@
         "serviceUrl": "__LLM_MODERATION_SERVICE_URL__",
         "serverRuleCheckMode": "allowlist",
         "serverRuleForumAllowlist": ["__LLM_MODERATION_TRIAL_FORUM__"],
-        "model": "gpt-4o-mini",
+        "model": "gpt-4o",
         "temperature": 0,
         "maxTokens": 800,
         "confidenceThreshold": 0.7,
