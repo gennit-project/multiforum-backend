@@ -92,6 +92,44 @@ test("buildBotInvocationContext includes forum, discussion, and threaded parent 
   });
 });
 
+test("buildBotInvocationContext flattens { summary, detail } rules to text for plugins", () => {
+  const result = buildBotInvocationContext({
+    invocationType: "comment-created",
+    server: {
+      rules: [{ summary: "Be kind", detail: "- No insults\n- Stay civil" }],
+    },
+    channel: {
+      uniqueName: "bad_advice",
+      rules: [
+        { summary: "Good advice is prohibited", detail: "" },
+        { summary: "No real tips", detail: "Jokes only" },
+      ],
+      pluginEnabled: true,
+    },
+  });
+
+  assert.deepEqual(
+    { server: result.server.rules, channel: result.channel.rules },
+    {
+      server: ["Be kind\n- No insults\n- Stay civil"],
+      channel: ["Good advice is prohibited", "No real tips\nJokes only"],
+    }
+  );
+});
+
+test("buildBotInvocationContext parses rules supplied as a JSON string", () => {
+  const result = buildBotInvocationContext({
+    invocationType: "comment-created",
+    channel: {
+      uniqueName: "bad_advice",
+      rules: '[{"summary":"Good advice is prohibited","detail":""}]',
+      pluginEnabled: true,
+    },
+  });
+
+  assert.deepEqual(result.channel.rules, ["Good advice is prohibited"]);
+});
+
 test("buildBotInvocationContext defaults channel plugin enablement to false", () => {
   const result = buildBotInvocationContext({
     invocationType: "comment-created",
