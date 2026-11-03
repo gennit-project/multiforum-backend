@@ -485,7 +485,7 @@
         "id",
         "notifiedAt",
         "configurationSnapshot JSON scalar internals",
-        "Discussion target branch: preexisting unsupported singular DownloadableFile query",
+        "unselected attempt properties and runtime plugin/provider effects",
         "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
@@ -498,10 +498,12 @@
         "services/plugin/downloadTrigger.ts",
         "services/plugin/downloadTrigger.execution.test.ts",
         "tests/integration/pipelineStartRepository.test.ts",
-        "tests/integration/pipelineRerunRepository.test.ts"
+        "tests/integration/pipelineRerunRepository.test.ts",
+        "tests/integration/discussionPipelineExecution.test.ts",
+        "tests/contracts/pluginExecution.typecheck.ts"
       ],
-      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
-      "decision": "Preserve existing Discussion.DownloadableFile validation failure and record it explicitly; fixing that branch needs a separate behavior decision. Wire successful response projection without claiming all schema fields or provider payloads checked."
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures.",
+      "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
@@ -625,7 +627,7 @@
         "id",
         "notifiedAt",
         "configurationSnapshot JSON scalar internals",
-        "Discussion target branch: preexisting unsupported singular DownloadableFile query",
+        "unselected attempt properties and runtime plugin/provider effects",
         "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
@@ -638,10 +640,12 @@
         "services/plugin/downloadTrigger.ts",
         "services/plugin/downloadTrigger.execution.test.ts",
         "tests/integration/pipelineStartRepository.test.ts",
-        "tests/integration/pipelineRerunRepository.test.ts"
+        "tests/integration/pipelineRerunRepository.test.ts",
+        "tests/integration/discussionPipelineExecution.test.ts",
+        "tests/contracts/pluginExecution.typecheck.ts"
       ],
-      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
-      "decision": "Preserve existing Discussion.DownloadableFile validation failure and record it explicitly; fixing that branch needs a separate behavior decision. Wire successful response projection without claiming all schema fields or provider payloads checked."
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures.",
+      "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
     },
     {
       "field": "Mutation.trackDownload",

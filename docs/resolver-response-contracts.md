@@ -289,8 +289,8 @@ Additional real-schema evidence requiring a behavior decision:
   #440. This branch incorporates that fix and replaces the old failure witnesses
   with successful real-schema response assertions; malformed unselected fields
   still remain lazy. No storage or permission policy is changed here.
-- Two plugin execution branches still request unsupported singular
-  `Discussion.DownloadableFile`. Tests preserve the existing validation failure.
+- Merged #442 fixes the two Discussion pipeline selections and revision guards.
+  Precise projections and real execution tests now assert the supported paths.
 - Uploaded-file channel names and review author fallback were fixed separately in
   merged #441; canonical-graph and permission regressions now assert correct results.
   Raw nested leaves remain outside the selected uploader/status contract.
@@ -329,12 +329,18 @@ residual paths within the 173 selected entries still need explicit source or
 selection-aware contracts. This checkpoint is not completion of the full campaign.
 
 
-### Selection-aware investigation after #441
+### Selection-aware continuation after #443
 
-See [next decisions](resolver-contract-next-decisions.md) for the five race-policy
-choices, newly reproduced bot-list alias and dynamic moderation-selection defects,
-and the precise download projections. Three variant-URL registrations now enforce
-the existing normalized string-map-or-null application domain without claiming
-structural guarantees from the unrestricted JSON scalar. These do not increase
-the generated selected-boundary count. No race or selection behavior fix is hidden
-in this typing checkpoint.
+Merged #442/#443 fixes are reconciled with the precise pipeline projections and
+successful selection regressions. All 23 opaque list registrations check generated
+call signatures and list-container nullability; delegated activity payloads check
+root arguments and their child method convention. Items and delegation results
+remain unknown, so accounting stays **173 selected / 36 deferred**. These source
+checks cannot substitute for selection-dependent child types. Drift guards and
+negative fixtures keep that distinction explicit.
+
+Three variant-URL registrations retain explicit string-map-or-null domain checks
+without claiming guarantees from unrestricted JSON. The image-usage whole-result
+cast is replaced by an exact nested raw projection; its separate graph/access
+question is documented, not silently repaired. See [next decisions](resolver-contract-next-decisions.md)
+for the remaining race choices and precise limits. No race policy changes are made.

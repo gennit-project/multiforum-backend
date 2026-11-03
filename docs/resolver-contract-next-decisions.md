@@ -1,4 +1,4 @@
-# Remaining response-contract decisions after #441
+# Remaining response-contract decisions after #443
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
 has 173 selected response/source boundaries and 36 deferred entries. The three
@@ -16,36 +16,34 @@ status filter prove selected scalar values. Unrequested malformed titles and fil
 names remain lazy; aliases/fragments preserve these read results and requested
 malformed fields fail at the correct response path.
 
-## Newly reproduced selection defects
+## Selection fixes and source-boundary guarantees
 
-`tests/integration/botSuspensionConnection.test.ts` uses the actual generated schema,
-Shield and a canonical graph. `channels { Bots { username } }` returns the bot;
-`channels { members: Bots { username } }` returns `members: []` without an error.
-`emptyArrayFallback` looks up the schema field name on a parent projected under the
-response alias. The aliased list silently loses data. Unaliased lists with nested
-aliases/fragments and nullable malformed unrequested values still behave correctly.
-Private moderator identity aliases are denied, and skipped identity fields remain
-unrequested. Other registrations share the fallback, but the integration witness
-specifically proves `Channel.Bots`; it does not claim every list was tested.
+Merged #443 fixes bot-list alias lookup and delegates activity payload reads through
+GraphQL. The old failure witnesses now assert correct results. Real schema/Shield
+tests cover independent filtered aliases, nested/payload fragments, merged field
+nodes, directive/argument variables and defaults, skipped fields, nullable errors,
+private identities, denied callers and a single action/comment write per mutation.
 
-`tests/integration/issueActivityAndSoftDelete.test.ts` proves two separate
-`addIssueActivityFeedItem` selection-forwarding failures:
+All 23 pass-through list registrations now enforce generated call signatures and
+list-container nullability via `OpaqueListSource`. Items remain unknown, so these
+are NOT promoted to checked selected-response entries. Unrestricted JSON cannot
+masquerade as a list contract. The activity registration checks the generated root
+arguments and the actual child method `(args, context, info)` convention; the
+delegation result is explicitly unknown rather than asserted as a full Issue list.
+Compile-negative tests and AST drift guards enforce these separate source checks.
 
-- Aliasing the payload's `issues` field or putting it inside a payload fragment
-  makes the refetch fall back to `{ id }`. A requested existing nullable title
-  returns null. The moderation action still commits.
-- A variable used in a selected field directive is copied into the refetch without
-  its definition/value. The generated query errors after the action commits.
+The remaining item-contract work must model each upstream selection, preserving
+response keys, variables and child completion. A generic full-entity cast or eager
+row decoder is not equivalent to field-level GraphQL behavior. Runtime regression
+coverage establishes behavior but does not manufacture static item guarantees.
 
-These are application adapter defects, not missing GraphQL validation. A separate
-fix should collect all applicable field nodes by schema field name, merge applicable
-fragments, preserve response aliases/directives and forward only referenced variable
-definitions/values. Parent response keys must agree with the outer field resolvers.
-It must preserve the existing outer Shield gates and denied-child behavior; an
-internal unwrapped refetch is not permission evidence. Do not certify a generic
-`executeGeneratedOperation<T>` cast or eagerly decode unrequested fields. Until
-these selection defects are resolved, dynamic and pass-through contracts remain
-explicitly deferred rather than counted via an opaque output type.
+Image-usage reads also now have exact nested raw projections, without the previous
+whole-result cast. A new canonical-graph witness finds that this query still follows
+the reversed discussion-channel edge (a separate occurrence from #441). The same omission is reproduced through actual public Shield middleware for a
+nonsensitive image. Query wildcard allow permits that read; the sensitive-content
+filter still rejects a resolved ineligible caller. These tests inject the resolved
+age-policy decision rather than re-testing the policy engine. A graph traversal
+fix must be coordinated separately. No permission or query change is included.
 
 ## Five race cases: choices requiring approval
 
@@ -64,16 +62,16 @@ already-returned snapshot prevents a later deletion or permission change.
 
 ## Separate deterministic fixes to coordinate
 
-1. `startPluginPipeline` and `rerunPluginPipeline` Discussion-target branches still
-   request unsupported singular `Discussion.DownloadableFile`. Existing executable
-   schema witnesses fail before pipeline dispatch. Fix supported plural selection
-   and define which attachment supplies input, preserving access checks and dispatch
-   multiplicity; do not infer a first-file policy without inspecting current callers.
+1. `startPluginPipeline` and `rerunPluginPipeline` Discussion-target behavior was
+   fixed in merged #442. Supported plural attachment selections and current/legacy
+   content hashes are retained. Precise generated projections and execution tests
+   now cover these successful paths; first-attachment policy is unchanged.
 2. Profile/icon variant writes pass a nonempty object as a Neo4j property and fail.
    Existing storage scalar columns and JSON domain normalization offer implementation
    options, but storage compatibility and clearing/merge behavior need explicit tests.
-3. The list-alias and dynamic-selection defects above need focused behavior fixes
-   before their contracts can honestly be promoted.
+3. The image-usage graph traversal question above remains separate work.
+   The list-alias and dynamic-selection bugs were fixed in #443; opaque child types
+   still require precise upstream contracts, rather than another behavior fix.
 
 No extra PR is created by this checkpoint. Coordinate the behavior fixes separately
 from #419; no merge/deployment/shared database writes or schema/permission changes.

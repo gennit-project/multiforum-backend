@@ -208,10 +208,13 @@
       ],
       "evidence": [
         "customResolvers/queries/getImageAlbumUsage.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/imageUsageProjections.d.ts",
+        "tests/contracts/imageUsageProjections.typecheck.ts",
+        "tests/integration/imageUsageSourceContracts.test.ts"
       ],
-      "reason": "imageId is parameter-bound by MATCH, but uploader/album/owner/discussion properties remain persisted unknowns. Sole identity promotion would add little coverage; retain exception pending useful additional boundary.",
-      "decision": "Retain explicit exception for this bounded viewer-state slice. Computed contribution metadata/counts warrant a separate source-provenance slice; raw entity properties require selection-aware completion or a separately approved behavior change.",
+      "reason": "Exact nested raw projection removes the final AlbumUsage assertion. Image identity is parameter-bound; uploader/album/owner/discussion properties remain unknown. A canonical-graph witness isolates reversed discussion-channel traversal; public middleware preserves this nonsensitive read through Query wildcard allow.",
+      "decision": "Coordinate the graph traversal fix separately; preserve current public/sensitive-content behavior. Retain deferred selected response until useful raw child contracts are proven.",
       "status": "deferred"
     },
     {

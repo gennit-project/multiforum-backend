@@ -12,10 +12,13 @@
       "evidence": [
         "customResolvers/mutations/addIssueActivityFeedItem.ts",
         "tests/integration/issueActivityAndSoftDelete.test.ts",
-        "tests/integration/issueActivityAndSoftDelete.test.ts"
+        "tests/integration/issueActivityAndSoftDelete.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
-      "reason": "Request-dependent refetch remains unknown. Real-schema witnesses prove aliased issues/payload fragments lose selected title and selected-field variables fail validation after committed action creation.",
-      "decision": "Separate selection-forwarding fix preserving aliases/fragments/directives/variable values and outer child permissions before assigning a request-dependent structural contract; see docs/resolver-contract-next-decisions.md."
+      "reason": "Merged #443 delegates each payload selection after one committed write. Real-schema regressions cover aliases/fragments/variables, merged selections, default values and outer Shield privacy. Actual registration checks generated mutation arguments and a child method with args/context/info; delegate result remains unknown.",
+      "decision": "Do not assert the library any result as a full Issue array. Derive/validate selection-dependent item types upstream before promoting response status; source-method shape alone is not completion."
     },
     {
       "field": "Mutation.archiveComment",

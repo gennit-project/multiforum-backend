@@ -11,7 +11,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -42,7 +45,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -58,10 +64,13 @@
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
         "tests/integration/typeFieldResponseContracts.test.ts",
-        "tests/integration/botSuspensionConnection.test.ts"
+        "tests/integration/botSuspensionConnection.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
-      "reason": "Real GraphQL+Shield regression proves aliased members:Bots loses the generated response-key projection and returns an empty list. Unaliased fields, nested aliases/fragments, nullable malformed leaves and denied/skipped private fields are exercised. Raw list items remain opaque.",
-      "decision": "Coordinate alias-aware fallback behavior fix, then precise upstream/selection-aware contracts; do not count unknown[] or infer all shared registrations are certified."
+      "reason": "Merged #443 preserves aliases/independent filters, fragments, skipped fields, nullable paths and Shield privacy. Items remain opaque despite checked generated arguments and list-container nullability.",
+      "decision": "Retain deferred item contract until upstream selections have precise item types; do not count the OpaqueListSource container check as a generated child response guarantee."
     },
     {
       "field": "Channel.Comments",
@@ -73,7 +82,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -88,7 +100,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -103,7 +118,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -118,7 +136,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -133,7 +154,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -148,7 +172,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -163,7 +190,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -178,7 +208,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -193,7 +226,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -208,7 +244,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -223,7 +262,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -238,7 +280,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -253,7 +298,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -286,7 +334,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -332,7 +383,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -363,7 +417,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -378,7 +435,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -393,7 +453,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -471,7 +534,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
@@ -486,7 +552,10 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts"
       ],
       "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
