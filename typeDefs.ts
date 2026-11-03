@@ -1174,6 +1174,16 @@ const typeDefinitions = gql`
   type ModerationProfile @node {
     createdAt: DateTime! @timestamp(operations: [CREATE])
     displayName: String
+    # The account behind this profile, exposed ONLY when it is a bot. Bots are not
+    # pseudonymous, so their real user (username, profile link) is public; for human
+    # mods this is null and their identity stays masked via the denied User edge
+    # below (see the ModerationProfile rule in permissions.ts).
+    BotUser: User
+      @filterable(byValue: false, byAggregate: false)
+      @cypher(
+        statement: "MATCH (this)<-[:MODERATION_PROFILE]-(u:User) WHERE coalesce(u.isBot, false) = true RETURN u"
+        columnName: "u"
+      )
     User: User @relationship(type: "MODERATION_PROFILE", direction: IN)
     AuthoredIssues: [Issue!]!
       @relationship(type: "AUTHORED_ISSUE", direction: IN)
