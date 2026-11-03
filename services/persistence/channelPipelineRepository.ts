@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { Channel, ServerConfig } from "../../ogm_types.js";
+import type { ChannelPipelineSettings, ServerBotPipelineSettings } from "../../customResolvers/contracts/pluginPolicyProjections.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const CHANNEL_PIPELINE_DEFAULT_SELECTION = `{
   uniqueName
@@ -117,22 +117,22 @@ const DEPRECATE = `mutation DeprecateOrphanedPipelineBot($where: UserWhere, $upd
 // nests inside update ({ Bots: [{ disconnect: [{ where: { node } }] }] }).
 const DISCONNECT = `mutation DisconnectOrphanedPipelineBots($where: ChannelWhere, $update: ChannelUpdateInput) { updateChannels(where: $where, update: $update) { channels ${CHANNEL_PIPELINE_DEFAULT_SELECTION} } }`;
 export interface ChannelPipelineRepository {
-  findSettings(uniqueName: string): Promise<Channel[]>;
+  findSettings(uniqueName: string): Promise<ChannelPipelineSettings[]>;
   savePipelines(uniqueName: string, pluginPipelines: string): Promise<void>;
-  listServerSettings(): Promise<ServerConfig[]>;
+  listServerSettings(): Promise<ServerBotPipelineSettings[]>;
   deprecateBot(username: string, reason: string): Promise<void>;
   disconnectBots(uniqueName: string, usernames: string[]): Promise<void>;
 }
 export function createChannelPipelineRepository(driver: Driver): ChannelPipelineRepository {
   return {
     async findSettings(uniqueName) {
-      const data=await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}});return data.channels;
+      const data=await executeGeneratedOperation<{channels:ChannelPipelineSettings[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}});return data.channels;
     },
     async savePipelines(uniqueName,pluginPipelines) {
       await executeGeneratedOperation(driver,SAVE,{where:{uniqueName:{eq:uniqueName}},update:{pluginPipelines:{set:pluginPipelines}}});
     },
     async listServerSettings() {
-      const data=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,SERVER,{});return data.serverConfigs;
+      const data=await executeGeneratedOperation<{serverConfigs:ServerBotPipelineSettings[]}>(driver,SERVER,{});return data.serverConfigs;
     },
     async deprecateBot(username,reason) {
       await executeGeneratedOperation(driver,DEPRECATE,{where:{username:{eq:username}},update:{isDeprecated:{set:true},deprecatedReason:{set:reason}}});

@@ -9,7 +9,7 @@ function fixture() {
   const calls: string[] = [];
   const target: PipelineTargetRepository = {
     findDiscussionVisibility: async () => [],
-    findDownloadVisibility: async () => { calls.push("visibility"); return [{id:"file",Discussion:{id:"discussion",DiscussionChannels:[{archived:false}]}}]; },
+    findDownloadVisibility: async () => { calls.push("visibility"); return [{id:"file",permanentlyRemoved:false,Discussion:{id:"discussion",deleted:false,DiscussionChannels:[{channelUniqueName:"cats",archived:false}]}}]; },
     findDownloadTiming: async () => [], listServerApplicabilityConfigs: async () => [], findChannelApplicabilityConfig: async () => [],
   };
   const history: PipelineHistoryRepository = {

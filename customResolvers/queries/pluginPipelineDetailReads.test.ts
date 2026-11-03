@@ -25,7 +25,7 @@ function fixture() {
     findInternalJobs:async(id)=>{calls.push(`internalJobs:${id}`);return [];},
   };
   const target:PipelineTargetRepository={
-    findDownloadVisibility:async()=>{calls.push("visibility");return [{id:"file",Discussion:{DiscussionChannels:[{archived:false}]}}];},
+    findDownloadVisibility:async()=>{calls.push("visibility");return [{id:"file",permanentlyRemoved:false,Discussion:{id:"discussion",deleted:false,DiscussionChannels:[{channelUniqueName:"cats",archived:false}]}}];},
     findDiscussionVisibility:async()=>[],findDownloadTiming:async()=>[],listServerApplicabilityConfigs:async()=>[],findChannelApplicabilityConfig:async()=>[],
   };
   return {calls,detail,target,

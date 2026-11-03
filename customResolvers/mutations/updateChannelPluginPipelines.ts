@@ -1,7 +1,6 @@
 import type { BotIdentityRepository } from "../../services/persistence/botIdentityRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createChannelPipelineRepository, type ChannelPipelineRepository } from "../../services/persistence/channelPipelineRepository.js"
-import type { Channel } from '../../ogm_types.js'
 import {
   buildBotUsername,
   getBotNameFromSettings,
@@ -93,7 +92,7 @@ const getResolver = (input: Input) => {
       throw new Error(`Channel "${channelUniqueName}" not found`)
     }
 
-    const channel: Channel = existingChannels[0]
+    const channel = existingChannels[0]
 
     // Update the pluginPipelines JSON field (serialized as string for Neo4j)
     await channelPipelineRepository.savePipelines(channelUniqueName, JSON.stringify(pipelines))

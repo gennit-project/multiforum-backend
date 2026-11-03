@@ -2,6 +2,7 @@ import type {
   EventPipeline,
   PipelineApplicability,
   PluginEdgeData,
+  PluginEdgeSnapshot,
   PluginToRun,
 } from './types.js'
 import {
@@ -10,8 +11,8 @@ import {
   parseManifest,
 } from './pipelineUtils.js'
 
-export type DownloadPipelinePlan = {
-  event: string
+export type DownloadPipelinePlan<Event extends string | null = string> = {
+  event: Event
   applicability: PipelineApplicability
   effectiveAt: string | null
   policyId: string | null
@@ -23,7 +24,7 @@ export type DownloadPipelinePlan = {
 
 const DEFAULT_APPLICABILITY: PipelineApplicability = 'ALL_FILES_IMMEDIATE'
 
-const handlesEvent = (edgeData: PluginEdgeData, event: string): boolean => {
+const handlesEvent = (edgeData: PluginEdgeData, event: string | null): boolean => {
   const manifest = parseManifest(edgeData.node.manifest)
   const events = Array.isArray(manifest.events) ? manifest.events : []
   return events.includes(event)
@@ -34,7 +35,7 @@ const resolveConfiguredSteps = ({
   eventPipeline,
   pluginVersionsMap,
 }: {
-  event: string
+  event: string | null
   eventPipeline: EventPipeline
   pluginVersionsMap: ReturnType<typeof buildPluginVersionMaps>
 }): PluginToRun[] => {
@@ -81,17 +82,17 @@ const uploadedBeforePolicy = ({
   )
 }
 
-export const resolveDownloadPipelinePlan = ({
+export const resolveDownloadPipelinePlan = <Event extends string | null>({
   event,
   pipelines,
   installedPluginEdges,
   uploadedAt,
 }: {
-  event: string
+  event: Event
   pipelines: EventPipeline[]
-  installedPluginEdges: PluginEdgeData[]
+  installedPluginEdges: PluginEdgeSnapshot[]
   uploadedAt?: string | null
-}): DownloadPipelinePlan => {
+}): DownloadPipelinePlan<Event> => {
   const eventPipeline = pipelines.find(pipeline => pipeline.event === event) || null
   const applicability =
     eventPipeline?.applicability || DEFAULT_APPLICABILITY

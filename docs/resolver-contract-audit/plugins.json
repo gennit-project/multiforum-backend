@@ -457,16 +457,17 @@
       "status": "deferred",
       "selectedPaths": [],
       "residualPaths": [
-        "event",
-        "steps.*",
-        "configuration fields"
+        "JSON scalar output structure"
       ],
       "evidence": [
-        "customResolvers/mutations/updateChannelPluginPipelines.ts",
-        "services/persistence/channelPipelineRepository.ts"
+        "customResolvers/contracts/pluginPolicies.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "build_scripts/pluginPolicyDomainBoundary.test.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "customResolvers/mutations/updateChannelPluginPipelines.ts"
       ],
-      "reason": "Returned pipeline array is input-derived but shared helper input shapes and nullable generated fields are not checked; bot lifecycle writes precede response.",
-      "decision": "Check actual generated argument/response boundary and GraphQL array/enum/null completion, retaining bot updates and write ordering."
+      "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign."
     },
     {
       "field": "Mutation.updateDownloadLabels",
@@ -503,43 +504,51 @@
       "status": "deferred",
       "selectedPaths": [],
       "residualPaths": [
-        "event",
-        "steps.*",
-        "applicability",
-        "effectiveAt",
-        "policyId"
+        "JSON scalar output structure"
       ],
       "evidence": [
-        "customResolvers/mutations/updatePluginPipelines.ts",
-        "services/persistence/serverPipelineRepository.ts"
+        "customResolvers/contracts/pluginPolicies.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "build_scripts/pluginPolicyDomainBoundary.test.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "customResolvers/mutations/updatePluginPipelines.ts"
       ],
-      "reason": "Normalizes input applicability/policy defaults, then returns domain EventPipeline objects; generated input/enum/nullability boundary remains unchecked.",
-      "decision": "Use exact generated boundary compatible with actual accepted inputs; test normalized/invalid/empty pipelines through GraphQL."
+      "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign."
     },
     {
       "field": "Query.getApplicablePluginPipeline",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "targetId",
         "targetType",
-        "eventType",
         "scope",
         "channelId",
         "configured",
+        "required",
+        "reason",
+        "expectedJobs.pluginName",
+        "expectedJobs.version",
+        "expectedJobs.order"
+      ],
+      "residualPaths": [
+        "eventType",
         "applicability",
         "effectiveAt",
         "policyId",
-        "required",
-        "reason",
-        "expectedJobs.*"
+        "expectedJobs.pluginId",
+        "expectedJobs.condition",
+        "expectedJobs.continueOnError"
       ],
       "evidence": [
-        "customResolvers/queries/getApplicablePluginPipeline.ts",
-        "services/persistence/pipelineTargetRepository.ts"
+        "customResolvers/contracts/pluginPolicies.ts",
+        "customResolvers/contracts/pluginPolicyProjections.d.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "tests/integration/pipelineTargetRepository.test.ts"
       ],
-      "reason": "Visible-file and installed edge shapes are cast; plan output includes parsed pipeline JSON and enum values. Its generated nullable args are wider than declared helper args.",
-      "decision": "Use exact target/config projections and widen types to actual accepted null/string arguments without changing behavior; test SERVER/CHANNEL and invisible targets."
+      "reason": "Computed fields and schema-executed selected plugin name/version values are checked. Explicit null eventType can succeed when only computed fields are selected and fails when non-null eventType is selected; malformed stored applicability enum similarly fails only on selection. Remaining persisted policy JSON is parsed without structural validation.",
+      "decision": "Preserve lazy field serialization and existing visibility/read order; eager stored-policy decoding or rejecting explicit nullable event requires a separate behavior decision."
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
