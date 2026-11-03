@@ -5,8 +5,7 @@ import type { GraphQLContext } from '../../types/context.js'
 import { logger } from '../../logger.js'
 import {
   buildPluginConfigStatus,
-  resolveSecretValidationStatus,
-  type PluginConfigScope
+  resolveSecretValidationStatus
 } from '../../services/plugin/configStatus.js'
 
 type Input = { driver: Driver; pluginStatusRepository?: PluginStatusRepository }
@@ -14,7 +13,7 @@ type Input = { driver: Driver; pluginStatusRepository?: PluginStatusRepository }
 type Args = {
   pluginId: string
   version: string
-  scope?: PluginConfigScope
+  scope?: string | null
 }
 
 const getResolver = ({ driver, pluginStatusRepository: repository = createPluginStatusRepository(driver) }: Input) =>

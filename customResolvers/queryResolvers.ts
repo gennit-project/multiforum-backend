@@ -1,3 +1,4 @@
+import type { PluginSettingsReadResolvers } from "./contracts/pluginSettingsRead.js";
 import type { PluginCampaignQueryResolvers } from "./contracts/pluginCampaigns.js";
 import type { AccountSafetyQueryResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationQueryResolvers } from "./contracts/pluginConfiguration.js";
@@ -162,6 +163,13 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginCampaignQueryResolvers;
 
+  const pluginSettingsReadResolvers = {
+    getPluginConfigStatus: getPluginConfigStatus({ driver }),
+    getInstalledPlugins: getInstalledPlugins({
+      driver
+    }),
+  } satisfies PluginSettingsReadResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -212,10 +220,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     ...accountSafetyResolvers,
     ...pluginResolvers,
-    getPluginConfigStatus: getPluginConfigStatus({ driver }),
-    getInstalledPlugins: getInstalledPlugins({
-      driver
-    }),
+    ...pluginSettingsReadResolvers,
     ...pluginConfigurationResolvers,
     getApplicablePluginPipeline: getApplicablePluginPipeline({
       driver,

@@ -473,28 +473,55 @@
     },
     {
       "field": "Query.getInstalledPlugins",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "plugin.*",
+      "selectedPaths": [
         "version",
         "scope",
         "enabled",
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions",
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags"
+      ],
+      "residualPaths": [
+        "plugin.id",
+        "plugin.name",
+        "plugin.metadata",
+        "plugin.Versions and other unreturned Plugin fields",
         "settingsJson",
         "manifest",
         "settingsDefaults",
         "uiSchema",
-        "release metadata",
-        "hasUpdate",
-        "latestVersion",
-        "availableVersions"
+        "carryOverReport"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginSettingsRead.ts",
+        "tests/contracts/pluginSettingsRead.typecheck.ts",
+        "tests/integration/pluginSettingsReadContracts.test.ts",
         "customResolvers/queries/getInstalledPlugins.ts",
-        "services/persistence/pluginConfigurationReadRepository.ts"
+        "services/persistence/pluginConfigurationReadRepository.ts",
+        "tests/integration/pluginConfigurationReadRepository.test.ts",
+        "customResolvers/queries/pluginConfigurationReads.test.ts"
       ],
-      "reason": "PluginVersion.Plugin is nullable in storage schema while InstalledPlugin.plugin.id/name are non-null; code uses fallback {} and permits GraphQL to report missing plugin only when selected.",
-      "decision": "Preserve null-link lazy failure, replace optional catch-all snapshot with accurate nullable nested shapes, and explicitly check only safe response paths until nullable relationship/schema policy is decided."
+      "reason": "Actual factory output satisfies generated selected signature. Exact storage projections include nullable Plugin link. Real GraphQL verifies nullable/list defaults, decoding, malformed storage, public middleware access and orphan safe selections versus lazy non-null identity error. JSON internals remain unrestricted.",
+      "decision": [
+        "Promote only selected response paths.",
+        "Do not claim plugin.id/name checked: an orphan PluginVersion has no Plugin and these requested non-null fields still fail during completion. Repairing/rejecting orphan storage requires a separate behavior decision.",
+        "Keep JSON internals and unreturned fields outside certification; no permission/schema/error behavior changes."
+      ]
     },
     {
       "field": "Query.getInternalPluginPipelineRun",
@@ -704,19 +731,34 @@
     },
     {
       "field": "Query.getPluginConfigStatus",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "selectedPaths": [
         "isFullyConfigured",
-        "fields.*"
+        "fields.key",
+        "fields.label",
+        "fields.scope",
+        "fields.kind",
+        "fields.required",
+        "fields.isSet",
+        "fields.isValid",
+        "fields.message"
       ],
+      "residualPaths": [],
       "evidence": [
+        "customResolvers/contracts/pluginSettingsRead.ts",
+        "tests/contracts/pluginSettingsRead.typecheck.ts",
+        "tests/integration/pluginSettingsReadContracts.test.ts",
         "customResolvers/queries/getPluginConfigStatus.ts",
         "services/persistence/pluginStatusRepository.ts",
-        "services/plugin/configStatus.ts"
+        "services/plugin/configStatus.ts",
+        "tests/integration/pluginStatusRepository.test.ts",
+        "customResolvers/queries/getPluginConfigStatus.test.ts",
+        "services/plugin/configStatus.test.ts"
       ],
-      "reason": "Schema scope is nullable String; local Args narrows it to server/channel and helper manifest form maps assume that type. Real runtime permits other strings and null fallback.",
-      "decision": "Broaden type representation to actual behavior without new rejection/defaults; exact snapshot types and real GraphQL null/custom-scope response tests."
+      "reason": "Full constructed response satisfies generated signature. Accurate selected storage projections and real-schema tests cover required-field status, null/empty/default/custom scope, missing version/installation, and protected anonymous access. Scope annotation widened to match existing runtime acceptance without changing behavior.",
+      "decision": [
+        "Promote full constructed config-status response.",
+        "Preserve existing manifest/settings interpretation, wrapped errors, and auth/managePlugins middleware."
+      ]
     },
     {
       "field": "Query.getPluginPipelineCampaignFailures",

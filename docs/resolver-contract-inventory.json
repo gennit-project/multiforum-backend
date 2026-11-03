@@ -699,7 +699,7 @@
     },
     {
       "field": "Query.getInstalledPlugins",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getInstanceSetupStatus",
@@ -739,7 +739,7 @@
     },
     {
       "field": "Query.getPluginConfigStatus",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPluginPipelineCampaignFailures",
