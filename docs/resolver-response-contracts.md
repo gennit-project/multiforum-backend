@@ -1,4 +1,4 @@
-# Resolver response contracts: #413 foundation, voting, subscriptions and reactions
+# Resolver response contracts: cumulative #413 campaign
 
 GraphQL already validates requested response fields during execution. A nullable
 field may correctly complete as null (including an undefined resolver result);
@@ -9,9 +9,12 @@ before execution and adds executable-schema response evidence.
 ## Migration inventory and boundary
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
-including query, mutation, object, union and scalar implementations. Four regular
-vote mutations, ten subscription mutations and four emoji reaction mutations have
-status `selected-response` (18 total); the other 191 are `deferred`.
+including query, mutation, object, union and scalar implementations. At this
+checkpoint, 105 entries have a checked selected response boundary and 104 remain
+`deferred`. Selected-response is deliberately narrower than full-entity or
+end-to-end behavior certification: the exact selected paths and residual paths
+are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
+The original 18 voting/subscription/reaction boundaries are described below.
 This is not a statement that deferred resolvers are incorrect. Generated Neo4j
 CRUD resolvers are outside this custom-resolver inventory.
 
@@ -197,3 +200,67 @@ node --import tsx --import ./tests/helpers/snapshotSerializer.ts --test --test-c
 pnpm run tsc
 ```
 Compile-negative fixtures stay under `tests/contracts/reactions.typecheck.ts`.
+
+## Cumulative risk-ranked checkpoint
+
+The campaign extends the same draft PR after merging current main. It adds no
+public schema or permission changes of its own; the branch also contains main's
+independent fixes, including the bot suspension permission fix (#437).
+
+| Family | Selected boundaries | Scope |
+| --- | ---: | --- |
+| Original voting/subscriptions/reactions | 18 | Existing pilot retained |
+| Moderation actions | 8 | Wiki actions, sticky comments, soft deletion |
+| Plugin reads, reviews and configuration | 13 | History/detail/reviews/secrets plus preview/apply plans |
+| Accounts, collections and age/privacy | 37 | Scalar actions, precise projections, age checks and signing |
+| Content writes and revisions | 15 | Exact schema-executed writes, nullable input/error order |
+| Content query scalars and pagination | 7 | Three scalars and four page-info subsets |
+| Object/union fields | 7 | Union names, page-info, URL access and collections |
+
+`contracts/registry.ts` names the checked composition variables. Inventory tests
+inspect each actual `satisfies` boundary, reject missing/duplicate registrations,
+and compare the executable composition root with the complete inventory. The audit
+guard requires every post-pilot entry to have source/test evidence, selected paths,
+residual paths and a specific next step. A deferred entry is not a finding that
+production is broken. Routine unfinished work is distinguished from a behavior or
+schema decision; neither is counted as checked.
+
+The common declaration helper supports scalar arrays and exact generated enum
+string values. It does not accept arbitrary strings for enums or widen selected
+objects to blanket partials. Negative fixtures are compile-only under tests.
+JSON and DateTime scalar internals remain outside generated structural guarantees.
+
+### High-value execution evidence
+
+`botSuspensionConnection.test.ts` executes the actual generated schema through
+permission middleware on disposable Neo4j: anonymous forum reads include bot
+suspension counts, active/indefinite filtering, and empty bot lists. Public moderator
+suspension counts do not grant access to the private moderator identity edge.
+
+New response tests cover permission denial, null completion, repeated actions,
+configuration no-change/blocked/partial failure and secret redaction, age/privacy
+status, and storage signing through a test-only dependency seam. No tests use live
+storage, email, production Neo4j, or shared staging data.
+
+### Explicit remaining decisions and observed behavior
+
+- Raw database property maps and opaque parent-list items cannot honestly be
+  certified by a full-entity cast. Tests prove that malformed **unselected** fields
+  may succeed while selecting them yields a field-level serialization error.
+  Eager row-wide decoding would change accepted requests and sometimes post-commit
+  failure timing. A selection-aware completion strategy is needed for these paths.
+- Discussion/event creation can commit, then observe an empty response refetch
+  after concurrent deletion. Actual-driver tests reproduce the existing non-null
+  list-element error. Those two mutation signatures remain deferred, as does the
+  collection-sharing wrapper that can forward the same missing result.
+- Profile/icon writes currently reject nonempty variant URL maps as unsupported
+  Neo4j property values. Tests preserve this existing failure and also cover the
+  successful empty-variant projection. Fixing map persistence is separate behavior
+  work, not silently included in a type migration.
+- Dynamic caller-selected activity responses and unrestricted JSON scalars need
+  their own explicit boundary strategy. Selected pagination metadata does not
+  certify the accompanying raw item maps.
+
+These limits are documented per field rather than hidden behind the issue's closed
+state or a percentage. Completing more routine slices and resolving the remaining
+boundary decisions is required before describing the campaign as complete.
