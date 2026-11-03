@@ -1,3 +1,4 @@
+import type {ReturnedJob} from "../../customResolvers/contracts/pluginExecutionProjections.js";
 import {createDownloadExecutionRepository, type DownloadExecutionRepository} from "../persistence/downloadExecutionRepository.js";
 import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
 import type { PipelineLeaseRepository } from "../persistence/pipelineLeaseRepository.js";
@@ -5,7 +6,6 @@ import { performance } from 'perf_hooks'
 import { Storage } from '@google-cloud/storage'
 import type {
   TriggerArgs,
-  PluginEdgeData,
   PendingRun,
   PipelineExecutionMetadata,
 } from './types.js'
@@ -44,7 +44,7 @@ import {
   type DownloadScanOutcome
 } from './downloadScanOutcome.js'
 import { createDownloadReadUrl } from '../downloadStorage.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFile as DownloadableFileType, DownloadableFileUpdateInput, ServerConfig as ServerConfigType, Discussion as DiscussionType } from '../../ogm_types.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 import { notifyUploaderOfPipelineResult } from "./pipelineNotifications.js";
 import type { PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
@@ -90,21 +90,14 @@ export const triggerPluginRunsForDownloadableFile = async (
   }
 
   const downloadableFile = files[0]
-  // The runtime schema exposes a singular `Discussion` on DownloadableFile that
-  // the generated DownloadableFile type doesn't model yet, so extend the
-  // generated type with that queried field.
-  const fileData = downloadableFile as DownloadableFileType & {
-    storageBucket?: string | null
-    storageObjectName?: string | null
-    Discussion?: DiscussionType | null
-  }
+  const fileData = downloadableFile
   const discussionChannel = fileData.Discussion?.DiscussionChannels?.[0] || null
   const channelId = discussionChannel?.channelUniqueName || null
   const channelNode = discussionChannel?.Channel || null
 
   const serverConfigs = await repository.findConfiguration()
 
-  const serverConfig: ServerConfigType | undefined = serverConfigs[0]
+  const serverConfig = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
@@ -115,7 +108,7 @@ export const triggerPluginRunsForDownloadableFile = async (
   const plan = resolveDownloadPipelinePlan({
     event,
     pipelines,
-    installedPluginEdges: edges as unknown as PluginEdgeData[],
+    installedPluginEdges: edges,
     uploadedAt: fileData.uploadedAt || fileData.createdAt,
   })
   const { eventPipeline, pluginsToRun } = plan
@@ -169,7 +162,7 @@ export const triggerPluginRunsForDownloadableFile = async (
       } as DownloadableFileUpdateInput))
   }
 
-  const runs: unknown[] = []
+  const runs: ReturnedJob[] = []
   const jobStatuses: PipelineJobStatus[] = pluginsToRun.map(() => 'PENDING')
   const stopOnFirstFailure = eventPipeline?.stopOnFirstFailure ?? true
   let previousStatus: 'SUCCEEDED' | 'FAILED' | null = null

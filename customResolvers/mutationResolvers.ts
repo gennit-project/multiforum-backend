@@ -1,3 +1,4 @@
+import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
 import type { PluginPolicyDomainMutationResolvers } from "./contracts/pluginPolicies.js";
 import type { PluginInstallationMutationResolvers } from "./contracts/pluginInstallation.js";
 import type { PluginCampaignMutationResolvers } from "./contracts/pluginCampaigns.js";
@@ -410,6 +411,13 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginPolicyDomainMutationResolvers;
 
+  const pluginExecutionResolvers = {
+    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
+    retryDownloadableFileScan: retryDownloadableFileScan({}),
+    startPluginPipeline: startPluginPipeline({}),
+    rerunPluginPipeline: rerunPluginPipeline({}),
+  } satisfies PluginExecutionMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -512,10 +520,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     ...subscriptionResolvers,
     ...pluginInstallationResolvers,
-    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
-    retryDownloadableFileScan: retryDownloadableFileScan({}),
-    startPluginPipeline: startPluginPipeline({}),
-    rerunPluginPipeline: rerunPluginPipeline({}),
+    ...pluginExecutionResolvers,
     ...pluginCampaignResolvers,
     pausePluginPipelineCampaign: pausePluginPipelineCampaign({
       driver,

@@ -415,7 +415,7 @@
     },
     {
       "field": "Mutation.rerunPluginPipeline",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
@@ -423,7 +423,7 @@
     },
     {
       "field": "Mutation.retryDownloadableFileScan",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.seedDataForCypressTests",
@@ -475,7 +475,7 @@
     },
     {
       "field": "Mutation.startPluginPipeline",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.stickyComment",
@@ -515,7 +515,7 @@
     },
     {
       "field": "Mutation.triggerDownloadableFilePluginRuns",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unarchiveComment",

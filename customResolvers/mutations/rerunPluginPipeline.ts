@@ -1,9 +1,6 @@
 import {createPipelineRerunRepository, type PipelineRerunRepository} from "../../services/persistence/pipelineRerunRepository.js";
 import type {PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { GraphQLError } from "graphql";
-import type {
-  PluginPipelineRun,
-} from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
   PluginPipelineRunTrigger,
@@ -19,12 +16,12 @@ import { createStartPluginPipelineResolver } from "./startPluginPipeline.js";
 const RETRY_COOLDOWN_MS = 60_000;
 const RETRY_RATE_WINDOW_MS = 60 * 60_000;
 const MAX_RETRIES_PER_WINDOW = 3;
-const RETRY_TRIGGERS = new Set<PluginPipelineRunTrigger>([
+const RETRY_TRIGGERS = new Set<`${PluginPipelineRunTrigger}`>([
   PluginPipelineRunTrigger.OwnerRetry,
   PluginPipelineRunTrigger.ModeratorRetry,
   PluginPipelineRunTrigger.AutomaticRetry,
 ]);
-const ELIGIBLE_STATUSES = new Set<PluginPipelineRunStatus>([
+const ELIGIBLE_STATUSES = new Set<`${PluginPipelineRunStatus}`>([
   PluginPipelineRunStatus.Failed,
   PluginPipelineRunStatus.TimedOut,
   PluginPipelineRunStatus.Cancelled,
@@ -32,19 +29,6 @@ const ELIGIBLE_STATUSES = new Set<PluginPipelineRunStatus>([
 
 export type RerunPluginPipelineInput = { startRepository?: PipelineStartRepository; rerunRepository?: PipelineRerunRepository };
 
-type AttemptRecord = Pick<
-  PluginPipelineRun,
-  | "pipelineId"
-  | "targetId"
-  | "targetType"
-  | "targetVersion"
-  | "eventType"
-  | "scope"
-  | "channelId"
-  | "status"
-  | "trigger"
-  | "createdAt"
->;
 
 const userInputError = (message: string) =>
   new GraphQLError(message, { extensions: { code: "BAD_USER_INPUT" } });
@@ -68,7 +52,7 @@ export const createRerunPluginPipelineResolver = (
   ) => {
     const repository = input.rerunRepository ?? createPipelineRerunRepository(context.driver);
 
-    const sourceAttempts = (await repository.findSourceAttempt(pipelineRunId)) as AttemptRecord[];
+    const sourceAttempts = (await repository.findSourceAttempt(pipelineRunId));
     const source = sourceAttempts[0];
     if (!source) {
       throw new GraphQLError("Pipeline attempt not found", {
@@ -88,12 +72,7 @@ export const createRerunPluginPipelineResolver = (
           files[0]?.uploadedAt || files[0]?.createdAt || null;
       } else if (source.targetType === "Discussion") {
         const discussions = await repository.findDiscussionVersion(source.targetId);
-        const discussion = discussions[0] as unknown as {
-          DownloadableFile?: {
-            uploadedAt?: string | null;
-            createdAt?: string | null;
-          } | null;
-        };
+        const discussion = discussions[0];
         currentTargetVersion =
           discussion?.DownloadableFile?.uploadedAt ||
           discussion?.DownloadableFile?.createdAt ||
@@ -118,7 +97,7 @@ export const createRerunPluginPipelineResolver = (
         eventType: { eq: source.eventType },
         scope: { eq: source.scope },
         ...(source.channelId ? { channelId: { eq: source.channelId } } : {}),
-      })) as AttemptRecord[];
+      }));
     const currentTime = now();
     const latestAttempt = [...relatedAttempts].sort(
       (left, right) =>

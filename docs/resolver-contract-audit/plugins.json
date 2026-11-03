@@ -347,17 +347,54 @@
     },
     {
       "field": "Mutation.rerunPluginPipeline",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "pipelineId",
+        "targetId",
+        "targetType",
+        "targetVersion",
+        "eventType",
+        "scope",
+        "channelId",
+        "status",
+        "trigger",
+        "initiatedByUsername",
+        "retryOfPipelineRunId",
+        "attemptNumber",
+        "configurationSnapshot",
+        "applicability",
+        "policyEffectiveAt",
+        "policyId",
+        "campaignId",
+        "queuedAt",
+        "startedAt",
+        "heartbeatAt",
+        "timeoutAt",
+        "finishedAt",
+        "createdAt",
+        "updatedAt"
+      ],
       "residualPaths": [
-        "PluginPipelineRun.*"
+        "id",
+        "notifiedAt",
+        "configurationSnapshot JSON scalar internals",
+        "Discussion target branch: preexisting unsupported singular DownloadableFile query",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
         "customResolvers/mutations/rerunPluginPipeline.ts",
-        "services/persistence/pipelineRerunRepository.ts"
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineStartRepository.test.ts",
+        "tests/integration/pipelineRerunRepository.test.ts"
       ],
-      "reason": "Source attempt and discussion snapshots use assertions; returned attempt comes via owner/running/held branches and shared start helper.",
-      "decision": "Narrow each fixed read/return projection and test branch-specific GraphQL responses, preserving visibility and retry metadata."
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Preserve existing Discussion.DownloadableFile validation failure and record it explicitly; fixing that branch needs a separate behavior decision. Wire successful response projection without claiming all schema fields or provider payloads checked."
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
@@ -380,17 +417,57 @@
     },
     {
       "field": "Mutation.retryDownloadableFileScan",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "pluginName",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "pipelineId",
+        "executionOrder",
+        "skippedReason",
+        "createdAt",
+        "updatedAt"
+      ],
       "residualPaths": [
-        "PluginRun.*"
+        "deferred",
+        "finishedAt",
+        "heartbeatAt",
+        "leaseId",
+        "nextAttemptAt",
+        "publicDiagnostics",
+        "queuedAt",
+        "retryCount",
+        "ruleSetVersion",
+        "startedAt",
+        "targetVersion",
+        "timeoutAt",
+        "payload JSON scalar internals",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
         "customResolvers/mutations/retryDownloadableFileScan.ts",
-        "services/persistence/pipelineRetryRepository.ts"
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineRetryRepository.test.ts",
+        "tests/integration/downloadExecutionRepository.test.ts"
       ],
-      "reason": "Retry target/attempt/job reads are annotated full entities; return comes from either generated history or plugin runner.",
-      "decision": "Use exact retry snapshots and both return-path signature checks; runtime tests must cover not-held, creator/mod, missing plugin, existing work and failure order."
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Wire selected job response; preserve no-plugin/held/skipped branches and returned-run guards. Do not expand validation or change provider execution."
     },
     {
       "field": "Mutation.setServerPluginSecret",
@@ -410,17 +487,54 @@
     },
     {
       "field": "Mutation.startPluginPipeline",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "pipelineId",
+        "targetId",
+        "targetType",
+        "targetVersion",
+        "eventType",
+        "scope",
+        "channelId",
+        "status",
+        "trigger",
+        "initiatedByUsername",
+        "retryOfPipelineRunId",
+        "attemptNumber",
+        "configurationSnapshot",
+        "applicability",
+        "policyEffectiveAt",
+        "policyId",
+        "campaignId",
+        "queuedAt",
+        "startedAt",
+        "heartbeatAt",
+        "timeoutAt",
+        "finishedAt",
+        "createdAt",
+        "updatedAt"
+      ],
       "residualPaths": [
-        "PluginPipelineRun.*"
+        "id",
+        "notifiedAt",
+        "configurationSnapshot JSON scalar internals",
+        "Discussion target branch: preexisting unsupported singular DownloadableFile query",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
         "customResolvers/mutations/startPluginPipeline.ts",
-        "services/persistence/pipelineStartRepository.ts"
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineStartRepository.test.ts",
+        "tests/integration/pipelineRerunRepository.test.ts"
       ],
-      "reason": "Target snapshots cast to full File/Channel/Config, and returned initial attempt depends on plugin runner behavior.",
-      "decision": "Narrow fixed target and attempt selections; preserve authorization, configuration/visibility checks and existing empty-attempt completion."
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Preserve existing Discussion.DownloadableFile validation failure and record it explicitly; fixing that branch needs a separate behavior decision. Wire successful response projection without claiming all schema fields or provider payloads checked."
     },
     {
       "field": "Mutation.trackDownload",
@@ -440,17 +554,57 @@
     },
     {
       "field": "Mutation.triggerDownloadableFilePluginRuns",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "pluginName",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "pipelineId",
+        "executionOrder",
+        "skippedReason",
+        "createdAt",
+        "updatedAt"
+      ],
       "residualPaths": [
-        "PluginRun.*"
+        "deferred",
+        "finishedAt",
+        "heartbeatAt",
+        "leaseId",
+        "nextAttemptAt",
+        "publicDiagnostics",
+        "queuedAt",
+        "retryCount",
+        "ruleSetVersion",
+        "startedAt",
+        "targetVersion",
+        "timeoutAt",
+        "payload JSON scalar internals",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
       ],
       "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
         "customResolvers/mutations/triggerDownloadableFilePluginRuns.ts",
-        "services/pluginRunner.ts"
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineRetryRepository.test.ts",
+        "tests/integration/downloadExecutionRepository.test.ts"
       ],
-      "reason": "Resolver forwards runner output; that service has multiple provider/job branches, so its output cannot be certified by a selected wrapper alone.",
-      "decision": "Trace exact runner return union and selected response fields; run real-schema queued/reused/no-plugin/unsupported-event cases with provider execution mocked."
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Wire selected job response; preserve no-plugin/held/skipped branches and returned-run guards. Do not expand validation or change provider execution."
     },
     {
       "field": "Mutation.updateChannelPluginPipelines",
