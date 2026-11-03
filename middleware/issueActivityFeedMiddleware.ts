@@ -215,16 +215,32 @@ const recordEditActivity = async (input: {
     });
   };
 
+// v7: `where.id` is an IDScalarFilters object (`{ eq: "<id>" }`), not a raw
+// string. These middlewares only ever resolve a single node by id, so read the
+// `eq` value (tolerating a legacy raw string) before handing it to the author /
+// issue lookups. Passing the whole filter object through re-wraps it into
+// `{ id: { eq: { eq: ... } } }`, which fails with "ID cannot represent value".
+type IdWhereArg = {
+  where?: { id?: string | { eq?: string | null } | null } | null;
+};
+
+const idFromWhere = (args?: IdWhereArg): string | undefined => {
+  const id = args?.where?.id;
+  if (typeof id === 'string') return id;
+  if (id && typeof id === 'object' && typeof id.eq === 'string') return id.eq;
+  return undefined;
+};
+
 const issueActivityFeedMiddleware = {
   Mutation: {
     deleteComments: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string } },
+      args: IdWhereArg,
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
-      const commentId = args?.where?.id;
+      const commentId = idFromWhere(args);
       const authorInfo = commentId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getCommentAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), commentId)
         : null;
@@ -242,11 +258,11 @@ const issueActivityFeedMiddleware = {
     deleteDiscussions: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string } },
+      args: IdWhereArg,
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
-      const discussionId = args?.where?.id;
+      const discussionId = idFromWhere(args);
       const authorInfo = discussionId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getDiscussionAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), discussionId)
         : null;
@@ -264,11 +280,11 @@ const issueActivityFeedMiddleware = {
     deleteEvents: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string } },
+      args: IdWhereArg,
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
-      const eventId = args?.where?.id;
+      const eventId = idFromWhere(args);
       const authorInfo = eventId && (context?.issueActivityMiddlewareRepository || context?.driver)
         ? await getEventAuthorInfo(context.issueActivityMiddlewareRepository ?? createIssueActivityMiddlewareRepository(context.driver), eventId)
         : null;
@@ -286,12 +302,12 @@ const issueActivityFeedMiddleware = {
     updateEvents: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string }; update?: EventUpdateInput },
+      args: IdWhereArg & { update?: EventUpdateInput },
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
-      const eventId = args?.where?.id;
+      const eventId = idFromWhere(args);
       const hasUpdates = args?.update && Object.keys(args.update).length > 0;
       if (eventId && hasUpdates) {
         await recordEditActivity({
@@ -305,12 +321,12 @@ const issueActivityFeedMiddleware = {
     updateEventWithChannelConnections: async (
       resolve: Resolver,
       parent: unknown,
-      args: { where?: { id?: string } },
+      args: IdWhereArg,
       context: GraphQLContext,
       info: GraphQLResolveInfo
     ) => {
       const result = await resolve(parent, args, context, info);
-      const eventId = args?.where?.id;
+      const eventId = idFromWhere(args);
       if (eventId) {
         await recordEditActivity({
           issueLookup: { eventId },
