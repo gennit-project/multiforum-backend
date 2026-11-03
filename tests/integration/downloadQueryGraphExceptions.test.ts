@@ -17,18 +17,18 @@ after(async()=>stopNeo4j());beforeEach(async()=>{
 });
 const execute=(source:string)=>graphql({schema,source,contextValue:{driver,user:{username:'alice',email:null,email_verified:true,data:null},req:{headers:{}},mayAccessSensitiveContent:false}});
 function data(result:Awaited<ReturnType<typeof execute>>){assert.equal(result.errors,undefined,JSON.stringify(result.errors));return JSON.parse(JSON.stringify(result.data));}
-test('canonical discussion-channel edge exists but uploaded group omits its channel name',async()=>{
+test('canonical discussion-channel edge supplies the uploaded group channel name',async()=>{
  const canonical=await driver.executeQuery("MATCH(dc:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(:Discussion{id:'discussion'}) RETURN dc.channelUniqueName AS name");assert.equal(canonical.records[0].get('name'),'forum');
  const result=data(await execute('{getUploadedDownloadableFiles(username:"alice"){discussion{id title channelUniqueNames} files{id}}}'));
- assert.deepEqual(result,{getUploadedDownloadableFiles:[{discussion:{id:'discussion',title:'Upload',channelUniqueNames:[]},files:[{id:'file'}]}]});
+ assert.deepEqual(result,{getUploadedDownloadableFiles:[{discussion:{id:'discussion',title:'Upload',channelUniqueNames:['forum']},files:[{id:'file'}]}]});
 });
 test('review queue uses stored uploader metadata when present',async()=>{
  const result=data(await execute('{getDownloadScanReviewQueue{downloadableFileId uploaderUsername channelUniqueName}}'));
  assert.deepEqual(result,{getDownloadScanReviewQueue:[{downloadableFileId:'file',uploaderUsername:'alice',channelUniqueName:'forum'}]});
 });
-test('canonical discussion author exists but review fallback omits it without uploader metadata',async()=>{
+test('canonical discussion author supplies review fallback without uploader metadata',async()=>{
  await driver.executeQuery('MATCH(f:DownloadableFile) REMOVE f.uploadedByUsername');
  const canonical=await driver.executeQuery("MATCH(u:User)-[:POSTED_DISCUSSION]->(:Discussion{id:'discussion'}) RETURN u.username AS username");assert.equal(canonical.records[0].get('username'),'alice');
  const result=data(await execute('{getDownloadScanReviewQueue{downloadableFileId uploaderUsername channelUniqueName}}'));
- assert.deepEqual(result,{getDownloadScanReviewQueue:[{downloadableFileId:'file',uploaderUsername:null,channelUniqueName:'forum'}]});
+ assert.deepEqual(result,{getDownloadScanReviewQueue:[{downloadableFileId:'file',uploaderUsername:'alice',channelUniqueName:'forum'}]});
 });
