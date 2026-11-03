@@ -210,8 +210,9 @@
         "customResolvers/queries/getImageAlbumUsage.ts",
         "tests/integration/contentScalarResponseContracts.test.ts"
       ],
-      "reason": "Raw usage map is cast as AlbumUsage with arrays of Record<string, unknown>; GraphQL currently validates only requested nested fields.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "imageId is parameter-bound by MATCH, but uploader/album/owner/discussion properties remain persisted unknowns. Sole identity promotion would add little coverage; retain exception pending useful additional boundary.",
+      "decision": "Retain explicit exception for this bounded viewer-state slice. Computed contribution metadata/counts warrant a separate source-provenance slice; raw entity properties require selection-aware completion or a separately approved behavior change.",
+      "status": "deferred"
     },
     {
       "field": "Query.getModContributions",

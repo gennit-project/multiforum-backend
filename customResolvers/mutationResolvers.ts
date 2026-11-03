@@ -1,7 +1,7 @@
 import type { ImageWriteSourceMutationResolvers } from "./contracts/imageWriteSources.js";
-import type { AccountWriteSourceMutationResolvers } from "./contracts/accountWriteSources.js";
 import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
 import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
+import type { AccountWriteSourceMutationResolvers } from "./contracts/accountWriteSources.js";
 import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
 import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
 import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
@@ -490,6 +490,32 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ModerationReportMutationResolvers;
 
+  const accountWriteSourceResolvers = {
+    permanentlyRemoveImage: permanentlyRemoveImage({
+      driver
+    }),
+
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
+    permanentlyDeleteImage: permanentlyDeleteImage({
+      driver
+    }),
+    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
+      driver
+    }),
+    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
+      driver
+    }),
+    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
+      driver
+    }),
+    createScratchpadEntry: createScratchpadEntry({
+      scratchpadRepository: createScratchpadRepository(driver),
+      driver,
+    }),
+  } satisfies AccountWriteSourceMutationResolvers;
+
   const moderationSuspensionResolvers = {
     suspendUser: suspendUser({
       includeWikiPage: true,
@@ -526,31 +552,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
   } satisfies ModerationArchiveMutationResolvers;
-
-  const accountWriteSourceResolvers = {
-    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
-      driver,
-    }),
-    permanentlyRemoveImage: permanentlyRemoveImage({
-      driver
-    }),
-    permanentlyDeleteImage: permanentlyDeleteImage({
-      driver
-    }),
-    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
-      driver
-    }),
-    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
-      driver
-    }),
-    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
-      driver
-    }),
-    createScratchpadEntry: createScratchpadEntry({
-      scratchpadRepository: createScratchpadRepository(driver),
-      driver,
-    }),
-  } satisfies AccountWriteSourceMutationResolvers;
 
   const imageWriteSourceResolvers = {
     createImageWithUploader: createImageWithUploader({

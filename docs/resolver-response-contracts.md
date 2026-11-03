@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 124 entries have a checked selected response boundary and 85 remain
+checkpoint, 171 entries have a checked selected response boundary and 38 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -211,11 +211,11 @@ independent fixes, including the bot suspension permission fix (#437).
 | Family | Selected boundaries | Scope |
 | --- | ---: | --- |
 | Original voting/subscriptions/reactions | 18 | Existing pilot retained |
-| Moderation actions | 8 | Wiki actions, sticky comments, soft deletion |
-| Plugin contracts | 32 | History, reviews, configuration, installation, campaigns, execution and summary metadata |
-| Accounts, collections and age/privacy | 37 | Scalar actions, precise projections, age checks and signing |
-| Content writes and revisions | 15 | Exact schema-executed writes, nullable input/error order |
-| Content query scalars and pagination | 7 | Three scalars and four page-info subsets |
+| Moderation actions | 33 | Wiki actions, sticky comments, soft deletion, locks, undo vote, reports, suspensions and archives |
+| Plugin contracts | 34 | History, reviews, configuration, installation, campaigns, execution, summary metadata and download writes |
+| Accounts, collections and age/privacy | 45 | Scalar actions, precise projections, age checks and signing |
+| Content writes and revisions | 16 | Exact schema-executed writes, nullable input/error order |
+| Content query scalars and pagination | 18 | Scalars, page-info, viewer state and contribution/wiki counts |
 | Object/union fields | 7 | Union names, page-info, URL access and collections |
 
 `contracts/registry.ts` names the checked composition variables. Inventory tests
@@ -266,13 +266,13 @@ These limits are documented per field rather than hidden behind the issue's clos
 state or a percentage. Completing more routine slices and resolving the remaining
 boundary decisions is required before describing the campaign as complete.
 
-## Final campaign accounting and decisions
+## Current campaign accounting and decisions
 
-All 209 custom entries have been reviewed: 124 have a checked generated selected
-response boundary (59.3%); 85 remain explicit exceptions. This is **not** complete
-end-to-end response certification. The remaining entries are 26 moderation,
-27 object/scalar fields, 12 content queries, 9 account/storage actions, 3 content
-writes and 8 plugin entries. Per-field selections, reasons and evidence remain
+All 209 custom entries have been reviewed: 171 have a checked selected
+response/source boundary (81.8%); 38 remain explicit exceptions. This is **not** complete
+end-to-end response certification. The remaining entries are 1 moderation,
+27 object/scalar fields, 1 content query, 1 account/storage action, 2 content
+writes and 6 plugin entries. Per-field selections, reasons and evidence remain
 in the six audit files rather than being hidden by the closed issue status.
 
 Two JSON-returning pipeline update mutations additionally have generated argument
@@ -285,9 +285,10 @@ Additional real-schema evidence requiring a behavior decision:
 
 - Campaign pause/resume can lose the row between status lookup and update and
   return undefined for a non-null response. Both remain deferred.
-- Download creation omits required response `info`; selecting it errors after the
-  file and upload-audit claim commit. Permanent deletion omits existing required
-  `createdAt`/`priceModel`; selecting either errors after storage/database changes.
+- Download creation/deletion response defects were fixed separately in merged
+  #440. This branch incorporates that fix and replaces the old failure witnesses
+  with successful real-schema response assertions; malformed unselected fields
+  still remain lazy. No storage or permission policy is changed here.
 - Two plugin execution branches still request unsupported singular
   `Discussion.DownloadableFile`. Tests preserve the existing validation failure.
 - Uploaded-file groups miss channel names because their graph traversal direction
@@ -303,3 +304,26 @@ The remaining raw/lazy paths need an explicit selection-aware boundary design.
 Eager validation is not an equivalent substitute: it can reject unrequested fields
 and move failures before writes that currently commit. JSON/scalar-owned structure
 requires a separately defined contract rather than a vacuous generated `any` check.
+
+
+### Source-provenance continuation after #440
+
+The additional 47 boundaries check values established by the existing queries or
+constructors: matched identifiers, SET values, randomUUID/datetime/toString,
+explicit list comprehensions, CASE/EXISTS booleans and aggregate counts. Fixed
+projections state those facts and leave other persisted values unknown. They do
+not turn a raw property map into a complete schema entity. Tests cover missing
+records, nullable completion, permission/error paths and post-write serialization
+without adding eager validation or changing transaction order.
+
+Issue lock metadata has a direct SDL nullability guard because DateTime's existing
+generated `any` mapping otherwise hides a non-null change. Wiki aggregate counts
+use a local accepted-source signature for just that field: the existing Neo4j
+numerical child resolver completes Integer or number to GraphQL Int. Executable
+schema tests guard Int!, child completion, zero/empty results and range failures.
+This does not widen all generated Int outputs or certify raw wiki page fields.
+
+Image creation tests retain the existing lost-upload-claim behavior after image
+creation; changing claim/race policy is separate work. The 38 deferred entries and
+residual paths within the 171 selected entries still need explicit source or
+selection-aware contracts. This checkpoint is not completion of the full campaign.

@@ -2,14 +2,14 @@ import { wikiCountSourceQueryNames } from "./wikiCountSource.js";
 import { contributionReadQueryNames } from "./contributionReadSources.js";
 import { viewerReadQueryNames } from "./viewerReadSources.js";
 import { imageWriteSourceMutationNames } from "./imageWriteSources.js";
-import { accountWriteSourceQueryNames } from "./accountWriteSources.js";
-import { accountWriteSourceMutationNames } from "./accountWriteSources.js";
 import { moderationArchiveMutationNames } from "./moderationArchives.js";
 import { moderationSuspensionMutationNames } from "./moderationSuspensions.js";
+import { accountWriteSourceQueryNames } from "./accountWriteSources.js";
+import { accountWriteSourceMutationNames } from "./accountWriteSources.js";
 import { moderationReportMutationNames } from "./moderationReports.js";
 import { moderationUndoMutationNames } from "./moderationUndo.js";
-import { moderationLockMutationNames } from "./moderationLocks.js";
 import { downloadWriteMutationNames } from "./downloadWrites.js";
+import { moderationLockMutationNames } from "./moderationLocks.js";
 import { pluginExecutionMutationNames } from "./pluginExecution.js";
 import { pluginSummaryMetadataQueryNames } from "./pluginSummaryMetadata.js";
 import { downloadActionMutationNames } from "./downloadActions.js";
@@ -60,10 +60,10 @@ export const checkedRootGroups = [
   ["Mutation", "moderationLockResolvers", "ModerationLockMutationResolvers", moderationLockMutationNames],
   ["Mutation", "moderationUndoResolvers", "ModerationUndoMutationResolvers", moderationUndoMutationNames],
   ["Mutation", "moderationReportResolvers", "ModerationReportMutationResolvers", moderationReportMutationNames],
-  ["Mutation", "moderationSuspensionResolvers", "ModerationSuspensionMutationResolvers", moderationSuspensionMutationNames],
-  ["Mutation", "moderationArchiveResolvers", "ModerationArchiveMutationResolvers", moderationArchiveMutationNames],
   ["Mutation", "accountWriteSourceResolvers", "AccountWriteSourceMutationResolvers", accountWriteSourceMutationNames],
   ["Query", "accountWriteSourceResolvers", "AccountWriteSourceQueryResolvers", accountWriteSourceQueryNames],
+  ["Mutation", "moderationSuspensionResolvers", "ModerationSuspensionMutationResolvers", moderationSuspensionMutationNames],
+  ["Mutation", "moderationArchiveResolvers", "ModerationArchiveMutationResolvers", moderationArchiveMutationNames],
   ["Mutation", "imageWriteSourceResolvers", "ImageWriteSourceMutationResolvers", imageWriteSourceMutationNames],
   ["Query", "viewerReadResolvers", "ViewerReadQueryResolvers", viewerReadQueryNames],
   ["Query", "contributionReadResolvers", "ContributionReadQueryResolvers", contributionReadQueryNames],
