@@ -45,3 +45,39 @@ test("public moderator suspension aggregate does not expose the private moderato
   assert.ok(privateRead.errors);
   assert.ok(privateRead.errors.some(error => error.path?.includes("User")));
 });
+
+test("bot lists preserve aliased and fragment-selected counts without requiring unrequested scalar fields", async () => {
+  await driver.executeQuery("MATCH(u:User {username:'bot'}) SET u.displayName=['malformed']");
+  const result=await exec(`query getChannel { forums:channels(sort:[{uniqueName:ASC}]){ key:uniqueName ...BotList } }
+    fragment BotList on Channel { Bots { name:username ...Counts } }
+    fragment Counts on User { ${connection.replace('SuspensionsConnection','active:SuspensionsConnection')} }`);
+  assert.equal(result.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{forums:[
+    {key:'bots',Bots:[{name:'bot',active:{aggregate:{count:{nodes:2}}}}]},
+    {key:'empty',Bots:[]},
+  ]});
+  const selected=await exec('{forums:channels(where:{uniqueName:{eq:"bots"}}){Bots{name:username bad:displayName}}}');
+  assert.ok(selected.errors?.some(error=>JSON.stringify(error.path)===JSON.stringify(['forums',0,'Bots',0,'bad'])));
+  assert.equal(JSON.parse(JSON.stringify(selected.data)).forums[0].Bots[0].bad,null);
+});
+
+test("aliased private identity fields remain denied and skipped fields remain unrequested", async () => {
+  const requested=await exec(`query { profiles:moderationProfiles { name:displayName ...PrivateIdentity } }
+    fragment PrivateIdentity on ModerationProfile { identity:User { username } }`);
+  assert.ok(requested.errors?.some(error=>error.path?.includes('identity')));
+  assert.equal(JSON.parse(JSON.stringify(requested.data)).profiles[0].identity,null);
+  const skipped=await graphql({schema,source:`query($hide:Boolean!){profiles:moderationProfiles{name:displayName ...PrivateIdentity @skip(if:$hide)}}
+    fragment PrivateIdentity on ModerationProfile{identity:User{username}}`,variableValues:{hide:true},contextValue:{driver,req:{headers:{}}}});
+  assert.equal(skipped.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(skipped.data)),{profiles:[{name:'Moderator'}]});
+});
+
+
+test("existing aliased bot-list fallback loses the generated response-key projection", async () => {
+  const plain=await exec('{channels(where:{uniqueName:{eq:"bots"}}){Bots{username}}}');
+  assert.equal(plain.errors,undefined);
+  assert.equal(JSON.parse(JSON.stringify(plain.data)).channels[0].Bots.length,1);
+  const aliased=await exec('query { forums:channels(where:{uniqueName:{eq:"bots"}}){...BotAlias} } fragment BotAlias on Channel{members:Bots{username}}');
+  assert.equal(aliased.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{forums:[{members:[]}]});
+});

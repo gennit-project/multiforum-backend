@@ -131,3 +131,30 @@ test('addIssueActivityFeedItem with a user-authored comment uses the User actor'
   assert.equal(action.ModerationProfile, null);
   assert.equal(action.Comment.CommentAuthor.username, 'bob');
 });
+
+// Characterize selection forwarding defects without changing write semantics.
+// These block a claimed request-dependent response contract until a behavior fix.
+test('activity refetch loses fields beneath an aliased issues payload or payload fragment', async () => {
+  await driver.executeQuery("CREATE(:Issue {id:'selection',title:'Visible title',isOpen:true,issueNumber:1,createdAt:datetime()})");
+  const invoke=(selection:string,fragments='')=>graphql({schema,source:`mutation { action:addIssueActivityFeedItem(where:{id:{eq:"selection"}},actionType:"report",actionDescription:"selection witness") { ${selection} } } ${fragments}`,contextValue:{}});
+  const control=await invoke('issues{id title}');
+  assert.equal(control.errors,undefined);
+  assert.equal(JSON.parse(JSON.stringify(control.data)).action.issues[0].title,'Visible title');
+  const aliased=await invoke('items:issues{id title}');
+  assert.equal(aliased.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{action:{items:[{id:'selection',title:null}]}});
+  const fragment=await invoke('...Payload','fragment Payload on IssueActivityFeedItemResponse {issues{id title}}');
+  assert.equal(fragment.errors,undefined);
+  assert.equal(JSON.parse(JSON.stringify(fragment.data)).action.issues[0].title,null);
+  const persisted=await driver.executeQuery("MATCH(:Issue{id:'selection'})-[:ACTIVITY_ON_ISSUE]->(a) RETURN count(a) AS count");
+  assert.equal(persisted.records[0].get('count').toNumber(),3);
+});
+
+test('activity refetch does not forward selection variables and errors after the write commits', async () => {
+  await driver.executeQuery("CREATE(:Issue {id:'selection',title:'Visible title',isOpen:true,issueNumber:1,createdAt:datetime()})");
+  const result=await graphql({schema,source:`mutation($show:Boolean!){action:addIssueActivityFeedItem(where:{id:{eq:"selection"}},actionType:"report",actionDescription:"variable witness"){issues{id title @include(if:$show)}}}`,variableValues:{show:true},contextValue:{}});
+  assert.ok(result.errors?.some(error=>/Variable.*show.*not defined/.test(error.message)));
+  assert.equal(result.data,null);
+  const persisted=await driver.executeQuery("MATCH(:Issue{id:'selection'})-[:ACTIVITY_ON_ISSUE]->(a) RETURN count(a) AS count");
+  assert.equal(persisted.records[0].get('count').toNumber(),1);
+});

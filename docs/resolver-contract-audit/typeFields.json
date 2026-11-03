@@ -57,10 +57,11 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "tests/integration/botSuspensionConnection.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "Real GraphQL+Shield regression proves aliased members:Bots loses the generated response-key projection and returns an empty list. Unaliased fields, nested aliases/fragments, nullable malformed leaves and denied/skipped private fields are exercised. Raw list items remain opaque.",
+      "decision": "Coordinate alias-aware fallback behavior fix, then precise upstream/selection-aware contracts; do not count unknown[] or infer all shared registrations are certified."
     },
     {
       "field": "Channel.Comments",
@@ -267,10 +268,13 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
       ],
-      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
-      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection."
     },
     {
       "field": "Comment.SuperUpvotedByUsers",
@@ -419,10 +423,13 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
       ],
-      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
-      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection."
     },
     {
       "field": "IssueAuthor.__resolveType",
@@ -530,10 +537,13 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
       ],
-      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
-      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision."
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection."
     }
   ]
 }

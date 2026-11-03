@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 171 entries have a checked selected response boundary and 38 remain
+checkpoint, 173 entries have a checked selected response boundary and 36 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -212,7 +212,7 @@ independent fixes, including the bot suspension permission fix (#437).
 | --- | ---: | --- |
 | Original voting/subscriptions/reactions | 18 | Existing pilot retained |
 | Moderation actions | 33 | Wiki actions, sticky comments, soft deletion, locks, undo vote, reports, suspensions and archives |
-| Plugin contracts | 34 | History, reviews, configuration, installation, campaigns, execution, summary metadata and download writes |
+| Plugin contracts | 36 | History, reviews, configuration, installation, campaigns, execution, summary metadata and download reads/writes |
 | Accounts, collections and age/privacy | 45 | Scalar actions, precise projections, age checks and signing |
 | Content writes and revisions | 16 | Exact schema-executed writes, nullable input/error order |
 | Content query scalars and pagination | 18 | Scalars, page-info, viewer state and contribution/wiki counts |
@@ -268,11 +268,11 @@ boundary decisions is required before describing the campaign as complete.
 
 ## Current campaign accounting and decisions
 
-All 209 custom entries have been reviewed: 171 have a checked selected
-response/source boundary (81.8%); 38 remain explicit exceptions. This is **not** complete
+All 209 custom entries have been reviewed: 173 have a checked selected
+response/source boundary (82.8%); 36 remain explicit exceptions. This is **not** complete
 end-to-end response certification. The remaining entries are 1 moderation,
 27 object/scalar fields, 1 content query, 1 account/storage action, 2 content
-writes and 6 plugin entries. Per-field selections, reasons and evidence remain
+writes and 4 plugin entries. Per-field selections, reasons and evidence remain
 in the six audit files rather than being hidden by the closed issue status.
 
 Two JSON-returning pipeline update mutations additionally have generated argument
@@ -291,9 +291,9 @@ Additional real-schema evidence requiring a behavior decision:
   still remain lazy. No storage or permission policy is changed here.
 - Two plugin execution branches still request unsupported singular
   `Discussion.DownloadableFile`. Tests preserve the existing validation failure.
-- Uploaded-file groups miss channel names because their graph traversal direction
-  is reversed. Review queue author fallback misses canonical `POSTED_DISCUSSION`
-  edges. Actual schema/canonical-graph witnesses reproduce both omissions.
+- Uploaded-file channel names and review author fallback were fixed separately in
+  merged #441; canonical-graph and permission regressions now assert correct results.
+  Raw nested leaves remain outside the selected uploader/status contract.
 - An installed version with no Plugin link can return safe selected fields but
   fails when non-null plugin identity fields are requested. Those identities remain
   outside the checked selection; access policy is unchanged.
@@ -324,6 +324,17 @@ schema tests guard Int!, child completion, zero/empty results and range failures
 This does not widen all generated Int outputs or certify raw wiki page fields.
 
 Image creation tests retain the existing lost-upload-claim behavior after image
-creation; changing claim/race policy is separate work. The 38 deferred entries and
-residual paths within the 171 selected entries still need explicit source or
+creation; changing claim/race policy is separate work. The 36 deferred entries and
+residual paths within the 173 selected entries still need explicit source or
 selection-aware contracts. This checkpoint is not completion of the full campaign.
+
+
+### Selection-aware investigation after #441
+
+See [next decisions](resolver-contract-next-decisions.md) for the five race-policy
+choices, newly reproduced bot-list alias and dynamic moderation-selection defects,
+and the precise download projections. Three variant-URL registrations now enforce
+the existing normalized string-map-or-null application domain without claiming
+structural guarantees from the unrestricted JSON scalar. These do not increase
+the generated selected-boundary count. No race or selection behavior fix is hidden
+in this typing checkpoint.

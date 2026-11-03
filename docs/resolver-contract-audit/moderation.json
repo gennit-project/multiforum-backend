@@ -11,10 +11,11 @@
       ],
       "evidence": [
         "customResolvers/mutations/addIssueActivityFeedItem.ts",
+        "tests/integration/issueActivityAndSoftDelete.test.ts",
         "tests/integration/issueActivityAndSoftDelete.test.ts"
       ],
-      "reason": "buildIssuesRefetchQuery derives the generated read from GraphQLResolveInfo, retaining caller fields/fragments after owned writes. executeGeneratedOperation returns issues:unknown[] because the shape is request-dependent, not a fixed Issue projection. GraphQL execution tests already cover persistence and requested response but do not make unknown[] a generated static entity.",
-      "decision": "Use operation/selection-aware result typing or a dedicated dynamic-response contract. Do not replace with a full Issue cast, empty selection, or a fixed eager selection that changes privacy, queries, and failure behavior."
+      "reason": "Request-dependent refetch remains unknown. Real-schema witnesses prove aliased issues/payload fragments lose selected title and selected-field variables fail validation after committed action creation.",
+      "decision": "Separate selection-forwarding fix preserving aliases/fragments/directives/variable values and outer child permissions before assigning a request-dependent structural contract; see docs/resolver-contract-next-decisions.md."
     },
     {
       "field": "Mutation.archiveComment",
