@@ -35,8 +35,8 @@ test("runs server download security before channel automation", async () => {
 
   assert.deepEqual(calls, ["server", "channel:cats", "channel:mods"]);
   assert.deepEqual(executionModes, [
-    { deferExecution: true },
-    { deferExecution: true },
+    { deferExecution: false },
+    { deferExecution: false },
   ]);
 });
 

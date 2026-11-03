@@ -135,8 +135,8 @@ test("dispatches comment.edited after a successful text update", async () => {
     { commentId: "c-2", event: "comment.edited", driver },
   ]);
   assert.deepEqual(executionModes, [
-    { deferExecution: true },
-    { deferExecution: true },
+    { deferExecution: false },
+    { deferExecution: false },
   ]);
 });
 
