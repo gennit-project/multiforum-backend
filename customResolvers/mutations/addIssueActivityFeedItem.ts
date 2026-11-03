@@ -1,7 +1,8 @@
+import { delegateToSchema } from "@graphql-tools/delegate";
 import type { Driver } from "neo4j-driver";
-import { GraphQLError, print, type GraphQLResolveInfo, type SelectionSetNode } from "graphql";
+import { GraphQLError, OperationTypeNode, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { executeGeneratedOperation } from "../../services/persistence/generatedSchemaOperations.js";
+import { getGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 
 // v7 (campaign #284): the frontend used to add a moderation activity-feed item by
 // calling updateIssues with a nested `create: { ActivityFeed: [...] }` (and, for
@@ -53,52 +54,9 @@ type Args = {
 };
 type Input = { driver: Driver };
 
-// Reproduce the client's requested `issues` selection so the generated refetch
-// returns exactly what the caller asked for (the frontend's deep IssueFields
-// tree). Fragments the selection references are inlined by re-declaring every
-// reachable fragment definition alongside the query.
-function buildIssuesRefetchQuery(info: GraphQLResolveInfo): string {
-  const fieldNode = info.fieldNodes[0];
-  const issuesField = fieldNode.selectionSet?.selections.find(
-    (sel) => sel.kind === "Field" && (sel.alias?.value ?? sel.name.value) === "issues"
-  );
-  const issuesSelection =
-    issuesField && issuesField.kind === "Field" ? issuesField.selectionSet : undefined;
-  if (!issuesSelection) {
-    return `query AddIssueActivityRefetch($where: IssueWhere) { issues(where: $where) { id } }`;
-  }
-
-  // Collect every fragment reachable from the issues selection.
-  const reachable = new Set<string>();
-  const walk = (selectionSet: SelectionSetNode) => {
-    for (const sel of selectionSet.selections) {
-      if (sel.kind === "FragmentSpread") {
-        if (!reachable.has(sel.name.value)) {
-          reachable.add(sel.name.value);
-          const frag = info.fragments[sel.name.value];
-          if (frag) walk(frag.selectionSet);
-        }
-      } else if (sel.kind === "Field" || sel.kind === "InlineFragment") {
-        if (sel.selectionSet) walk(sel.selectionSet);
-      }
-    }
-  };
-  walk(issuesSelection);
-
-  const fragmentDefs = [...reachable]
-    .map((name) => info.fragments[name])
-    .filter((frag): frag is NonNullable<typeof frag> => Boolean(frag))
-    .map((frag) => print(frag))
-    .join("\n");
-
-  return `query AddIssueActivityRefetch($where: IssueWhere) { issues(where: $where) ${print(
-    issuesSelection
-  )} }\n${fragmentDefs}`;
-}
-
 const getResolver = (deps: Input) => {
   const { driver } = deps;
-  return async (_parent: unknown, args: Args, _context: GraphQLContext, info: GraphQLResolveInfo) => {
+  return async (_parent: unknown, args: Args, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
     const issueId = args.where?.id?.eq;
     if (!issueId) throw new GraphQLError("addIssueActivityFeedItem requires where.id.eq");
 
@@ -130,16 +88,23 @@ const getResolver = (deps: Input) => {
       await session.close();
     }
 
-    // Refetch with the caller's own selection. The caller has already passed the
-    // moderation permission gate, so authorize the read as sensitive-eligible.
-    const refetch = await executeGeneratedOperation<{ issues: unknown[] }>(
-      driver,
-      buildIssuesRefetchQuery(info),
-      { where: { id: { eq: issueId } } },
-      undefined,
-      { mayAccessSensitiveContent: true }
-    );
-    return { issues: refetch.issues };
+    // Resolve each payload selection with its own GraphQL info. Delegation carries
+    // fragments, aliases, directive/argument variables and merged field nodes.
+    // The write remains above this resolver so multiple payload aliases cannot
+    // create duplicate actions or comments.
+    return {
+      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo) =>
+        delegateToSchema({
+          schema: getGeneratedSchema(driver),
+          operation: OperationTypeNode.QUERY,
+          fieldName: "issues",
+          args: { where: { id: { eq: issueId } } },
+          // Preserve the existing post-moderation sensitive-content read policy.
+          // Public nested fields still pass through the caller's Shield schema.
+          context: { jwt: { mayAccessSensitiveContent: true } },
+          info: payloadInfo,
+        }),
+    };
   };
 };
 

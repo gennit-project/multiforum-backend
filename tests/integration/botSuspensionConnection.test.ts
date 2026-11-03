@@ -73,11 +73,26 @@ test("aliased private identity fields remain denied and skipped fields remain un
 });
 
 
-test("existing aliased bot-list fallback loses the generated response-key projection", async () => {
+test("aliased bot lists retain the generated response-key projection", async () => {
   const plain=await exec('{channels(where:{uniqueName:{eq:"bots"}}){Bots{username}}}');
   assert.equal(plain.errors,undefined);
   assert.equal(JSON.parse(JSON.stringify(plain.data)).channels[0].Bots.length,1);
   const aliased=await exec('query { forums:channels(where:{uniqueName:{eq:"bots"}}){...BotAlias} } fragment BotAlias on Channel{members:Bots{username}}');
   assert.equal(aliased.errors,undefined);
-  assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{forums:[{members:[]}]});
+  assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{forums:[{members:[{username:"bot"}]}]});
+});
+
+test('plain and aliased bot selections keep independent filters and directives', async () => {
+  const result = await graphql({schema,source:`query($show:Boolean!){
+    channels(where:{uniqueName:{eq:"bots"}}){
+      Bots{username}
+      members:Bots(where:{username:{eq:"bot"}}){username}
+      missing:Bots(where:{username:{eq:"missing"}}){username}
+      skipped:Bots @skip(if:$show){username}
+    }
+  }`,variableValues:{show:true},contextValue:{driver,req:{headers:{}}}});
+  assert.equal(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {channels:[{
+    Bots:[{username:'bot'}],members:[{username:'bot'}],missing:[],
+  }]});
 });

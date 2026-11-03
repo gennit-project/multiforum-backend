@@ -26,8 +26,10 @@ export const START_SELECTION_0 = `{
         }`;
 export const START_SELECTION_1 = `{
           id
+          title
+          body
           Author { username }
-          DownloadableFile {
+          DownloadableFiles(limit: 1) {
             uploadedAt
             createdAt
             uploadedByUsername

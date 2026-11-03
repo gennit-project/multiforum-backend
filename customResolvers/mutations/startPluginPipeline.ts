@@ -1,4 +1,5 @@
 import {createPipelineStartRepository, type PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
+import { createContentRevisionHash } from "../../services/plugin/moderationJobIdentity.js";
 import { GraphQLError } from "graphql";
 import {
   PluginPipelineRunStatus,
@@ -65,6 +66,7 @@ export const createStartPluginPipelineResolver = (
     let ownerUsername: string | null | undefined;
     let uploaderUsername: string | null | undefined;
     let uploadedAt: string | null | undefined;
+    let targetVersion: string | null | undefined;
     let scope: "SERVER" | "CHANNEL";
     let channelId: string | null = null;
     let moderationChannelNames: string[] = [];
@@ -82,6 +84,7 @@ export const createStartPluginPipelineResolver = (
       ownerUsername = file.Discussion?.Author?.username;
       uploaderUsername = file.uploadedByUsername;
       uploadedAt = file.uploadedAt || file.createdAt;
+      targetVersion = uploadedAt;
       moderationChannelNames = (file.Discussion?.DiscussionChannels || [])
         .filter(item => item.archived !== true)
         .map(item => item.channelUniqueName)
@@ -116,10 +119,18 @@ export const createStartPluginPipelineResolver = (
       moderationChannelNames = [requestedChannelId];
       pipelines = parseStoredPipelines(channel.pluginPipelines);
       ownerUsername = discussion.Author?.username;
-      uploaderUsername = discussion.DownloadableFile?.uploadedByUsername;
-      uploadedAt =
-        discussion.DownloadableFile?.uploadedAt ||
-        discussion.DownloadableFile?.createdAt;
+      // Match the channel runner's existing single-attachment projection.
+      const file = discussion.DownloadableFiles?.[0];
+      uploaderUsername = file?.uploadedByUsername;
+      uploadedAt = file?.uploadedAt || file?.createdAt;
+      targetVersion = createContentRevisionHash({
+        channelUniqueName: requestedChannelId,
+        contentId: discussion.id,
+        contentType: "Discussion",
+        title: discussion.title,
+        body: discussion.body,
+        attachmentVersion: uploadedAt,
+      });
     } else {
       throw userInputError(
         "Manual pipeline starts require a DownloadableFile or Discussion target"
@@ -183,7 +194,11 @@ export const createStartPluginPipelineResolver = (
     const activeAttempts = await repository.findActiveAttempts({
         targetId: { eq: targetId },
         targetType: { eq: targetType },
-        ...(uploadedAt ? { targetVersion: { eq: uploadedAt } } : {}),
+        ...(targetVersion ? {
+          targetVersion: targetType === "Discussion" && uploadedAt
+            ? { in: [targetVersion, uploadedAt] }
+            : { eq: targetVersion },
+        } : {}),
         eventType: { eq: eventType },
         scope: { eq: scope },
         ...(channelId ? { channelId: { eq: channelId } } : {}),

@@ -24,7 +24,14 @@ test('start snapshots preserve selections, literal values, missing rows and unbo
  for(const name of ['channel','absent',undefined])t.assert.snapshot(await repo.findChannelPlan(name));
  t.assert.snapshot(await repo.findServerPlan());assert.equal((await repo.findServerPlan()).length,30);
 });
-test('discussion target preserves existing singular-field validation failure',async()=>{const repo=createPipelineStartRepository(driver);await assert.rejects(repo.findDiscussionTarget('discussion'),/Cannot query field "DownloadableFile"/);});
+test('discussion target uses the schema plural attachment projection',async()=>{
+ const repo=createPipelineStartRepository(driver);
+ assert.deepEqual(await repo.findDiscussionTarget('missing'),[]);
+ await driver.executeQuery("CREATE(d:Discussion{id:'discussion',title:'Title',body:'Body'})-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile{id:'file',createdAt:datetime('2020-01-01T00:00:00Z'),uploadedByUsername:'owner'})");
+ const row=(await repo.findDiscussionTarget('discussion'))[0];
+ assert.equal(row.title,'Title');assert.equal(row.body,'Body');assert.equal(row.DownloadableFiles.length,1);
+ assert.equal(row.DownloadableFiles[0].uploadedByUsername,'owner');
+});
 test('active attempts retain full predicate, unbounded result and started-attempt projection',async(t)=>{
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{id:toString(n),pipelineId:toString(n),targetId:'file',targetType:'DownloadableFile',eventType:'downloadableFile.created',scope:'SERVER',status:'RUNNING',trigger:'OWNER_START',attemptNumber:n,configurationSnapshot:'{}',createdAt:datetime('2020-01-01T00:00:00Z'),updatedAt:datetime('2020-01-01T00:00:00Z')})`);
  const repo=createPipelineStartRepository(driver);const where={targetId:{eq:'file'},targetType:{eq:'DownloadableFile'},eventType:{eq:'downloadableFile.created'},scope:{eq:'SERVER'}};

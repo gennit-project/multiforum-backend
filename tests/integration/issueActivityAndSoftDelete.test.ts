@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {before, after, beforeEach, test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql, type GraphQLSchema} from 'graphql';
+import {applyMiddleware} from 'graphql-middleware';
+import permissions from '../../permissions.js';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
@@ -12,12 +14,14 @@ import {startNeo4j, stopNeo4j, resetDatabase} from './neo4jHarness.js';
 // once v7 removed to-one connect/disconnect and nested relationship create.
 let driver: Driver;
 let schema: GraphQLSchema;
+let publicSchema: GraphQLSchema;
 before(async () => {
   driver = await startNeo4j();
   const app = getCustomResolvers(driver);
   const neo = new Neo4jGraphQL({driver, typeDefs, resolvers: app.resolvers, features: {filters: {String: {MATCHES: true}}}});
   schema = await neo.getSchema();
   registerGeneratedSchema(driver, schema);
+  publicSchema = applyMiddleware(schema, permissions);
 }, {timeout: 240000});
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
@@ -132,29 +136,121 @@ test('addIssueActivityFeedItem with a user-authored comment uses the User actor'
   assert.equal(action.Comment.CommentAuthor.username, 'bob');
 });
 
-// Characterize selection forwarding defects without changing write semantics.
-// These block a claimed request-dependent response contract until a behavior fix.
-test('activity refetch loses fields beneath an aliased issues payload or payload fragment', async () => {
-  await driver.executeQuery("CREATE(:Issue {id:'selection',title:'Visible title',isOpen:true,issueNumber:1,createdAt:datetime()})");
-  const invoke=(selection:string,fragments='')=>graphql({schema,source:`mutation { action:addIssueActivityFeedItem(where:{id:{eq:"selection"}},actionType:"report",actionDescription:"selection witness") { ${selection} } } ${fragments}`,contextValue:{}});
-  const control=await invoke('issues{id title}');
-  assert.equal(control.errors,undefined);
-  assert.equal(JSON.parse(JSON.stringify(control.data)).action.issues[0].title,'Visible title');
-  const aliased=await invoke('items:issues{id title}');
-  assert.equal(aliased.errors,undefined);
-  assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{action:{items:[{id:'selection',title:null}]}});
-  const fragment=await invoke('...Payload','fragment Payload on IssueActivityFeedItemResponse {issues{id title}}');
-  assert.equal(fragment.errors,undefined);
-  assert.equal(JSON.parse(JSON.stringify(fragment.data)).action.issues[0].title,null);
-  const persisted=await driver.executeQuery("MATCH(:Issue{id:'selection'})-[:ACTIVITY_ON_ISSUE]->(a) RETURN count(a) AS count");
-  assert.equal(persisted.records[0].get('count').toNumber(),3);
+const seedSelectionIssue = () => driver.executeQuery(`
+  CREATE (i:Issue {id:'selection',title:'Visible title',isOpen:true,issueNumber:1,createdAt:datetime()}),
+    (u:User {username:'reporter',createdAt:datetime()}),
+    (:Channel {uniqueName:'forum',createdAt:datetime()}),
+    (:ModerationProfile {displayName:'mod',createdAt:datetime()})
+  CREATE (i)-[:AUTHORED_ISSUE]->(u)`);
+const selectionMutation = (selection: string, fragments = '', variables = '') => `
+  mutation Selection${variables} {
+    action:addIssueActivityFeedItem(where:{id:{eq:"selection"}},actionType:"report",
+      actionDescription:"selection witness",displayName:"mod",commentText:"note",channelUniqueName:"forum") {
+      ${selection}
+    }
+  } ${fragments}`;
+const assertOneWrite = async () => {
+  const counts = (await driver.executeQuery(`MATCH (i:Issue {id:'selection'})
+    OPTIONAL MATCH (i)-[:ACTIVITY_ON_ISSUE]->(a:ModerationAction)
+    OPTIONAL MATCH (a)-[:MODERATED_COMMENT]->(c:Comment)
+    RETURN count(DISTINCT a) AS actions,count(DISTINCT c) AS comments`)).records[0];
+  assert.equal(counts.get('actions').toNumber(), 1);
+  assert.equal(counts.get('comments').toNumber(), 1);
+};
+for (const [name, selection, fragments] of [
+  ['alias', 'items:issues{id title}', ''],
+  ['fragment', '...Payload', 'fragment Payload on IssueActivityFeedItemResponse {items:issues{id title}}'],
+  ['inline fragment', '... on IssueActivityFeedItemResponse {items:issues{id title}}', ''],
+  ['merged selections', 'items:issues{id} items:issues{title}', ''],
+]) {
+  test(`activity refetch preserves ${name} selections and creates one action/comment`, async () => {
+    await seedSelectionIssue();
+    const result = await graphql({schema, source: selectionMutation(selection, fragments), contextValue: {}});
+    assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+    assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{items:[{id:'selection',title:'Visible title'}]}});
+    await assertOneWrite();
+  });
+}
+
+for (const show of [true, false]) {
+  test(`activity payload aliases forward directive and argument variables (show=${show})`, async () => {
+    await seedSelectionIssue();
+    const source = selectionMutation(`
+      first:issues { id ...Fields @include(if:$show) }
+      second:issues { title feed:ActivityFeed(limit:$limit) { kind:actionType Comment { text } } }
+      omitted:issues @skip(if:true) { title }
+    `, 'fragment Fields on Issue { label:title @skip(if:$hide) }', '($show:Boolean!=true,$hide:Boolean!=false,$limit:Int!=1)');
+    const result = await graphql({schema, source, variableValues:{show}, contextValue:{}});
+    assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+    assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{
+      first:[{id:'selection',...(show ? {label:'Visible title'} : {})}],
+      second:[{title:'Visible title',feed:[{kind:'report',Comment:{text:'note'}}]}],
+    }});
+    await assertOneWrite();
+  });
+}
+
+test('activity write executes once when all payload fields are skipped', async () => {
+  await seedSelectionIssue();
+  const result = await graphql({schema,source:selectionMutation('issues @skip(if:true) {id}'),contextValue:{}});
+  assert.equal(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{}});
+  await assertOneWrite();
 });
 
-test('activity refetch does not forward selection variables and errors after the write commits', async () => {
-  await driver.executeQuery("CREATE(:Issue {id:'selection',title:'Visible title',isOpen:true,issueNumber:1,createdAt:datetime()})");
-  const result=await graphql({schema,source:`mutation($show:Boolean!){action:addIssueActivityFeedItem(where:{id:{eq:"selection"}},actionType:"report",actionDescription:"variable witness"){issues{id title @include(if:$show)}}}`,variableValues:{show:true},contextValue:{}});
-  assert.ok(result.errors?.some(error=>/Variable.*show.*not defined/.test(error.message)));
-  assert.equal(result.data,null);
-  const persisted=await driver.executeQuery("MATCH(:Issue{id:'selection'})-[:ACTIVITY_ON_ISSUE]->(a) RETURN count(a) AS count");
-  assert.equal(persisted.records[0].get('count').toNumber(),1);
+const requestContext = (username?: string) => ({
+  driver, req:{headers:{},body:{},isMutation:true},
+  ...(username ? {user:{username,email:null,email_verified:true,data:{username,ModerationProfile:{displayName:username === "reporter" ? "mod" : "other"}},dateOfBirth:null}} : {}),
+});
+test('Shield rejects anonymous and unrelated callers before activity side effects', async () => {
+  await seedSelectionIssue();
+  for (const username of [undefined, 'unrelated']) {
+    const result = await graphql({schema:publicSchema,
+      source:selectionMutation('...Payload','fragment Payload on IssueActivityFeedItemResponse {items:issues{id title}}'),
+      contextValue:requestContext(username)});
+    assert.ok(result.errors?.length);
+    assert.equal(result.data, null);
+  }
+  const counts = (await driver.executeQuery('MATCH (n) WHERE n:ModerationAction OR n:Comment RETURN count(n) AS count')).records[0];
+  assert.equal(counts.get('count').toNumber(), 0);
+});
+test('authorized activity payload retains Shield privacy on nested aliased identities', async () => {
+  await seedSelectionIssue();
+  await driver.executeQuery("MATCH(m:ModerationProfile {displayName:'mod'}),(u:User {username:'reporter'}) CREATE (u)-[:MODERATION_PROFILE]->(m)");
+  const result = await graphql({schema:publicSchema,source:selectionMutation(`items:issues {
+    id title ActivityFeed { ModerationProfile { displayName privateIdentity:User { username } } }
+  }`),contextValue:requestContext('reporter')});
+  assert.ok(result.errors?.some(error => error.path?.includes('privateIdentity')), JSON.stringify(result));
+  const issue = (result.data as any).action.items[0];
+  assert.equal(issue.title, 'Visible title');
+  assert.equal(issue.ActivityFeed[0].ModerationProfile.privateIdentity, null);
+  await assertOneWrite();
+});
+
+test('activity response reads only requested fields and preserves nullable error paths', async () => {
+  await seedSelectionIssue();
+  await driver.executeQuery("MATCH(i:Issue {id:'selection'}) SET i.title=['malformed']");
+  const omitted = await graphql({schema, source:selectionMutation('items:issues{id}'), contextValue:{}});
+  assert.equal(omitted.errors, undefined);
+  await assertOneWrite();
+  const selected = await graphql({schema, source:selectionMutation('items:issues{id bad:title}'), contextValue:{}});
+  assert.ok(selected.errors?.some(error => JSON.stringify(error.path) === JSON.stringify(['action','items',0,'bad'])), JSON.stringify(selected));
+  assert.deepEqual(JSON.parse(JSON.stringify(selected.data)), {action:{items:[{id:'selection',bad:null}]}});
+});
+test('missing issue returns an empty aliased payload without creating orphan actions', async () => {
+  const result = await graphql({schema,source:selectionMutation('items:issues{id title}'),contextValue:{}});
+  assert.equal(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{items:[]}});
+  const count = (await driver.executeQuery('MATCH(n) RETURN count(n) AS count')).records[0].get('count').toNumber();
+  assert.equal(count, 0);
+});
+
+test('unaliased activity selection forwards directive variables without a post-commit validation error', async () => {
+  await seedSelectionIssue();
+  const result = await graphql({schema,
+    source:selectionMutation('issues{id title @include(if:$show)}', '', '($show:Boolean!)'),
+    variableValues:{show:true}, contextValue:{}});
+  await assertOneWrite();
+  assert.equal(result.errors, undefined, JSON.stringify(result.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{issues:[{id:'selection',title:'Visible title'}]}});
 });

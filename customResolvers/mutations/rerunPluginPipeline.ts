@@ -1,5 +1,6 @@
 import {createPipelineRerunRepository, type PipelineRerunRepository} from "../../services/persistence/pipelineRerunRepository.js";
 import type {PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
+import { createContentRevisionHash } from "../../services/plugin/moderationJobIdentity.js";
 import { GraphQLError } from "graphql";
 import {
   PluginPipelineRunStatus,
@@ -64,6 +65,7 @@ export const createRerunPluginPipelineResolver = (
         "Only failed, timed out, or cancelled pipelines can be run again"
       );
     }
+    const relatedTargetVersions = source.targetVersion ? [source.targetVersion] : [];
     if (source.targetVersion) {
       let currentTargetVersion: string | null | undefined;
       if (source.targetType === "DownloadableFile") {
@@ -73,10 +75,26 @@ export const createRerunPluginPipelineResolver = (
       } else if (source.targetType === "Discussion") {
         const discussions = await repository.findDiscussionVersion(source.targetId);
         const discussion = discussions[0];
-        currentTargetVersion =
-          discussion?.DownloadableFile?.uploadedAt ||
-          discussion?.DownloadableFile?.createdAt ||
-          null;
+        const file = discussion?.DownloadableFiles?.[0];
+        const attachmentVersion = file?.uploadedAt || file?.createdAt || null;
+        // Older attempts used an attachment timestamp; current channel runs
+        // store a content-revision hash (including the attachment version).
+        const revisionHash = discussion && source.channelId
+            ? createContentRevisionHash({
+                channelUniqueName: source.channelId,
+                contentId: discussion.id,
+                contentType: "Discussion",
+                title: discussion.title,
+                body: discussion.body,
+                attachmentVersion,
+              })
+            : null;
+        currentTargetVersion = Number.isFinite(Date.parse(source.targetVersion))
+          ? attachmentVersion
+          : revisionHash;
+        // A retry of a legacy timestamp attempt is persisted with the runner's
+        // current hash. Include both so it cannot bypass latest/cooldown guards.
+        if (revisionHash) relatedTargetVersions.push(revisionHash);
       }
       if (
         currentTargetVersion &&
@@ -92,7 +110,9 @@ export const createRerunPluginPipelineResolver = (
         targetId: { eq: source.targetId },
         targetType: { eq: source.targetType },
         ...(source.targetVersion
-          ? { targetVersion: { eq: source.targetVersion } }
+          ? { targetVersion: source.targetType === "Discussion"
+              ? { in: [...new Set(relatedTargetVersions)] }
+              : { eq: source.targetVersion } }
           : {}),
         eventType: { eq: source.eventType },
         scope: { eq: source.scope },

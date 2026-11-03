@@ -15,7 +15,8 @@ export const RERUN_SELECTION_0 = `{
       }`;
 export const RERUN_SELECTION_1 = `{ uploadedAt createdAt }`;
 export const RERUN_SELECTION_2 = `{
-            DownloadableFile { uploadedAt createdAt }
+            id title body
+            DownloadableFiles(limit: 1) { uploadedAt createdAt }
           }`;
 export const RERUN_SELECTION_3 = `{ pipelineId status trigger createdAt }`;
 export function createPipelineRerunRepository(driver:Driver):PipelineRerunRepository { return {

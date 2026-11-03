@@ -1,4 +1,4 @@
-import type { PluginPipelineRun, DownloadableFile, Channel, ServerConfig, PluginRun, ServerSecret } from "../../src/generated/graphql.js";
+import type { PluginPipelineRun, DownloadableFile, Discussion, Channel, ServerConfig, PluginRun, ServerSecret } from "../../src/generated/graphql.js";
 import type { Selection, Projection } from "./selection.js";
 
 export const rerunSourceSelection = {
@@ -255,10 +255,10 @@ export const pendingJobSelection = {
 } as const satisfies Selection<PluginRun>;
 export type PendingJob = Projection<PluginRun, typeof pendingJobSelection>;
 
-// These fixed queries currently fail GraphQL validation because the schema
-// exposes plural DownloadableFiles. Retain the attempted projection without
-// asserting that it is a valid generated Discussion result. Tests preserve that failure.
-export type RerunDiscussionVersion = { DownloadableFile: FileVersion | null };
-export type StartDiscussionTarget = { id: string; Author: { username: string } | null; DownloadableFile: (FileVersion & {uploadedByUsername: string | null}) | null; DiscussionChannels: {channelUniqueName: string; archived: boolean | null}[] };
+// Fixed supported selections introduced by #442, including content revision inputs.
+export const rerunDiscussionSelection = { id:true, title:true, body:true, DownloadableFiles:fileVersionSelection } as const satisfies Selection<Discussion>;
+export type RerunDiscussionVersion = Projection<Discussion, typeof rerunDiscussionSelection>;
+export const startDiscussionSelection = { id:true, title:true, body:true, Author:{username:true}, DownloadableFiles:{uploadedAt:true,createdAt:true,uploadedByUsername:true}, DiscussionChannels:{channelUniqueName:true,archived:true} } as const satisfies Selection<Discussion>;
+export type StartDiscussionTarget = Projection<Discussion, typeof startDiscussionSelection>;
 
 export type PendingRuns = {pluginRuns: PendingJob[]};
