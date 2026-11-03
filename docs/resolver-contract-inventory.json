@@ -275,11 +275,11 @@
     },
     {
       "field": "Mutation.enableServerPlugin",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.installPluginVersion",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.inviteForumMod",
@@ -347,7 +347,7 @@
     },
     {
       "field": "Mutation.refreshPlugins",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.removeEmojiFromComment",

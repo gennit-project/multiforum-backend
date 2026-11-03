@@ -1,3 +1,4 @@
+import type { PluginInstallationMutationResolvers } from "./contracts/pluginInstallation.js";
 import type { PluginCampaignMutationResolvers } from "./contracts/pluginCampaigns.js";
 import type { AccountSafetyMutationResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationMutationResolvers } from "./contracts/pluginConfiguration.js";
@@ -387,6 +388,18 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createPluginPipelineCampaign: createPluginPipelineCampaign({}),
   } satisfies PluginCampaignMutationResolvers;
 
+  const pluginInstallationResolvers = {
+    refreshPlugins: refreshPlugins({
+      driver
+    }),
+    installPluginVersion: installPluginVersion({
+      driver
+    }),
+    enableServerPlugin: enableServerPlugin({
+      driver
+    }),
+  } satisfies PluginInstallationMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -488,12 +501,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
     ...subscriptionResolvers,
-    refreshPlugins: refreshPlugins({
-      driver
-    }),
-    installPluginVersion: installPluginVersion({
-      driver
-    }),
+    ...pluginInstallationResolvers,
     triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
     retryDownloadableFileScan: retryDownloadableFileScan({}),
     startPluginPipeline: startPluginPipeline({}),
@@ -511,9 +519,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
-      driver
-    }),
-    enableServerPlugin: enableServerPlugin({
       driver
     }),
     updatePluginPipelines: updatePluginPipelines({

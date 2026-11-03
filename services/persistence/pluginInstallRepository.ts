@@ -1,5 +1,6 @@
+import type { CREATEINSTALLPLUGINProjection, CREATEINSTALLVERSIONProjection, FINDINSTALLCONFIGSProjection, FINDINSTALLEDVERSIONSProjection, FINDINSTALLPLUGINProjection, FINDINSTALLVERSIONProjection } from "../../customResolvers/contracts/pluginInstallationProjections.js";
 import type { Driver } from "neo4j-driver";
-import type { Plugin, PluginVersion, ServerConfig, PluginCreateInput, PluginUpdateInput, PluginVersionCreateInput, PluginVersionUpdateInput } from "../../ogm_types.js";
+import type { PluginCreateInput, PluginUpdateInput, PluginVersionCreateInput, PluginVersionUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const FINDINSTALLCONFIGS_SELECTION = `{
           serverName
@@ -136,35 +137,35 @@ export const CONNECTINSTALLATION_SELECTION = `{ serverConfigs {
   pluginPipelines
 } }`;
 export interface PluginInstallRepository {
-  findInstallConfigs(): Promise<ServerConfig[]>;
-  findInstallPlugin(pluginId: string): Promise<Plugin[]>;
-  findInstallVersion(version: string, name: string): Promise<PluginVersion[]>;
-  createInstallPlugin(input: PluginCreateInput[]): Promise<{plugins:Plugin[]}>;
+  findInstallConfigs(): Promise<FINDINSTALLCONFIGSProjection[]>;
+  findInstallPlugin(pluginId: string): Promise<FINDINSTALLPLUGINProjection[]>;
+  findInstallVersion(version: string, name: string): Promise<FINDINSTALLVERSIONProjection[]>;
+  createInstallPlugin(input: PluginCreateInput[]): Promise<{plugins:CREATEINSTALLPLUGINProjection[]}>;
   updateInstallPlugin(id: string, update: PluginUpdateInput): Promise<void>;
-  createInstallVersion(input: PluginVersionCreateInput[]): Promise<{pluginVersions:PluginVersion[]}>;
+  createInstallVersion(input: PluginVersionCreateInput[]): Promise<{pluginVersions:CREATEINSTALLVERSIONProjection[]}>;
   updateInstallVersion(id: string, update: PluginVersionUpdateInput, pluginId: string): Promise<void>;
-  findInstalledVersions(serverName: string | null | undefined): Promise<ServerConfig[]>;
+  findInstalledVersions(serverName: string | null | undefined): Promise<FINDINSTALLEDVERSIONSProjection[]>;
   connectInstallation(serverName: string, id: string, settingsJson: string | null): Promise<void>;
 }
 export function createPluginInstallRepository(driver: Driver): PluginInstallRepository {
   return {
     async findInstallConfigs() {
-      const result = await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,
+      const result = await executeGeneratedOperation<{serverConfigs:FINDINSTALLCONFIGSProjection[]}>(driver,
         `query Install_findInstallConfigs { serverConfigs ${FINDINSTALLCONFIGS_SELECTION} }`, {});
       return result.serverConfigs;
     },
     async findInstallPlugin(pluginId) {
-      const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
+      const result = await executeGeneratedOperation<{plugins:FINDINSTALLPLUGINProjection[]}>(driver,
         `query Install_findInstallPlugin($where: PluginWhere) { plugins(where: $where) ${FINDINSTALLPLUGIN_SELECTION} }`, {where:{OR:[{id:{eq:pluginId}},{name:{eq:pluginId}}]}});
       return result.plugins;
     },
     async findInstallVersion(version, name) {
-      const result = await executeGeneratedOperation<{pluginVersions:PluginVersion[]}>(driver,
+      const result = await executeGeneratedOperation<{pluginVersions:FINDINSTALLVERSIONProjection[]}>(driver,
         `query Install_findInstallVersion($where: PluginVersionWhere) { pluginVersions(where: $where) ${FINDINSTALLVERSION_SELECTION} }`, {where:{AND:[{version:{eq:version}},{Plugin:{name:{eq:name}}}]}});
       return result.pluginVersions;
     },
     async createInstallPlugin(input) {
-      const result = await executeGeneratedOperation<{createPlugins:{plugins:Plugin[]}}>(driver,
+      const result = await executeGeneratedOperation<{createPlugins:{plugins:CREATEINSTALLPLUGINProjection[]}}>(driver,
         `mutation Install_createInstallPlugin($input: [PluginCreateInput!]!) { createPlugins(input: $input) ${CREATEINSTALLPLUGIN_SELECTION} }`, {input});
       return result.createPlugins;
     },
@@ -177,7 +178,7 @@ export function createPluginInstallRepository(driver: Driver): PluginInstallRepo
       // version then own the HAS_VERSION edge ((:Plugin)-[:HAS_VERSION]->(:PluginVersion)).
       const { Plugin, ...scalars } = (input[0] ?? {}) as Record<string, any>;
       const pluginId = Plugin?.connect?.where?.node?.id ?? null;
-      const result = await executeGeneratedOperation<{createPluginVersions:{pluginVersions:PluginVersion[]}}>(driver,
+      const result = await executeGeneratedOperation<{createPluginVersions:{pluginVersions:CREATEINSTALLVERSIONProjection[]}}>(driver,
         `mutation Install_createInstallVersion($input: [PluginVersionCreateInput!]!) { createPluginVersions(input: $input) ${CREATEINSTALLVERSION_SELECTION} }`, {input:[scalars]});
       const versionId = result.createPluginVersions.pluginVersions[0]?.id;
       if (versionId && pluginId) {
@@ -199,7 +200,7 @@ export function createPluginInstallRepository(driver: Driver): PluginInstallRepo
         {id, pluginId});
     },
     async findInstalledVersions(serverName) {
-      const result = await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,
+      const result = await executeGeneratedOperation<{serverConfigs:FINDINSTALLEDVERSIONSProjection[]}>(driver,
         `query Install_findInstalledVersions($where: ServerConfigWhere) { serverConfigs(where: $where) ${FINDINSTALLEDVERSIONS_SELECTION} }`, {where:{serverName:{eq:serverName}}});
       return result.serverConfigs;
     },

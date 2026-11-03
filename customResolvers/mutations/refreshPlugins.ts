@@ -47,7 +47,7 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
       logger.info(`Registry updated at: ${registryData.updatedAt}`)
       logger.info(`Found ${registryData.plugins.length} plugins in registry`)
 
-      const updatedPlugins: any[] = []
+      const updatedPlugins: Awaited<ReturnType<PluginRegistryRepository["findPluginByName"]>> = []
 
       // First, find and fix any orphaned plugin versions that exist without Plugin connections
       logger.info('Checking for orphaned plugin versions...')

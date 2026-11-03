@@ -128,10 +128,18 @@
     },
     {
       "field": "Mutation.enableServerPlugin",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "plugin.*",
+      "status": "selected-response",
+      "selectedPaths": [
+        "plugin.id",
+        "plugin.name",
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags",
+        "plugin.metadata",
         "version",
         "scope",
         "enabled",
@@ -139,33 +147,78 @@
         "manifest",
         "settingsDefaults",
         "uiSchema",
-        "release metadata"
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion"
+      ],
+      "residualPaths": [
+        "plugin.Versions",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions",
+        "carryOverReport"
       ],
       "evidence": [
-        "customResolvers/mutations/enableServerPlugin.ts",
-        "services/persistence/serverPluginEnablementRepository.ts"
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
       ],
-      "reason": "Settings parsing and validated generated reads already exist, but installation/plugin snapshot optional fields and nominal argument types have not been joined to a generated response boundary.",
-      "decision": "Make selected projection keys accurate and assert actual factory; test invalid settings/config-blocked and enabled/disabled GraphQL responses."
+      "reason": "Fixed executable-schema plugin and installation projections replace optional catch-all snapshots. Returned metadata is validated by actual generated operation completion; JSON interiors remain scalar-owned. Real-schema tests verify enable/disable persistence and missing plugin/version/installation errors.",
+      "decision": "No behavior change. Remaining fields are absent from the assembled object and outside this selected boundary; plugin.Versions is a required relationship not supplied by this assembly and needs separate resolver-completion evidence or an approved behavior decision."
     },
     {
       "field": "Mutation.installPluginVersion",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "plugin.*",
+      "status": "selected-response",
+      "selectedPaths": [
+        "plugin.id",
+        "plugin.name",
         "version",
         "scope",
         "enabled",
         "settingsJson",
         "carryOverReport"
       ],
-      "evidence": [
-        "customResolvers/mutations/installPluginVersion.ts",
-        "services/persistence/pluginInstallRepository.ts"
+      "residualPaths": [
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags",
+        "plugin.metadata",
+        "plugin.Versions",
+        "manifest",
+        "settingsDefaults",
+        "uiSchema",
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions"
       ],
-      "reason": "Manifest metadata is cast from downloaded JSON, persistence selections claim full Plugin/Version, and installation response combines normalized ids with manifest metadata. Existing tests mock fetch but call resolver directly.",
-      "decision": "Narrow selected repository shapes and metadata projection; wrap existing mocked-download scenarios in real-schema response tests without fetching live registries."
+      "evidence": [
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
+      ],
+      "reason": "Exact read/create repository projections and actual return union replace full-model claims; constructed String identity/version and constant scope/Boolean enabled are checked. Registry, download and artifact parsing use test seams with external I/O denied; successful install/repeat persistence and failure wrapping pass real-schema execution.",
+      "decision": "Fetched manifest metadata retains existing assertions and write-input adapters; those paths are not certified. Preserve metadata behavior. A subsequent input-validation change needs a precise compatibility decision; missing assembled relationship/default metadata fields remain outside this response boundary."
     },
     {
       "field": "Mutation.pausePluginPipelineCampaign",
@@ -221,18 +274,48 @@
     },
     {
       "field": "Mutation.refreshPlugins",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "name",
+        "Versions.id",
+        "Versions.version"
+      ],
       "residualPaths": [
-        "Plugin.*",
-        "Plugin.Versions.*"
+        "displayName",
+        "description",
+        "authorName",
+        "authorUrl",
+        "homepage",
+        "license",
+        "tags",
+        "metadata",
+        "Versions.repoUrl",
+        "Versions.tarballGsUri",
+        "Versions.integritySha256",
+        "Versions.registryUrl",
+        "Versions.releaseNotesUrl",
+        "Versions.sourceRepoUrl",
+        "Versions.sourceCommit",
+        "Versions.minServerVersion",
+        "Versions.apiVersion",
+        "Versions.entryPath",
+        "Versions.manifest",
+        "Versions.settingsDefaults",
+        "Versions.uiSchema",
+        "Versions.documentationPath",
+        "Versions.readmeMarkdown",
+        "Versions.Plugin"
       ],
       "evidence": [
-        "customResolvers/mutations/refreshPlugins.ts",
-        "services/persistence/pluginRegistryRepository.ts"
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
       ],
-      "reason": "Registry artifacts and returned full PluginVersion projections are not yet tied to a generated selected signature; fetched manifest types use assertions.",
-      "decision": "Narrow registry persistence projections and test selected GraphQL fields with existing local fetch mocks and partial-install error ordering."
+      "reason": "All fixed repository reads use exact executable-schema projections. Removed updatedPlugins:any[]; failed final refetch preserves the earlier id/name lookup and Versions:[] fallback. Real-schema tests cover create/update, fallback, skipped artifact errors and registry failure.",
+      "decision": "No behavior change. Fetched metadata/input casts remain unclaimed. Metadata and remaining version fields are absent in some fallback paths and excluded from this narrow selection; do not count this as full Plugin/PluginVersion response validation."
     },
     {
       "field": "Mutation.requestDownloadableFileReview",
