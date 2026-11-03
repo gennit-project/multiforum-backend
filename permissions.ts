@@ -368,6 +368,10 @@ const permissionRules: IRules = {
       UpvotedComments: allow,
       UpvotedDiscussionChannels: allow,
       Suspensions: allow,
+      // Suspensions is public, so its connection (e.g. an active-suspension count
+      // on a channel's Bots) must be too — otherwise reading it denies the whole
+      // query. Mirrors the field/Connection pairs enumerated above.
+      SuspensionsConnection: allow,
       AuthoredWikiPages: allow,
       OriginalWikiPages: allow,
       AuthoredWikiPageVersions: allow,
@@ -408,6 +412,7 @@ const permissionRules: IRules = {
       ModOfServers: allow,
       ActivityFeed: allow,
       Suspensions: allow,
+      SuspensionsConnection: allow,
     },
     Email: {
       // Access to an Email node is already restricted at Query.emails and
