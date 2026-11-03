@@ -70,6 +70,27 @@ export interface ImageCreationRepository {
 }
 export interface ProfileImageRepository {setProfileImage(username: string, update: UserUpdateInput): Promise<{users: Array<Record<string, unknown>>}>;}
 export interface ChannelIconRepository {setChannelIcon(uniqueName: string, update: ChannelUpdateInput): Promise<{channels: Array<Record<string, unknown>>}>;}
+// Keep the public JSON shape while using a Neo4j-compatible scalar property.
+// Null removes the property; omission preserves it. Existing scalar URL fields
+// remain unchanged and retain precedence in the public field resolver.
+function encodeVariantUrls(value: unknown): unknown {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (Object.values(value).some(url => typeof url !== "string" && url !== null)) {
+      throw new TypeError("variantUrls must contain URL strings or null");
+    }
+    return JSON.stringify(value);
+  }
+  return value;
+}
+
+function encodeVariantUpdate<T extends UserUpdateInput | ChannelUpdateInput>(update: T): T {
+  if (!update.variantUrls || !("set" in update.variantUrls)) return update;
+  return {
+    ...update,
+    variantUrls: { ...update.variantUrls, set: encodeVariantUrls(update.variantUrls.set) },
+  };
+}
+
 const UPLOADER = `query ImageUploader($where: UserWhere) {users(where: $where) {username}}`;
 const PROFILE = `mutation SetUploadedProfileImage($where: UserWhere, $update: UserUpdateInput) {updateUsers(where: $where, update: $update) {users ${PROFILE_IMAGE_SELECTION}}}`;
 const ICON = `mutation SetUploadedChannelIcon($where: ChannelWhere, $update: ChannelUpdateInput) {updateChannels(where: $where, update: $update) {channels ${CHANNEL_ICON_SELECTION}}}`;
@@ -129,7 +150,11 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
     const albumIds = (Albums?.connect ?? [])
       .map((c) => c?.where?.node?.id)
       .filter((id): id is string => typeof id === "string" && id.length > 0);
-    const scalars = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
+    const scalars = Object.fromEntries(
+      Object.entries(rest)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [key, key === "variantUrls" ? encodeVariantUrls(value) : value])
+    );
     const result = await driver.executeQuery(CREATE_IMAGE, {
       scalars,
       uploadedAt: uploadedAt ?? null,
@@ -156,8 +181,8 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
  };
 }
 export function createProfileImageRepository(driver: Driver): ProfileImageRepository {
- return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:Array<Record<string,unknown>>}}>(driver,PROFILE,{where:{username:{eq:username}},update})).updateUsers;}};
+ return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:Array<Record<string,unknown>>}}>(driver,PROFILE,{where:{username:{eq:username}},update:encodeVariantUpdate(update)})).updateUsers;}};
 }
 export function createChannelIconRepository(driver: Driver): ChannelIconRepository {
- return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:Array<Record<string,unknown>>}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update})).updateChannels;}};
+ return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:Array<Record<string,unknown>>}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update:encodeVariantUpdate(update)})).updateChannels;}};
 }
