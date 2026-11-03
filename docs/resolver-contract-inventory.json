@@ -227,7 +227,7 @@
     },
     {
       "field": "Mutation.createImageWithUploader",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createIssue",

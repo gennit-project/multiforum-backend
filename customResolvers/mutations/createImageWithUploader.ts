@@ -3,7 +3,7 @@ import type { Driver } from 'neo4j-driver';
 import { setUserDataOnContext } from '../../rules/permission/userDataHelperFunctions.js';
 import { ERROR_MESSAGES } from '../../rules/errorMessages.js';
 import type { GraphQLContext } from '../../types/context.js';
-import { createImageCreationRepository, type ImageCreationRepository } from "../../services/persistence/imageWriteRepository.js";
+import { createImageCreationRepository, type ImageCreationRepository, type ImageCreateLike } from "../../services/persistence/imageWriteRepository.js";
 import { logger } from "../../logger.js";
 import {
   claimUploadAuditMetadata,
@@ -14,21 +14,9 @@ import {
   generateImageVariants,
 } from "../../services/imageVariants.js";
 
-// Input type for image creation (excluding Uploader since we set it automatically)
-type ImageInput = {
-  url?: string;
-  alt?: string;
-  caption?: string;
-  longDescription?: string;
-  copyright?: string;
-  hasSensitiveContent?: boolean;
-  hasSpoiler?: boolean;
-  albumId?: string;
-  storageObjectName?: string;
-};
-
+import type {CreateImageInput} from '../../src/generated/graphql.js';
 type Args = {
-  input: ImageInput;
+  input: CreateImageInput;
 };
 
 type Input = {
@@ -97,7 +85,7 @@ const getResolver = (input: Input) => {
     // owned write in the repository — v7 removed the nested to-one connect, but
     // the resolver keeps assembling this familiar shape and the repository reads
     // the owner/album identifiers out of it.
-    const createInput: any = {
+    const createInput: ImageCreateLike = {
       url: imageInput.url,
       storageBucket: uploadMetadata?.storageBucket,
       storageObjectName: uploadMetadata?.storageObjectName,

@@ -1,3 +1,4 @@
+import type { ImageWriteSourceMutationResolvers } from "./contracts/imageWriteSources.js";
 import type { AccountWriteSourceMutationResolvers } from "./contracts/accountWriteSources.js";
 import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
 import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
@@ -551,6 +552,12 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies AccountWriteSourceMutationResolvers;
 
+  const imageWriteSourceResolvers = {
+    createImageWithUploader: createImageWithUploader({
+      driver
+    }),
+  } satisfies ImageWriteSourceMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -587,9 +594,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...downloadActionResolvers,
     ...pluginPolicyDomainResolvers,
     ...pluginConfigurationResolvers,
-    createImageWithUploader: createImageWithUploader({
-      driver
-    }),
+    ...imageWriteSourceResolvers,
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       driver
     }),

@@ -189,24 +189,68 @@
     },
     {
       "field": "Mutation.createImageWithUploader",
-      "status": "exception",
-      "signature": null,
-      "selection": null,
-      "selectedPaths": [],
-      "residualPaths": [
-        "All Image fields from dynamically converted raw stored properties."
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "createdAt"
       ],
-      "evidence": {
-        "source": [
-          "services/persistence/imageWriteRepository.ts",
-          "customResolvers/mutations/createImageWithUploader.ts"
-        ],
-        "execution": [
-          "tests/integration/imageWriteRepository.test.ts"
-        ]
-      },
-      "reason": "createImage copies arbitrary raw node properties through convertNeo4jValue into Record<string, unknown>, then asserts the object as Image. Missing/malformed stored scalar values currently reach GraphQL only when requested, after the write commits. Replacing that assertion with another declared Image projection would hide the same mismatch.",
-      "decision": "Choose a field-lazy raw-source resolver typing/validation boundary, or separately authorize eager validation and its changed error timing. Preserve current post-commit, requested-field-only GraphQL scalar handling meanwhile."
+      "residualPaths": [
+        "Albums",
+        "AlbumsConnection",
+        "InCollections",
+        "InCollectionsConnection",
+        "PermanentlyRemovedByMod",
+        "PermanentlyRemovedByModConnection",
+        "PermanentlyRemovedByUser",
+        "PermanentlyRemovedByUserConnection",
+        "RelatedIssues",
+        "RelatedIssuesConnection",
+        "Uploader",
+        "UploaderConnection",
+        "alt",
+        "archived",
+        "caption",
+        "copyright",
+        "detail640Url",
+        "detail960Url",
+        "detail1280Url",
+        "hasSensitiveContent",
+        "hasSpoiler",
+        "height",
+        "isFavorited",
+        "list80Url",
+        "list160Url",
+        "list320Url",
+        "longDescription",
+        "permanentlyRemoved",
+        "permanentlyRemovedAt",
+        "permanentlyRemovedByModName",
+        "permanentlyRemovedByUsername",
+        "scanCheckedAt",
+        "scanStatus",
+        "storageBucket",
+        "storageObjectName",
+        "storageUrl",
+        "uploadedAt",
+        "uploadedByIp",
+        "uploadedByUsername",
+        "url",
+        "variantUrls",
+        "width",
+        "upload audit claim atomicity: a missing claim result is still ignored (existing behavior)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/imageWriteSources.ts",
+        "tests/contracts/imageWriteSources.typecheck.ts",
+        "customResolvers/mutations/createImageWithUploader.ts",
+        "services/persistence/imageWriteRepository.ts",
+        "tests/integration/imageWriteSourceResponseContracts.test.ts",
+        "tests/integration/imageWriteRepository.test.ts",
+        "customResolvers/mutations/createImageWithUploader.test.ts",
+        "customResolvers/mutations/imageWriteOrdering.test.ts"
+      ],
+      "reason": "Owned CREATE overrides id and createdAt with randomUUID()/datetime() after the caller scalar map; typed driver records model those expressions, while remaining stored values stay unknown. The root rejects an empty row before claim and returns the source only after claim completes. Generated resolver signature checks this narrow identity/timestamp selection and schema-defined nullable input fields. Real-schema execution covers metadata claim, null inputs, missing metadata/uploader, permissions, empty/write/claim failures, lost claim and late selected storage serialization; native image IO is explicitly blocked.",
+      "decision": "Wire id/createdAt only. Preserve raw storage values, optional best-effort relationship writes, variant fallback, post-create claim timing, ignored missing claim result, and outer GraphQL selected-field errors. Do not claim full Image validity or fix claim atomicity in this typing slice."
     },
     {
       "field": "Mutation.createIssue",
