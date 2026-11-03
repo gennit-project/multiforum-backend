@@ -1,3 +1,4 @@
+import type { PluginSummaryMetadataQueryResolvers } from "./contracts/pluginSummaryMetadata.js";
 import type { PluginPolicyQueryResolvers } from "./contracts/pluginPolicies.js";
 import type { PluginSettingsReadResolvers } from "./contracts/pluginSettingsRead.js";
 import type { PluginCampaignQueryResolvers } from "./contracts/pluginCampaigns.js";
@@ -177,6 +178,14 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginPolicyQueryResolvers;
 
+  const pluginSummaryMetadataResolvers = {
+    getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
+    getPipelineRunPage: createPipelineRunPage({ driver }),
+    getServerHealthDashboard: getServerHealthDashboard({
+      driver
+    }),
+  } satisfies PluginSummaryMetadataQueryResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -230,8 +239,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ...pluginSettingsReadResolvers,
     ...pluginConfigurationResolvers,
     ...pluginPolicyResolvers,
-    getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
-    getPipelineRunPage: createPipelineRunPage({ driver }),
+    ...pluginSummaryMetadataResolvers,
     ...pluginCampaignResolvers,
     ...collectionResolvers,
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
@@ -241,9 +249,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getImageAlbumUsage: getImageAlbumUsage({
       driver,
       agePolicyRepository: instancePolicyRepository
-    }),
-    getServerHealthDashboard: getServerHealthDashboard({
-      driver
     }),
     getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository })
   };

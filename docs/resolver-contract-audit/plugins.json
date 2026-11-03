@@ -893,20 +893,25 @@
     },
     {
       "field": "Query.getPipelineRunPage",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "run.*",
+      "status": "selected-response",
+      "selectedPaths": [
         "displayStatus",
         "hasActiveWork",
-        "jobsPageInfo.*"
+        "jobsPageInfo.hasNextPage",
+        "jobsPageInfo.endCursor"
+      ],
+      "residualPaths": [
+        "run.*"
       ],
       "evidence": [
         "customResolvers/queries/getPluginPipelinePage.ts",
-        "services/persistence/pipelineSummaryPageRepository.ts"
+        "services/persistence/pipelineSummaryPageRepository.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
       ],
-      "reason": "normalizeRecord<T> asserts normalized raw map as pipeline records. Page cursor/status computations access some values before serialization; others are lazy public fields.",
-      "decision": "Replace generic assertion with exact raw/projection typing and lazy output validation; test malformed selected versus omitted fields, legacy ID fallback and cursor limits."
+      "reason": "Actual factory checked for exact generated display-status enum, computed activity flag and cursor/page metadata. Missing run remains nullable. Nested raw run values intentionally excluded.",
+      "decision": "Keep raw run completion lazy; real-schema test proves metadata succeeds with invalid unselected run.status, and selecting that enum retains its GraphQL error."
     },
     {
       "field": "Query.getPipelineRuns",
@@ -1013,22 +1018,31 @@
     },
     {
       "field": "Query.getPipelineSummaryPage",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "targetId",
         "targetType",
         "hasActiveWork",
         "hasFailedWork",
-        "pageInfo.*",
-        "attempts.*"
+        "pageInfo.hasNextPage",
+        "pageInfo.endCursor",
+        "attempts.displayStatus",
+        "attempts.hasActiveWork",
+        "attempts.jobsPageInfo.hasNextPage",
+        "attempts.jobsPageInfo.endCursor"
+      ],
+      "residualPaths": [
+        "attempts.run.*"
       ],
       "evidence": [
         "customResolvers/queries/getPluginPipelinePage.ts",
-        "services/persistence/pipelineSummaryPageRepository.ts"
+        "services/persistence/pipelineSummaryPageRepository.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
       ],
-      "reason": "Same raw page normalization as run page plus unbounded activity/failure flags and first+1 pagination.",
-      "decision": "Implement with run page; preserve cursor binding, tie order, per-page caps and all-history status flags."
+      "reason": "Actual factory checked for computed envelope and page metadata; named EXISTS/OR query declares exact boolean projection through driver generic and has real Neo4j zero/active/failed witnesses.",
+      "decision": "Keep nested raw runs outside checked scope; preserve bounded fan-out, authoritative all-jobs flags, cursor bindings, ordering and lazy scalar completion."
     },
     {
       "field": "Query.getPluginConfigStatus",
@@ -1226,23 +1240,52 @@
     },
     {
       "field": "Query.getServerHealthDashboard",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "summary.activeChannelCount",
+        "summary.discussionCount",
+        "summary.commentCount",
+        "summary.eventCount",
+        "summary.downloadCount",
+        "summary.voteCount",
+        "summary.openIssueCount",
+        "summary.issueOpenedCount",
+        "summary.issueClosedCount",
+        "summary.moderationActionCount",
+        "summary.archivedContentCount",
+        "summary.lockedContentCount",
+        "summary.suspensionCount",
+        "summary.failedDownloadScanCount",
+        "summary.queuedPluginJobCount",
+        "summary.runningPluginJobCount",
+        "summary.pluginTimeoutCount24h",
+        "summary.pluginTimeoutRate24h",
+        "summary.repeatedPluginFailureCount24h",
+        "summary.pluginRetryAttemptCount1h",
+        "summary.pluginRetryStormCount1h",
+        "summary.oldestQueuedPluginJobAgeSeconds",
+        "summary.medianOpenIssueAgeDays",
+        "issueAging.label",
+        "issueAging.minDays",
+        "issueAging.maxDays",
+        "issueAging.count"
+      ],
       "residualPaths": [
+        "channelHealth.*",
+        "timeSeries.*",
+        "attentionItems.*",
         "startDate",
         "endDate",
-        "generatedAt",
-        "summary.*",
-        "timeSeries.*",
-        "channelHealth.*",
-        "issueAging.*",
-        "attentionItems.*"
+        "generatedAt"
       ],
       "evidence": [
-        "customResolvers/queries/getServerHealthDashboard.ts"
+        "customResolvers/queries/getServerHealthDashboard.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
       ],
-      "reason": "Recursive sanitize converts integers/dates but casts channel health maps; it preserves permissive Number coercion and multiple aggregate queries with fallbacks.",
-      "decision": "Define exact query projections and lazy selected output boundaries, preserving invalid-value coercion, thresholds, dates, sort and limit behavior with GraphQL tests."
+      "reason": "Actual factory checked for every explicitly computed numerical summary field and aging bucket; no raw channel/time-series map is certified.",
+      "decision": "Preserve existing numeric conversion and error behavior; real-schema test proves malformed unselected displayName does not prevent summary, while selecting displayName retains its field error."
     },
     {
       "field": "Query.getServerPluginSecrets",

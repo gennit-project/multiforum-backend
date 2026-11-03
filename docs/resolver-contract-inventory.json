@@ -723,7 +723,7 @@
     },
     {
       "field": "Query.getPipelineRunPage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPipelineRuns",
@@ -735,7 +735,7 @@
     },
     {
       "field": "Query.getPipelineSummaryPage",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPluginConfigStatus",
@@ -763,7 +763,7 @@
     },
     {
       "field": "Query.getServerHealthDashboard",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getServerPluginSecrets",

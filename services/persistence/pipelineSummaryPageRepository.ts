@@ -56,8 +56,13 @@ export function createPipelineSummaryPageRepository(driver: Driver): PipelineSum
       return result.records.map(row => normalizeRecord<PipelineAttemptRecord>(row.get('attempt')));
     },
     async findFlags(filter) {
-      const result = await run(summaryPageQueries.flags, filter);
-      return { hasActiveWork: result.records[0].get('hasActiveWork'), hasFailedWork: result.records[0].get('hasFailedWork') };
+      // This named query produces EXISTS/OR expressions, never raw node values.
+      // The exact driver projection is witnessed against Neo4j in metadata tests.
+      const session = driver.session();
+      try {
+        const result = await session.run<SummaryFlags>(summaryPageQueries.flags, filter);
+        return { hasActiveWork: result.records[0].get('hasActiveWork'), hasFailedWork: result.records[0].get('hasFailedWork') };
+      } finally { await session.close(); }
     },
     async findAttempt(id) {
       const result = await run(summaryPageQueries.attempt, { id });
