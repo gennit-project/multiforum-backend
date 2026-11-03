@@ -1,4 +1,5 @@
 import { createWikiRevisionRepository, type WikiRevisionRepository } from "../services/persistence/wikiRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import type { GraphQLContext } from "../types/context.js";
 import { logger } from "../logger.js";
 
@@ -20,7 +21,7 @@ export const wikiPageVersionHistoryHandler = async ({ context, params }: WikiPag
     
     // Extract parameters from the update operation
     const { where, update } = params;
-    const wikiPageId = where?.id;
+    const wikiPageId = stringFromScalarFilter(where?.id);
     
     // Make sure we have a wikiPage ID and update data
     if (!wikiPageId || !update) {

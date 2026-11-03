@@ -1,4 +1,5 @@
 import { createCommentRevisionRepository, type CommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import {
   createIssueActivityFeedItems,
@@ -30,7 +31,7 @@ export const commentVersionHistoryHandler = async ({
     
     // Extract parameters from the update operation
     const { where, update } = params;
-    const commentId = where?.id;
+    const commentId = stringFromScalarFilter(where?.id);
     
     // Make sure we have a comment ID and update data
     if (!commentId || !update) {

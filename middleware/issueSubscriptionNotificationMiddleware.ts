@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo } from "graphql";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import type { GraphQLContext } from "../types/context.js";
 import { notifyIssueSubscribers } from "../services/issueNotifications.js";
 
@@ -74,7 +75,8 @@ export const createIssueSubscriptionNotificationMiddleware = (
       ) => {
         const activityNodes = getCreatedActivityNodes(args);
         const result = await resolve(parent, args, context, info);
-        const issueId = result?.issues?.[0]?.id || args?.where?.id;
+        const issueId =
+          result?.issues?.[0]?.id || stringFromScalarFilter(args?.where?.id);
 
         if (!issueId || !activityNodes.length) {
           return result;

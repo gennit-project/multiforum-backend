@@ -1,4 +1,5 @@
 import { type EventRevisionSnapshot } from "../services/persistence/eventRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
@@ -42,7 +43,7 @@ export const eventEditNotificationHandler = async ({
 }: EventVersionHistoryHandlerInput) => {
   try {
     const { where, update } = params;
-    const eventId = where?.id;
+    const eventId = stringFromScalarFilter(where?.id);
 
     if (!eventId || !update || !eventSnapshot) {
       return;
