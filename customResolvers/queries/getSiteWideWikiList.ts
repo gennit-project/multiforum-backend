@@ -1,36 +1,22 @@
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { WikiCountRow, FeaturedWikiRow } from "../contracts/wikiCountProjections.js";
+import type { Driver, Integer } from "neo4j-driver";
 import { buildSiteWideWikiPagesQuery } from "../cypher/buildContentSearchQueries.js";
 import { logger } from "../../logger.js";
 import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { WIKI_PAGE_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
-type WikiPageListItem = {
-  id?: string | null;
-  title?: string | null;
-  body?: string | null;
-  slug?: string | null;
-  channelUniqueName?: string | null;
-  createdAt?: unknown;
-  updatedAt?: unknown;
-  VersionAuthor?: {
-    username?: string | null;
-    displayName?: string | null;
-    profilePicURL?: string | null;
-  } | null;
-};
-
 type Input = {
   driver: Driver;
 };
 
 type Args = {
-  searchInput?: string;
-  selectedChannels?: string[];
+  searchInput?: string | null;
+  selectedChannels?: (string | null)[] | null;
   options?: {
-    offset?: number;
-    limit?: number;
-  };
+    offset?: number | null;
+    limit?: number | null;
+  } | null;
 };
 
 const getResolver = (input: Input) => {
@@ -46,13 +32,15 @@ const getResolver = (input: Input) => {
       offset: options?.offset,
       limit: options?.limit,
     });
+    // Preserve the original helper TypeError and its pre-session timing.
+    if (searchInput === null) throw new TypeError("Cannot read properties of null (reading 'trim')");
     const fulltextQuery = buildFulltextQuery(searchInput);
 
     const session = driver.session();
-    let totalCount = 0;
+    let totalCount: Integer | number = 0;
 
     try {
-      const result = await session.run(buildSiteWideWikiPagesQuery(fulltextQuery !== ""), {
+      const result = await session.run<WikiCountRow>(buildSiteWideWikiPagesQuery(fulltextQuery !== ""), {
         fulltextIndex: WIKI_PAGE_FULLTEXT_INDEX,
         fulltextQuery,
         selectedChannels,
@@ -65,7 +53,7 @@ const getResolver = (input: Input) => {
         totalCount = record.get("totalCount");
       }
 
-      const wikiPages = result.records.map((record: Neo4jRecord) =>
+      const wikiPages = result.records.map((record) =>
         record.get("wikiPage")
       );
       const featuredWikiPages = await getFeaturedWikiPages(driver);
@@ -89,7 +77,7 @@ const getFeaturedWikiPages = async (driver: Driver) => {
   const session = driver.session();
 
   try {
-    const result = await session.run(`
+    const result = await session.run<FeaturedWikiRow>(`
       MATCH (serverConfig:ServerConfig)
       WITH coalesce(serverConfig.featuredWikiPageIds, []) AS featuredIds
       UNWIND range(0, size(featuredIds) - 1) AS index
@@ -118,9 +106,9 @@ const getFeaturedWikiPages = async (driver: Driver) => {
       } AS wikiPage
     `);
 
-    return result.records.map((record: Neo4jRecord) =>
+    return result.records.map((record) =>
       record.get("wikiPage")
-    ) as WikiPageListItem[];
+    );
   } finally {
     await session.close();
   }

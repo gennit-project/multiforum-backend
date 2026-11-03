@@ -1,3 +1,4 @@
+import { wikiCountSourceQueryNames } from "./wikiCountSource.js";
 import { contributionReadQueryNames } from "./contributionReadSources.js";
 import { viewerReadQueryNames } from "./viewerReadSources.js";
 import { imageWriteSourceMutationNames } from "./imageWriteSources.js";
@@ -66,6 +67,7 @@ export const checkedRootGroups = [
   ["Mutation", "imageWriteSourceResolvers", "ImageWriteSourceMutationResolvers", imageWriteSourceMutationNames],
   ["Query", "viewerReadResolvers", "ViewerReadQueryResolvers", viewerReadQueryNames],
   ["Query", "contributionReadResolvers", "ContributionReadQueryResolvers", contributionReadQueryNames],
+  ["Query", "wikiCountSourceResolvers", "WikiCountSourceQueryResolvers", wikiCountSourceQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

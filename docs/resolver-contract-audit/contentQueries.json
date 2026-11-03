@@ -275,18 +275,23 @@
     },
     {
       "field": "Query.getSiteWideWikiList",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "aggregateWikiPageCount"
+      ],
       "residualPaths": [
-        "aggregateWikiPageCount",
         "wikiPages.*",
         "featuredWikiPages.*"
       ],
       "evidence": [
         "customResolvers/queries/getSiteWideWikiList.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/wikiCountSource.ts",
+        "customResolvers/contracts/wikiCountProjections.d.ts",
+        "tests/contracts/wikiCountSource.typecheck.ts",
+        "tests/integration/wikiCountScalarWitness.test.ts"
       ],
-      "reason": "Raw wikiPage/count values are forwarded; featured entries are asserted as a type with optional properties and unknown timestamps.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "This is an explicit accepted-source boundary, not a claim that the root emits a generated number: fixed Cypher COUNT yields Integer/native number, and the installed Neo4j numerical child resolver completes aggregateWikiPageCount to Int!. The local adapter retains generated arguments/root nullability and maps only this field. Actual-schema tests guard the exact Int! field, working Integer/native conversion, and demonstrate failure if the child resolver is removed. Persisted wiki fields remain unknown.",
+      "decision": "Keep the narrow named source/completion adapter; do not widen global scalars or eagerly normalize counts. A change to field SDL or numerical completion must fail its drift witness and trigger review. Preserve null-search TypeError timing and zero fallback for empty/exhausted pages. This working runtime path is not a serialization bug."
     },
     {
       "field": "Query.getSortedChannels",
