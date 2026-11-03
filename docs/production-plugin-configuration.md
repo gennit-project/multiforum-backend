@@ -65,3 +65,32 @@ Service deployment workflows may trigger or link to this central workflow
 after deployment, but they must not independently apply server plugin
 topology. This keeps pipeline ownership reviewable and prevents one service
 from deleting another service's events.
+
+## Moderation outcome regression test
+
+With Docker running, execute:
+
+```sh
+pnpm run codegen
+node --import tsx --test tests/integration/moderationOutcome.test.ts
+```
+
+This disposable-Neo4j suite creates and edits comments/discussions through the
+application resolvers and production dispatch middleware. It requires real
+pipeline jobs to execute and reach terminal states without manually starting
+pending runs. A deterministic plugin/service fixture replaces the external
+plugin download and moderation service; it receives the backend's actual event
+envelope, including object-shaped server/forum rules normalized to text, and
+uses the real `reportContentAsBot` capability. There are no LLM or service calls.
+
+Assertions cover the persisted issue target, report text, recommendation, bot
+identity and public activity-feed traversal. Negative cases cover clean content,
+a failed service, a disabled plugin, and human moderator/account-email privacy
+for anonymous, unrelated and owner contexts. The first test holds the fake
+service response to verify that content creation does not block on moderation.
+
+Scope: this tests backend orchestration and persistence, not the external
+llm-moderation plugin implementation, model accuracy, write authorization,
+process-crash recovery or live deployment. Public read permissions are real;
+write authorization has separate suites. CI discovers this file automatically
+in the existing integration shards.
