@@ -1,3 +1,4 @@
+import { downloadReadSourceQueryNames } from "./downloadReadSources.js";
 import { wikiCountSourceQueryNames } from "./wikiCountSource.js";
 import { contributionReadQueryNames } from "./contributionReadSources.js";
 import { viewerReadQueryNames } from "./viewerReadSources.js";
@@ -68,6 +69,7 @@ export const checkedRootGroups = [
   ["Query", "viewerReadResolvers", "ViewerReadQueryResolvers", viewerReadQueryNames],
   ["Query", "contributionReadResolvers", "ContributionReadQueryResolvers", contributionReadQueryNames],
   ["Query", "wikiCountSourceResolvers", "WikiCountSourceQueryResolvers", wikiCountSourceQueryNames],
+  ["Query", "downloadReadSourceResolvers", "DownloadReadSourceQueryResolvers", downloadReadSourceQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

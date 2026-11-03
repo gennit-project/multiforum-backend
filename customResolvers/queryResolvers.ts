@@ -1,3 +1,4 @@
+import type { DownloadReadSourceQueryResolvers } from "./contracts/downloadReadSources.js";
 import type { WikiCountSourceQueryResolvers } from "./contracts/wikiCountSource.js";
 import type { ContributionReadQueryResolvers } from "./contracts/contributionReadSources.js";
 import type { ViewerReadQueryResolvers } from "./contracts/viewerReadSources.js";
@@ -246,6 +247,14 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies WikiCountSourceQueryResolvers;
 
+  const downloadReadSourceResolvers = {
+    getUploadedDownloadableFiles: getUploadedDownloadableFiles({
+      driver,
+      agePolicyRepository: instancePolicyRepository
+    }),
+    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies DownloadReadSourceQueryResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -262,14 +271,10 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     ...pluginSummaryMetadataResolvers,
     ...pluginCampaignResolvers,
     ...collectionResolvers,
-    getUploadedDownloadableFiles: getUploadedDownloadableFiles({
-      driver,
-      agePolicyRepository: instancePolicyRepository
-    }),
+    ...downloadReadSourceResolvers,
     getImageAlbumUsage: getImageAlbumUsage({
       driver,
       agePolicyRepository: instancePolicyRepository
     }),
-    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository })
   };
 }

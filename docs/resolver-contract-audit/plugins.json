@@ -864,17 +864,22 @@
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
-      "status": "exception",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "scanStatus"
+      ],
       "residualPaths": [
-        "*"
+        "all properties except scanStatus; date strings have no generated scalar structural guarantee"
       ],
       "evidence": [
         "customResolvers/queries/getDownloadScanReviewQueue.ts",
-        "tests/integration/downloadQueryGraphExceptions.test.ts"
+        "tests/integration/downloadQueryGraphExceptions.test.ts",
+        "customResolvers/contracts/downloadReadProjections.d.ts",
+        "tests/contracts/downloadReadSources.typecheck.ts",
+        "tests/integration/downloadQueryAttribution.test.ts"
       ],
-      "reason": "Confirmed with actual GraphQL and disposable canonical graph: POSTED_DISCUSSION author exists, yet uploaderUsername is null without stored uploadedByUsername because fallback matches AUTHORED_DISCUSSION. Stored uploader metadata control test succeeds. Entire review map remains raw.",
-      "decision": "Smallest deliberate behavior fix: use canonical POSTED_DISCUSSION author relationship for fallback while preserving stored uploader precedence. Raw leaf contract requires lazy completion; do not eagerly decode unrelated nullable fields."
+      "reason": "Merged #441 fixes canonical author fallback. WHERE scanStatus IN the three review statuses proves the selected enum; other exact review keys retain unknown property values.",
+      "decision": "Preserve lazy GraphQL completion of unselected properties; alias/fragment tests prove malformed raw nested leaves only fail when selected. Do not claim entire objects are checked."
     },
     {
       "field": "Query.getInstalledPlugins",
@@ -1414,17 +1419,22 @@
     },
     {
       "field": "Query.getUploadedDownloadableFiles",
-      "status": "exception",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "files.uploadedByUsername"
+      ],
       "residualPaths": [
-        "*"
+        "discussion.id/title/channelUniqueNames and files.* except uploader; date strings have no generated scalar structural guarantee"
       ],
       "evidence": [
         "customResolvers/queries/getUploadedDownloadableFiles.ts",
-        "tests/integration/downloadQueryGraphExceptions.test.ts"
+        "tests/integration/downloadQueryGraphExceptions.test.ts",
+        "customResolvers/contracts/downloadReadProjections.d.ts",
+        "tests/contracts/downloadReadSources.typecheck.ts",
+        "tests/integration/downloadQueryAttribution.test.ts"
       ],
-      "reason": "Confirmed with actual GraphQL and disposable canonical graph: DiscussionChannel->Discussion POSTED_IN_CHANNEL edge exists with forum name, but uploaded group returns channelUniqueNames:[] because query traverses opposite direction. Raw record.get(group) also masquerades as typed discussion/files.",
-      "decision": "Smallest deliberate behavior fix: reverse only the discussion-to-channel traversal to match canonical graph, preserving grouping/order and filters. Add ownership/age coverage with correction. Full raw file.* output still needs selection-aware completion; no eager decode."
+      "reason": "Merged #441 fixes canonical graph traversal. WHERE file.uploadedByUsername = $username proves the nested uploader string; explicit group/discussion/file projections leave property reads unknown.",
+      "decision": "Preserve lazy GraphQL completion of unselected properties; alias/fragment tests prove malformed raw nested leaves only fail when selected. Do not claim entire objects are checked."
     },
     {
       "field": "Query.previewPluginConfigurationReconciliation",

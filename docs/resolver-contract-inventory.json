@@ -687,7 +687,7 @@
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getEventComments",
@@ -787,7 +787,7 @@
     },
     {
       "field": "Query.getUploadedDownloadableFiles",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getUserContributions",

@@ -32,3 +32,21 @@ test('canonical discussion author supplies review fallback without uploader meta
  const result=data(await execute('{getDownloadScanReviewQueue{downloadableFileId uploaderUsername channelUniqueName}}'));
  assert.deepEqual(result,{getDownloadScanReviewQueue:[{downloadableFileId:'file',uploaderUsername:'alice',channelUniqueName:'forum'}]});
 });
+
+test('uploaded groups keep nested malformed fields lazy through aliases and fragments',async()=>{
+ await driver.executeQuery("MATCH(d:Discussion) SET d.title=['malformed'] WITH d MATCH(f:DownloadableFile) SET f.fileName=['malformed']");
+ const source=`query { inventory:getUploadedDownloadableFiles(username:"alice"){...GroupFields} }
+ fragment GroupFields on UploadedDownloadableFileGroup { files { owner:uploadedByUsername } }`;
+ assert.deepEqual(data(await execute(source)),{inventory:[{files:[{owner:'alice'}]}]});
+ const selected=await execute(`query { inventory:getUploadedDownloadableFiles(username:"alice"){discussion{bad:title} files{uploadedByUsername}} }`);
+ assert.ok(selected.errors?.some(error=>JSON.stringify(error.path)===JSON.stringify(['inventory',0,'discussion','bad'])));
+ assert.equal(selected.data,null);
+});
+
+test('review status remains checked while malformed unselected filenames stay lazy',async()=>{
+ await driver.executeQuery("MATCH(f:DownloadableFile) SET f.fileName=['malformed']");
+ assert.deepEqual(data(await execute(`query { queue:getDownloadScanReviewQueue{...Status} } fragment Status on DownloadScanReviewItem { status:scanStatus }`)),{queue:[{status:'SUSPICIOUS'}]});
+ const selected=await execute('{queue:getDownloadScanReviewQueue{status:scanStatus bad:fileName}}');
+ assert.ok(selected.errors?.some(error=>JSON.stringify(error.path)===JSON.stringify(['queue',0,'bad'])));
+ assert.equal(selected.data,null);
+});
