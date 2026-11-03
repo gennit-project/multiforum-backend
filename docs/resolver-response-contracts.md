@@ -341,6 +341,18 @@ negative fixtures keep that distinction explicit.
 
 Three variant-URL registrations retain explicit string-map-or-null domain checks
 without claiming guarantees from unrestricted JSON. The image-usage whole-result
-cast is replaced by an exact nested raw projection; its separate graph/access
-question is documented, not silently repaired. See [next decisions](resolver-contract-next-decisions.md)
+cast is replaced by an exact nested raw projection; merged #444 fixes its graph traversal while the raw nested leaves remain unknown. See [next decisions](resolver-contract-next-decisions.md)
 for the remaining race choices and precise limits. No race policy changes are made.
+
+
+### Executed fixed-projection checks after #444
+
+All ten start/rerun pipeline repository operations now have a schema-executed
+selection drift guard against their declared generated projections. It preserves
+response aliases, same-object fragments and merged selections, and rejects
+conditional/abstract cases requiring a different contract. An omitted title in
+the actual query was confirmed to fail the guard, then restored. Existing real
+persistence tests remain necessary: this check validates documents and projection
+paths with empty root data, not arbitrary driver values or JSON interiors.
+#444's passing image-usage graph/permission regressions replace the old omission
+witness. Counts remain 173 selected / 36 deferred; no race policy is changed.

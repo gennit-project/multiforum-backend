@@ -211,10 +211,11 @@
         "tests/integration/contentScalarResponseContracts.test.ts",
         "customResolvers/contracts/imageUsageProjections.d.ts",
         "tests/contracts/imageUsageProjections.typecheck.ts",
-        "tests/integration/imageUsageSourceContracts.test.ts"
+        "tests/integration/imageUsageSourceContracts.test.ts",
+        "tests/integration/imageAlbumUsageTraversal.test.ts"
       ],
-      "reason": "Exact nested raw projection removes the final AlbumUsage assertion. Image identity is parameter-bound; uploader/album/owner/discussion properties remain unknown. A canonical-graph witness isolates reversed discussion-channel traversal; public middleware preserves this nonsensitive read through Query wildcard allow.",
-      "decision": "Coordinate the graph traversal fix separately; preserve current public/sensitive-content behavior. Retain deferred selected response until useful raw child contracts are proven.",
+      "reason": "Merged #444 corrects canonical discussion-channel traversal. Exact nested raw projections retain unknown uploader/album/owner/discussion leaves. Real GraphQL/Shield regressions cover ownership, multiple/duplicate/missing relationships, aliases/fragments, sensitive filters and private nested fields.",
+      "decision": "Keep raw child contracts explicit; fixing traversal does not certify arbitrary persisted leaves. Do not promote solely for the parameter-bound image ID.",
       "status": "deferred"
     },
     {

@@ -500,9 +500,11 @@
         "tests/integration/pipelineStartRepository.test.ts",
         "tests/integration/pipelineRerunRepository.test.ts",
         "tests/integration/discussionPipelineExecution.test.ts",
-        "tests/contracts/pluginExecution.typecheck.ts"
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pipelineProjectionContracts.test.ts",
+        "tests/helpers/staticResponsePaths.ts"
       ],
-      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures.",
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures. The ten actual start/rerun repository operations are executed through the real generated schema with only root data sources replaced; selected response paths must exactly match declared generated projections.",
       "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
     },
     {
@@ -642,9 +644,11 @@
         "tests/integration/pipelineStartRepository.test.ts",
         "tests/integration/pipelineRerunRepository.test.ts",
         "tests/integration/discussionPipelineExecution.test.ts",
-        "tests/contracts/pluginExecution.typecheck.ts"
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pipelineProjectionContracts.test.ts",
+        "tests/helpers/staticResponsePaths.ts"
       ],
-      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures.",
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures. The ten actual start/rerun repository operations are executed through the real generated schema with only root data sources replaced; selected response paths must exactly match declared generated projections.",
       "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
     },
     {

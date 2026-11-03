@@ -1,4 +1,4 @@
-# Remaining response-contract decisions after #443
+# Remaining response-contract decisions after #444
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
 has 173 selected response/source boundaries and 36 deferred entries. The three
@@ -37,13 +37,29 @@ response keys, variables and child completion. A generic full-entity cast or eag
 row decoder is not equivalent to field-level GraphQL behavior. Runtime regression
 coverage establishes behavior but does not manufacture static item guarantees.
 
-Image-usage reads also now have exact nested raw projections, without the previous
-whole-result cast. A new canonical-graph witness finds that this query still follows
-the reversed discussion-channel edge (a separate occurrence from #441). The same omission is reproduced through actual public Shield middleware for a
-nonsensitive image. Query wildcard allow permits that read; the sensitive-content
-filter still rejects a resolved ineligible caller. These tests inject the resolved
-age-policy decision rather than re-testing the policy engine. A graph traversal
-fix must be coordinated separately. No permission or query change is included.
+Image-usage reads retain exact nested raw projections without the whole-result
+cast. Merged #444 fixes canonical discussion-channel traversal. All 16 focused
+source/traversal tests pass, including real Shield behavior, public nonsensitive
+reads, private nested denial, resolved sensitive eligibility and alias/fragment
+paths. This fixes the observed omission without certifying raw child properties.
+
+## Fixed upstream projection drift checks
+
+`pipelineProjectionContracts.test.ts` invokes all ten actual start/rerun repository
+read methods through the generated executable schema. Only the root data source is
+replaced with an empty list; no database is used by this guard. GraphQL validates
+the actual documents/variables, and the root resolve info records exact response
+paths for comparison with the generated-type-derived declarations. Existing real
+Neo4j repository and pipeline execution tests provide the persistence evidence.
+Removing selected title from the executed discussion query makes the guard fail.
+
+The reusable test helper preserves aliases, same-object fragments and merged
+selections. It rejects directives and narrowed/abstract fragments that would need
+an explicit optional/union projection rather than flattening them into required
+fields. JSON remains a scalar leaf; the guard does not prove its internal domain.
+This ties fixed upstream declarations to executed selections but does not remove
+the trusted generic execution adapter or certify arbitrary dynamic child values.
+No extra inventory entries are promoted; accounting remains 173 selected / 36 deferred.
 
 ## Five race cases: choices requiring approval
 
@@ -69,9 +85,9 @@ already-returned snapshot prevents a later deletion or permission change.
 2. Profile/icon variant writes pass a nonempty object as a Neo4j property and fail.
    Existing storage scalar columns and JSON domain normalization offer implementation
    options, but storage compatibility and clearing/merge behavior need explicit tests.
-3. The image-usage graph traversal question above remains separate work.
-   The list-alias and dynamic-selection bugs were fixed in #443; opaque child types
-   still require precise upstream contracts, rather than another behavior fix.
+3. Image-usage traversal is fixed in #444. The list-alias and dynamic-selection
+   bugs were fixed in #443; opaque child types still require precise upstream
+   contracts, rather than another behavior fix.
 
 No extra PR is created by this checkpoint. Coordinate the behavior fixes separately
 from #419; no merge/deployment/shared database writes or schema/permission changes.
