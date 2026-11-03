@@ -356,16 +356,23 @@
     },
     {
       "field": "Mutation.createSignedStorageURL",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+      "status": "selected-response",
+      "selectedPaths": [
+        "url",
+        "storageBucket",
+        "storageObjectName",
+        "storageUrl",
+        "uploadedAt"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/mutations/createSignedStorageURL.ts:157"
+        "customResolvers/mutations/createSignedStorageURL.ts:157",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
       ],
-      "reason": "Storage signing returns computed fields, but the current Args excludes schema-allowed null channelConnections/uploadTarget and ResolverContext requires a driver. No controlled real-schema storage-signing execution test or actual generated registration exists yet.",
-      "decision": "Routine follow-up: represent generated nullable inputs without changing their current error behavior; inject only the storage dependency in tests; never use real credentials."
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
     },
     {
       "field": "Mutation.dropDataForCypressTests",
@@ -456,16 +463,21 @@
     },
     {
       "field": "Mutation.setMyBirthday",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+      "status": "selected-response",
+      "selectedPaths": [
+        "birthday",
+        "meetsAccountMinimumAge",
+        "mayAccessSensitiveContent"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/mutations/setMyBirthday.ts:40"
+        "customResolvers/mutations/setMyBirthday.ts:40",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
       ],
-      "reason": "birthday response is an untyped driver record value from toString(user.dateOfBirth); eligibility fields are computed. Existing write happens before policy read and conflict checks.",
-      "decision": "Specify exact Cypher projection and test missing/conflicting birthday plus policy failure without moving validation ahead of the existing write."
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
     },
     {
       "field": "Mutation.setProfileImage",
@@ -661,16 +673,21 @@
     },
     {
       "field": "Query.getDiscussionAgeGateCheck",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+      "status": "selected-response",
+      "selectedPaths": [
+        "requiresAgeCheck",
+        "status",
+        "minimumAge"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/queries/getDiscussionAgeGateCheck.ts:31"
+        "customResolvers/queries/getDiscussionAgeGateCheck.ts:31",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
       ],
-      "reason": "Response is constructed from literals and normalized policy, but internal generic readOne<T> asserts raw records. Entire generated enum response and anonymous/age-gate branches have not been registered and tested in this slice.",
-      "decision": "Routine follow-up: use selected exact generated enum value union, annotate read projection accurately, cover all four status branches without disclosing gated content."
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
     },
     {
       "field": "Query.getInstanceSetupStatus",
@@ -728,16 +745,21 @@
     },
     {
       "field": "Query.getMyAgeProfile",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+      "status": "selected-response",
+      "selectedPaths": [
+        "birthday",
+        "meetsAccountMinimumAge",
+        "mayAccessSensitiveContent"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/queries/getMyAgeProfile.ts:34"
+        "customResolvers/queries/getMyAgeProfile.ts:34",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
       ],
-      "reason": "birthday response flows from untyped record.get while eligibility fields are computed; missing row and missing property both become null.",
-      "decision": "Routine follow-up: verify exact toString projection and nullable missing account behavior through GraphQL before registering full signature."
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
     },
     {
       "field": "Query.getOwnEmail",
@@ -781,16 +803,20 @@
     },
     {
       "field": "Query.safetyCheck",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+      "status": "selected-response",
+      "selectedPaths": [
+        "environment.isTestEnvironment",
+        "environment.currentDatabase"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/queries/safetyCheck.ts:12"
+        "customResolvers/queries/safetyCheck.ts:12",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
       ],
-      "reason": "Response is constructed from optional process environment values; full generated signature and executable-schema undefined-to-null evidence remain unregistered.",
-      "decision": "Routine follow-up: assert nested generated response and execute only with sanitized local test environment."
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
     }
   ]
 }

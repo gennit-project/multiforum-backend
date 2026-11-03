@@ -1,3 +1,4 @@
+import type { AccountSafetyQueryResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationQueryResolvers } from "./contracts/pluginConfiguration.js";
 import type { ContentPageQueryResolvers } from "./contracts/contentQueries.js";
 import type { ContentScalarQueryResolvers } from "./contracts/contentQueries.js";
@@ -142,6 +143,12 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginConfigurationQueryResolvers;
 
+  const accountSafetyResolvers = {
+    safetyCheck: safetyCheck,
+    getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
+    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountSafetyQueryResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -190,7 +197,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    safetyCheck: safetyCheck,
+    ...accountSafetyResolvers,
     ...pluginResolvers,
     getPluginConfigStatus: getPluginConfigStatus({ driver }),
     getInstalledPlugins: getInstalledPlugins({
@@ -212,8 +219,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     ...collectionResolvers,
-    getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
-    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver,
       agePolicyRepository: instancePolicyRepository

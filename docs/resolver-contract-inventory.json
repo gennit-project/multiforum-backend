@@ -243,7 +243,7 @@
     },
     {
       "field": "Mutation.createSignedStorageURL",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.deleteCommentRevision",
@@ -447,7 +447,7 @@
     },
     {
       "field": "Mutation.setMyBirthday",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.setProfileImage",
@@ -663,7 +663,7 @@
     },
     {
       "field": "Query.getDiscussionAgeGateCheck",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionDetail",
@@ -715,7 +715,7 @@
     },
     {
       "field": "Query.getMyAgeProfile",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getOwnEmail",
@@ -819,7 +819,7 @@
     },
     {
       "field": "Query.safetyCheck",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "ScratchpadEntry.superUpvotedByUsers",

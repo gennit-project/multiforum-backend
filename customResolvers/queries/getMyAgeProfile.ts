@@ -24,7 +24,8 @@ const getMyAgeProfile = ({ driver, agePolicyRepository }: Input) => async (
 
   const session = driver.session();
   try {
-    const result = await session.run(
+    // Cypher toString returns only a native string or null, independent of property type.
+    const result = await session.run<{ birthday: string | null }>(
       `MATCH (user:User {username: $username})
        RETURN toString(user.dateOfBirth) AS birthday`,
       { username }

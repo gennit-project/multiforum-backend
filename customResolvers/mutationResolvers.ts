@@ -1,3 +1,4 @@
+import type { AccountSafetyMutationResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationMutationResolvers } from "./contracts/pluginConfiguration.js";
 import type { ContentMutationResolvers } from "./contracts/content.js";
 import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
@@ -376,6 +377,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     applyPluginConfiguration: applyPluginConfiguration({}),
   } satisfies PluginConfigurationMutationResolvers;
 
+  const accountSafetyResolvers = {
+    createSignedStorageURL: createSignedStorageURL(),
+    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountSafetyMutationResolvers;
+
   return {
     setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
       driver,
@@ -392,9 +398,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     ...reactionResolvers,
     ...votingResolvers,
-    createSignedStorageURL: createSignedStorageURL(),
+    ...accountSafetyResolvers,
     ...accountObjectResolvers,
-    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
     ...accountScalarResolvers,
     reportComment: reportComment({
       driver
