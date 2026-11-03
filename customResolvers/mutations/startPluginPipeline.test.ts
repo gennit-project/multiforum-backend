@@ -326,10 +326,10 @@ test("starts the explicitly selected channel pipeline", async () => {
     discussion: {
       id: "discussion-1",
       Author: { username: "alice" },
-      DownloadableFile: {
+      DownloadableFiles: [{
         uploadedAt: "2025-01-01T00:00:00.000Z",
         uploadedByUsername: "alice",
-      },
+      }],
       DiscussionChannels: [
         { channelUniqueName: "cats", archived: false },
       ],

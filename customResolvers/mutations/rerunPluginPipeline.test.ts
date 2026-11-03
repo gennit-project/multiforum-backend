@@ -91,10 +91,10 @@ const contextFor = (username: string) =>
 type DiscussionFixture = {
   id: string;
   Author: { username: string };
-  DownloadableFile: {
+  DownloadableFiles: Array<{
     uploadedAt: string;
     uploadedByUsername: string;
-  };
+  }>;
   DiscussionChannels: Array<{
     channelUniqueName: string;
     archived: boolean;
@@ -422,10 +422,10 @@ test("reruns a channel pipeline with channel retry lineage", async () => {
   const discussion = {
     id: "discussion-1",
     Author: { username: "alice" },
-    DownloadableFile: {
+    DownloadableFiles: [{
       uploadedAt: "2025-01-01T00:00:00.000Z",
       uploadedByUsername: "alice",
-    },
+    }],
     DiscussionChannels: [{ channelUniqueName: "cats", archived: false }],
   };
   const channel = {
