@@ -52,6 +52,7 @@ class DiscussionModelStub {
 
 class SessionStub {
   runCalls: Array<{ query: string; params: Record<string, unknown> }> = [];
+  ownedRunCalls: Array<{ query: string; params: Record<string, unknown> }> = [];
   shouldFailConstraint = false;
   flairRequirements = new Map<
     string,
@@ -77,11 +78,15 @@ class SessionStub {
       };
     }
 
+    if (!query.includes("as discussionChannel")) {
+      this.ownedRunCalls.push({ query, params });
+      return { records: [] };
+    }
     this.runCalls.push({ query, params });
     if (this.shouldFailConstraint) {
       throw new Error("Constraint validation failed");
     }
-    return { records: [] };
+    return { records: [{ get: () => ({}) }] };
   }
 
   // Managed writes run their work against this same stub.
@@ -94,8 +99,7 @@ class SessionStub {
 
 const createDriver = (session: SessionStub) => ({
   session: () => session,
-  // Create-side ownership connects (author/collection, album) run via
-  // executeQuery, outside the session the channel links use.
+  // All owned creation writes now use the managed transaction.
   executeQuery: async () => ({ records: [] }),
 } as unknown as Driver);
 
@@ -302,14 +306,13 @@ test("createDiscussionWithChannelConnections", async (t) => {
     );
   });
 
-  await t.test("handles duplicate channel constraint gracefully", async () => {
+  await t.test("does not suppress a channel constraint failure", async () => {
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
     session.shouldFailConstraint = true;
     const driver = createDriver(session);
 
-    // Should not throw, should skip the duplicate
-    const result = await createDiscussionsFromInput(
+    await assert.rejects(createDiscussionsFromInput(
       asRepository(discussionModel),
       driver,
       [
@@ -321,9 +324,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
           channelConnections: ["duplicate-channel"],
         },
       ]
-    );
-
-    assert.equal(result.length, 1);
+    ), /Constraint validation failed/);
     assert.equal(session.runCalls.length, 1);
   });
 
@@ -333,14 +334,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     // each tag by text so a missing tag is created (from connect or create shapes).
     const discussionModel = new DiscussionModelStub();
     const session = new SessionStub();
-    const ownedQueries: Array<{ query: string; params: Record<string, unknown> }> = [];
-    const driver = {
-      session: () => session,
-      executeQuery: async (query: string, params: Record<string, unknown>) => {
-        ownedQueries.push({ query, params });
-        return { records: [] };
-      },
-    } as unknown as Driver;
+    const driver = createDriver(session);
 
     await createDiscussionsFromInput(
       asRepository(discussionModel),
@@ -365,7 +359,7 @@ test("createDiscussionWithChannelConnections", async (t) => {
     // Tags no longer reach the generated create.
     assert.equal(createInput.Tags, undefined);
     // The owned write MERGEs HAS_TAG with both texts (connect + create shapes).
-    const tagWrite = ownedQueries.find((call) => call.query.includes("HAS_TAG"));
+    const tagWrite = session.ownedRunCalls.find((call) => call.query.includes("HAS_TAG"));
     assert.ok(tagWrite, "expected an owned HAS_TAG merge");
     assert.deepEqual([...(tagWrite!.params.tagTexts as string[])].sort(), ["tag1", "tag2"]);
   });
