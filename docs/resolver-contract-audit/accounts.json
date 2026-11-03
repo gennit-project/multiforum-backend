@@ -277,13 +277,18 @@
       "status": "deferred",
       "selectedPaths": [],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "Non-null Discussion root: post-commit refetch can return undefined, propagated directly by discussions[0].",
+        "Nested/scalar Discussion response fields cannot establish the non-null root guarantee."
       ],
       "evidence": [
-        "customResolvers/mutations/shareCollectionAsDiscussion.ts:145"
+        "customResolvers/mutations/shareCollectionAsDiscussion.ts",
+        "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+        "services/persistence/discussionCreationRepository.ts",
+        "tests/integration/shareCollectionResponseException.test.ts",
+        "tests/contracts/shareCollectionException.typecheck.ts"
       ],
-      "reason": "Returned discussions[0] now inherits the content worker exact generated discussion projection; final generated field registration and real-schema share-specific permission/creation/failure evidence are not yet wired in this slice.",
-      "decision": "Routine follow-up: reuse createdDiscussionSelection; preserve target channel checks and ShareCollection writes."
+      "reason": "Wrapper calls the real createDiscussionsFromInput and returns discussions[0] unchanged. Creation commits and then calls findCreatedDiscussion; disappearance before that read leaves undefined. The actual-schema wrapper witness first observes committed POSTED_DISCUSSION and SHARES_COLLECTION edges, deletes the discussion in a separate query, lets the real generated refetch return empty, and observes null data with error path [shareCollectionAsDiscussion]. This is not a routine missing registration: even an identity-only generated non-null boundary rejects the actual factory at compile time.",
+      "decision": "Preserve current behavior and retain deferred status. Requires a separate behavior decision for post-commit disappearance (for example explicit error/retry or a stable pre-delete response), or schema-nullability decision. Do not add a cast, certify only id while ignoring root nullability, or silently change write/refetch ordering."
     },
     {
       "field": "Mutation.createScratchpadEntry",

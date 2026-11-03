@@ -72,16 +72,17 @@
     },
     {
       "field": "Mutation.createDownloadableFiles",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
-        "downloadableFiles.*"
+        "*"
       ],
       "evidence": [
-        "customResolvers/mutations/createDownloadableFilesWithUploadMetadata.ts"
+        "customResolvers/mutations/createDownloadableFilesWithUploadMetadata.ts",
+        "tests/integration/downloadProjectionExceptions.test.ts"
       ],
-      "reason": "createFilesWithUploadMetadata maps record.get(\"file\") as CreatedDownloadableFile and performs storage audit claims after writes. Its selected file fields and mutation wrapper must be checked without moving audit/claim failures.",
-      "decision": "Add typed raw projection with selection-time scalar checks or documented raw projection boundary plus real-schema create/error evidence; keep storage access mocked/local."
+      "reason": "Confirmed by actual-schema/disposable-DB test: custom response omits generated non-null info; selecting info.nodesCreated causes GraphQL completion error after file creation and audit claim commit. Selecting downloadableFiles alone succeeds. Raw file map is also asserted as a selected entity.",
+      "decision": "First resolve missing info using actual write summary metadata (including any transaction-side reconciliation effects), with a deliberate response behavior fix. Do not invent counts or claim whole entity checked. Then establish requested-field completion for raw returned entity values."
     },
     {
       "field": "Mutation.createPluginPipelineCampaign",
@@ -161,7 +162,12 @@
         "hasUpdate",
         "latestVersion",
         "availableVersions",
-        "carryOverReport"
+        "carryOverReport",
+        "plugin.metadata JSON internals",
+        "settingsJson JSON internals",
+        "manifest JSON internals",
+        "settingsDefaults JSON internals",
+        "uiSchema JSON internals"
       ],
       "evidence": [
         "customResolvers/contracts/pluginInstallation.ts",
@@ -241,16 +247,17 @@
     },
     {
       "field": "Mutation.permanentlyDeleteDownloadableFile",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
-        "DownloadableFile.*"
+        "*"
       ],
       "evidence": [
-        "customResolvers/mutations/permanentlyDeleteStoredUpload.ts"
+        "customResolvers/mutations/permanentlyDeleteStoredUpload.ts",
+        "tests/integration/downloadProjectionExceptions.test.ts"
       ],
-      "reason": "Shared deletion helper returns Record<string,unknown> after storage deletion and raw mark-removed query; response spreads row values and storageDeletion metadata.",
-      "decision": "Coordinate shared image/file deletion projection types, with local storage mock and lazy scalar response tests; preserve storage-before-database failure ordering."
+      "reason": "Confirmed by actual-schema/disposable-DB tests: raw removal projection omits createdAt and priceModel although both non-null fields exist in the stored record. Selecting either yields a field completion error and null nullable mutation result after local mocked object deletion and database removal marker commit. Selecting returned removal fields succeeds.",
+      "decision": "Smallest remedy: include existing createdAt and priceModel in the same removal projection with correct scalar-source conversion, preserving storage-before-database ordering; this intentionally fixes selected-field completion. Full entity certification still requires precise selection-aware raw scalar handling. storageDeletion is internal and not a public schema boundary."
     },
     {
       "field": "Mutation.prepareDownload",
@@ -761,16 +768,17 @@
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
         "*"
       ],
       "evidence": [
-        "customResolvers/queries/getDownloadScanReviewQueue.ts"
+        "customResolvers/queries/getDownloadScanReviewQueue.ts",
+        "tests/integration/downloadQueryGraphExceptions.test.ts"
       ],
-      "reason": "Raw Cypher returns review maps containing nested discussion/channel fields without normalization. Eager full decoding would reject malformed fields that GraphQL currently never selects.",
-      "decision": "Model raw row shape and a lazy selected response boundary; prove requested versus omitted malformed fields, ordering/limit and age-gate filters before counting checked."
+      "reason": "Confirmed with actual GraphQL and disposable canonical graph: POSTED_DISCUSSION author exists, yet uploaderUsername is null without stored uploadedByUsername because fallback matches AUTHORED_DISCUSSION. Stored uploader metadata control test succeeds. Entire review map remains raw.",
+      "decision": "Smallest deliberate behavior fix: use canonical POSTED_DISCUSSION author relationship for fallback while preserving stored uploader precedence. Raw leaf contract requires lazy completion; do not eagerly decode unrelated nullable fields."
     },
     {
       "field": "Query.getInstalledPlugins",
@@ -1310,21 +1318,17 @@
     },
     {
       "field": "Query.getUploadedDownloadableFiles",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
-        "discussion.id",
-        "discussion.title",
-        "discussion.createdAt",
-        "discussion.updatedAt",
-        "discussion.channelUniqueNames",
-        "files.*"
+        "*"
       ],
       "evidence": [
-        "customResolvers/queries/getUploadedDownloadableFiles.ts"
+        "customResolvers/queries/getUploadedDownloadableFiles.ts",
+        "tests/integration/downloadQueryGraphExceptions.test.ts"
       ],
-      "reason": "Declared group array returns raw record.get maps; file sizes/date values and list grouping are completed lazily by GraphQL.",
-      "decision": "Introduce accurate raw group and selected response types plus GraphQL serialization/age-gate/ordering tests without eagerly validating unrequested fields."
+      "reason": "Confirmed with actual GraphQL and disposable canonical graph: DiscussionChannel->Discussion POSTED_IN_CHANNEL edge exists with forum name, but uploaded group returns channelUniqueNames:[] because query traverses opposite direction. Raw record.get(group) also masquerades as typed discussion/files.",
+      "decision": "Smallest deliberate behavior fix: reverse only the discussion-to-channel traversal to match canonical graph, preserving grouping/order and filters. Add ownership/age coverage with correction. Full raw file.* output still needs selection-aware completion; no eager decode."
     },
     {
       "field": "Query.previewPluginConfigurationReconciliation",

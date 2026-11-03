@@ -1,11 +1,10 @@
+import { pluginExecutionMutationNames } from "./pluginExecution.js";
 import { pluginSummaryMetadataQueryNames } from "./pluginSummaryMetadata.js";
 import { downloadActionMutationNames } from "./downloadActions.js";
-import { pluginExecutionMutationNames } from "./pluginExecution.js";
 import { pluginPolicyQueryNames } from "./pluginPolicies.js";
 import { pluginInstallationMutationNames } from "./pluginInstallation.js";
 import { pluginSettingsReadNames } from "./pluginSettingsRead.js";
-import { pluginCampaignQueryNames } from "./pluginCampaigns.js";
-import { pluginCampaignMutationNames } from "./pluginCampaigns.js";
+import { pluginCampaignMutationNames, pluginCampaignQueryNames } from "./pluginCampaigns.js";
 import { accountSafetyMutationNames, accountSafetyQueryNames } from "./accountSafety.js";
 import { pluginConfigurationMutationNames, pluginConfigurationQueryNames } from "./pluginConfiguration.js";
 import { votingMutationNames } from "./voting.js";
@@ -42,9 +41,9 @@ export const checkedRootGroups = [
   ["Query", "pluginSettingsReadResolvers", "PluginSettingsReadResolvers", pluginSettingsReadNames],
   ["Mutation", "pluginInstallationResolvers", "PluginInstallationMutationResolvers", pluginInstallationMutationNames],
   ["Query", "pluginPolicyResolvers", "PluginPolicyQueryResolvers", pluginPolicyQueryNames],
-  ["Mutation", "pluginExecutionResolvers", "PluginExecutionMutationResolvers", pluginExecutionMutationNames],
   ["Mutation", "downloadActionResolvers", "DownloadActionMutationResolvers", downloadActionMutationNames],
   ["Query", "pluginSummaryMetadataResolvers", "PluginSummaryMetadataQueryResolvers", pluginSummaryMetadataQueryNames],
+  ["Mutation", "pluginExecutionResolvers", "PluginExecutionMutationResolvers", pluginExecutionMutationNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

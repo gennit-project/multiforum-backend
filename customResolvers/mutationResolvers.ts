@@ -1,5 +1,5 @@
-import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
 import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
+import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
 import type { PluginPolicyDomainMutationResolvers } from "./contracts/pluginPolicies.js";
 import type { PluginInstallationMutationResolvers } from "./contracts/pluginInstallation.js";
 import type { PluginCampaignMutationResolvers } from "./contracts/pluginCampaigns.js";
@@ -412,13 +412,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginPolicyDomainMutationResolvers;
 
-  const pluginExecutionResolvers = {
-    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
-    retryDownloadableFileScan: retryDownloadableFileScan({}),
-    startPluginPipeline: startPluginPipeline({}),
-    rerunPluginPipeline: rerunPluginPipeline({}),
-  } satisfies PluginExecutionMutationResolvers;
-
   const downloadActionResolvers = {
     prepareDownload: prepareDownload({
       agePolicyRepository: instancePolicyRepository,
@@ -428,6 +421,13 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
     }),
   } satisfies DownloadActionMutationResolvers;
+
+  const pluginExecutionResolvers = {
+    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
+    retryDownloadableFileScan: retryDownloadableFileScan({}),
+    startPluginPipeline: startPluginPipeline({}),
+    rerunPluginPipeline: rerunPluginPipeline({}),
+  } satisfies PluginExecutionMutationResolvers;
 
   return {
     createDiscussionWithChannelConnections:

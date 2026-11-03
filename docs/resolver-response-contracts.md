@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 105 entries have a checked selected response boundary and 104 remain
+checkpoint, 124 entries have a checked selected response boundary and 85 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -80,7 +80,7 @@ whole-backend migration:
   the existing coverage exclusions and thresholds are unchanged.
 - `resolverContractInventory.test.ts` checks all builder fields and the actual
   composition root against the reviewed inventory, prohibits duplicate entries,
-  and keeps selected status aligned with the fourteen enforced mutations. New or
+  and keeps selected status aligned with the enforced registration maps. New or
   removed custom fields require an explicit inventory decision. Inventory-only
   edits still run the existing unit/coverage check on docs-only CI.
 - `voteResponseContracts.test.ts` executes the real augmented schema, tests
@@ -109,9 +109,10 @@ Use disposable local Neo4j only. Full CI retains all integration shards and the
 For a later slice, choose explicit schema fields, accurate repository projections,
 compile-negative cases and real-schema response tests. Add its checked composition
 boundary, then promote only that inventory entry with reviewed evidence. Do not
-label a selected projection as full-object coverage. The remaining 195 entries,
-other repository projections, broader child-field coverage and custom scalar
-mapping remain outside this PR; #413 is not completed by these slices.
+label a selected projection as full-object coverage. Remaining entries are tracked
+in the cumulative campaign inventory above; broader child-field coverage and
+custom scalar internals are explicit residual boundaries. These selected slices
+alone do not complete #413.
 
 
 ## Subscription slice: ten mutations, five projections
@@ -211,7 +212,7 @@ independent fixes, including the bot suspension permission fix (#437).
 | --- | ---: | --- |
 | Original voting/subscriptions/reactions | 18 | Existing pilot retained |
 | Moderation actions | 8 | Wiki actions, sticky comments, soft deletion |
-| Plugin reads, reviews and configuration | 13 | History/detail/reviews/secrets plus preview/apply plans |
+| Plugin contracts | 32 | History, reviews, configuration, installation, campaigns, execution and summary metadata |
 | Accounts, collections and age/privacy | 37 | Scalar actions, precise projections, age checks and signing |
 | Content writes and revisions | 15 | Exact schema-executed writes, nullable input/error order |
 | Content query scalars and pagination | 7 | Three scalars and four page-info subsets |
@@ -264,3 +265,41 @@ storage, email, production Neo4j, or shared staging data.
 These limits are documented per field rather than hidden behind the issue's closed
 state or a percentage. Completing more routine slices and resolving the remaining
 boundary decisions is required before describing the campaign as complete.
+
+## Final campaign accounting and decisions
+
+All 209 custom entries have been reviewed: 124 have a checked generated selected
+response boundary (59.3%); 85 remain explicit exceptions. This is **not** complete
+end-to-end response certification. The remaining entries are 26 moderation,
+27 object/scalar fields, 12 content queries, 9 account/storage actions, 3 content
+writes and 8 plugin entries. Per-field selections, reasons and evidence remain
+in the six audit files rather than being hidden by the closed issue status.
+
+Two JSON-returning pipeline update mutations additionally have generated argument
+and explicit domain-array checks at their actual registration map. Their schema
+output is unrestricted JSON, so neither is counted as a generated output guarantee.
+The domain map has its own drift guard. Pipeline page metadata and numerical health
+summaries are checked separately from their raw nested rows.
+
+Additional real-schema evidence requiring a behavior decision:
+
+- Campaign pause/resume can lose the row between status lookup and update and
+  return undefined for a non-null response. Both remain deferred.
+- Download creation omits required response `info`; selecting it errors after the
+  file and upload-audit claim commit. Permanent deletion omits existing required
+  `createdAt`/`priceModel`; selecting either errors after storage/database changes.
+- Two plugin execution branches still request unsupported singular
+  `Discussion.DownloadableFile`. Tests preserve the existing validation failure.
+- Uploaded-file groups miss channel names because their graph traversal direction
+  is reversed. Review queue author fallback misses canonical `POSTED_DISCUSSION`
+  edges. Actual schema/canonical-graph witnesses reproduce both omissions.
+- An installed version with no Plugin link can return safe selected fields but
+  fails when non-null plugin identity fields are requested. Those identities remain
+  outside the checked selection; access policy is unchanged.
+
+These tests characterize existing defects; they do not silently repair queries,
+change missing-record policy, fill new response metadata, or alter commit timing.
+The remaining raw/lazy paths need an explicit selection-aware boundary design.
+Eager validation is not an equivalent substitute: it can reject unrequested fields
+and move failures before writes that currently commit. JSON/scalar-owned structure
+requires a separately defined contract rather than a vacuous generated `any` check.
