@@ -99,7 +99,7 @@ test("getSiteWideDiscussionList passes stored discussion ranking settings to Cyp
         resultsOrder: "desc",
         sort: "hot",
         timeFrame:
-          "week" as Parameters<typeof resolver>[1]["options"]["timeFrame"],
+          "week" as NonNullable<Parameters<typeof resolver>[1]["options"]>["timeFrame"],
       },
     },
     {} as GraphQLContext,

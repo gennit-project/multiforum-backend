@@ -1,3 +1,5 @@
+import type { ContentPageQueryResolvers } from "./contracts/contentQueries.js";
+import type { ContentScalarQueryResolvers } from "./contracts/contentQueries.js";
 import type { AccountCollectionQueryResolvers } from "./contracts/accounts.js";
 import type { AccountQueryResolvers } from "./contracts/accounts.js";
 import type { PluginQueryResolvers } from "./contracts/plugins.js";
@@ -98,11 +100,43 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies AccountCollectionQueryResolvers;
 
-  return {
+  const contentScalarResolvers = {
+    getUserFavoriteComment: getUserFavoriteComment({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+    }),
+    getUserWikiEditsCount: getUserWikiEditsCount({
+      driver,
+    }),
+    isOriginalPosterSuspended: isOriginalPosterSuspended({
+      agePolicyRepository: instancePolicyRepository
+    }),
+  } satisfies ContentScalarQueryResolvers;
+
+  const contentPageResolvers = {
     getSiteWideDiscussionList: getSiteWideDiscussionList({
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
+    getDiscussionDetailAnswers: createDiscussionDetailCollectionPageResolver({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+      kind: "answer",
+    }),
+    getDiscussionDetailFiles: createDiscussionDetailCollectionPageResolver({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+      kind: "file",
+    }),
+    getDiscussionDetailImages: createDiscussionDetailCollectionPageResolver({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+      kind: "image",
+    }),
+  } satisfies ContentPageQueryResolvers;
+
+  return {
+    ...contentPageResolvers,
     ...accountResolvers,
     getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
       driver,
@@ -122,21 +156,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    getDiscussionDetailAnswers: createDiscussionDetailCollectionPageResolver({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-      kind: "answer",
-    }),
-    getDiscussionDetailFiles: createDiscussionDetailCollectionPageResolver({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-      kind: "file",
-    }),
-    getDiscussionDetailImages: createDiscussionDetailCollectionPageResolver({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-      kind: "image",
-    }),
     getCommentSection: getCommentSection({
       driver,
       agePolicyRepository: instancePolicyRepository,
@@ -148,19 +167,13 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    getUserFavoriteComment: getUserFavoriteComment({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-    }),
+    ...contentScalarResolvers,
     getSortedChannels: getSortedChannels({
       driver,
     }),
     getUserContributions: getUserContributions({
       driver,
       agePolicyRepository: instancePolicyRepository,
-    }),
-    getUserWikiEditsCount: getUserWikiEditsCount({
-      driver,
     }),
     getChannelContributions: getChannelContributions({
       driver,
@@ -169,9 +182,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getModContributions: getModContributions({
       driver,
       agePolicyRepository: instancePolicyRepository,
-    }),
-    isOriginalPosterSuspended: isOriginalPosterSuspended({
-      agePolicyRepository: instancePolicyRepository
     }),
     safetyCheck: safetyCheck,
     ...pluginResolvers,

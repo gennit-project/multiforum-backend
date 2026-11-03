@@ -1,0 +1,298 @@
+{
+  "family": "contentQueries",
+  "fields": [
+    {
+      "field": "Query.getChannelContributions",
+      "selectedPaths": [],
+      "residualPaths": [
+        "username",
+        "displayName",
+        "profilePicURL",
+        "totalContributions",
+        "dayData.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getChannelContributions.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw user properties and dayData are forwarded; duck-typed count conversion remains any and the dayData filter only checks date presence.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getCommentReplies",
+      "selectedPaths": [],
+      "residualPaths": [
+        "ChildComments.*",
+        "aggregateChildCommentCount"
+      ],
+      "evidence": [
+        "customResolvers/queries/getCommentReplies.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw ChildComments maps are forwarded and aggregate is asserted as a driver Integer before toNumber; neither proves all selected comment fields.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getCommentSection",
+      "selectedPaths": [],
+      "residualPaths": [
+        "DiscussionChannel.*",
+        "Comments.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getCommentSection.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Metadata and root comment hydration maps are forwarded from raw managed-transaction records; eager validation would move failures into the resolver catch wrapper.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getDiscussionDetail",
+      "selectedPaths": [],
+      "residualPaths": [
+        "*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetail.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "DiscussionDetail is currently a Record<string, unknown> intersection with unknown arrays and a raw record cast, then spread with independently hydrated channel/files.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getDiscussionDetailAnswers",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "answers.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionDetailFiles",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "files.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionDetailImages",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "images.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionsInChannel",
+      "selectedPaths": [],
+      "residualPaths": [
+        "discussionChannels.*",
+        "aggregateDiscussionChannelsCount"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionsInChannel.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw hydration maps and count are forwarded; the first query casts channel IDs before the second read. A generated satisfies alone would retain unchecked any.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getEventComments",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Event.*",
+        "Comments.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getEventComments.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw metadata and comment maps are forwarded. The resolver swallows query failures and returns empty results; eager validation inside that catch would hide errors currently raised by GraphQL field completion.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getImageAlbumUsage",
+      "selectedPaths": [],
+      "residualPaths": [
+        "imageId",
+        "uploaderUsername",
+        "uploaderOwnedAlbums.*",
+        "otherAlbums.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getImageAlbumUsage.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw usage map is cast as AlbumUsage with arrays of Record<string, unknown>; GraphQL currently validates only requested nested fields.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getModContributions",
+      "selectedPaths": [],
+      "residualPaths": [
+        "date",
+        "count",
+        "activities.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getModContributions.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw date/activities plus duck-typed count conversion are forwarded; nested activity entity shapes are not checked.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getSiteWideDiscussionList",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "discussions.*",
+        "aggregateDiscussionCount"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideDiscussionList.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getSiteWideIssueList",
+      "selectedPaths": [],
+      "residualPaths": [
+        "aggregateIssueCount",
+        "issues.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideIssueList.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Recursive sanitize converts driver integers but returns unknown and does not prove object shape, required fields or scalar output types.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getSiteWideWikiList",
+      "selectedPaths": [],
+      "residualPaths": [
+        "aggregateWikiPageCount",
+        "wikiPages.*",
+        "featuredWikiPages.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideWikiList.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw wikiPage/count values are forwarded; featured entries are asserted as a type with optional properties and unknown timestamps.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getSortedChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "channels.*",
+        "aggregateChannelCount"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSortedChannels.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw channel fields, tags, aggregate/connection maps and count are forwarded. Executable-schema evidence shows malformed displayName does not fail count-only requests but does fail when displayName is selected.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getUserContributions",
+      "selectedPaths": [],
+      "residualPaths": [
+        "date",
+        "count",
+        "activities.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getUserContributions.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Raw date/activities plus duck-typed count conversion are forwarded; nested discussion/comment/wiki entity shapes are not checked.",
+      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+    },
+    {
+      "field": "Query.getUserFavoriteComment",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getUserFavoriteComment.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The actual return paths are false or Boolean truthiness conversion; malformed raw rows cannot escape as a non-Boolean result.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    },
+    {
+      "field": "Query.getUserWikiEditsCount",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getUserWikiEditsCount.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT output is narrowed from unknown with neo4j.isInt then Number fallback; executable schema enforces non-null Int including root bubbling.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    },
+    {
+      "field": "Query.isOriginalPosterSuspended",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/isOriginalPosterSuspended.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The returned suspension helpers compute an explicit Boolean; underlying issue/suspension projections are not certified as full entities by this scalar boundary.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    }
+  ]
+}

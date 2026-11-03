@@ -3,7 +3,7 @@ import {
   type ContributionTargetRepository,
 } from "../../services/persistence/contributionTargetRepository.js";
 import { getUserWikiEditsCountQuery } from "../cypher/cypherQueries.js";
-import type { Driver } from "neo4j-driver";
+import { isInt, type Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
 
 type Input = {
@@ -35,8 +35,10 @@ const getUserWikiEditsCountResolver = (input: Input) => {
 
       const result = await session.run(getUserWikiEditsCountQuery, { username });
       const firstRecord = result.records[0];
-      const count = firstRecord?.get("count");
-      return count?.toNumber ? count.toNumber() : Number(count ?? 0);
+      // COUNT returns a driver Integer (or a native number when configured so).
+      // Keep the raw boundary unknown; no generic/cast may certify its output.
+      const count: unknown = firstRecord?.get("count");
+      return isInt(count) ? count.toNumber() : Number(count ?? 0);
     } catch (error: unknown) {
       logger.error("Error fetching user wiki edits count:", error);
       const message = error instanceof Error ? error.message : String(error);

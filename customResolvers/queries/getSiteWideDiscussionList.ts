@@ -20,34 +20,33 @@ import {
   encodeDiscussionListCursor,
 } from "../../services/discussionListCursor.js";
 
+// Missing keys intentionally fall back to the year window.
+const timeFrameTable: Record<string, { start: string | null } | undefined> = timeFrameOptions;
+
 type Input = {
   driver: Driver;
   agePolicyRepository?: AgePolicyReader;
   serverName?: string;
 };
 
-enum timeFrameOptionKeys {
-  year = "year",
-  month = "month",
-  week = "week",
-  day = "day",
-}
-
+// Accept the schema's nullable inputs while retaining legacy direct-call
+// string pagination and resultsOrder. Explicit null search/lists retain their
+// existing TypeError paths below; this migration does not normalize them.
 type Args = {
-  searchInput: string;
-  selectedChannels: string[];
-  selectedTags: string[];
-  showArchived: boolean;
-  hasDownload: boolean | null;
-  loggedInUsername?: string;
-  options: {
-    offset: string;
-    after?: string;
-    limit: string;
-    resultsOrder: string;
-    sort: string;
-    timeFrame: timeFrameOptionKeys;
-  };
+  searchInput?: string | null;
+  selectedChannels?: Array<string | null> | null;
+  selectedTags?: Array<string | null> | null;
+  showArchived?: boolean | null;
+  hasDownload?: boolean | null;
+  loggedInUsername?: string | null;
+  options?: {
+    offset?: string | number | null;
+    after?: string | null;
+    limit?: string | number | null;
+    resultsOrder?: string | null;
+    sort?: string | null;
+    timeFrame?: string | null;
+  } | null;
 };
 
 const getResolver = (input: Input) => {
@@ -83,6 +82,11 @@ const getResolver = (input: Input) => {
     });
 
     try {
+      // Preserve the existing explicit-null failure at the original trim call,
+      // rather than silently treating a schema-valid null as an empty search.
+      if (searchInput === null) {
+        throw new TypeError("Cannot read properties of null (reading 'trim')");
+      }
       const fulltextQuery = buildFulltextQuery(searchInput);
       const effectiveSort: SiteWideDiscussionSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
@@ -92,7 +96,7 @@ const getResolver = (input: Input) => {
       });
       const computedTimeFrame =
         effectiveSort === "top"
-          ? (timeFrameOptions[timeFrame] ?? timeFrameOptions.year).start
+          ? ((timeFrame == null ? undefined : timeFrameTable[timeFrame]) ?? timeFrameOptions.year).start
           : null;
       const rankingAnchor =
         cursor?.rankingAnchor ??
@@ -110,13 +114,18 @@ const getResolver = (input: Input) => {
         sortOption: effectiveSort,
         serverName,
       });
+      // These were previously .length accesses. Keep their null failure after
+      // ranking reads and before query construction, including the same message.
+      if (selectedChannels === null || selectedTags === null) {
+        throw new TypeError("Cannot read properties of null (reading 'length')");
+      }
       const { countQuery, pageQuery } = buildSiteWideDiscussionPageQueries({
         hasDownload:
           typeof hasDownload === "boolean" ? hasDownload : null,
         hasSearch: fulltextQuery !== "",
         hasSelectedChannels: selectedChannels.length > 0,
         hasSelectedTags: selectedTags.length > 0,
-        showArchived,
+        showArchived: Boolean(showArchived),
         sortOption: effectiveSort,
         paginationMode,
       });

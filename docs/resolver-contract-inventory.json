@@ -671,15 +671,15 @@
     },
     {
       "field": "Query.getDiscussionDetailAnswers",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionDetailFiles",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionDetailImages",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getDiscussionsInChannel",
@@ -771,7 +771,7 @@
     },
     {
       "field": "Query.getSiteWideDiscussionList",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getSiteWideIssueList",
@@ -795,15 +795,15 @@
     },
     {
       "field": "Query.getUserFavoriteComment",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getUserWikiEditsCount",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.isOriginalPosterSuspended",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.previewPluginConfigurationReconciliation",
