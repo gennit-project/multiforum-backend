@@ -107,7 +107,7 @@ test("uses the custom mutation input and its final forum membership", async () =
   assert.deepEqual(calls.map(call => call.channelUniqueName), ["new-forum"]);
 });
 
-test("dispatches edited discussions through the deferred queue path", async () => {
+test("dispatches edited discussions for non-blocking moderation execution", async () => {
   const modes: unknown[] = [];
   const after = {
     ...OLD,
@@ -130,7 +130,7 @@ test("dispatches edited discussions through the deferred queue path", async () =
     {} as never
   );
 
-  assert.deepEqual(modes, [{ deferExecution: true }]);
+  assert.deepEqual(modes, [{ deferExecution: false }]);
 });
 
 test("skips metadata-only updates without reading discussion snapshots", async () => {

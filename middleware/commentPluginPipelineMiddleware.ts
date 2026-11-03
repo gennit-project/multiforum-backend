@@ -36,13 +36,23 @@ const dispatchCommentEvents = async ({
     const commentId = comment?.id
     if (!commentId) continue
 
-    await triggerCommentPlugins(
+    // Execute moderation off the request's critical path. Nothing else runs a
+    // deferred comment pipeline — there is no worker/cron and the frontend only
+    // triggers download pipelines — so a deferred run would sit PENDING until the
+    // watchdog times it out. Run it non-blocking instead (fire-and-forget). A
+    // durable queue for this is tracked separately.
+    void triggerCommentPlugins(
       {
         commentId,
         event,
         driver,
       },
-      { execution: { deferExecution: true } }
+      { execution: { deferExecution: false } }
+    ).catch(error =>
+      logger.warn(
+        'Comment plugin pipeline failed:',
+        error instanceof Error ? error.message : error
+      )
     )
   }
 }
