@@ -1,6 +1,6 @@
 import type {Driver} from "neo4j-driver";
 import {createCampaignControlRepository,type CampaignControlRepository} from "../../services/persistence/campaignControlRepository.js";
-import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
+import type {CampaignServiceRepository, CampaignRow} from "../../services/persistence/campaignServiceRepository.js";
 import { GraphQLError } from "graphql";
 import {
   PipelineApplicability,
@@ -80,7 +80,7 @@ const changeCampaignStatus = (
   models: Pick<Models, "driver" | "controlRepository">,
   status: PluginPipelineCampaignStatus
 ) =>
-  async (_parent: unknown, { campaignId }: { campaignId: string }) => {
+  async (_parent: unknown, { campaignId }: { campaignId: string }): Promise<CampaignRow | undefined> => {
     const repository = models.controlRepository ?? createCampaignControlRepository(models.driver!);
     const current = await repository.findStatus(campaignId);
     if (!current[0]) {

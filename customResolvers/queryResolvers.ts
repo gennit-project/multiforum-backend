@@ -1,3 +1,4 @@
+import type { PluginCampaignQueryResolvers } from "./contracts/pluginCampaigns.js";
 import type { AccountSafetyQueryResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationQueryResolvers } from "./contracts/pluginConfiguration.js";
 import type { ContentPageQueryResolvers } from "./contracts/contentQueries.js";
@@ -149,6 +150,18 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
   } satisfies AccountSafetyQueryResolvers;
 
+  const pluginCampaignResolvers = {
+    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
+      driver,
+    }),
+    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
+      driver,
+    }),
+    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
+      driver,
+    }),
+  } satisfies PluginCampaignQueryResolvers;
+
   return {
     ...contentPageResolvers,
     ...accountResolvers,
@@ -209,15 +222,7 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
     getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
     getPipelineRunPage: createPipelineRunPage({ driver }),
-    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
-      driver,
-    }),
-    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
-      driver,
-    }),
-    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
-      driver,
-    }),
+    ...pluginCampaignResolvers,
     ...collectionResolvers,
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver,

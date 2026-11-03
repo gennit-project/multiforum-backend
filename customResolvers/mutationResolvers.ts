@@ -1,3 +1,4 @@
+import type { PluginCampaignMutationResolvers } from "./contracts/pluginCampaigns.js";
 import type { AccountSafetyMutationResolvers } from "./contracts/accountSafety.js";
 import type { PluginConfigurationMutationResolvers } from "./contracts/pluginConfiguration.js";
 import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
@@ -382,6 +383,10 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
   } satisfies AccountSafetyMutationResolvers;
 
+  const pluginCampaignResolvers = {
+    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
+  } satisfies PluginCampaignMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -493,7 +498,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     retryDownloadableFileScan: retryDownloadableFileScan({}),
     startPluginPipeline: startPluginPipeline({}),
     rerunPluginPipeline: rerunPluginPipeline({}),
-    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
+    ...pluginCampaignResolvers,
     pausePluginPipelineCampaign: pausePluginPipelineCampaign({
       driver,
     }),

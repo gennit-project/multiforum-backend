@@ -1,3 +1,5 @@
+import { pluginCampaignQueryNames } from "./pluginCampaigns.js";
+import { pluginCampaignMutationNames } from "./pluginCampaigns.js";
 import { accountSafetyMutationNames, accountSafetyQueryNames } from "./accountSafety.js";
 import { pluginConfigurationMutationNames, pluginConfigurationQueryNames } from "./pluginConfiguration.js";
 import { votingMutationNames } from "./voting.js";
@@ -29,6 +31,8 @@ export const checkedRootGroups = [
   ["Query", "pluginConfigurationResolvers", "PluginConfigurationQueryResolvers", pluginConfigurationQueryNames],
   ["Mutation", "accountSafetyResolvers", "AccountSafetyMutationResolvers", accountSafetyMutationNames],
   ["Query", "accountSafetyResolvers", "AccountSafetyQueryResolvers", accountSafetyQueryNames],
+  ["Mutation", "pluginCampaignResolvers", "PluginCampaignMutationResolvers", pluginCampaignMutationNames],
+  ["Query", "pluginCampaignResolvers", "PluginCampaignQueryResolvers", pluginCampaignQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

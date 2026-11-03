@@ -85,18 +85,46 @@
     },
     {
       "field": "Mutation.createPluginPipelineCampaign",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
       "residualPaths": [
-        "*"
+        "DateTime scalar internals"
       ],
       "evidence": [
-        "customResolvers/mutations/pluginPipelineCampaigns.ts",
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
         "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
         "services/persistence/campaignServiceRepository.ts"
       ],
-      "reason": "Campaign create returns a default scalar projection currently annotated as full entity, and preview reads full ServerConfig/File/Attempt annotations.",
-      "decision": "Narrow fixed campaign create/preview projections, then generated enum/scalar response signature and real-schema count/transition tests."
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
     },
     {
       "field": "Mutation.enableServerPlugin",
@@ -141,17 +169,22 @@
     },
     {
       "field": "Mutation.pausePluginPipelineCampaign",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
         "*"
       ],
       "evidence": [
-        "customResolvers/mutations/pluginPipelineCampaigns.ts",
-        "services/persistence/campaignControlRepository.ts"
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts",
+        "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
-      "reason": "findStatus fetches id/status but claims a full campaign; updateStatus returns default projection. Transition errors and nullable/missing-after-write semantics must remain.",
-      "decision": "Narrow both projections; check returned campaign fields and actual paused/repeated/invalid transitions through GraphQL."
+      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root.",
+      "decision": "Preserve behavior. A checked non-null response needs an explicit behavior decision for concurrent deletion (for example throw a deliberate error on missing update result); do not assert existence or silently alter error semantics. Exact persistence projections and populated/error response tests are implemented."
     },
     {
       "field": "Mutation.permanentlyDeleteDownloadableFile",
@@ -245,17 +278,22 @@
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
-      "status": "deferred",
+      "status": "exception",
       "selectedPaths": [],
       "residualPaths": [
         "*"
       ],
       "evidence": [
-        "customResolvers/mutations/pluginPipelineCampaigns.ts",
-        "services/persistence/campaignControlRepository.ts"
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts",
+        "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
-      "reason": "Shared campaign transition helper returns the same full-entity annotated default projection as pause.",
-      "decision": "Implement with pause using exact projection, preserving allowed PAUSED->RUNNING transition and errors."
+      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root.",
+      "decision": "Preserve behavior. A checked non-null response needs an explicit behavior decision for concurrent deletion (for example throw a deliberate error on missing update result); do not assert existence or silently alter error semantics. Exact persistence projections and populated/error response tests are implemented."
     },
     {
       "field": "Mutation.retryDownloadableFileScan",
@@ -682,9 +720,8 @@
     },
     {
       "field": "Query.getPluginPipelineCampaignFailures",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "pipelineId",
         "targetId",
         "discussionId",
@@ -692,26 +729,60 @@
         "status",
         "attemptNumber"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/queries/pluginPipelineCampaigns.ts",
-        "services/persistence/campaignQueryRepository.ts"
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
       ],
-      "reason": "Repository failure and destination selections claim full Attempt/File; mapper filters inaccessible/disconnected targets and chooses first unarchived channel.",
-      "decision": "Narrow both selections and add generated signature plus actual GraphQL filtering/enum/null tests."
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
     },
     {
       "field": "Query.getPluginPipelineCampaigns",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
       "residualPaths": [
-        "*"
+        "DateTime scalar internals"
       ],
       "evidence": [
-        "customResolvers/queries/pluginPipelineCampaigns.ts",
-        "services/persistence/campaignQueryRepository.ts"
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
       ],
-      "reason": "CampaignHistory fixed scalar selection claims full campaign; current output is still unchecked at composition.",
-      "decision": "Narrow scalar projection and check actual generated response; test empty/populated/malformed required fields through GraphQL."
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
     },
     {
       "field": "Query.getPluginRunsForDownloadableFile",
@@ -898,9 +969,8 @@
     },
     {
       "field": "Query.previewPluginPipelineCampaign",
-      "status": "deferred",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "policyId",
         "eventType",
         "applicability",
@@ -910,13 +980,17 @@
         "unavailableFileCount",
         "estimatedProviderRuns"
       ],
+      "residualPaths": [],
       "evidence": [
-        "customResolvers/queries/pluginPipelineCampaigns.ts",
-        "services/plugin/pipelineCampaign.ts",
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
         "services/persistence/campaignServiceRepository.ts"
       ],
-      "reason": "Preview helper reads policies/files/attempts via full entity annotations and returns computed counts/enums.",
-      "decision": "Narrow fixed generated read projections and check computed response with real-schema missing-policy, inaccessible-file and count cases."
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
     }
   ]
 }

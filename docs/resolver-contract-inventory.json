@@ -235,7 +235,7 @@
     },
     {
       "field": "Mutation.createPluginPipelineCampaign",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createScratchpadEntry",
@@ -743,11 +743,11 @@
     },
     {
       "field": "Query.getPluginPipelineCampaignFailures",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPluginPipelineCampaigns",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getPluginRunsForDownloadableFile",
@@ -811,7 +811,7 @@
     },
     {
       "field": "Query.previewPluginPipelineCampaign",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.publicCollectionsContaining",
