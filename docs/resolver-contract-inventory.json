@@ -647,7 +647,7 @@
     },
     {
       "field": "Query.getChannelContributions",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getChannelDiscussionFlairConfig",
@@ -711,7 +711,7 @@
     },
     {
       "field": "Query.getModContributions",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getMyAgeProfile",
@@ -775,7 +775,7 @@
     },
     {
       "field": "Query.getSiteWideIssueList",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getSiteWideWikiList",
@@ -791,7 +791,7 @@
     },
     {
       "field": "Query.getUserContributions",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Query.getUserFavoriteComment",

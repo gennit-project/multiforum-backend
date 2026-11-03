@@ -1,10 +1,11 @@
+import type { ChannelContributionRow, ContributionDay } from "../contracts/contributionReadProjections.js";
 import {
   createContributionTargetRepository,
   type ContributionTargetRepository,
 } from "../../services/persistence/contributionTargetRepository.js";
 import { getChannelContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
@@ -18,10 +19,10 @@ interface Input {
 
 interface Args {
   channelUniqueName: string;
-  startDate?: string;
-  endDate?: string;
-  year?: number;
-  limit?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  year?: number | null;
+  limit?: number | null;
 }
 
 const getChannelContributionsResolver = (input: Input) => {
@@ -54,7 +55,7 @@ const getChannelContributionsResolver = (input: Input) => {
         ? `${year}-12-31`
         : (endDate || DateTime.utc().toISODate());
 
-      const result = await session.run(getChannelContributionsQuery, {
+      const result = await session.run<ChannelContributionRow>(getChannelContributionsQuery, {
         channelUniqueName,
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
@@ -63,21 +64,20 @@ const getChannelContributionsResolver = (input: Input) => {
       });
 
       // Map results to UserContributionData format
-      const contributions = result.records.map((record: Neo4jRecord) => {
+      const contributions = result.records.map((record) => {
         const dayData = record.get('dayData');
 
         // Filter out any dayData entries with null dates
         const validDayData = Array.isArray(dayData)
-          ? dayData.filter((day: { date?: unknown } | null) => day && day.date != null)
+          ? dayData.filter((day): day is ContributionDay & { date: string } => Boolean(day && day.date != null))
           : [];
 
+        const count = record.get('totalContributions');
         return {
           username: record.get('username'),
           displayName: record.get('displayName'),
           profilePicURL: record.get('profilePicURL'),
-          totalContributions: record.get('totalContributions').toNumber
-            ? record.get('totalContributions').toNumber()
-            : record.get('totalContributions'),
+          totalContributions: typeof count === 'number' ? count : count.toNumber(),
           dayData: validDayData,
         };
       });

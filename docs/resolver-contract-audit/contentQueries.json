@@ -3,20 +3,29 @@
   "fields": [
     {
       "field": "Query.getChannelContributions",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "totalContributions",
+        "dayData.date",
+        "dayData.activities.type"
+      ],
       "residualPaths": [
         "username",
         "displayName",
         "profilePicURL",
-        "totalContributions",
-        "dayData.*"
+        "dayData.count (forwarded Integer/native source; child resolver owns completion)",
+        "dayData.activities.id/description and nested entities"
       ],
       "evidence": [
         "customResolvers/queries/getChannelContributions.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
       ],
-      "reason": "Raw user properties and dayData are forwarded; duck-typed count conversion remains any and the dayData filter only checks date presence.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
     },
     {
       "field": "Query.getCommentReplies",
@@ -206,18 +215,24 @@
     },
     {
       "field": "Query.getModContributions",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "date",
-        "count",
-        "activities.*"
+        "count"
+      ],
+      "residualPaths": [
+        "activities.* (action properties and related entities; converted timestamp source does not certify all object fields)"
       ],
       "evidence": [
         "customResolvers/queries/getModContributions.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
       ],
-      "reason": "Raw date/activities plus duck-typed count conversion are forwarded; nested activity entity shapes are not checked.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
     },
     {
       "field": "Query.getSiteWideDiscussionList",
@@ -240,17 +255,23 @@
     },
     {
       "field": "Query.getSiteWideIssueList",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "aggregateIssueCount"
+      ],
       "residualPaths": [
-        "aggregateIssueCount",
-        "issues.*"
+        "issues.* (recursive integer sanitization does not prove persisted scalar/object shape)"
       ],
       "evidence": [
         "customResolvers/queries/getSiteWideIssueList.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
       ],
-      "reason": "Recursive sanitize converts driver integers but returns unknown and does not prove object shape, required fields or scalar output types.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
     },
     {
       "field": "Query.getSiteWideWikiList",
@@ -288,18 +309,25 @@
     },
     {
       "field": "Query.getUserContributions",
-      "selectedPaths": [],
-      "residualPaths": [
+      "status": "selected-response",
+      "selectedPaths": [
         "date",
         "count",
-        "activities.*"
+        "activities.type"
+      ],
+      "residualPaths": [
+        "activities.id/description and nested persisted comment/discussion/event/wiki entities"
       ],
       "evidence": [
         "customResolvers/queries/getUserContributions.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
       ],
-      "reason": "Raw date/activities plus duck-typed count conversion are forwarded; nested discussion/comment/wiki entity shapes are not checked.",
-      "decision": "Requires a selection-aware raw-projection typing/completion strategy, or explicit approval to change eager-validation failure timing. Do not promote unchecked raw maps, unknown arrays, generic type arguments or assertions to checked response contracts. Preserve current query, filtering, limits and errors meanwhile."
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
     },
     {
       "field": "Query.getUserFavoriteComment",
