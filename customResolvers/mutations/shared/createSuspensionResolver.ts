@@ -25,9 +25,9 @@ type CreateSuspensionResolverOptions = {
 
 type Args = {
   issueId: string
-  suspendUntil: string
-  suspendIndefinitely: boolean
-  explanation: string
+  suspendUntil?: string | null
+  suspendIndefinitely?: boolean | null
+  explanation?: string | null
 }
 
 export function createSuspensionResolver ({

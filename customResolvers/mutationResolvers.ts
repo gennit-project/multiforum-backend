@@ -1,3 +1,4 @@
+import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
 import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
 import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
 import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
@@ -486,6 +487,16 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ModerationReportMutationResolvers;
 
+  const moderationSuspensionResolvers = {
+    suspendUser: suspendUser({
+      includeWikiPage: true,
+      includeTextVersion: true
+    }),
+    unsuspendUser: unsuspendUser(),
+    suspendMod: suspendMod(),
+    unsuspendMod: unsuspendMod(),
+  } satisfies ModerationSuspensionMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -529,13 +540,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver
     }),
     ...moderationLockResolvers,
-    suspendUser: suspendUser({
-      includeWikiPage: true,
-      includeTextVersion: true
-    }),
-    unsuspendUser: unsuspendUser(),
-    suspendMod: suspendMod(),
-    unsuspendMod: unsuspendMod(),
+    ...moderationSuspensionResolvers,
     archiveComment: archiveComment({
       driver,
     }),

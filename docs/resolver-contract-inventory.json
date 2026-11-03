@@ -503,11 +503,11 @@
     },
     {
       "field": "Mutation.suspendMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.suspendUser",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.trackDownload",
@@ -587,11 +587,11 @@
     },
     {
       "field": "Mutation.unsuspendMod",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.unsuspendUser",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.updateChannelPluginPipelines",
