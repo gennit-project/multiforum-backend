@@ -14,9 +14,9 @@ after(async()=>stopNeo4j());
 beforeEach(async()=>{await resetDatabase(driver);await driver.executeQuery(`CREATE(u:User{username:'alice',createdAt:datetime()}),(img:Image{id:'image',createdAt:datetime()}),(a:Album{id:'album'}),(d:Discussion{id:'discussion',title:'Title',createdAt:datetime()}),(dc:DiscussionChannel{id:'post',channelUniqueName:'forum'}) CREATE(u)-[:UPLOADED_IMAGE]->(img),(u)-[:HAS_ALBUM]->(a),(a)-[:HAS_IMAGE]->(img),(d)-[:HAS_ALBUM]->(a),(u)-[:POSTED_DISCUSSION]->(d),(dc)-[:POSTED_IN_CHANNEL]->(d)`);});
 const execute=(source:string,secure=false)=>graphql({schema:secure?secured:schema,source,contextValue:{driver,req:{headers:{}},mayAccessSensitiveContent:false}});
 const query='{usage:getImageAlbumUsage(imageId:"image"){imageId uploaderUsername uploaderOwnedAlbums{id Discussions{id DiscussionChannels{channelUniqueName}}} otherAlbums{id}}}';
-test('raw usage groups preserve ownership and characterize the still-reversed channel traversal',async()=>{
+test('raw usage groups preserve ownership and canonical channel traversal',async()=>{
  const result=await execute(query);assert.equal(result.errors,undefined,JSON.stringify(result.errors));
- assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{usage:{imageId:'image',uploaderUsername:'alice',uploaderOwnedAlbums:[{id:'album',Discussions:[{id:'discussion',DiscussionChannels:[]}]}],otherAlbums:[]}});
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{usage:{imageId:'image',uploaderUsername:'alice',uploaderOwnedAlbums:[{id:'album',Discussions:[{id:'discussion',DiscussionChannels:[{channelUniqueName:'forum'}]}]}],otherAlbums:[]}});
  const count=await driver.executeQuery("MATCH(:DiscussionChannel)-[:POSTED_IN_CHANNEL]->(:Discussion{id:'discussion'}) RETURN count(*) AS n");assert.equal(count.records[0].get('n').toNumber(),1);
 });
 test('raw nested titles are only completed when requested through an alias or fragment',async()=>{
@@ -29,8 +29,8 @@ test('missing and removed images keep the existing explicit error',async()=>{
  await driver.executeQuery("MATCH(img:Image) SET img.permanentlyRemoved=true");assert.match((await execute(query)).errors?.[0].message??'',/Image not found/);
  assert.match((await execute(query.replace('"image"','"missing"'))).errors?.[0].message??'',/Image not found/);
 });
-test('public middleware preserves nonsensitive usage reads and the channel omission',async()=>{
- const result=await execute(query,true);assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(JSON.parse(JSON.stringify(result.data)).usage.uploaderOwnedAlbums[0].Discussions[0].DiscussionChannels,[]);
+test('public middleware preserves nonsensitive usage reads and canonical channels',async()=>{
+ const result=await execute(query,true);assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(JSON.parse(JSON.stringify(result.data)).usage.uploaderOwnedAlbums[0].Discussions[0].DiscussionChannels,[{channelUniqueName:'forum'}]);
 });
 
 test('sensitive images remain hidden from a resolved ineligible caller',async()=>{
