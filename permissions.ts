@@ -90,7 +90,7 @@ const {
 // These application-defined output types are intentionally readable. Keeping
 // this list explicit means a newly added schema type is denied by Shield's
 // fallback until its public surface has been reviewed and added here.
-const PUBLIC_READ_TYPES = [
+export const PUBLIC_READ_TYPES = [
   "Activity",
   "AgeGateCheck",
   "AgePolicy",
@@ -109,6 +109,7 @@ const PUBLIC_READ_TYPES = [
   "CommentRepliesFormat",
   "CommentSectionFormat",
   "Contact",
+  "CreateCommentsWithOwnedConnectionsResponse",
   "DayData",
   "DeleteEventInSeriesResult",
   "Discussion",
@@ -149,6 +150,7 @@ const PUBLIC_READ_TYPES = [
   "InstanceCapabilityStatus",
   "InstanceSetupStatus",
   "Issue",
+  "IssueActivityFeedItemResponse",
   "IssueAgingBucket",
   "IssueInfo",
   "LabelChangeHistory",
@@ -395,6 +397,10 @@ const permissionRules: IRules = {
       // identity-bearing edge does not silently inherit an allow wildcard.
       createdAt: allow,
       displayName: allow,
+      // Bots are not pseudonymous, so their real user is public. BotUser resolves
+      // to the account only when it is a bot (null for humans), so this never
+      // reopens the forbidden mod -> user identity edge for a human moderator.
+      BotUser: allow,
       AuthoredIssues: allow,
       AuthoredComments: allow,
       ModChannelRoles: allow,

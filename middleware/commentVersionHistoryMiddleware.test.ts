@@ -40,6 +40,27 @@ const snapshot = {
   PastVersions: [],
 };
 
+// Regression: v7 types `where.id` as IDScalarFilters (`{ eq: "<id>" }`). The
+// comment-edit path must read the `eq` value before the snapshot lookup, or it
+// double-wraps into `{ id: { eq: { eq: ... } } }` and updateComments throws.
+test("reads the comment id from the v7 { id: { eq } } filter", async () => {
+  const { ctx } = makeCtx();
+  let capturedId: unknown = "NOT_CALLED";
+  ctx.commentRevisionRepository.findSnapshot = async (id: unknown) => {
+    capturedId = id;
+    return [snapshot];
+  };
+  const { resolve } = countingResolve();
+  await M.updateComments(
+    resolve,
+    null,
+    { where: { id: { eq: "c-1" } }, update: { text: "new text" } },
+    ctx,
+    {}
+  );
+  assert.equal(capturedId, "c-1");
+});
+
 test("passes through to the resolver when there is no update", async () => {
   const { ctx, calls } = makeCtx();
   const { resolve, state } = countingResolve();

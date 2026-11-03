@@ -1,4 +1,5 @@
 import { resolveWikiGuardRepository } from "../services/persistence/wikiGuardRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -118,7 +119,7 @@ export const createOwnedWikiHomePage = async (
 ) => {
   const create = args.update?.WikiHomePage?.create;
   if (!create) return resolve(parent, args, context, info);
-  const channelUniqueName = args.where?.uniqueName;
+  const channelUniqueName = stringFromScalarFilter(args.where?.uniqueName);
   if (!channelUniqueName) {
     throw new GraphQLError(
       "A single channel uniqueName is required when creating a wiki home page."

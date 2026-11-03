@@ -1,4 +1,5 @@
 import { createDiscussionRevisionRepository, type DiscussionRevisionRepository, type DiscussionSnapshot } from "../services/persistence/discussionRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 
 import {
@@ -34,7 +35,7 @@ export const discussionVersionHistoryHandler = async ({
     
     // Extract parameters from the update operation
     const { where, update } = params;
-    const discussionId = where?.id;
+    const discussionId = stringFromScalarFilter(where?.id);
     
     // Make sure we have a discussion ID and update data
     if (!discussionId || !update) {
@@ -163,7 +164,7 @@ export const discussionEditNotificationHandler = async ({
 }: DiscussionVersionHistoryHandlerInput) => {
   try {
     const { where, update } = params;
-    const discussionId = where?.id;
+    const discussionId = stringFromScalarFilter(where?.id);
 
     if (!discussionId || !update || !discussionSnapshot) {
       return;

@@ -68,7 +68,10 @@ test('returns an in-sync plan while ignoring generated pipeline metadata', () =>
 
   assert.equal(plan.inSync, true)
   assert.deepEqual(plan.changes, [])
-  assert.deepEqual(plan.warnings, [])
+  assert.deepEqual(plan.warnings, [
+    'Plugin registries are unmanaged because registries was omitted',
+    'Channel plugins are unmanaged because channelPlugins was omitted',
+  ])
 })
 
 test('plans install, configuration, enablement, secret, and pipeline drift', () => {
@@ -107,6 +110,8 @@ test('plans disabling and settings changes for an installed version', () => {
     'DISABLE_PLUGIN',
   ])
   assert.deepEqual(plan.warnings, [
+    'Plugin registries are unmanaged because registries was omitted',
+    'Channel plugins are unmanaged because channelPlugins was omitted',
     'Server pipelines are unmanaged because pipelines was omitted',
   ])
 })
@@ -349,4 +354,133 @@ test('rejects unsupported versions and duplicate declarations', () => {
       /require|non-empty/
     )
   }
+})
+
+test('merges registries without removing unmanaged entries', () => {
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      registries: {
+        mode: 'MERGE',
+        urls: ['https://plugins.example.test/llm.json'],
+      },
+    }),
+    live: live({ registries: ['https://plugins.example.test/core.json'] }),
+  })
+
+  const change = plan.changes.find(candidate => candidate.kind === 'UPDATE_REGISTRIES')
+  assert.deepEqual(change?.desired, [
+    'https://plugins.example.test/core.json',
+    'https://plugins.example.test/llm.json',
+  ])
+})
+
+test('replaces registries when explicitly requested', () => {
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      registries: {
+        mode: 'REPLACE',
+        urls: ['https://plugins.example.test/approved.json'],
+      },
+    }),
+    live: live({ registries: ['https://plugins.example.test/old.json'] }),
+  })
+
+  assert.deepEqual(
+    plan.changes.find(candidate => candidate.kind === 'UPDATE_REGISTRIES')?.desired,
+    ['https://plugins.example.test/approved.json']
+  )
+})
+
+test('reconciles channel plugin enablement and settings', () => {
+  const channelPlugin = {
+    channelUniqueName: 'moderation',
+    pluginId: 'security-attachment-scan',
+    version: '0.4.0',
+    enabled: true,
+    settingsJson: { threshold: 0.8 },
+  }
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({ channelPlugins: [channelPlugin] }),
+    live: live({
+      channels: [{
+        channelUniqueName: 'moderation',
+        plugins: [{
+          pluginId: channelPlugin.pluginId,
+          version: channelPlugin.version,
+          enabled: false,
+          settingsJson: { threshold: 0.5 },
+        }],
+      }],
+    }),
+  })
+
+  assert.deepEqual(
+    plan.changes.filter(change => change.path.startsWith('channels.')).map(change => change.kind),
+    ['ENABLE_CHANNEL_PLUGIN', 'UPDATE_CHANNEL_SETTINGS']
+  )
+})
+
+test('does not create a change for an already absent disabled channel plugin', () => {
+  const plan = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      channelPlugins: [{
+        channelUniqueName: 'moderation',
+        pluginId: 'security-attachment-scan',
+        version: '0.4.0',
+        enabled: false,
+      }],
+    }),
+    live: live({ channels: [{ channelUniqueName: 'moderation', plugins: [] }] }),
+  })
+
+  assert.equal(plan.changes.some(change => change.path.startsWith('channels.')), false)
+})
+
+test('blocks channel changes for missing channels and uninstalled versions', () => {
+  const missingChannel = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      channelPlugins: [{
+        channelUniqueName: 'missing',
+        pluginId: 'security-attachment-scan',
+        version: '0.4.0',
+        enabled: true,
+      }],
+    }),
+    live: live({ channels: [] }),
+  })
+  assert.equal(missingChannel.changes.find(change => change.path.startsWith('channels.'))?.blocked, true)
+
+  const missingVersion = buildPluginConfigurationReconciliationPlan({
+    desired: desired({
+      plugins: [],
+      channelPlugins: [{
+        channelUniqueName: 'moderation',
+        pluginId: 'not-installed',
+        version: '1.0.0',
+        enabled: true,
+      }],
+    }),
+    live: live({ channels: [{ channelUniqueName: 'moderation', plugins: [] }] }),
+  })
+  assert.equal(missingVersion.changes.find(change => change.path.startsWith('channels.'))?.blocked, true)
+})
+
+test('rejects unsafe registries and duplicate channel declarations', () => {
+  for (const registryUrl of ['http://plugins.example.test/index.json', 'https://user:pass@plugins.example.test/index.json', 'not-a-url']) {
+    assert.throws(() => buildPluginConfigurationReconciliationPlan({
+      desired: desired({ registries: { mode: 'MERGE', urls: [registryUrl] } }),
+      live: live(),
+    }), /registry URL/)
+  }
+
+  const channelPlugin = {
+    channelUniqueName: 'moderation',
+    pluginId: 'security-attachment-scan',
+    version: '0.4.0',
+    enabled: true,
+  }
+  assert.throws(() => buildPluginConfigurationReconciliationPlan({
+    desired: desired({ channelPlugins: [channelPlugin, channelPlugin] }),
+    live: live(),
+  }), /Duplicate desired channel plugin/)
 })

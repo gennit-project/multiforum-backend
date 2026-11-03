@@ -1,4 +1,5 @@
 import type { GraphQLResolveInfo } from "graphql";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 
 import { logger } from "../logger.js";
 import {
@@ -53,7 +54,7 @@ const wrapDiscussionEdit = (
   info: GraphQLResolveInfo
 ) => {
   const update = getUpdate(args);
-  const discussionId = args.where?.id;
+  const discussionId = stringFromScalarFilter(args.where?.id);
   if (!hasTextUpdate(update) || !discussionId || !context?.driver) {
     return resolve(parent, args, context, info);
   }
@@ -97,22 +98,23 @@ const wrapDiscussionEdit = (
   ];
 
   for (const channelUniqueName of channelUniqueNames) {
-    try {
-      await triggerChannelPlugins(
-        {
-          driver: context.driver,
-          discussionId,
-          channelUniqueName,
-          event: PLUGIN_EVENTS.DISCUSSION_CHANNEL_EDITED,
-        },
-        { execution: { deferExecution: true } }
-      );
-    } catch (error) {
+    // Fire-and-forget: execute moderation without blocking the edit response.
+    // Deferred runs are never picked up (no worker/cron; frontend only triggers
+    // download pipelines), so run it non-blocking. Durable queue tracked separately.
+    void triggerChannelPlugins(
+      {
+        driver: context.driver,
+        discussionId,
+        channelUniqueName,
+        event: PLUGIN_EVENTS.DISCUSSION_CHANNEL_EDITED,
+      },
+      { execution: { deferExecution: false } }
+    ).catch(error =>
       logger.warn(
         `Discussion plugin pipeline failed for ${channelUniqueName}:`,
         error instanceof Error ? error.message : error
-      );
-    }
+      )
+    );
   }
 
   return result;

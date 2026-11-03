@@ -1174,6 +1174,16 @@ const typeDefinitions = gql`
   type ModerationProfile @node {
     createdAt: DateTime! @timestamp(operations: [CREATE])
     displayName: String
+    # The account behind this profile, exposed ONLY when it is a bot. Bots are not
+    # pseudonymous, so their real user (username, profile link) is public; for human
+    # mods this is null and their identity stays masked via the denied User edge
+    # below (see the ModerationProfile rule in permissions.ts).
+    BotUser: User
+      @filterable(byValue: false, byAggregate: false)
+      @cypher(
+        statement: "MATCH (this)<-[:MODERATION_PROFILE]-(u:User) WHERE coalesce(u.isBot, false) = true RETURN u"
+        columnName: "u"
+      )
     User: User @relationship(type: "MODERATION_PROFILE", direction: IN)
     AuthoredIssues: [Issue!]!
       @relationship(type: "AUTHORED_ISSUE", direction: IN)
@@ -2839,9 +2849,31 @@ const typeDefinitions = gql`
     secretRefs: [PluginSecretReferenceInput!]
   }
 
+  enum PluginRegistryManagementMode {
+    MERGE
+    REPLACE
+  }
+
+  input DesiredPluginRegistriesInput {
+    mode: PluginRegistryManagementMode! = MERGE
+    urls: [String!]!
+  }
+
+  input DesiredChannelPluginInput {
+    channelUniqueName: String!
+    pluginId: String!
+    version: String!
+    enabled: Boolean!
+    settingsJson: JSON
+  }
+
   input PluginConfigurationDesiredStateInput {
     apiVersion: String!
     plugins: [DesiredServerPluginInput!]!
+    """Omit to leave plugin registry configuration unmanaged."""
+    registries: DesiredPluginRegistriesInput
+    """Omit to leave channel plugin enablement unmanaged."""
+    channelPlugins: [DesiredChannelPluginInput!]
     """Omit to leave server pipelines unmanaged; pass an empty list to clear them."""
     pipelines: [EventPipelineInput!]
     """When present, reconcile only these pipeline events and preserve all others."""
@@ -2855,6 +2887,10 @@ const typeDefinitions = gql`
     DISABLE_PLUGIN
     SET_SECRET
     REPLACE_SECRET
+    UPDATE_REGISTRIES
+    ENABLE_CHANNEL_PLUGIN
+    DISABLE_CHANNEL_PLUGIN
+    UPDATE_CHANNEL_SETTINGS
     UPDATE_PIPELINES
   }
 

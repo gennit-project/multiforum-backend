@@ -98,22 +98,23 @@ export const triggerCreatedDiscussionPipelines = async ({
   }
 
   for (const channelUniqueName of channelConnections) {
-    try {
-      await triggerChannel(
-        {
-          driver,
-          discussionId,
-          channelUniqueName,
-          event: 'discussionChannel.created',
-        },
-        { execution: { deferExecution: true } }
-      );
-    } catch (pipelineError: unknown) {
+    // Fire-and-forget: execute moderation without blocking discussion creation.
+    // Deferred runs are never picked up (no worker/cron; frontend only triggers
+    // download pipelines), so run it non-blocking. Durable queue tracked separately.
+    void triggerChannel(
+      {
+        driver,
+        discussionId,
+        channelUniqueName,
+        event: 'discussionChannel.created',
+      },
+      { execution: { deferExecution: false } }
+    ).catch((pipelineError: unknown) => {
       const message = pipelineError instanceof Error
         ? pipelineError.message
         : String(pipelineError);
       logger.error(`Channel pipeline error for ${channelUniqueName}:`, message);
-    }
+    });
   }
 };
 

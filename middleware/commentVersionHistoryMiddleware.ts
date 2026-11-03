@@ -1,4 +1,5 @@
 import { createCommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
+import { stringFromScalarFilter } from "../utils/scalarFilter.js";
 /**
  * Middleware for tracking comment version history
  * This middleware runs before comment update operations to capture the previous
@@ -46,7 +47,7 @@ const commentVersionHistoryMiddleware = {
 
       // Check if text is being updated
       if (update.text !== undefined) {
-        const commentId = where?.id;
+        const commentId = stringFromScalarFilter(where?.id);
 
         if (commentId) {
           const repository = context.commentRevisionRepository ?? createCommentRevisionRepository(context.driver);

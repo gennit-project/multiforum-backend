@@ -54,6 +54,28 @@ test("deleteComments passes through when no id is supplied", async () => {
   assert.equal(state.calls, 1);
 });
 
+// Regression: v7 types `where.id` as IDScalarFilters (`{ eq: "<id>" }`), not a
+// raw string. The middleware must read the `eq` value before the author lookup;
+// passing the whole filter object through double-wrapped it into
+// `{ id: { eq: { eq: ... } } }`, failing with "ID cannot represent value".
+test("deleteComments reads the id from the v7 { id: { eq } } filter", async () => {
+  let capturedId: unknown = "NOT_CALLED";
+  const ctx = makeCtx();
+  ctx.issueActivityMiddlewareRepository.findCommentAuthor = async (id: unknown) => {
+    capturedId = id;
+    return [];
+  };
+  const { resolve } = resolveWith({ nodesDeleted: 1 });
+  await M.deleteComments(
+    resolve,
+    null,
+    { where: { id: { eq: "c-1" } } },
+    ctx,
+    {}
+  );
+  assert.equal(capturedId, "c-1");
+});
+
 test("deleteDiscussions records activity when a discussion is deleted", async () => {
   const { resolve, state } = resolveWith({ nodesDeleted: 1 });
   const out = await M.deleteDiscussions(resolve, null, { where: { id: "d-1" } }, makeCtx(), {});
