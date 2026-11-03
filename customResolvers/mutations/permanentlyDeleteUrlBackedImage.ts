@@ -175,13 +175,20 @@ const clearReference = async ({
   imageUrl: string;
   removedByUsername: string;
   removedByModName?: string | null;
-}): Promise<Record<string, unknown>> => {
+}): Promise<ProfileClearResult | IconClearResult | BannerClearResult> => {
   const removedAt = new Date().toISOString();
 
   return executeManagedWrite(driver, async (transaction) => {
-      const result = await transaction.run(
-        referenceType === "ProfileImage"
-          ? `
+      const parameters = {
+          username,
+          channelUniqueName,
+          imageUrl,
+          removedAt,
+          removedByUsername,
+          removedByModName: removedByModName || null,
+        };
+      if (referenceType === "ProfileImage") {
+        const result = await transaction.run<ProfileClearResult>(`
           MATCH (target:User {username: $username})
           WHERE target.profilePicURL = $imageUrl
           SET target.profilePicURL = null
@@ -193,9 +200,13 @@ const clearReference = async ({
               audit.permanentlyRemovedByModName = $removedByModName
           RETURN target.username AS username,
                  target.profilePicURL AS profilePicURL
-          `
-          : referenceType === "ChannelIcon"
-            ? `
+          `, parameters);
+        const record = result.records[0];
+        if (!record) throw new GraphQLError("Image reference changed before deletion completed");
+        return { username: record.get("username"), profilePicURL: record.get("profilePicURL") };
+      }
+      if (referenceType === "ChannelIcon") {
+        const result = await transaction.run<IconClearResult>(`
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelIconURL = $imageUrl
           SET target.channelIconURL = null,
@@ -212,8 +223,12 @@ const clearReference = async ({
               audit.permanentlyRemovedByModName = $removedByModName
           RETURN target.uniqueName AS uniqueName,
                  target.channelIconURL AS channelIconURL
-          `
-            : `
+          `, parameters);
+        const record = result.records[0];
+        if (!record) throw new GraphQLError("Image reference changed before deletion completed");
+        return { uniqueName: record.get("uniqueName"), channelIconURL: record.get("channelIconURL") };
+      }
+      const result = await transaction.run<BannerClearResult>(`
           MATCH (target:Channel {uniqueName: $channelUniqueName})
           WHERE target.channelBannerURL = $imageUrl
           SET target.channelBannerURL = null
@@ -225,37 +240,35 @@ const clearReference = async ({
               audit.permanentlyRemovedByModName = $removedByModName
           RETURN target.uniqueName AS uniqueName,
                  target.channelBannerURL AS channelBannerURL
-          `,
-        {
-          username,
-          channelUniqueName,
-          imageUrl,
-          removedAt,
-          removedByUsername,
-          removedByModName: removedByModName || null,
-        }
-      );
-
+          `, parameters);
       const record = result.records[0];
       if (!record) {
         throw new GraphQLError("Image reference changed before deletion completed");
       }
 
-      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+      return { uniqueName: record.get("uniqueName"), channelBannerURL: record.get("channelBannerURL") };
   });
 };
 
-const getResolver = ({
+type ProfileClearResult = { username: string; profilePicURL: null };
+type IconClearResult = { uniqueName: string; channelIconURL: null };
+type BannerClearResult = { uniqueName: string; channelBannerURL: null };
+type ClearResolver<Result> = (parent: unknown, args: Args, context: GraphQLContext) => Promise<Result>;
+function getResolver(input: ResolverInput & {referenceType: "ProfileImage"}): ClearResolver<ProfileClearResult>;
+function getResolver(input: ResolverInput & {referenceType: "ChannelIcon"}): ClearResolver<IconClearResult>;
+function getResolver(input: ResolverInput & {referenceType: "ChannelBanner"}): ClearResolver<BannerClearResult>;
+function getResolver(input: ResolverInput): ClearResolver<ProfileClearResult | IconClearResult | BannerClearResult>;
+function getResolver({
   driver,
   referenceType,
   deleteObject = deleteStoredObject,
   checkServerModPermission = hasServerModPermission,
-}: ResolverInput) => {
+}: ResolverInput) {
   return async (
     parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<Record<string, unknown>> => {
+  ): Promise<ProfileClearResult | IconClearResult | BannerClearResult> => {
     const imageUrl = getRequiredArg(args.imageUrl, "Image URL is required");
     const username =
       referenceType === "ProfileImage"
@@ -311,6 +324,6 @@ const getResolver = ({
       removedByModName: context.user?.data?.ModerationProfile?.displayName || null,
     });
   };
-};
+}
 
 export default getResolver;

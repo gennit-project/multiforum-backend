@@ -1,3 +1,4 @@
+import type { AccountWriteSourceQueryResolvers } from "./contracts/accountWriteSources.js";
 import type { PluginSummaryMetadataQueryResolvers } from "./contracts/pluginSummaryMetadata.js";
 import type { PluginPolicyQueryResolvers } from "./contracts/pluginPolicies.js";
 import type { PluginSettingsReadResolvers } from "./contracts/pluginSettingsRead.js";
@@ -186,12 +187,16 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     }),
   } satisfies PluginSummaryMetadataQueryResolvers;
 
-  return {
-    ...contentPageResolvers,
-    ...accountResolvers,
+  const accountWriteSourceResolvers = {
     getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
       driver,
     }),
+  } satisfies AccountWriteSourceQueryResolvers;
+
+  return {
+    ...contentPageResolvers,
+    ...accountResolvers,
+    ...accountWriteSourceResolvers,
     getSiteWideIssueList: getSiteWideIssueList({
       driver,
       agePolicyRepository: instancePolicyRepository,

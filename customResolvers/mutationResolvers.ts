@@ -1,3 +1,4 @@
+import type { AccountWriteSourceMutationResolvers } from "./contracts/accountWriteSources.js";
 import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
 import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
 import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
@@ -525,6 +526,31 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ModerationArchiveMutationResolvers;
 
+  const accountWriteSourceResolvers = {
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
+    permanentlyRemoveImage: permanentlyRemoveImage({
+      driver
+    }),
+    permanentlyDeleteImage: permanentlyDeleteImage({
+      driver
+    }),
+    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
+      driver
+    }),
+    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
+      driver
+    }),
+    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
+      driver
+    }),
+    createScratchpadEntry: createScratchpadEntry({
+      scratchpadRepository: createScratchpadRepository(driver),
+      driver,
+    }),
+  } satisfies AccountWriteSourceMutationResolvers;
+
   return {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
@@ -533,9 +559,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     createEventWithChannelConnections: createEventWithChannelConnections({
       driver,
     }),
-    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
-      driver,
-    }),
+    ...accountWriteSourceResolvers,
     ...contentResolvers,
     ...moderationResolvers,
     addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
@@ -546,22 +570,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...accountScalarResolvers,
     ...moderationReportResolvers,
     ...moderationArchiveResolvers,
-    permanentlyRemoveImage: permanentlyRemoveImage({
-      driver
-    }),
-    permanentlyDeleteImage: permanentlyDeleteImage({
-      driver
-    }),
     ...downloadWriteResolvers,
-    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
-      driver
-    }),
-    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
-      driver
-    }),
-    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
-      driver
-    }),
     ...moderationLockResolvers,
     ...moderationSuspensionResolvers,
     ...subscriptionResolvers,
@@ -583,10 +592,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     shareCollectionAsDiscussion: shareCollectionAsDiscussion({
       driver
-    }),
-    createScratchpadEntry: createScratchpadEntry({
-      scratchpadRepository: createScratchpadRepository(driver),
-      driver,
     }),
     ...moderationUndoResolvers,
   };

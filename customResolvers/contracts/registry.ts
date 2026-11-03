@@ -1,3 +1,5 @@
+import { accountWriteSourceQueryNames } from "./accountWriteSources.js";
+import { accountWriteSourceMutationNames } from "./accountWriteSources.js";
 import { moderationArchiveMutationNames } from "./moderationArchives.js";
 import { moderationSuspensionMutationNames } from "./moderationSuspensions.js";
 import { moderationReportMutationNames } from "./moderationReports.js";
@@ -56,6 +58,8 @@ export const checkedRootGroups = [
   ["Mutation", "moderationReportResolvers", "ModerationReportMutationResolvers", moderationReportMutationNames],
   ["Mutation", "moderationSuspensionResolvers", "ModerationSuspensionMutationResolvers", moderationSuspensionMutationNames],
   ["Mutation", "moderationArchiveResolvers", "ModerationArchiveMutationResolvers", moderationArchiveMutationNames],
+  ["Mutation", "accountWriteSourceResolvers", "AccountWriteSourceMutationResolvers", accountWriteSourceMutationNames],
+  ["Query", "accountWriteSourceResolvers", "AccountWriteSourceQueryResolvers", accountWriteSourceQueryNames],
 ] as const;
 export { checkedTypeFieldGroups, checkedTypeFieldNames };
 export const checkedResolverFields = [

@@ -292,16 +292,31 @@
     },
     {
       "field": "Mutation.createScratchpadEntry",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "createdAt",
+        "text",
+        "isPublic",
+        "sourceType",
+        "sourceId",
+        "Author.username",
+        "Recipient.username"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "sourceChannelUniqueName",
+        "discussionId",
+        "superUpvotedByUsers.*",
+        "other author/recipient and entry fields"
       ],
       "evidence": [
-        "customResolvers/mutations/createScratchpadEntry.ts:239"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/createScratchpadEntry.ts"
       ],
-      "reason": "id and most response fields come from untyped entryRecord.get; superUpvotedByUsers uses an asserted raw collect map. These results are returned only after transaction commit.",
-      "decision": "Add exact unknown row projections and field-specific lazy completion checks; eager serialization before commit would change rollback/error timing and is not authorized."
+      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.deleteScratchpadEntry",
@@ -430,16 +445,27 @@
     },
     {
       "field": "Mutation.setChannelDiscussionFlairConfig",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "channelUniqueName",
+        "flairs.channelUniqueName"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "flairRequired",
+        "flairs.id",
+        "flairs.displayName",
+        "flairs.color",
+        "flairs.order",
+        "flairs.archived"
       ],
       "evidence": [
-        "services/discussionFlairStore.ts:67"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "services/discussionFlairStore.ts"
       ],
-      "reason": "Shared flair store types channelUniqueName/flairRequired and nested flair string/boolean properties as concrete values despite raw record.get and map spreads; only order is numerically converted. Mutation writes before the returned projection completes.",
-      "decision": "Use accurate raw projection plus lazy field-level completion preserving GraphQL scalar coercion, requested-field selection and transactional commit timing; no eager decoder before write completion."
+      "reason": "Only matched channel identity selected. Persisted flags/string values are unknown; existing Number conversion does not establish finite GraphQL Int. No eager decoding introduced.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.setChannelIcon",
@@ -532,68 +558,105 @@
     },
     {
       "field": "Mutation.permanentlyDeleteChannelBanner",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "uniqueName",
+        "channelBannerURL"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "all other Channel fields"
       ],
       "evidence": [
-        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts:157"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
       ],
-      "reason": "Shared clearReference returns Record<string,unknown> with target-dependent selected properties from raw records after external object deletion and managed writes.",
-      "decision": "Split result variants by ProfileImage/ChannelIcon/ChannelBanner and preserve requested-field scalar coercion and deletion-before-write ordering; use storage seam only."
+      "reason": "Matched uniqueName and SET-null banner URL; exact branch driver projection. External failure/reference race remain errors with existing sequencing.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.permanentlyDeleteChannelIcon",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "uniqueName",
+        "channelIconURL"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "all other Channel fields"
       ],
       "evidence": [
-        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts:157"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
       ],
-      "reason": "Shared clearReference returns Record<string,unknown> with target-dependent selected properties from raw records after external object deletion and managed writes.",
-      "decision": "Split result variants by ProfileImage/ChannelIcon/ChannelBanner and preserve requested-field scalar coercion and deletion-before-write ordering; use storage seam only."
+      "reason": "Matched uniqueName and SET-null icon URL; exact branch driver projection. Existing clearing of icon variants retained; those unreturned values are not selected.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.permanentlyDeleteImage",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "permanentlyRemoved",
+        "permanentlyRemovedAt",
+        "permanentlyRemovedByUsername",
+        "permanentlyRemovedByModName"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "all other persisted Image fields",
+        "storageDeletion (not a public Image field)"
       ],
       "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
         "customResolvers/mutations/permanentlyDeleteStoredUpload.ts"
       ],
-      "reason": "markStoredUploadRemoved returns a dynamic Object.fromEntries raw projection and the resolver spreads it with normalized storageDeletion after external deletion and managed write.",
-      "decision": "Define image-specific raw projection and lazy selected field serialization without changing storage deletion/write order; tests must stub storage, never delete real objects."
+      "reason": "Shared removal columns derive from MATCH identity and SET literal/typed parameters; actual driver values retained. Existing duplicate/missing record errors preserved.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.permanentlyDeleteProfileImage",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "username",
+        "profilePicURL"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "all other User fields"
       ],
       "evidence": [
-        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts:157"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
       ],
-      "reason": "Shared clearReference returns Record<string,unknown> with target-dependent selected properties from raw records after external object deletion and managed writes.",
-      "decision": "Split result variants by ProfileImage/ChannelIcon/ChannelBanner and preserve requested-field scalar coercion and deletion-before-write ordering; use storage seam only."
+      "reason": "Matched username and SET-null profile URL, exact branch driver projection. External deletion precedes conditional reference clear; reference-changed race still throws.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Mutation.permanentlyRemoveImage",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isOpen"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "all other Issue fields (raw persisted properties and unprojected relationships)"
       ],
       "evidence": [
-        "services/persistence/imageModerationRepository.ts:112"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/imageRemovalSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyRemoveImage.ts",
+        "services/persistence/imageModerationRepository.ts",
+        "services/persistence/archiveIssueWrites.ts",
+        "services/persistence/moderationIssueWrites.ts"
       ],
-      "reason": "Existing issue can originate in full-Issue asserted raw moderationIssueWrites result, then be returned after image state and moderator relation writes.",
-      "decision": "Coordinate moderation Issue projection family; maintain separate write boundaries and wrapped errors before selecting exact Issue fields."
+      "reason": "Final append MATCH identity is guarded and its explicit isOpen:false assignment supplies the Boolean returned from the actual driver row. Existing issue discovery validates its own selected fields but does not validate the entire final raw Issue. Real-schema tests witness id/isOpen, server scope, repeated/missing target errors, middleware denial, read failure, image-write failure after the close action, and raw malformed body completion only when requested.",
+      "decision": "Select only id/isOpen. Preserve existing notification and image-write ordering, permission behavior, raw scalar completion and nontransactional failure effects; full persisted Issue validation requires a separately authorized behavior decision."
     },
     {
       "field": "Query.publicCollectionsContaining",
@@ -665,16 +728,27 @@
     },
     {
       "field": "Query.getChannelDiscussionFlairConfig",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "channelUniqueName",
+        "flairs.channelUniqueName"
+      ],
       "residualPaths": [
-        "Full generated response/argument boundary remains unchecked."
+        "flairRequired",
+        "flairs.id",
+        "flairs.displayName",
+        "flairs.color",
+        "flairs.order",
+        "flairs.archived"
       ],
       "evidence": [
-        "services/discussionFlairStore.ts:67"
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "services/discussionFlairStore.ts"
       ],
-      "reason": "Shared flair read map is asserted to DiscussionFlairOption, while id/displayName/color/archived and root flags originate as raw properties; only order is explicitly converted.",
-      "decision": "Same shared field-level completion solution as setter; retain ordered flairs and includeArchived filtering."
+      "reason": "Matched channel identity safe despite malformed unselected persisted values. Real GraphQL witness confirms malformed Boolean still fails lazily when requested; archive filtering/order unchanged.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
       "field": "Query.getDiscussionAgeGateCheck",
