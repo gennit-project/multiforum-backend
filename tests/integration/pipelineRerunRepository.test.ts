@@ -27,7 +27,12 @@ test('rerun reads preserve selections, literal IDs, missing results and unbounde
  await driver.executeQuery(`UNWIND range(1,29) AS n CREATE(:PluginPipelineRun{pipelineId:toString(n),targetId:'other',targetType:'DownloadableFile',status:'FAILED',trigger:'OWNER_RETRY',createdAt:datetime('2026-01-01T10:00:00Z')})`);
  const where={targetId:{eq:'other'},targetType:{eq:'DownloadableFile'}};t.assert.snapshot(await repo.findRelatedAttempts(where));assert.equal((await repo.findRelatedAttempts(where)).length,29);
 });
-test('discussion version query preserves the existing singular-selection error',async()=>{await assert.rejects(createPipelineRerunRepository(driver).findDiscussionVersion('discussion'),/Cannot query field "DownloadableFile"/);});
+test('discussion version query returns content and plural attachment version',async()=>{
+ const repo=createPipelineRerunRepository(driver);assert.deepEqual(await repo.findDiscussionVersion('missing'),[]);
+ await driver.executeQuery("CREATE(d:Discussion{id:'discussion',title:'Title',body:'Body'})-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile{id:'file',createdAt:datetime('2020-01-01T00:00:00Z')})");
+ const row=(await repo.findDiscussionVersion('discussion'))[0];assert.equal(row.id,'discussion');assert.equal(row.body,'Body');
+ assert.equal(row.DownloadableFiles[0].createdAt,'2020-01-01T00:00:00.000Z');
+});
 for(const scenario of ['missing','status','changed','latest','cooldown','limit'] as const)test(`actual rerun preserves ${scenario} rejection without runner calls`,async()=>{
  {
   await resetDatabase(driver);events=[];await seed();let expected:RegExp;
