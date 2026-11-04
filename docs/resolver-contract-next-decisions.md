@@ -68,7 +68,7 @@ That earlier pipeline guard did not promote entries. After #449, event creation 
 | `createEventWithChannelConnections` | Fixed by merged #449: validate the response in the item transaction and omit rolled-back failures while continuing the batch. | Successful selected projections are now checked at the actual resolver registration. Outer GraphQL completion/delivery remain after commit. |
 | `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crosspost responses are guarded by #450 and successful elements now have checked types. Outer GraphQL completion and delivery remain after commit. |
 | `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. The nonempty result and actual wrapper boundary are now checked (see below); no full-operation certification is claimed. |
-| `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Return `NOT_FOUND` for a missing campaign and `BAD_USER_INPUT` for a conflicting transition, with a deliberate transaction/locking strategy for distinguishing them. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
+| `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Existing open #446 returns `NOT_FOUND` for a missing campaign and `CONFLICT` for a changed record, retaining `BAD_USER_INPUT` for an initially invalid state. Reconcile that fix when merged rather than implementing another transition policy. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
 
 Source evidence: the two create helpers, collection-share resolver,
 `pluginPipelineCampaigns.ts`, `campaignControlRepository.ts`, and their existing
@@ -165,12 +165,18 @@ semantics. Existing deletion, malformed projection, repeat-transition and anonym
 permission regressions remain. No campaign behavior changed and neither boundary
 is promoted.
 
-Recommended decision: preserve terminal completion/cancellation, serialize the
-expected-state check with the write, return `NOT_FOUND` for disappearance and
-`BAD_USER_INPUT` for a changed state. Preserve existing manager permissions and
-explicitly retain the existing treatment of already-running provider jobs; stopping
-in-flight work is a different pause policy. A transaction alone is insufficient
-if the status predicate is evaluated before acquiring the write lock. The future
-fix needs real competing-transaction tests and validation before commit. The
-alternative is to retain last-writer-wins behavior, accepting the observed terminal
-state overwrite. This behavior choice requires approval before implementation.
+The control-write fix already exists in open, non-draft [#446](https://github.com/gennit-project/multiforum-backend/pull/446),
+verified at `207f9118989ad42cad4d01adacf4ebb657cb9268`; it is not merged into
+this branch's main base. Do not duplicate it. It snapshots identity/status/version,
+locks and rechecks before updating, returns `CONFLICT` for a changed record,
+`NOT_FOUND` for disappearance, and retains `BAD_USER_INPUT` for an initially
+invalid transition. Its tests cover real blocked transactions and the worker
+limitation. Once incorporated, replace the failure witnesses here with assertions
+of that contract and carry the precise campaign projection into its new result union.
+
+The separate unanswered product choice is worker behavior after pause: permit the
+already-selected batch to dispatch and possibly complete (current behavior), or
+stop additional dispatch after acknowledged pause while allowing already-started
+jobs to finish, with an explicit decision on whether a paused campaign may become
+COMPLETED. #446 does not settle that choice. No worker or control behavior is
+changed by this checkpoint.
