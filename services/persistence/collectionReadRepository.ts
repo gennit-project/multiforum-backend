@@ -1,4 +1,4 @@
-import type { ProfileCollectionProjection, PublicCollectionProjection } from "../../customResolvers/contracts/accountProjections.js";
+import type { ProfileCollectionProjection, PublicCollectionProjection, CollectionShareProjection, CollectionShareChannelProjection } from "../../customResolvers/contracts/accountProjections.js";
 import type { Driver } from "neo4j-driver";
 import type { CollectionSort, CollectionWhere } from "../../src/generated/graphql.js";
 
@@ -9,18 +9,12 @@ export type CollectionReadOptions = {
 };
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
-export type CollectionShareSnapshot = {
-  id: string;
-  name: string;
-  description?: string | null;
-  visibility: string;
-  CreatedBy?: { username?: string | null } | null;
-};
+export type CollectionShareSnapshot = CollectionShareProjection;
 export interface CollectionReadRepository {
   findProfileCollections(where: CollectionWhere, options: CollectionReadOptions): Promise<ProfileCollectionProjection[]>;
   findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<PublicCollectionProjection[]>;
   findOwnedShareTarget(id: string, username: string): Promise<CollectionShareSnapshot[]>;
-  findShareChannel(uniqueName: string): Promise<Array<{ uniqueName: string }>>;
+  findShareChannel(uniqueName: string): Promise<CollectionShareChannelProjection[]>;
 }
 
 const PROFILE_COLLECTIONS = `query ProfileCollections($where: CollectionWhere, $sort: [CollectionSort!], $limit: Int, $offset: Int) {
@@ -167,7 +161,7 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
       return result.collections;
     },
     async findShareChannel(uniqueName) {
-      const result = await executeGeneratedOperation<{channels: Array<{uniqueName: string}>}>(driver,
+      const result = await executeGeneratedOperation<{channels: CollectionShareChannelProjection[]}>(driver,
         SHARE_CHANNEL, { where: { uniqueName: { eq: uniqueName } } });
       return result.channels;
     },

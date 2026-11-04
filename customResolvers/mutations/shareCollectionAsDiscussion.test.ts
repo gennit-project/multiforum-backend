@@ -59,6 +59,7 @@ const buildContext = (username = "alice") =>
 const publicCollection = {
   id: "collection-1",
   name: "Builds I love",
+  description: null,
   visibility: "PUBLIC",
   CreatedBy: { username: "alice" },
 };

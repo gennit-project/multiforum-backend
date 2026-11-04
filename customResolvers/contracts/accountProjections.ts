@@ -24,3 +24,9 @@ export const profileImageSelection = { username: true, profilePicURL: true, vari
 export type ProfileImageProjection = Projection<User, typeof profileImageSelection>;
 export const channelIconSelection = { uniqueName: true, channelIconURL: true, variantUrls: true, icon32Url: true, icon48Url: true, icon64Url: true, icon96Url: true } as const satisfies Selection<Channel>;
 export type ChannelIconProjection = Projection<Channel, typeof channelIconSelection>;
+
+// Fixed internal reads used to authorize and compose collection sharing.
+export const collectionShareSelection = { id: true, name: true, description: true, visibility: true, CreatedBy: { username: true } } as const satisfies Selection<Collection>;
+export type CollectionShareProjection = Projection<Collection, typeof collectionShareSelection>;
+export const collectionShareChannelSelection = { uniqueName: true } as const satisfies Selection<Channel>;
+export type CollectionShareChannelProjection = Projection<Channel, typeof collectionShareChannelSelection>;

@@ -489,3 +489,17 @@ GraphQL/Shield regressions preserve aliases, fragments, defaults, one write per
 mutation, private fields, lazy skipped payloads and post-commit read-error paths.
 Accounting remains **176 selected / 33 deferred**. This is an upstream call
 contract, not a claim that arbitrary delegated child values are statically checked.
+
+
+### Collection read projection safeguards
+
+All five actual collection repository documents (profile, both public sensitivity
+modes, owned share target and channel identity) execute through the schema in a
+projection-drift test. Selected paths must exactly match their generated-schema
+projection declarations. The same test preserves filters, sort/limit/offset and
+age-eligibility context; disposable-database repository tests cover actual reads.
+Share snapshots now require the selected nullable description/creator and the
+schema visibility enum rather than optional catch-all properties. Negative type
+fixtures reject missing selected fields, invalid enums and unfetched child fields.
+This does not certify arbitrary outer Collection child selections or change
+profile filter composition. Accounting remains **176 selected / 33 deferred**.
