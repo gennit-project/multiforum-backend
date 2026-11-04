@@ -10,7 +10,7 @@ interface IsAccountOwnerArgs {
   username: string;
 }
 // Check if the user is the owner of the account.
-export const isAccountOwner = rule({ cache: "contextual" })(
+export const isAccountOwner = rule({ cache: "strict" })(
   async (parent: { username?: string } | undefined, args: IsAccountOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // When accessing nested fields like FavoriteChannels, the username comes from the parent User object.
     // v7 nests the filter as where.username = { eq: "..." } (StringScalarFilters); tolerate the old flat string too.

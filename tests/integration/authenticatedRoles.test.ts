@@ -416,3 +416,39 @@ test("native server suspension leaves stay untrusted through cached permission e
     await driver.executeQuery("MATCH(i:Issue{id:789}) DETACH DELETE i");
   }
 });
+
+test("account ownership is rechecked for each mutation alias", async () => {
+  const beforeOther = await readBio("adminuser");
+  const result = await graphql({
+    schema,
+    source: `mutation {
+      allowed: updateUsers(where: {username: {eq: "normaluser"}}, update: {bio: {set: "owner alias update"}}) { users { username } }
+      denied: updateUsers(where: {username: {eq: "adminuser"}}, update: {bio: {set: "other alias update"}}) { users { username } }
+    }`,
+    contextValue: { driver, req: { headers: { authorization: mockToken({username: "normaluser", email: "normal@e2e.test"}) }, body: {}, isMutation: true } },
+  });
+  assert.ok(result.errors?.some(error => error.path?.[0] === "denied"));
+  assert.equal(await readBio("normaluser"), "owner alias update");
+  assert.equal(await readBio("adminuser"), beforeOther);
+});
+
+for (const order of ["ASC", "DESC"]) {
+  test(`account ownership isolates private child fields in ${order} order`, async () => {
+    const session = driver.session();
+    try {
+      await session.run(`MATCH (u:User) WHERE u.username IN ['normaluser', 'adminuser']
+        MERGE (e:Email {address: u.username + '@private.test'}) MERGE (e)-[:HAS_EMAIL]->(u)`);
+    } finally { await session.close(); }
+    const result = await graphql({
+      schema,
+      source: `query { users(where: {username: {in: ["normaluser", "adminuser"]}}, sort: [{username: ${order}}]) { username Email { address } } }`,
+      contextValue: { driver, req: { headers: { authorization: mockToken({username: "normaluser", email: "normal@e2e.test"}) }, body: {} } },
+    });
+    assert.equal(result.errors?.length, 1, JSON.stringify(result));
+    assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {users: (order === "ASC" ? [
+      {username: "adminuser", Email: null}, {username: "normaluser", Email: {address: "normaluser@private.test"}},
+    ] : [
+      {username: "normaluser", Email: {address: "normaluser@private.test"}}, {username: "adminuser", Email: null},
+    ])});
+  });
+}
