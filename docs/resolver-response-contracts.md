@@ -272,7 +272,7 @@ boundary decisions is required before describing the campaign as complete.
 All 209 custom entries have been reviewed: 176 have a checked selected
 response/source boundary (84.2%); 33 remain explicit exceptions. This is **not** complete
 end-to-end response certification. The remaining entries are 1 moderation,
-27 object/scalar fields, 1 content query, 1 account/storage action and 4 plugin entries. Per-field selections, reasons and evidence remain
+27 object/scalar fields, 1 content query and 4 plugin entries. Per-field selections, reasons and evidence remain
 in the six audit files rather than being hidden by the closed issue status.
 
 Two JSON-returning pipeline update mutations additionally have generated argument
@@ -586,3 +586,19 @@ write/event ordering, post-commit projection failures, retries, stale revisions 
 settings precedence. No query, permission, worker pause or persistence behavior is
 changed. JSON leaves and dynamic outer response children remain outside these fixed
 source guarantees; inventory remains **176 selected / 33 deferred**.
+
+
+### Event-series deletion source projection
+
+The deletion repository now exposes only its selected event identity, title,
+occurrence index and nested series/occurrence fields. It no longer claims a full
+Event result. The resolver consumes that projection directly, and compile-negative
+fixtures reject unselected child titles, missing selected nullable indices and
+unsafe nullable series access. A schema-executed drift test guards the snapshot
+and both native delete response documents. Removing the nested occurrence index
+fails that guard. Real database tests retain standalone/missing events, each scope,
+the existing 25-occurrence nested default, sequential deletion and partial commit
+on a later projection failure. Existing GraphQL response tests retain selected
+success/count/message completion. This adds no batching, pagination, transaction
+or permission policy; the selected response count remains **176 / 209**, with
+**33 deferred**.
