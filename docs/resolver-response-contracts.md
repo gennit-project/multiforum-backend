@@ -446,3 +446,15 @@ stop additional dispatch after acknowledged pause while allowing already-started
 jobs to finish, with an explicit decision on whether a paused campaign may become
 COMPLETED. #446 does not settle that choice. No worker or control behavior is
 changed by this checkpoint.
+
+### Pinned client execution evidence for channel list sources
+
+The exact supported frontend `GET_CHANNEL` and `GET_CHANNEL_PLUGIN_SETTINGS`
+documents now execute through GraphQL/Shield with disposable persistence. Their
+committed copies are bound to the existing support pin and checked against the
+original upstream bundle by the compatibility gate. Coverage includes bot
+suspension aggregates, empty/missing forums, private email denial and nullable
+malformed child paths. This protects the request shape involved in forum-page
+failures, without certifying opaque child types or all frontend operations.
+Accounting stays **176 selected / 33 deferred**; source contract engineering is
+still distinct from this executable request evidence. No runtime behavior changes.

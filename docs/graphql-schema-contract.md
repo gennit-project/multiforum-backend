@@ -142,3 +142,22 @@ See frontend [cross-repository release guidance](https://github.com/gennit-proje
 for evidence collection, intentional-break review and paired rollback. Shared
 staging/production writes, deployment, and live-version verification are not
 performed by this gate.
+
+## Pinned client response examples
+
+`graphql-compatibility/response-operations.json` contains an exact read-only subset
+of the supported frontend's operation bundle: `GET_CHANNEL` and
+`GET_CHANNEL_PLUGIN_SETTINGS`. The existing compatibility gate compares each
+fixture's source, checksum and source location with the checksum-verified upstream
+bundle. A supported-pin change requires deliberately updating the examples; a
+locally rehashed rewrite cannot silently become an alleged client document.
+Only one query operation plus its fragments is accepted per example. The test
+suite reads committed data and does not fetch or execute frontend application code.
+
+`tests/integration/pinnedChannelResponseContracts.test.ts` executes the documents
+through the real schema, Shield and disposable Neo4j, covering populated, empty
+and missing forums, bot suspension aggregate counts, private email denial and
+nullable malformed child errors. These complement syntax/coercion compatibility
+checks: valid operations can still fail at runtime when resolvers or permissions
+change. This fixture set does not certify all 355 operations, arbitrary persisted
+values, deployed clients, or the static item types of pass-through list resolvers.

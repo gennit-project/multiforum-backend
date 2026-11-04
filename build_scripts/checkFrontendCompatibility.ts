@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { compareSchemas, frontendRepository, readOperations, readSchema, readSupportList } from "./frontendCompatibility.js";
+import { compareSchemas, frontendRepository, readOperations, readSchema, readSupportList, readResponseOperations, verifyResponseOperations } from "./frontendCompatibility.js";
 import { sha256 } from "./schemaContract.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -22,10 +22,13 @@ async function main() {
   const candidate = readSchema(readFileSync(path.join(candidateDirectory, "schema.graphql"), "utf8"), readFileSync(path.join(candidateDirectory, "manifest.json"), "utf8"), revision);
   if (candidate.manifest.lockfileSha256 !== sha256(readFileSync(path.join(root, "pnpm-lock.yaml"), "utf8"))) throw new Error("Candidate lockfile provenance mismatch");
   const supportText = readFileSync(path.join(root, "graphql-compatibility/supported-frontends.json"), "utf8");
+  const clients = readSupportList(supportText);
+  const responseOperations = readResponseOperations(readFileSync(path.join(root, "graphql-compatibility/response-operations.json"), "utf8"), clients);
   const results = [];
-  for (const client of readSupportList(supportText)) {
+  for (const client of clients) {
     const content = fetchData(client.revision, "graphql-operations/operations.json");
     const contract = readOperations(content, client);
+    if (client.revision === responseOperations.revision) verifyResponseOperations(responseOperations, contract);
     const sdl = fetchData(client.revision, "graphql-schema/schema.graphql");
     const manifest = fetchData(client.revision, "graphql-schema/manifest.json");
     const baseline = readSchema(sdl, manifest, contract.pinnedSchema.revision);
