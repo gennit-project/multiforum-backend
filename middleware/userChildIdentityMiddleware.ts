@@ -123,9 +123,10 @@ function rememberPath(value: unknown, path: readonly string[], alias: string): v
 /** Each registration names a verified source path, not arbitrary descendant objects. */
 export function userChildIdentityAtPath(
   path: readonly string[],
-  sourceKeys: "response" | "canonical" = "response"
+  sourceKeys: readonly ("response" | "canonical")[] = path.map(() => "response")
 ): typeof resolveUsersWithChildIdentity {
   if (!path.length) throw new Error("A nested User source path is required");
+  if (sourceKeys.length !== path.length) throw new Error("Each source path segment needs a key convention");
   return async (resolve, parent, args, context, info) => {
     const sources = info.fieldNodes.flatMap(node => sourceUserFields(node.selectionSet, info, path));
     const selected = prepareIdentitySelection(sources.map(source => source.node), info);
@@ -135,7 +136,7 @@ export function userChildIdentityAtPath(
     const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
     const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
     const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
-    for (const source of sources) rememberPath(result, sourceKeys === "canonical" ? path : source.responsePath, selected.alias);
+    for (const source of sources) rememberPath(result, path.map((field, index) => sourceKeys[index] === "canonical" ? field : source.responsePath[index]), selected.alias);
     return result;
   };
 }
@@ -143,12 +144,14 @@ export function userChildIdentityAtPath(
 export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["users"]);
 // Neo4j root connections return canonical edges/node keys even when the caller
 // aliases them. Update payloads and ordinary projections use response keys.
-export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], "canonical");
+export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], ["canonical", "canonical"]);
 
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
+    collections: userChildIdentityAtPath(["CreatedBy"]),
+    collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },
   Mutation: { updateUsers: resolveUpdatedUsersWithChildIdentity },
 };

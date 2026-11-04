@@ -84,8 +84,9 @@ test('mutation response dependency traversal preserves payload fragments and int
 
 test('canonical connection source paths remain independent of requested aliases',async()=>{
   assert.throws(()=>userChildIdentityAtPath([]),/path is required/);
+  assert.throws(()=>userChildIdentityAtPath(["node"],[]),/key convention/);
   const connectionSchema=buildSchema('type Query{usersConnection:Connection} type Connection{edges:[Edge]} type Edge{node:User} type User{username:String Email:String}');
-  const adapter=userChildIdentityAtPath(['edges','node'],'canonical');
+  const adapter=userChildIdentityAtPath(['edges','node'],['canonical','canonical']);
   let row: Record<string,unknown> | undefined;
   const response=await graphql({schema:connectionSchema,source:'{usersConnection{links:edges{person:node{Email}}}}',contextValue:context,rootValue:{
     usersConnection:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{

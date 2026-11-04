@@ -930,3 +930,13 @@ Real graph tests cover owner and anonymous results, private-field denial, aliase
 edges/nodes, fragments and directive variables, cursor pagination and empty pages.
 This adds a verified source dependency, not a full User/connection child contract;
 the selected/deferred inventory is unchanged.
+
+The next source registrations are `Query.collections → CreatedBy` and
+`Query.collectionsConnection → edges.node.CreatedBy`. Key conventions are declared
+per segment: canonical connection envelopes followed by response-key projections.
+Actual graph tests cover both source representations, aliased nullable creators,
+owner/visitor/anonymous child permissions, visibility-filtered connections, skipped
+fields and local scalar completion errors. A two-case pre-fix probe failed for
+owner Email reads without a selected username. The dependency fixes those reads
+without changing collection visibility or certifying all descendant User values.
+Inventory counts remain unchanged.

@@ -125,3 +125,47 @@ test('skipped profile collection selections do not alter public response fields'
  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{renamed:'alice'}]});
 });
+
+for(const connection of [false,true])test(`collection creator source carries identity through ${connection?'connection':'list'} results`,async()=>{
+ await driver.executeQuery("MATCH(u:User{username:'alice'}) MERGE(e:Email{address:'alice@creator.test'}) MERGE(e)-[:HAS_EMAIL]->(u)");
+ const source=connection?'{collectionsConnection(where:{id:{eq:"alice-0"}}){edges{node{CreatedBy{Email{address}}}}}}':'{collections(where:{id:{eq:"alice-0"}}){CreatedBy{Email{address}}}}';
+ const result=await graphql({schema,source,contextValue:context('alice')});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const creator={CreatedBy:{Email:{address:'alice@creator.test'}}};
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),connection?{collectionsConnection:{edges:[{node:creator}]}}:{collections:[creator]});
+});
+
+for(const connection of [false,true])test(`collection creator identity preserves mixed aliases and viewer permissions in ${connection?'connections':'lists'}`,async()=>{
+ await driver.executeQuery("MATCH(u:User{username:'alice'}) SET u.bio='bob' MERGE(e:Email{address:'alice@creator.test'}) MERGE(e)-[:HAS_EMAIL]->(u)");
+ for(const viewer of ['alice','bob',null]) {
+  const body='maker:CreatedBy{username:bio _accountIdentity:bio ...Private @include(if:$include)}';
+  const root=connection?`page:collectionsConnection(where:{id:{eq:"alice-0"}}){links:edges{entry:node{${body}}}}`:`page:collections(where:{id:{eq:"alice-0"}}){${body}}`;
+  const result=await graphql({schema,source:`query($include:Boolean!=true){${root}} fragment Private on User{contact:Email{address}}`,contextValue:context(viewer)});
+  const expectedPath=connection?['page','links',0,'entry','maker','contact']:['page',0,'maker','contact'];
+  assert.deepEqual(result.errors?.map(error=>error.path),viewer==='alice'?undefined:[expectedPath],JSON.stringify(result));
+  const item={maker:{username:'bob',_accountIdentity:'bob',contact:viewer==='alice'?{address:'alice@creator.test'}:null}};
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),connection?{page:{links:[{entry:item}]}}:{page:[item]});
+ }
+});
+
+test('collection creator dependency preserves nullable creators and visibility filtering',async()=>{
+ await driver.executeQuery("CREATE(:Collection{id:'orphan',name:'orphan',visibility:'PUBLIC',collectionType:'DISCUSSIONS',itemOrder:[],createdAt:datetime(),updatedAt:datetime()})");
+ for(const viewer of ['alice','bob',null]) {
+  const result=await graphql({schema,source:'{orphan:collections(where:{id:{eq:"orphan"}}){CreatedBy{Email{address}}} privatePage:collectionsConnection(where:{id:{eq:"alice-1"}}){totalCount edges{node{CreatedBy{Email{address}}}}}}',contextValue:context(viewer)});
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const expected=viewer==='alice'?{totalCount:1,edges:[{node:{CreatedBy:{Email:{address:'alice@creator.test'}}}}]}:{totalCount:0,edges:[]};
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{orphan:[{CreatedBy:null}],privatePage:expected});
+ }
+});
+
+test('collection creator dependency keeps skipped fields and malformed requested-field errors local',async()=>{
+ await driver.executeQuery("MATCH(u:User{username:'alice'}) SET u.bio=[1,2]");
+ try {
+  const result=await graphql({schema,source:'{collections(where:{id:{eq:"alice-0"}}){CreatedBy{broken:bio Email{address}}}}',contextValue:context('alice')});
+  assert.deepEqual(result.errors?.map(error=>error.path),[['collections',0,'CreatedBy','broken']],JSON.stringify(result));
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{collections:[{CreatedBy:{broken:null,Email:{address:'alice@creator.test'}}}]});
+  const skipped=await graphql({schema,source:'query($hide:Boolean!=true){collections(where:{id:{eq:"alice-0"}}){CreatedBy{renamed:username Email @skip(if:$hide){address}}}}',contextValue:context(null)});
+  assert.equal(skipped.errors,undefined,JSON.stringify(skipped.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(skipped.data)),{collections:[{CreatedBy:{renamed:'alice'}}]});
+ } finally {await driver.executeQuery("MATCH(u:User{username:'alice'}) SET u.bio='bob'");}
+});
