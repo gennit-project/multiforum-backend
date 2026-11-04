@@ -14,7 +14,7 @@ test("runs server download security before channel automation", async () => {
   const triggerDownload: typeof triggerPluginRunsForDownloadableFile =
     async args => {
       assert.equal(args.driver, driver);
-      calls.push("server");
+      calls.push(`server:${args.downloadableFileId}`);
       return [];
     };
   const triggerChannel: typeof triggerChannelPluginPipeline =
@@ -27,24 +27,24 @@ test("runs server download security before channel automation", async () => {
   await triggerCreatedDiscussionPipelines({
     driver,
     discussionId: "discussion-1",
-    downloadableFileId: "file-1",
+    downloadableFileIds: ["file-1", "file-2", "file-1"],
     channelConnections: ["cats", "mods"],
     triggerDownload,
     triggerChannel,
   });
 
-  assert.deepEqual(calls, ["server", "channel:cats", "channel:mods"]);
+  assert.deepEqual(calls, ["server:file-1", "server:file-2", "channel:cats", "channel:mods"]);
   assert.deepEqual(executionModes, [
     { deferExecution: false },
     { deferExecution: false },
   ]);
 });
 
-test("continues channel automation when the server pipeline fails", async () => {
+test("continues remaining files and channel automation when a download pipeline fails", async () => {
   const calls: string[] = [];
   const triggerDownload: typeof triggerPluginRunsForDownloadableFile =
-    async () => {
-      calls.push("server-failed");
+    async ({ downloadableFileId }) => {
+      calls.push(`server-failed:${downloadableFileId}`);
       throw new Error("scanner unavailable");
     };
   const triggerChannel: typeof triggerChannelPluginPipeline = async () => {
@@ -54,13 +54,13 @@ test("continues channel automation when the server pipeline fails", async () => 
 
   await triggerCreatedDiscussionPipelines({
     discussionId: "discussion-1",
-    downloadableFileId: "file-1",
+    downloadableFileIds: ["file-1", "file-2"],
     channelConnections: ["cats"],
     triggerDownload,
     triggerChannel,
   });
 
-  assert.deepEqual(calls, ["server-failed", "channel"]);
+  assert.deepEqual(calls, ["server-failed:file-1", "server-failed:file-2", "channel"]);
 });
 
 test("runs channel automation for text discussions without invoking a download pipeline", async () => {

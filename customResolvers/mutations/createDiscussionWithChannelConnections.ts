@@ -68,19 +68,19 @@ type Input = {
 export const triggerCreatedDiscussionPipelines = async ({
   driver,
   discussionId,
-  downloadableFileId,
+  downloadableFileIds = [],
   channelConnections,
   triggerDownload = triggerPluginRunsForDownloadableFile,
   triggerChannel = triggerChannelPluginPipeline,
 }: {
   driver?: Driver;
   discussionId: string;
-  downloadableFileId?: string;
+  downloadableFileIds?: string[];
   channelConnections: string[];
   triggerDownload?: typeof triggerPluginRunsForDownloadableFile;
   triggerChannel?: typeof triggerChannelPluginPipeline;
 }) => {
-  if (downloadableFileId) {
+  for (const downloadableFileId of new Set(downloadableFileIds)) {
     try {
       await triggerDownload({
         driver,
@@ -269,12 +269,11 @@ export const createDiscussionsFromInput = async (
       if (crosspostedDiscussionId) {
         if (!contextUsername || !context) throw new GraphQLError("Authentication required.");
         const sensitive = await mayAccessSensitiveContent({context,driver,agePolicyRepository:createInstancePolicyRepository(driver)});
-        const created = await createExistingDiscussionCrosspost(driver,discussionCreateInput,crosspostedDiscussionId,contextUsername,
+        const { created, downloadableFileIds } = await createExistingDiscussionCrosspost(driver,discussionCreateInput,crosspostedDiscussionId,contextUsername,
           channelConnections,flairIdsByInput[inputIndex],sensitive);
         discussions.push(created);
         const createdId = (created as {id:string}).id;
-        const files = discussionCreateInput.hasDownload ? await repository.findAttachedFiles(createdId) : [];
-        await triggerPipelines({driver,discussionId:createdId,channelConnections,downloadableFileId:files[0]?.DownloadableFiles?.[0]?.id});
+        await triggerPipelines({driver,discussionId:createdId,channelConnections,downloadableFileIds});
         continue;
       }
       // v7 removed the to-one connect, so strip the Author (POSTED_DISCUSSION)
@@ -346,13 +345,11 @@ export const createDiscussionsFromInput = async (
       // here cannot roll back the item and does not imply durable delivery.
       const hasDownload = discussionCreateInput.hasDownload === true;
 
-      let downloadableFileId: string | undefined;
+      let downloadableFileIds: string[] = [];
       if (hasDownload) {
         try {
           const withFile = await repository.findAttachedFiles(newDiscussionId);
-          downloadableFileId = (
-            withFile?.[0] as unknown as { DownloadableFiles?: Array<{ id?: string }> }
-          )?.DownloadableFiles?.[0]?.id;
+          downloadableFileIds = withFile?.[0]?.DownloadableFiles?.map(file => file.id) ?? [];
         } catch (triggerError: unknown) {
           const message =
             triggerError instanceof Error ? triggerError.message : String(triggerError);
@@ -365,11 +362,11 @@ export const createDiscussionsFromInput = async (
 
       // Every successful DiscussionChannel creation emits its own channel event,
       // including ordinary text discussions. Downloads additionally emit the
-      // file event once so attachment scanning remains independent.
+      // file event for every eligible attachment before the channel events.
       await triggerPipelines({
         driver,
         discussionId: newDiscussionId,
-        downloadableFileId,
+        downloadableFileIds,
         channelConnections: createdChannelConnections,
       });
 

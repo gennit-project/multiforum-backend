@@ -43,11 +43,11 @@ export const DISCUSSION_CREATE_SELECTION = `
 `;
 export interface DiscussionCreationRepository {
  createDiscussion(input:DiscussionCreateInput, transaction?:ManagedTransaction):Promise<{discussions:Discussion[]}>;
- findAttachedFiles(id:string):Promise<Array<{id:string;DownloadableFiles:Array<{id:string}>}>>;
+ findAttachedFiles(id:string, transaction?:ManagedTransaction):Promise<Array<{id:string;DownloadableFiles:Array<{id:string}>}>>;
  findCreatedDiscussion(id:string, transaction?:ManagedTransaction):Promise<Discussion[]>;
 }
 export function createDiscussionCreationRepository(driver:Driver):DiscussionCreationRepository{return{
  async createDiscussion(input,transaction){const r=await executeGeneratedOperation<{createDiscussions:{discussions:Discussion[]}}>(driver,`mutation CreateDiscussionForChannels($input:[DiscussionCreateInput!]!){createDiscussions(input:$input){discussions${DISCUSSION_CREATE_SELECTION}}}`,{input:[input]},transaction);return r.createDiscussions;},
- async findAttachedFiles(id){const r=await executeGeneratedOperation<{discussions:Array<{id:string;DownloadableFiles:Array<{id:string}>}>}>(driver,`query CreatedDiscussionFiles($where:DiscussionWhere){discussions(where:$where){id DownloadableFiles{id}}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findAttachedFiles(id,transaction){const r=await executeGeneratedOperation<{discussions:Array<{id:string;DownloadableFiles:Array<{id:string}>}>}>(driver,`query CreatedDiscussionFiles($where:DiscussionWhere){discussions(where:$where){id DownloadableFiles{id}}}`,{where:{id:{eq:id}}},transaction);return r.discussions;},
  async findCreatedDiscussion(id,transaction){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query CreatedDiscussionWithChannels($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_CREATE_SELECTION}}`,{where:{id:{eq:id}}},transaction);return r.discussions;},
 };}

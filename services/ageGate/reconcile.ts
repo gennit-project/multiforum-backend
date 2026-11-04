@@ -109,6 +109,17 @@ export function buildReconcileQuery(
 
 type TransactionLike = Pick<Transaction | ManagedTransaction, "run">;
 
+const reconcilers = new WeakMap<Driver, (tx: TransactionLike) => Promise<unknown>>();
+
+/** Materialize visibility before an owned transaction reads filtered metadata.
+ * The normal pre-commit reconciliation still runs, covering any later writes.
+ */
+export async function reconcileAgeGateBeforeRead(driver: Driver, tx: TransactionLike): Promise<void> {
+  const reconcile = reconcilers.get(driver);
+  if (!reconcile) throw new Error("Age-gate reconciliation is not installed for this driver");
+  await reconcile(tx);
+}
+
 const WRITE_METHODS = ["executeWrite", "writeTransaction"] as const;
 
 /**
@@ -124,6 +135,7 @@ export function installAgeGateReconcile(
 ): Driver {
   const query = buildReconcileQuery(statements);
   const reconcile = (tx: TransactionLike) => tx.run(query);
+  reconcilers.set(driver, async tx => { await reconcile(tx); });
   const originalSession = driver.session.bind(driver);
 
   driver.session = ((...args: Parameters<Driver["session"]>): Session => {
