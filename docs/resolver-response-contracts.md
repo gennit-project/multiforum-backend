@@ -617,3 +617,17 @@ anonymous reads, noninheritance of privileged outer context, nested filtering,
 missing records and settings behavior. This is source precision only: no input,
 authorization, default, JSON validation or write behavior changes, and accounting
 remains **176 selected / 33 deferred**.
+
+### Pipeline lifecycle payloads
+
+Attempt creation and lease updates now expose the rows actually selected by their
+schema-executed documents, without inventing an `info` member or unselected job
+fields. The job projection is shared with executor reads; attempt default fields
+and prior attempt numbers have generated projections. Eleven actual documents
+are checked through executable GraphQL, and removal of the lease identity selection
+fails the drift test. Compile-negative fixtures reject invented mutation metadata
+and absent selected fields. Existing disposable-database and lifecycle tests cover
+claims, ownership, renewal, rescheduling, completion, rate/concurrency limits and
+post-commit projection failures. Raw event claims still return their existing
+string-converted identity; no transition, scheduling or pause policy changes.
+Accounting remains **176 selected / 33 deferred**.
