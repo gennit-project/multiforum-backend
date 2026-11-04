@@ -816,3 +816,16 @@ source-specific super-votes. The earlier context-only cache fails those tests;
 argument-scoped entries preserve both legitimate operations and denied-state
 integrity. This is confined to the three voting guards; unrelated permission-rule
 caching is not certified by these tests.
+
+### Native ownership source projections
+
+The shared content-authorization repository now declares its exact native query
+columns and keeps unvalidated property leaves as `unknown`. Owner identifiers,
+user/moderator identities and legacy issue-lock values retain their existing
+null fallback, equality and truthiness semantics; no scalar coercion is added.
+Compile-negative fixtures prevent these raw values being mistaken for completed
+GraphQL scalars. Disposable-database tests compare all eight actual query column
+sets with their source types, and removing a required author column fails the
+check. GraphQL/Shield regressions retain denial for malformed ownership and
+legacy truthy lock values. These are source guarantees, not new certifications
+of outer response children: accounting remains **176 selected / 33 deferred**.

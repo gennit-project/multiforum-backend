@@ -485,3 +485,24 @@ for (const {label, mutation, relation, incoming} of contentOwnershipCases) {
     } finally { await session.close(); }
   });
 }
+
+test("native malformed ownership and truthy lock values remain denied through GraphQL", async () => {
+  const session = driver.session();
+  try {
+    await session.run(`MATCH(u:User{username:'normaluser'})
+      CREATE(raw:User{username:123})-[:AUTHORED_COMMENT]->(:Comment{id:'raw-owner'})
+      CREATE(i:Issue{id:'raw-lock',locked:'false',title:'original'})-[:AUTHORED_ISSUE]->(u)`);
+    const authorization = mockToken({username:'normaluser',email:'normal@e2e.test'});
+    const comment = await execDeleteComments('raw-owner', authorization);
+    assert.ok(comment.errors?.length);
+    assert.equal(await countComment('raw-owner'),1);
+    const issue = await graphql({
+      schema,
+      source: `mutation { updateIssues(where:{id:{eq:"raw-lock"}},update:{title:{set:"changed"}}) {issues{id}} }`,
+      contextValue: {driver,req:{headers:{authorization},body:{},isMutation:true}},
+    });
+    assert.ok(issue.errors?.some(error => error.path?.[0] === 'updateIssues'), JSON.stringify(issue));
+    const result = await session.run("MATCH(i:Issue{id:'raw-lock'}) RETURN i.title AS title");
+    assert.equal(result.records[0].get('title'),'original');
+  } finally { await session.close(); }
+});
