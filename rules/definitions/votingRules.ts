@@ -18,12 +18,14 @@ const assertVoteActor = async (context: GraphQLContext, username: string) => {
   }
 };
 
+// These rules depend on mutation arguments. Keep cache entries distinct for
+// different actors and targets, including aliased fields in the same request.
 type CanUpvoteCommentArgs = {
   commentId: string;
   username: string;
 };
 
-export const canUpvoteComment = rule({ cache: "contextual" })(
+export const canUpvoteComment = rule({ cache: "strict" })(
   async (parent: unknown, args: CanUpvoteCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId, username } = args;
 
@@ -79,7 +81,7 @@ type CanSuperUpvoteArgs = {
 // a normal upvote (this blocks suspended users from super upvoting). The mutation
 // handles both comments and discussions, so resolve the channel + permission from
 // the source type. Reused for undoSuperUpvote, which sends the same args.
-export const canSuperUpvote = rule({ cache: "contextual" })(
+export const canSuperUpvote = rule({ cache: "strict" })(
   async (parent: unknown, args: CanSuperUpvoteArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { sourceType, sourceId } = args;
 
@@ -133,7 +135,7 @@ type CanUpvoteDiscussionChannelArgs = {
   username: string;
 };
 
-export const canUpvoteDiscussion = rule({ cache: "contextual" })(
+export const canUpvoteDiscussion = rule({ cache: "strict" })(
   async (
     parent: unknown,
     args: CanUpvoteDiscussionChannelArgs,

@@ -809,3 +809,10 @@ rejection before content lookup and no vote, reaction, weight, karma or notifica
 changes on denial. Each operation also has a successful self-action control.
 Required-argument validation, channel permissions, response contracts and ordinary
 voting/reaction behavior remain intact. No additional response boundary is counted.
+
+Voting permission-cache entries are scoped to mutation arguments. Batched GraphQL
+regressions check independent aliases in both authorization orders, including
+source-specific super-votes. The earlier context-only cache fails those tests;
+argument-scoped entries preserve both legitimate operations and denied-state
+integrity. This is confined to the three voting guards; unrelated permission-rule
+caching is not certified by these tests.

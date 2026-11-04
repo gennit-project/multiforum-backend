@@ -175,5 +175,38 @@ for (const [operation, target, effect] of [
     assert.equal(allowed.errors,undefined,JSON.stringify(allowed.errors));
     assert.ok(allowed.data?.[operation]);
     assert.notDeepEqual(await snapshot(),before,"the authenticated actor's operation must still execute");
+    const firstOperation = target === "comment" ? "addEmojiToComment" : "addEmojiToDiscussionChannel";
+    const first = `${firstOperation}(${argument}:"${id}",username:"alice",emojiLabel:"batch-proof",unicode:"batch"){id}`;
+    const second = `${operation}(${argument}:"${id}",username:"bob"${emojiArgs}){id}`;
+    const executeDocument = (document: string) => graphql({schema,source:document,contextValue:{driver,req:{headers:{authorization:`Bearer ${jwt.sign({username:"alice",email:"alice@example.test",email_verified:true},"test-only-key")}`},body:{},isMutation:true}}});
+    assert.equal((await executeDocument(`mutation{${first}}`)).errors,undefined);
+    const beforeBatch = await snapshot();
+    const batch = await executeDocument(`mutation{first:${first} second:${second}}`);
+    assert.ok(batch.data?.first);
+    assert.ok(batch.errors?.some(error=>error.path?.[0]==="second"),"an earlier allowed alias must not authorize a different actor");
+    assert.deepEqual(await snapshot(),beforeBatch);
+    const reverse = await executeDocument(`mutation{denied:${second} allowed:${first}}`);
+    assert.ok(reverse.errors?.some(error=>error.path?.[0]==="denied"));
+    assert.ok(reverse.data?.allowed,"an earlier denial must not block an independently authorized alias");
+    assert.deepEqual(await snapshot(),beforeBatch);
+
   });
 }
+
+test("separate super-vote targets retain separate permissions within one mutation", async () => {
+  await driver.executeQuery(`MATCH(a:User{username:'alice'}),(m:ModerationProfile{displayName:'Moderator'})
+    CREATE(ch:Channel{uniqueName:'blocked-forum',createdAt:datetime()}),(r:ChannelRole{canUpvoteComment:false}),
+      (dc:DiscussionChannel{id:'blocked-post',discussionId:'blocked-discussion',channelUniqueName:'blocked-forum',createdAt:datetime()}),
+      (c:Comment{id:'blocked-comment',text:'blocked',createdAt:datetime(),weightedVotesCount:0})
+    CREATE(ch)-[:HAS_DEFAULT_CHANNEL_ROLE]->(r),(dc)-[:POSTED_IN_CHANNEL]->(ch),
+      (dc)-[:CONTAINS_COMMENT]->(c),(m)-[:AUTHORED_COMMENT]->(c),(a)-[:UPVOTED_COMMENT]->(c)`);
+  const result = await graphql({schema,source:`mutation {
+    allowed:createScratchpadEntry(recipientUsername:"bob",text:"Thanks",sourceType:"comment",sourceId:"comment"){id}
+    denied:createScratchpadEntry(recipientUsername:"bob",text:"Thanks",sourceType:"comment",sourceId:"blocked-comment"){id}
+  }`,contextValue:{driver,req:{headers:{authorization:`Bearer ${jwt.sign({username:"alice",email:"alice@example.test",email_verified:true},"test-only-key")}`},body:{},isMutation:true}}});
+  assert.ok(result.data?.allowed);
+  assert.ok(result.errors?.some(error=>error.path?.[0]==="denied"));
+  const row=(await driver.executeQuery("RETURN COUNT {(:ScratchpadEntry)} AS entries,COUNT {(:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment{id:'blocked-comment'})} AS blockedVotes")).records[0];
+  assert.equal(Number(row.get("entries")),1);
+  assert.equal(Number(row.get("blockedVotes")),0);
+});
