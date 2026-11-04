@@ -5,7 +5,8 @@ import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { executeManagedWrite } from "../neo4jTransactions.js";
 import { createDiscussionChannelQuery } from "../../customResolvers/cypher/cypherQueries.js";
 import { stripDiscussionToOneConnects } from "./discussionAlbumWrite.js";
-import { DISCUSSION_CREATE_SELECTION } from "./discussionCreationRepository.js";
+import { reconcileAgeGateBeforeRead } from "../ageGate/reconcile.js";
+import { createDiscussionCreationRepository, DISCUSSION_CREATE_SELECTION } from "./discussionCreationRepository.js";
 
 export async function createExistingDiscussionCrosspost(driver:Driver, input:DiscussionCreateInput,
   targetId:string, username:string, channels:string[], flairs:Map<string,string[]>, sensitive:boolean) {
@@ -45,6 +46,14 @@ export async function createExistingDiscussionCrosspost(driver:Driver, input:Dis
         !("id" in created) || created.id !== id) {
       throw new GraphQLError("Created crosspost is unavailable for the response.");
     }
-    return created;
+    let downloadableFileIds: string[] = [];
+    if (input.hasDownload) {
+      // Match the former post-commit lookup's materialized visibility and empty
+      // JWT, not the privileged context used for the crosspost response above.
+      await reconcileAgeGateBeforeRead(driver, tx);
+      const files = await createDiscussionCreationRepository(driver).findAttachedFiles(id, tx);
+      downloadableFileIds = files[0]?.DownloadableFiles.map(file => file.id) ?? [];
+    }
+    return { created, downloadableFileIds };
   });
 }
