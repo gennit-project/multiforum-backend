@@ -5,7 +5,7 @@ import {buildPublicSchema} from '../../build_scripts/publicSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createDiscussionCreationRepository} from '../../services/persistence/discussionCreationRepository.js';
 import {createEventWriteRepository} from '../../services/persistence/eventWriteRepository.js';
-import {createdDiscussionSelection,createdEventSelection} from '../../customResolvers/contracts/contentProjections.js';
+import {attachedDiscussionFilesSelection,createdDiscussionSelection,createdEventSelection} from '../../customResolvers/contracts/contentProjections.js';
 import {declaredResponsePaths,staticResponsePaths} from '../helpers/staticResponsePaths.js';
 import {startNeo4j,stopNeo4j} from './neo4jHarness.js';
 
@@ -36,6 +36,7 @@ test('actual discussion and event creation/read documents match their declared p
    const cases:[string,Record<string,unknown>,()=>Promise<unknown>][]=[
     ['createDiscussions',{discussions:createdDiscussionSelection},()=>discussion.createDiscussion({title:'Projection'},tx)],
     ['discussions',createdDiscussionSelection,()=>discussion.findCreatedDiscussion('discussion',tx)],
+    ['discussions',attachedDiscussionFilesSelection,()=>discussion.findAttachedFiles('discussion',tx)],
     ['createEvents',{events:createdEventSelection},()=>event.createWithinTransaction({title:'Projection',startTime:'2030-01-01T00:00:00Z',endTime:'2030-01-01T01:00:00Z',canceled:false},tx)],
     ['events',createdEventSelection,()=>event.findCreatedEvent('event',tx)],
    ];

@@ -365,3 +365,6 @@ export type UpdatedDiscussionProjection = Projection<Discussion, typeof updatedD
 // CreateCrosspost intentionally fetches only the generated identity.
 export const crosspostIdentitySelection = { id: true } as const satisfies Selection<Discussion>;
 export type CrosspostIdentityProjection = Projection<Discussion, typeof crosspostIdentitySelection>;
+
+export const attachedDiscussionFilesSelection = {id:true,DownloadableFiles:{id:true}} as const satisfies Selection<Discussion>;
+export type AttachedDiscussionFilesProjection = Projection<Discussion, typeof attachedDiscussionFilesSelection>;

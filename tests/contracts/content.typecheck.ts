@@ -72,3 +72,8 @@ crosspostIdentity.title;
 // @ts-expect-error generated identity is a string
 const invalidCrosspostIdentity: CrosspostIdentityProjection = {id:123};
 void invalidCrosspostIdentity;
+
+import type { AttachedDiscussionFilesProjection } from "../../customResolvers/contracts/contentProjections.js";
+declare const attachments: AttachedDiscussionFilesProjection;
+// @ts-expect-error attachment lookup does not fetch file URLs
+attachments.DownloadableFiles[0].url;
