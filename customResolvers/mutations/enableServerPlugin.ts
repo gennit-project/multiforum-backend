@@ -18,10 +18,6 @@ type Args = {
   settingsJson?: Record<string, unknown>
 }
 
-type InstallationEdge = {
-  properties?: { settingsJson?: unknown } | null
-}
-
 export const parsePluginSettings = (value: unknown): Record<string, unknown> => {
   if (!value) return {}
   if (typeof value === 'string') {
@@ -78,7 +74,7 @@ const getResolver = (input: Input) => {
       }
 
       const installationEdge = serverConfig.InstalledVersionsConnection
-        ?.edges?.[0] as InstallationEdge | undefined
+        ?.edges?.[0]
       const settingsToApply = settingsJson ?? parsePluginSettings(
         installationEdge?.properties?.settingsJson
       )

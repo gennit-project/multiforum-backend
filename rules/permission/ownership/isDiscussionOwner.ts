@@ -17,7 +17,7 @@ type IsDiscussionOwnerInput = {
   channelDisconnections: string[];
 };
 
-export const isDiscussionOwner = rule({ cache: "contextual" })(
+export const isDiscussionOwner = rule({ cache: "strict" })(
   async (parent: unknown, args: IsDiscussionOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     let discussionId;
 
@@ -38,6 +38,10 @@ export const isDiscussionOwner = rule({ cache: "contextual" })(
 
     let username = ctx.user.username;
     if (!discussionId) {
+      // This single-owner rule cannot authorize a batch. Let the sibling
+      // moderator rule check all bounded targets instead of throwing before
+      // Shield can evaluate that alternative.
+      if (where?.id?.in?.length || where?.id_IN?.length) return false;
       throw new Error(ERROR_MESSAGES.discussion.noId);
     }
     const repository =

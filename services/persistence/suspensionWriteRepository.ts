@@ -2,9 +2,10 @@ import type { Driver } from "neo4j-driver";
 import {
   appendModerationActions,
   type AppendModerationActionsParams,
+  type OpenModerationIssueRow,
 } from "./moderationIssueWrites.js";
 
-type IssueResult = { issues: Array<{id: string; issueNumber?: number | null; ActivityFeed: Array<{id: string; actionType?: string | null}>}> };
+type IssueResult = { issues: OpenModerationIssueRow[] };
 
 // FAMILY-3 / v7 (campaign #284). The suspension flow is owned Cypher: the Issue
 // ModerationActions go through moderationIssueWrites; the Suspension node and its
@@ -36,7 +37,7 @@ export type RemoveSuspensionParams = {
 
 export interface SuspensionWriteRepository {
   appendSuspensionActivity(params: AppendModerationActionsParams): Promise<void>;
-  closeSuspensionIssue(params: AppendModerationActionsParams): Promise<IssueResult>;
+  closeSuspensionIssue(params: AppendModerationActionsParams & {isOpen:boolean}): Promise<IssueResult>;
   addSuspension(params: AddSuspensionParams): Promise<{ ownerKey: string | null }>;
   removeSuspension(params: RemoveSuspensionParams): Promise<void>;
 }
@@ -54,7 +55,7 @@ export function createSuspensionWriteRepository(driver: Driver): SuspensionWrite
     },
     async closeSuspensionIssue(params) {
       const result = await appendModerationActions(driver, params);
-      return { issues: result.issues as unknown as IssueResult["issues"] };
+      return { issues: result.issues };
     },
     async addSuspension(params) {
       const rel = relFor(params.subjectType);

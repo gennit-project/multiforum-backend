@@ -1,5 +1,6 @@
+import type { IssueCountRow, ContributionCount } from "../contracts/contributionReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
-import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
+import neo4j, { type Driver } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { buildSiteWideIssuesQuery } from "../cypher/buildContentSearchQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -17,11 +18,11 @@ type Input = {
 };
 
 type Args = {
-  searchInput?: string;
-  selectedChannels?: string[];
+  searchInput?: string | null;
+  selectedChannels?: (string | null)[] | null;
   startDate?: string | null;
   endDate?: string | null;
-  showOnlyServerRuleViolations?: boolean;
+  showOnlyServerRuleViolations?: boolean | null;
   isOpen: boolean;
   filterCreatedByMe?: boolean | null;
   filterIAmOP?: boolean | null;
@@ -30,12 +31,14 @@ type Args = {
     offset?: number | null;
     limit?: number | null;
     sort?: string | null;
-  };
+  } | null;
 };
 
 const VALID_SORTS = new Set(["newest", "oldest", "mostReports"]);
 
-const sanitize = (value: unknown): unknown => {
+function sanitize(value: ContributionCount): number;
+function sanitize(value: unknown): unknown;
+function sanitize(value: unknown): unknown {
   if (neo4j.isInt(value)) return value.toNumber();
   if (Array.isArray(value)) return value.map(sanitize);
   if (value && typeof value === "object") {
@@ -118,7 +121,7 @@ const getResolver = (input: Input) => {
     const endDate = normalizeDateEnd(args.endDate);
 
     try {
-      const issueResult = await session.run(buildSiteWideIssuesQuery(fulltextQuery !== ""), {
+      const issueResult = await session.run<IssueCountRow>(buildSiteWideIssuesQuery(fulltextQuery !== ""), {
         fulltextIndex: ISSUE_FULLTEXT_INDEX,
         fulltextQuery,
         selectedChannels,
@@ -141,7 +144,7 @@ const getResolver = (input: Input) => {
       const aggregateIssueCount = firstRecord
         ? sanitize(firstRecord.get("totalCount"))
         : 0;
-      const issues = issueResult.records.map((record: Neo4jRecord) =>
+      const issues = issueResult.records.map((record) =>
         sanitize(record.get("issue"))
       );
 

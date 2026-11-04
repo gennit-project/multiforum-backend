@@ -55,7 +55,7 @@ const getResolver = (input: Input) => {
             // Get all events with occurrenceIndex >= this event's index
             const currentIndex = existingEvent.occurrenceIndex || 0;
             const futureOccurrences = eventSeries.Occurrences.filter(
-              (occ: { id: string; occurrenceIndex?: number | null }) => (occ.occurrenceIndex || 0) >= currentIndex
+              (occ) => (occ.occurrenceIndex || 0) >= currentIndex
             );
 
             // Delete all future events

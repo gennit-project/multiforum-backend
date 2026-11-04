@@ -623,3 +623,25 @@ test("getSiteWideDiscussionList applies multiple filters together", async () => 
   assert.equal(params.sortOption, "top");
   assert.ok(params.startOfTimeFrame !== null);
 });
+
+test("nullable search/list errors retain their position around ranking reads", async () => {
+  for (const argument of ["searchInput", "selectedChannels", "selectedTags"] as const) {
+    const driver = createMockDriver([]);
+    const resolver = getSiteWideDiscussionListResolver({ driver, serverName: `null-order-${argument}` });
+    await assert.rejects(resolver(null, {
+      ...baseArgs, [argument]: null, options: { ...baseArgs.options, sort: "hot" },
+    }, createMockContext(), mockInfo), {
+      message: `Failed to fetch discussions. Cannot read properties of null (reading '${argument === "searchInput" ? "trim" : "length"}')`,
+    });
+    assert.equal(driver.runCalls.length, argument === "searchInput" ? 0 : 1);
+    if (argument !== "searchInput") assert.match(driver.runCalls[0].query, /ServerConfig/);
+  }
+});
+
+test("nullable archived option retains raw query parameter and falsy query construction", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideDiscussionListResolver({ driver });
+  await resolver(null, { ...baseArgs, showArchived: null }, createMockContext(), mockInfo);
+  assert.equal(driver.runCalls[0].params.showArchived, null);
+  assert.match(driver.runCalls[0].query, /coalesce\(dc.archived, false\) = false/);
+});

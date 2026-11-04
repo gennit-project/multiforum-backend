@@ -90,7 +90,7 @@ export const modChannelRoleInputDoesNotEscalate = channelRoleEscalationRule();
 
 const channelRoleTargetIsOwnedRule = (
   modelName: "ChannelRole" | "ModChannelRole"
-) => rule({ cache: "contextual" })(
+) => rule({ cache: "strict" })(
   async (
     _parent: unknown,
     args: Record<string, unknown>,

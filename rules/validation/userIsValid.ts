@@ -112,7 +112,7 @@ export const createUserInputIsValid = rule({ cache: "contextual" })(
 );
 
 type UpdateUserInput = { update: UserUpdateInput };
-export const updateUserInputIsValid = rule({ cache: "contextual" })(
+export const updateUserInputIsValid = rule({ cache: "strict" })(
   async (parent: unknown, args: UpdateUserInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.update) {
       return "Missing update input in args.";

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { int, type Integer } from "neo4j-driver";
 import getUserWikiEditsCountResolver from "./getUserWikiEditsCount.js";
 
 type RunCall = {
@@ -7,7 +8,7 @@ type RunCall = {
   params: Record<string, unknown>;
 };
 
-const createDriver = (count: number) => {
+const createDriver = (count: number | Integer | null | undefined) => {
   const runCalls: RunCall[] = [];
 
   return {
@@ -21,9 +22,7 @@ const createDriver = (count: number) => {
               {
                 get: (key: string) =>
                   key === "count"
-                    ? {
-                        toNumber: () => count,
-                      }
+                    ? count
                     : undefined,
               },
             ],
@@ -36,7 +35,7 @@ const createDriver = (count: number) => {
 };
 
 test("getUserWikiEditsCount returns the counted wiki edits for an existing user", async () => {
-  const { driver, runCalls } = createDriver(3);
+  const { driver, runCalls } = createDriver(int(3));
   const resolver = getUserWikiEditsCountResolver({
     contributionTargetRepository: {
       userExists: async () => true,
@@ -71,3 +70,18 @@ test("getUserWikiEditsCount throws when the user does not exist", async () => {
     /not found|Failed to fetch wiki edits count/i
   );
 });
+
+for (const [value, expected] of [[3, 3], [null, 0], [undefined, 0]] as const) {
+  test(`getUserWikiEditsCount retains native/missing COUNT normalization: ${value}`, async () => {
+    const { driver } = createDriver(value);
+    const resolver = getUserWikiEditsCountResolver({
+      driver: driver as any,
+      contributionTargetRepository: {
+        userExists: async () => true,
+        channelExists: async () => false,
+        moderationProfileExists: async () => false,
+      },
+    });
+    assert.equal(await resolver(null, { username: "alice" }), expected);
+  });
+}

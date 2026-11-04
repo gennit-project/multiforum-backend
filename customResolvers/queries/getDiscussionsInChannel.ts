@@ -1,5 +1,6 @@
+import type { DiscussionListViewerChannel } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver, Integer } from "neo4j-driver";
 import neo4j from "neo4j-driver";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import { getDiscussionChannelsQuery } from "../cypher/cypherQueries.js";
@@ -17,12 +18,7 @@ import { normalizePagination } from "../../services/pagination.js";
 import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 
-enum timeFrameOptionKeys {
-  year = "year",
-  month = "month",
-  week = "week",
-  day = "day",
-}
+const timeFrameTable: Readonly<Record<string, { start: string | null } | undefined>> = timeFrameOptions;
 
 type Input = {
   driver: Driver;
@@ -37,18 +33,18 @@ type LabelFilter = {
 
 type Args = {
   channelUniqueName: string;
-  options: {
-    offset: string;
-    limit: string;
-    sort: string;
-    timeFrame: timeFrameOptionKeys;
-  };
-  selectedTags: string[];
-  searchInput: string;
-  showArchived: boolean;
-  showUnanswered?: boolean;
+  options?: {
+    offset?: string | number | null;
+    limit?: string | number | null;
+    sort?: string | null;
+    timeFrame?: string | null;
+  } | null;
+  selectedTags?: (string | null)[] | null;
+  searchInput?: string | null;
+  showArchived?: boolean | null;
+  showUnanswered?: boolean | null;
   hasDownload?: boolean | null;
-  labelFilters: LabelFilter[];
+  labelFilters?: LabelFilter[] | null;
 };
 
 const getResolver = (input: Input) => {
@@ -85,8 +81,8 @@ const getResolver = (input: Input) => {
       const normalizedSelectedTags = selectedTags || [];
       const normalizedLabelFilters = labelFilters || [];
       const selectedTimeFrame =
-        effectiveSort === "top" && timeFrameOptions[timeFrame]
-          ? timeFrameOptions[timeFrame].start
+        effectiveSort === "top" && timeFrame != null && timeFrameTable[timeFrame]
+          ? timeFrameTable[timeFrame].start
           : null;
       const rankingParams = await getHotRankingQueryParams({
         executor: session,
@@ -99,7 +95,7 @@ const getResolver = (input: Input) => {
         hasLabelFilters: normalizedLabelFilters.length > 0,
         hasSearch: fulltextQuery !== "",
         hasSelectedTags: normalizedSelectedTags.length > 0,
-        showArchived,
+        showArchived: Boolean(showArchived),
         showUnanswered: showUnanswered ?? false,
         sortOption: effectiveSort,
       });
@@ -127,7 +123,7 @@ const getResolver = (input: Input) => {
       }
 
       return await session.executeRead(async (transaction) => {
-        const pageResult = await transaction.run(
+        const pageResult = await transaction.run<{totalCount: Integer; discussionChannelIds: unknown[]}>(
           pageQuery,
           pageQueryParams
         );
@@ -135,7 +131,7 @@ const getResolver = (input: Input) => {
         const aggregateCount = pageRecord?.get("totalCount") ?? 0;
         const discussionChannelIds = (pageRecord?.get(
           "discussionChannelIds"
-        ) ?? []) as string[];
+        ) ?? []);
 
         if (discussionChannelIds.length === 0) {
           return {
@@ -144,7 +140,7 @@ const getResolver = (input: Input) => {
           };
         }
 
-        const discussionChannelsResult = await transaction.run(
+        const discussionChannelsResult = await transaction.run<{DiscussionChannel: DiscussionListViewerChannel}>(
           getDiscussionChannelsQuery,
           {
             discussionChannelIds,
@@ -153,7 +149,7 @@ const getResolver = (input: Input) => {
           }
         );
         const discussionChannels = discussionChannelsResult.records.map(
-          (record: Neo4jRecord) => record.get("DiscussionChannel")
+          (record) => record.get("DiscussionChannel")
         );
 
         return {

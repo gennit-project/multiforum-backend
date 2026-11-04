@@ -1,12 +1,11 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
 import type {Driver} from "neo4j-driver";
-import type {Channel,ChannelModel,UserModel} from "../../ogm_types.js";
 import type {ChannelPipelineRepository} from "../../services/persistence/channelPipelineRepository.js";
 import create from "./updateChannelPluginPipelines.js";
 function fixture(){
   const calls:string[]=[];const repo:ChannelPipelineRepository={
-    findSettings:async()=>{calls.push("read");return [{uniqueName:"cats",Bots:[{username:"bot-a"},{username:"bot-b"},{username:"human"}]}] as Channel[];},
+    findSettings:async()=>{calls.push("read");return [{uniqueName:"cats",pluginPipelines:null,EnabledPluginsConnection:{edges:[]},Bots:[{username:"bot-a"},{username:"bot-b"},{username:"human"}]}];},
     savePipelines:async()=>{calls.push("save");},listServerSettings:async()=>{calls.push("server");return [];},
     deprecateBot:async(username)=>{calls.push(`deprecate:${username}`);},disconnectBots:async(_name,usernames)=>{calls.push(`disconnect:${usernames.join(',')}`);},
   };

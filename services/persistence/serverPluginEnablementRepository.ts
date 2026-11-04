@@ -1,9 +1,10 @@
+import type { ENABLEMENT_PLUGINProjection, ENABLEMENT_INSTALLATIONProjection } from "../../customResolvers/contracts/pluginInstallationProjections.js";
 import type { Driver } from 'neo4j-driver'
-import type { Plugin, PluginVersion, ServerSecret } from '../../ogm_types.js'
+import type { ServerSecret } from '../../ogm_types.js'
 import { executeGeneratedOperation } from './generatedSchemaOperations.js'
 
-type PluginSnapshot = Pick<Plugin, 'id'|'name'|'displayName'|'description'|'authorName'|'authorUrl'|'homepage'|'license'|'tags'|'metadata'> & {Versions?: Array<Pick<PluginVersion,'id'|'version'|'manifest'|'settingsDefaults'|'uiSchema'|'documentationPath'|'readmeMarkdown'|'registryUrl'|'releaseNotesUrl'|'sourceRepoUrl'|'sourceCommit'|'minServerVersion'|'apiVersion'>>}
-type InstallationSnapshot = {serverName?:string|null;InstalledVersions:Array<{id:string;version:string}>;InstalledVersionsConnection?:{edges?:Array<{properties?:{settingsJson?:unknown}|null}>}|null}
+type PluginSnapshot = ENABLEMENT_PLUGINProjection;
+type InstallationSnapshot = ENABLEMENT_INSTALLATIONProjection;
 export interface ServerPluginEnablementRepository {
  findPlugin(pluginId:string,version:string):Promise<PluginSnapshot[]>;
  findInstallations(id:string):Promise<InstallationSnapshot[]>;

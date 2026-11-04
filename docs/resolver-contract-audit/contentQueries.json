@@ -1,0 +1,388 @@
+{
+  "family": "contentQueries",
+  "fields": [
+    {
+      "field": "Query.getChannelContributions",
+      "status": "selected-response",
+      "selectedPaths": [
+        "totalContributions",
+        "dayData.date",
+        "dayData.activities.type"
+      ],
+      "residualPaths": [
+        "username",
+        "displayName",
+        "profilePicURL",
+        "dayData.count (forwarded Integer/native source; child resolver owns completion)",
+        "dayData.activities.id/description and nested entities"
+      ],
+      "evidence": [
+        "customResolvers/queries/getChannelContributions.ts",
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
+    },
+    {
+      "field": "Query.getCommentReplies",
+      "status": "selected-response",
+      "selectedPaths": [
+        "ChildComments.ParentComment.id",
+        "ChildComments.isFavoritedByUser",
+        "ChildComments.SubscribedToNotifications.username",
+        "aggregateChildCommentCount"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getCommentReplies.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getCommentSection",
+      "status": "selected-response",
+      "selectedPaths": [
+        "DiscussionChannel.discussionId",
+        "DiscussionChannel.channelUniqueName",
+        "DiscussionChannel.SubscribedToNotifications.username",
+        "DiscussionChannel.Channel.uniqueName",
+        "DiscussionChannel.Discussion.id",
+        "Comments.isFavoritedByUser",
+        "Comments.SubscribedToNotifications.username"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getCommentSection.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getDiscussionDetail",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isFavorited",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.UpvotedByUsers.username",
+        "DiscussionChannels.SuperUpvotedByUsers.username"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetail.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getDiscussionDetailAnswers",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "answers.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionDetailFiles",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "files.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionDetailImages",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "images.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getDiscussionsInChannel",
+      "status": "selected-response",
+      "selectedPaths": [
+        "discussionChannels.UpvotedByUsers.username",
+        "discussionChannels.SuperUpvotedByUsers.username",
+        "discussionChannels.isFavorited",
+        "discussionChannels.Discussion.authorIsChannelModerator"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDiscussionsInChannel.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getEventComments",
+      "status": "selected-response",
+      "selectedPaths": [
+        "Event.id",
+        "Event.SubscribedToNotifications.username",
+        "Event.SubscribedToEventUpdates.username",
+        "Comments.isFavoritedByUser",
+        "Comments.SubscribedToNotifications.username"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getEventComments.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getImageAlbumUsage",
+      "selectedPaths": [],
+      "residualPaths": [
+        "imageId",
+        "uploaderUsername",
+        "uploaderOwnedAlbums.*",
+        "otherAlbums.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getImageAlbumUsage.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/imageUsageProjections.d.ts",
+        "tests/contracts/imageUsageProjections.typecheck.ts",
+        "tests/integration/imageUsageSourceContracts.test.ts",
+        "tests/integration/imageAlbumUsageTraversal.test.ts"
+      ],
+      "reason": "Merged #444 corrects canonical discussion-channel traversal. Exact nested raw projections retain unknown uploader/album/owner/discussion leaves. Real GraphQL/Shield regressions cover ownership, multiple/duplicate/missing relationships, aliases/fragments, sensitive filters and private nested fields.",
+      "decision": "Keep raw child contracts explicit; fixing traversal does not certify arbitrary persisted leaves. Do not promote solely for the parameter-bound image ID.",
+      "status": "deferred"
+    },
+    {
+      "field": "Query.getModContributions",
+      "status": "selected-response",
+      "selectedPaths": [
+        "date",
+        "count"
+      ],
+      "residualPaths": [
+        "activities.* (action properties and related entities; converted timestamp source does not certify all object fields)"
+      ],
+      "evidence": [
+        "customResolvers/queries/getModContributions.ts",
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
+    },
+    {
+      "field": "Query.getSiteWideDiscussionList",
+      "selectedPaths": [
+        "pageInfo.endCursor",
+        "pageInfo.hasNextPage"
+      ],
+      "residualPaths": [
+        "discussions.*",
+        "aggregateDiscussionCount"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideDiscussionList.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
+    },
+    {
+      "field": "Query.getSiteWideIssueList",
+      "status": "selected-response",
+      "selectedPaths": [
+        "aggregateIssueCount"
+      ],
+      "residualPaths": [
+        "issues.* (recursive integer sanitization does not prove persisted scalar/object shape)"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideIssueList.ts",
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
+    },
+    {
+      "field": "Query.getSiteWideWikiList",
+      "status": "selected-response",
+      "selectedPaths": [
+        "aggregateWikiPageCount"
+      ],
+      "residualPaths": [
+        "wikiPages.*",
+        "featuredWikiPages.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSiteWideWikiList.ts",
+        "customResolvers/contracts/wikiCountSource.ts",
+        "customResolvers/contracts/wikiCountProjections.d.ts",
+        "tests/contracts/wikiCountSource.typecheck.ts",
+        "tests/integration/wikiCountScalarWitness.test.ts"
+      ],
+      "reason": "This is an explicit accepted-source boundary, not a claim that the root emits a generated number: fixed Cypher COUNT yields Integer/native number, and the installed Neo4j numerical child resolver completes aggregateWikiPageCount to Int!. The local adapter retains generated arguments/root nullability and maps only this field. Actual-schema tests guard the exact Int! field, working Integer/native conversion, and demonstrate failure if the child resolver is removed. Persisted wiki fields remain unknown.",
+      "decision": "Keep the narrow named source/completion adapter; do not widen global scalars or eagerly normalize counts. A change to field SDL or numerical completion must fail its drift witness and trigger review. Preserve null-search TypeError timing and zero fallback for empty/exhausted pages. This working runtime path is not a serialization bug."
+    },
+    {
+      "field": "Query.getSortedChannels",
+      "status": "selected-response",
+      "selectedPaths": [
+        "channels.isFavorited"
+      ],
+      "residualPaths": [
+        "All unselected persisted entity properties, nested entities and raw driver integer aggregates"
+      ],
+      "evidence": [
+        "customResolvers/queries/getSortedChannels.ts",
+        "customResolvers/contracts/viewerReadSources.ts",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/viewerReadSources.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+    },
+    {
+      "field": "Query.getUserContributions",
+      "status": "selected-response",
+      "selectedPaths": [
+        "date",
+        "count",
+        "activities.type"
+      ],
+      "residualPaths": [
+        "activities.id/description and nested persisted comment/discussion/event/wiki entities"
+      ],
+      "evidence": [
+        "customResolvers/queries/getUserContributions.ts",
+        "customResolvers/contracts/contributionReadSources.ts",
+        "customResolvers/contracts/contributionReadProjections.d.ts",
+        "tests/contracts/contributionReadSources.typecheck.ts",
+        "customResolvers/queries/contributionReadSources.test.ts",
+        "tests/integration/contributionReadResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT/SIZE/REDUCE columns are numeric sources, normalized by the existing count conversion. toString(date(...)) and the existing null-date filter prove selected date strings; activity type is a literal. Issue count uses the unchanged recursive sanitizer with a numeric-source overload. Other persisted entity data remains unknown.",
+      "decision": "Keep selective source boundary; preserve count conversion over actual integer/native numeric domain, existing nullable/date defaults, target existence checks, age and identity filtering, pagination and error semantics. No whole-entity certification or new decode."
+    },
+    {
+      "field": "Query.getUserFavoriteComment",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getUserFavoriteComment.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The actual return paths are false or Boolean truthiness conversion; malformed raw rows cannot escape as a non-Boolean result.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    },
+    {
+      "field": "Query.getUserWikiEditsCount",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getUserWikiEditsCount.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "Fixed Cypher COUNT output is narrowed from unknown with neo4j.isInt then Number fallback; executable schema enforces non-null Int including root bubbling.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    },
+    {
+      "field": "Query.isOriginalPosterSuspended",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/isOriginalPosterSuspended.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/contracts/contentQueries.typecheck.ts",
+        "tests/integration/contentScalarResponseContracts.test.ts"
+      ],
+      "reason": "The returned suspension helpers compute an explicit Boolean; underlying issue/suspension projections are not certified as full entities by this scalar boundary.",
+      "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    }
+  ]
+}

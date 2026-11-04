@@ -62,3 +62,42 @@ export function compareSchemas(candidate: GraphQLSchema, baseline: GraphQLSchema
   const dangerousChanges = findDangerousChanges(baseline, candidate);
   return { compatible: !diagnostics.length && !breakingChanges.length && !dangerousChanges.length, documents: contract.documents.length, diagnostics, breakingChanges, dangerousChanges };
 }
+
+/** Small, immutable subset executed by response tests. The publication gate also
+ * compares these bytes with the checksum-verified upstream operation bundle. */
+export type ResponseOperations = {
+  formatVersion: number; repository: string; revision: string;
+  operationsSha256: string; documents: OperationContract['documents'];
+};
+export function readResponseOperations(content: string, clients: Client[]): ResponseOperations {
+  const fixture = JSON.parse(content) as ResponseOperations;
+  if (fixture.formatVersion !== 1 || fixture.repository !== frontendRepository ||
+      !clients.some(client => client.revision === fixture.revision && client.operationsSha256 === fixture.operationsSha256) ||
+      !Array.isArray(fixture.documents) || !fixture.documents.length) {
+    throw new Error('Response operations must reference a supported immutable frontend pin');
+  }
+  const seen = new Set<string>();
+  for (const document of fixture.documents) {
+    if (typeof document.id !== 'string' || !document.id || seen.has(document.id) ||
+        typeof document.file !== 'string' || !document.file || document.file.startsWith('/') || document.file.split('/').includes('..') ||
+        !Number.isSafeInteger(document.line) || document.line < 1 || !Number.isSafeInteger(document.column) || document.column < 1 ||
+        typeof document.source !== 'string' || sha256(document.source) !== document.sha256) {
+      throw new Error(`Invalid response operation checksum or duplicate: ${document.id}`);
+    }
+    const operations = parse(document.source).definitions.filter(definition => definition.kind === Kind.OPERATION_DEFINITION);
+    if (operations.length !== 1 || operations[0].operation !== 'query') {
+      throw new Error(`Response operation must contain exactly one read query: ${document.id}`);
+    }
+    seen.add(document.id);
+  }
+  return fixture;
+}
+export function verifyResponseOperations(fixture: ResponseOperations, contract: OperationContract): void {
+  for (const document of fixture.documents) {
+    const original = contract.documents.find(candidate => candidate.id === document.id);
+    if (!original || original.source !== document.source || original.sha256 !== document.sha256 ||
+        original.file !== document.file || original.line !== document.line || original.column !== document.column) {
+      throw new Error(`Response operation differs from pinned frontend bundle: ${document.id}`);
+    }
+  }
+}

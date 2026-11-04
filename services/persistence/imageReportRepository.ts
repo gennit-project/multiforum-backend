@@ -5,7 +5,7 @@ import {
   createModerationIssue,
   appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
+  type ReportModerationActionsParams, type ReportModerationIssueRow,
 } from "./moderationIssueWrites.js";
 
 type ReportIssue = { id: string; issueNumber: number; flaggedServerRuleViolation?: boolean | null; relatedImageId?: string | null };
@@ -14,8 +14,8 @@ export interface ImageReportRepository {
   findPriorImageReport(where: IssueWhere): Promise<Array<ReportIssue & { relatedUsername?: string | null }>>;
   // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
   // owned Cypher (moderationIssueWrites); reads stay on the generated API.
-  createImageReportIssue(params: CreateModerationIssueParams): Promise<{ issues: ReportIssue[] }>;
-  appendImageReport(params: AppendModerationActionsParams): Promise<{ issues: ReportIssue[] }>;
+  createImageReportIssue(params: CreateModerationIssueParams): Promise<{ issues: ReportModerationIssueRow[] }>;
+  appendImageReport(params: ReportModerationActionsParams): Promise<{ issues: ReportModerationIssueRow[] }>;
 }
 const IMAGE = `query ImageReportTarget($where: ImageWhere) { images(where: $where) { id url Uploader { username } } }`;
 const PRIOR = `query PriorImageReport($where: IssueWhere) { issues(where: $where) { id issueNumber flaggedServerRuleViolation relatedUsername } }`;
@@ -23,7 +23,7 @@ export function createImageReportRepository(driver: Driver): ImageReportReposito
   return {
     async findReportedImage(id) { return (await executeGeneratedOperation<{images: Awaited<ReturnType<ImageReportRepository['findReportedImage']>>}>(driver, IMAGE, {where: {id: {eq: id}}})).images; },
     async findPriorImageReport(where) { return (await executeGeneratedOperation<{issues: Awaited<ReturnType<ImageReportRepository['findPriorImageReport']>>}>(driver, PRIOR, {where})).issues; },
-    async createImageReportIssue(params) { const issue = await createModerationIssue(driver, params); return { issues: [issue as ReportIssue] }; },
-    async appendImageReport(params) { const result = await appendModerationActions(driver, params); return { issues: result.issues as ReportIssue[] }; },
+    async createImageReportIssue(params) { const issue = await createModerationIssue(driver, params); return { issues: [issue] }; },
+    async appendImageReport(params) { const result = await appendModerationActions(driver, params); return { issues: result.issues }; },
   };
 }

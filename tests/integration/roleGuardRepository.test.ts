@@ -104,3 +104,14 @@ test("relationship middleware scopes arbitrary filters and rejects mismatched ow
   // v7: the injected channel scope is a nested { eq } filter.
   assert.deepEqual(result.update.DefaultChannelRole.connect.where.node, { name: { contains: "Read" }, channelUniqueName: { eq: "cats" } });
 });
+
+test('role guard source completion rejects malformed capability leaves and owner names',async()=>{
+  await driver.executeQuery(`CREATE(:ServerRole{name:'malformed-server',canManageAdmins:'true'}),
+    (:ModServerRole{name:'malformed-mod',canReport:'false'}),
+    (owner:Channel),(role:ChannelRole{id:'malformed-owner'})
+    CREATE(owner)-[:OWNS_CHANNEL_ROLE]->(role)`);
+  const repository=createRoleGuardRepository(driver);
+  await assert.rejects(repository.findServerRoleCapabilities({name:{eq:'malformed-server'}}),/Boolean cannot represent/);
+  await assert.rejects(repository.findModServerRoleCapabilities({name:{eq:'malformed-mod'}}),/Boolean cannot represent/);
+  await assert.rejects(repository.findChannelRoleOwners({id:{eq:'malformed-owner'}}),/Cannot return null for non-nullable field Channel.uniqueName/);
+});

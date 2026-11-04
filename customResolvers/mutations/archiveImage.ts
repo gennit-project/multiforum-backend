@@ -1,6 +1,7 @@
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type {
-  Issue,
   IssueWhere,
   ImageUpdateInput,
   ImageWhere,
@@ -117,7 +118,7 @@ const getResolver = (input: Input) => {
       imageUrl.length > 30 ? imageUrl.substring(0, 30) + "..." : imageUrl;
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
 
     // Check if an issue already exists for this image

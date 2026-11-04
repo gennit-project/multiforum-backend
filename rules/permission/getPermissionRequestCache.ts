@@ -1,10 +1,10 @@
+import type {PermissionServerConfig} from "../../services/persistence/permissionServerConfigRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { ActiveServerSuspensionResult } from "./activeServerSuspensionTypes.js";
 
 type PermissionRequestCache = {
-  // Holds the cached ServerConfig lookup. Kept as `any` because downstream
-  // permission checks read many dynamically-selected fields off the result.
-  serverConfigPromise?: Promise<any>;
+  // Preserve the fixed permission snapshot instead of erasing it in the cache.
+  serverConfigPromise?: Promise<PermissionServerConfig | null>;
   // Memoized server-suspension lookups, keyed by the exact
   // `[username, modProfileName]` tuple (see getActiveServerSuspension).
   // Request-scoped only.
@@ -24,5 +24,5 @@ export const getPermissionRequestCache = (
     };
   }
 
-  return context.__permissionRequestCache as PermissionRequestCache;
+  return context.__permissionRequestCache;
 };

@@ -69,3 +69,28 @@ test("publication jobs and schema upload depend on compatibility and persistence
   assert.ok(gate.indexOf("test:frontend-contracts") < gate.indexOf("Publish compatible"));
   assert.doesNotMatch(gate, /secrets: inherit|pull_request_target|packages: write/);
 });
+
+test('response query fixtures retain exact pinned operation provenance',async()=>{
+ const {readResponseOperations,verifyResponseOperations}=await import('./frontendCompatibility.js');
+ const fixture={formatVersion:1,repository:frontendRepository,revision,operationsSha256:client().operationsSha256,documents:contract.documents};
+ const accepted=readResponseOperations(JSON.stringify(fixture),[client()]);
+ assert.doesNotThrow(()=>verifyResponseOperations(accepted,contract));
+ assert.throws(()=>readResponseOperations(JSON.stringify({...fixture,revision:'b'.repeat(40)}),[client()]),/supported immutable/);
+ assert.throws(()=>readResponseOperations(JSON.stringify({...fixture,operationsSha256:'b'.repeat(64)}),[client()]),/supported immutable/);
+ assert.throws(()=>readResponseOperations(JSON.stringify({...fixture,documents:[]}),[client()]),/supported immutable/);
+ assert.throws(()=>readResponseOperations(JSON.stringify({...fixture,documents:[contract.documents[0],contract.documents[0]]}),[client()]),/duplicate/);
+ for(const invalid of [{...contract.documents[0],file:'../escape'},{...contract.documents[0],line:0},{...contract.documents[0],column:0}]){
+  assert.throws(()=>readResponseOperations(JSON.stringify({...fixture,documents:[invalid]}),[client()]),/Invalid response operation/);
+ }
+ const changed=structuredClone(fixture);changed.documents[0].source='query { changed }';
+ assert.throws(()=>readResponseOperations(JSON.stringify(changed),[client()]),/checksum/);
+ changed.documents[0].sha256=sha256(changed.documents[0].source);
+ assert.throws(()=>verifyResponseOperations(readResponseOperations(JSON.stringify(changed),[client()]),contract),/differs from pinned/);
+ for(const invalid of ['mutation { write }','subscription { value }','fragment Value on Query {value}','query One {value} query Two {value}']){
+  const mutation=structuredClone(fixture);mutation.documents[0].source=invalid;mutation.documents[0].sha256=sha256(invalid);
+  assert.throws(()=>readResponseOperations(JSON.stringify(mutation),[client()]),/exactly one read query/);
+ }
+ for(const changedDocument of [{...contract.documents[0],id:'missing'},{...contract.documents[0],file:'another.ts'},{...contract.documents[0],line:99},{...contract.documents[0],column:99}]){
+  assert.throws(()=>verifyResponseOperations({...fixture,documents:[changedDocument]},contract),/differs from pinned/);
+ }
+});

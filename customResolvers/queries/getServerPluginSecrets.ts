@@ -27,8 +27,8 @@ const getResolver = (input: Input) => {
       return secrets.map(secret => ({
         key: secret.key,
         status: secret.lastValidatedAt 
-          ? (secret.isValid ? 'VALID' : 'INVALID')
-          : 'SET_UNTESTED',
+          ? (secret.isValid ? 'VALID' as const : 'INVALID' as const)
+          : 'SET_UNTESTED' as const,
         lastValidatedAt: secret.lastValidatedAt,
         validationError: secret.validationError
       }))

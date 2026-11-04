@@ -59,6 +59,7 @@ const buildContext = (username = "alice") =>
 const publicCollection = {
   id: "collection-1",
   name: "Builds I love",
+  description: null,
   visibility: "PUBLIC",
   CreatedBy: { username: "alice" },
 };
@@ -82,11 +83,11 @@ const buildResolver = ({
     permissions: [] as unknown[],
     createDiscussions: [] as unknown[],
   };
-  const create =
+  const create: NonNullable<Parameters<typeof shareCollectionAsDiscussion>[0]["createDiscussions"]> =
     createDiscussions ??
     (async (...args: unknown[]) => {
       calls.createDiscussions.push(args);
-      return [{ id: "discussion-1", title: "Shared builds" }];
+      return [{ id: "discussion-1", title: "Shared builds", body: null, Author: null, DiscussionChannels: [], createdAt: "2026-01-01T00:00:00Z", updatedAt: null, Tags: [] }];
     });
 
   const resolver = shareCollectionAsDiscussion({
@@ -137,7 +138,7 @@ test("shareCollectionAsDiscussion creates a discussion linked to a public owned 
     {} as never
   );
 
-  assert.deepEqual(result, { id: "discussion-1", title: "Shared builds" });
+  assert.deepEqual(result, { id: "discussion-1", title: "Shared builds", body: null, Author: null, DiscussionChannels: [], createdAt: "2026-01-01T00:00:00Z", updatedAt: null, Tags: [] });
   assert.equal(calls.permissions.length, 1);
   assert.deepEqual((calls.permissions[0] as any).channelConnections, [
     "sims4_builds",

@@ -1,3 +1,4 @@
+import { idsFromScalarFilter, type IdFilter } from "../../utils/scalarFilter.js";
 import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
@@ -6,9 +7,9 @@ import { createContentChannelPermissionRepository } from "../../services/persist
 
 type CanEditDiscussionsArgs = {
   where?: {
-    id?: string;
-    id_IN?: string[];
-  };
+    id?: IdFilter;
+    id_IN?: string[] | null;
+  } | null;
   discussionId?: string;
 };
 
@@ -23,9 +24,7 @@ export const canEditDiscussionsHandler = async (
       discussionIds.push(args.discussionId);
     }
 
-    if (args.where?.id) {
-      discussionIds.push(args.where.id);
-    }
+    discussionIds.push(...idsFromScalarFilter(args.where?.id));
 
     if (args.where?.id_IN?.length) {
       discussionIds.push(...args.where.id_IN);
@@ -63,6 +62,6 @@ export const canEditDiscussionsHandler = async (
     return true;
 };
 
-export const canEditDiscussions = rule({ cache: "contextual" })(
+export const canEditDiscussions = rule({ cache: "strict" })(
   canEditDiscussionsHandler
 );

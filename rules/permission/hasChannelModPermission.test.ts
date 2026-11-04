@@ -116,3 +116,24 @@ test("checks the specific permission requested, not others", () => {
   });
   assert.equal(r.allowed, false);
 });
+
+test('raw non-Boolean moderator capabilities do not grant permissions',()=>{
+ for(const value of ['true',1,[],{},'false']){
+  assert.equal(evalPerm({channelData:{Moderators:[],DefaultModRole:{canReport:value}}}).allowed,false);
+ }
+});
+
+test('missing moderator identities deny that alternative before channel or suspension reads',async()=>{
+  const {hasChannelModPermission}=await import('./hasChannelModPermission.js');
+  const {ERROR_MESSAGES}=await import('../errorMessages.js');
+  for(const data of [null,{}, {ModerationProfile:null}, {ModerationProfile:{displayName:null}}, {ModerationProfile:{displayName:''}}]){
+    const context={
+      user:{username:'alice',email:null,data},req:{headers:{}},
+      permissionServerConfigRepository:{findByName:async()=>null},
+      channelPermissionRepository:{findAuthorizationSnapshot:async()=>{throw new Error('must not read channel without moderator identity');}},
+    } as unknown as import('../../types/context.js').GraphQLContext;
+    const result=await hasChannelModPermission({context,channelName:'forum',permission:ModChannelPermission.canEditComments});
+    assert.ok(result instanceof Error);
+    assert.equal(result.message,ERROR_MESSAGES.channel.notMod);
+  }
+});

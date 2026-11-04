@@ -36,3 +36,19 @@ export function allResolverFields(): string[] {
     ...resolverFields("customResolvers/mutationResolvers.ts", "Mutation"),
     ...resolverFields("customResolvers/typeResolvers.ts")].sort();
 }
+
+/** A checked map must enforce its declared type at the registration itself. */
+export function resolverContractType(file: string, variableName: string): string {
+  const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);
+  let contract: string | undefined;
+  function visit(node: ts.Node) {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === variableName) {
+      if (!node.initializer || !ts.isSatisfiesExpression(node.initializer)) throw new Error(`Unchecked composition map ${variableName}`);
+      contract = node.initializer.type.getText(source);
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(source);
+  if (!contract) throw new Error(`Missing checked map ${variableName}`);
+  return contract;
+}

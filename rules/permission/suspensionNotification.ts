@@ -6,10 +6,10 @@ type CreateSuspensionNotificationInput = {
   scopeName: string;
   scopeType: "channel" | "server";
   permission: string;
-  relatedIssueId?: string | null;
-  relatedIssueNumber?: number | null;
+  relatedIssueId?: unknown;
+  relatedIssueNumber?: unknown;
   suspendedUntil?: string | null;
-  suspendedIndefinitely?: boolean | null;
+  suspendedIndefinitely?: unknown;
   actorType: "user" | "mod";
 };
 

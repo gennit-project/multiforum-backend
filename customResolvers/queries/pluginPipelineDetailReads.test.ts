@@ -1,14 +1,23 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Driver } from "neo4j-driver";
-import type { PluginPipelineRun } from "../../ogm_types.js";
+import { PluginPipelineRunStatus, PluginPipelineRunTrigger } from "../../ogm_types.js";
+import type { InternalAttemptRow } from "../../services/persistence/pipelineDetailRepository.js";
 import createPublic from "./getPublicPluginPipelineRun.js";
 import createInternal from "./getInternalPluginPipelineRun.js";
 import type { PipelineDetailRepository } from "../../services/persistence/pipelineDetailRepository.js";
 import type { PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js";
 function fixture() {
   const calls:string[]=[];
-  const attempt={id:"attempt",pipelineId:"pipeline",targetId:"file",targetType:"DownloadableFile"} as PluginPipelineRun;
+  const attempt: InternalAttemptRow = {
+    id:"attempt", pipelineId:"pipeline", targetId:"file", targetType:"DownloadableFile",
+    eventType:"downloadableFile.created", scope:"SERVER", channelId:null,
+    status:PluginPipelineRunStatus.Succeeded, trigger:PluginPipelineRunTrigger.Event,
+    initiatedByUsername:null, retryOfPipelineRunId:null, attemptNumber:1,
+    applicability:null, policyEffectiveAt:null, policyId:null, campaignId:null,
+    queuedAt:null, startedAt:null, heartbeatAt:null, timeoutAt:null, finishedAt:null,
+    createdAt:"2026-01-01T00:00:00Z", updatedAt:"2026-01-01T00:00:00Z", configurationSnapshot:{}
+  };
   const detail:PipelineDetailRepository={
     findPublicAttempt:async(id)=>{calls.push(`attempt:${id}`);return [attempt];},
     findPublicJobs:async(id)=>{calls.push(`jobs:${id}`);return [];},
@@ -16,7 +25,7 @@ function fixture() {
     findInternalJobs:async(id)=>{calls.push(`internalJobs:${id}`);return [];},
   };
   const target:PipelineTargetRepository={
-    findDownloadVisibility:async()=>{calls.push("visibility");return [{id:"file",Discussion:{DiscussionChannels:[{archived:false}]}}];},
+    findDownloadVisibility:async()=>{calls.push("visibility");return [{id:"file",permanentlyRemoved:false,Discussion:{id:"discussion",deleted:false,DiscussionChannels:[{channelUniqueName:"cats",archived:false}]}}];},
     findDiscussionVisibility:async()=>[],findDownloadTiming:async()=>[],listServerApplicabilityConfigs:async()=>[],findChannelApplicabilityConfig:async()=>[],
   };
   return {calls,detail,target,

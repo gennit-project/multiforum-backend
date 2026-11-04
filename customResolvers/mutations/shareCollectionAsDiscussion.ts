@@ -1,3 +1,4 @@
+import type { CreatedDiscussionProjection } from "../contracts/contentProjections.js";
 import {createDiscussionCreationRepository, type DiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import { createCollectionReadRepository, type CollectionReadRepository } from "../../services/persistence/collectionReadRepository.js";
 import { GraphQLError } from "graphql";
@@ -49,7 +50,7 @@ const getResolver = (input: Input) => {
     args: Args,
     context: GraphQLContext,
     _info: GraphQLResolveInfo
-  ) => {
+  ): Promise<CreatedDiscussionProjection> => {
     const collectionId = getTrimmed(args.collectionId);
     const channelUniqueName = getTrimmed(args.serverId);
     const title = getTrimmed(args.title);

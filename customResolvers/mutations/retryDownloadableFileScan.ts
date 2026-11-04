@@ -10,18 +10,6 @@ import { createRerunPluginPipelineResolver, type RerunPluginPipelineInput } from
 
 export type RetryDownloadableFileScanInput = RerunPluginPipelineInput & { retryRepository?: PipelineRetryRepository };
 
-type FileRecord = {
-  uploadedByUsername?: string | null;
-  scanStatus?: string | null;
-  Discussion?: {
-    id?: string | null;
-    Author?: { username?: string | null } | null;
-    DiscussionChannels?: Array<{
-      channelUniqueName?: string | null;
-      archived?: boolean | null;
-    }>;
-  } | null;
-};
 
 export const createRetryDownloadableFileScanResolver = (
   input: RetryDownloadableFileScanInput,
@@ -39,7 +27,7 @@ export const createRetryDownloadableFileScanResolver = (
   ) => {
     const repository = input.retryRepository ?? createPipelineRetryRepository(context.driver);
 
-    const files = await repository.findScanTarget(downloadableFileId) as FileRecord[];
+    const files = await repository.findScanTarget(downloadableFileId);
     const file = files[0];
 
     if (!file) throw new Error("Downloadable file not found");

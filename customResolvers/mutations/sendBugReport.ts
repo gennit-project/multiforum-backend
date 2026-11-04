@@ -5,7 +5,7 @@ import { logger } from "../../logger.js";
 
 type Args = {
   contactEmail: string;
-  username?: string;
+  username?: string | null;
   text: string;
   subject: string;
 };

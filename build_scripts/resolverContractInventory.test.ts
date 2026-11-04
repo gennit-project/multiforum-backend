@@ -1,25 +1,25 @@
-import { subscriptionMutationNames } from "../customResolvers/contracts/subscriptions.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { allResolverFields, resolverFields } from "./resolverContractInventory.js";
-import { votingMutationNames } from "../customResolvers/contracts/voting.js";
+import { allResolverFields, resolverFields, resolverContractType } from "./resolverContractInventory.js";
+import { checkedRootGroups, checkedTypeFieldGroups, checkedTypeFieldNames, checkedResolverFields } from "../customResolvers/contracts/registry.js";
 
-test("every custom composition field has an explicit migration status; pilot status cannot drift", () => {
+test("every custom field has an explicit status and every selected boundary checks its actual registration", () => {
   const inventory = JSON.parse(readFileSync("docs/resolver-contract-inventory.json", "utf8")) as { formatVersion: number; fields: { field: string; status: string }[] };
   assert.equal(inventory.formatVersion, 1);
   const actual = allResolverFields();
   assert.equal(new Set(actual).size, actual.length, "duplicate composition keys are not permitted");
-  assert.deepEqual(inventory.fields.map((r) => r.field), actual, "Update the reviewed inventory when composition changes");
-  const selectedVoting = votingMutationNames.map((name) => `Mutation.${name}`).sort();
-  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "votingResolvers"), selectedVoting, "Every selected pilot must remain inside the checked composition map");
-  const selectedSubscriptions = subscriptionMutationNames.map(name => `Mutation.${name}`).sort();
-  assert.deepEqual(resolverFields("customResolvers/mutationResolvers.ts", "Mutation", "subscriptionResolvers"), selectedSubscriptions);
-  assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies SubscriptionMutationResolvers/);
-  const selected = [...selectedVoting, ...selectedSubscriptions].sort();
-  assert.deepEqual(inventory.fields.filter((r) => r.status === "selected-response").map((r) => r.field), selected);
-  assert.ok(inventory.fields.every((r) => ["deferred", "selected-response"].includes(r.status)));
-  assert.match(readFileSync("customResolvers/mutationResolvers.ts", "utf8"), /satisfies VotingMutationResolvers/);
+  assert.deepEqual(inventory.fields.map(row => row.field), actual);
+  for (const [prefix, variable, typeName, names] of checkedRootGroups) {
+    const file = `customResolvers/${prefix === "Mutation" ? "mutation" : "query"}Resolvers.ts`;
+    assert.deepEqual(resolverFields(file, prefix, variable), names.map(name => `${prefix}.${name}`).sort());
+    assert.equal(resolverContractType(file, variable), typeName);
+  }
+  for (const [, variable] of checkedTypeFieldGroups) assert.ok(resolverContractType("customResolvers/typeResolvers.ts", variable));
+  assert.deepEqual(checkedTypeFieldGroups.flatMap(([prefix, variable]) => resolverFields("customResolvers/typeResolvers.ts", prefix, variable)).sort(), [...checkedTypeFieldNames].sort());
+  assert.equal(new Set(checkedResolverFields).size, checkedResolverFields.length);
+  assert.deepEqual(inventory.fields.filter(row => row.status === "selected-response").map(row => row.field), checkedResolverFields);
+  assert.ok(inventory.fields.every(row => ["deferred", "selected-response"].includes(row.status)));
 });
 
 test("inventory matches the actual composition root, including type fields and scalars", async () => {

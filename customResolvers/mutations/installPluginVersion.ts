@@ -25,16 +25,6 @@ type Args = {
   carrySettings?: boolean
 }
 
-type InstalledVersionEdge = {
-  properties?: { settingsJson?: unknown }
-  node?: {
-    id?: string
-    version?: string
-    manifest?: unknown
-    Plugin?: { id?: string; name?: string }
-  }
-}
-
 const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
   registryUrl: registryVersion.registryUrl || null,
   releaseNotesUrl: registryVersion.releaseNotesUrl || null,
@@ -198,7 +188,7 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
 
       pluginSlug = artifacts.id
 
-      let pluginVersion = existingDbVersions[0] || null
+      let pluginVersion: Awaited<ReturnType<PluginInstallRepository["findInstallVersion"]>>[number] | Awaited<ReturnType<PluginInstallRepository["createInstallVersion"]>>["pluginVersions"][number] | null = existingDbVersions[0] || null
       // Neo4j only accepts primitive types, so stringify nested objects
       const settingsDefaultsRaw = manifest.settingsDefaults ?? manifest.settings ?? null
       const uiSchemaRaw = manifest.ui ?? null
@@ -253,7 +243,7 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
 
       const installedEdges = (
         installedVersions[0]?.InstalledVersionsConnection?.edges || []
-      ) as InstalledVersionEdge[]
+      )
       const isAlreadyInstalled = installedEdges.some(
         edge => edge.node?.id === pluginVersion.id
       )

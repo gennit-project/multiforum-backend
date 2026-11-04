@@ -1,10 +1,11 @@
+import type {PipelineNotificationAttempt} from "../../customResolvers/contracts/pipelineNotificationProjections.js";
 import type { Driver } from "neo4j-driver";
 import { createPipelineNotificationRepository, type PipelineNotificationRepository } from "../persistence/pipelineNotificationRepository.js";
 import {
   PluginPipelineRunStatus,
 } from "../../ogm_types.js";
 
-const TERMINAL = new Set<PluginPipelineRunStatus>([
+const TERMINAL = new Set<PipelineNotificationAttempt["status"]>([
   PluginPipelineRunStatus.Succeeded,
   PluginPipelineRunStatus.Failed,
   PluginPipelineRunStatus.TimedOut,
@@ -34,18 +35,7 @@ export const notifyUploaderOfPipelineResult = async ({
     return false;
   }
   const files = await persistence.findTargetFile(attempt.targetId);
-  const file = files[0] as (typeof files)[number] & {
-    uploadedByUsername?: string | null;
-    Discussion?: {
-      id?: string | null;
-      title?: string | null;
-      Author?: { username?: string | null } | null;
-      DiscussionChannels?: Array<{
-        channelUniqueName?: string | null;
-        archived?: boolean | null;
-      }>;
-    } | null;
-  };
+  const file = files[0];
   const username =
     file?.uploadedByUsername || file?.Discussion?.Author?.username;
   if (!username) return false;

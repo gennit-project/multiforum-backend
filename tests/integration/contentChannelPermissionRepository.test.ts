@@ -196,3 +196,33 @@ test("finds issue channels and preserves both comment channel references", async
     { found: false, channelUniqueName: null }
   );
 });
+
+test("actual channel source columns and normalization handle raw nullable properties", async () => {
+  const q = await import('../../services/persistence/contentChannelPermissionRepository.js');
+  await driver.executeQuery(`CREATE(c:Comment{id:'target'}),(i:Issue{id:'target',channelUniqueName:123}),
+    (d:Discussion{id:'target'}),(e:Event{id:'target'}),(ch:Channel{uniqueName:123}),
+    (dc:DiscussionChannel{id:'target',channelUniqueName:false}),
+    (dc2:DiscussionChannel{id:'valid',channelUniqueName:'valid'}),
+    (ec:EventChannel{id:'target',channelUniqueName:'valid'})
+    CREATE(ch)-[:HAS_COMMENT]->(c),(dc)-[:CONTAINS_COMMENT]->(c),(c)-[:ACTIVITY_ON_ISSUE]->(i),
+    (dc)-[:POSTED_IN_CHANNEL]->(d),(dc2)-[:POSTED_IN_CHANNEL]->(d),
+    (ec)-[:POSTED_IN_CHANNEL]->(e),(e)-[:HAS_COMMENT]->(c)`);
+  const many = {found:true,channelUniqueNames:true} satisfies Record<keyof import('../../customResolvers/contracts/contentChannelSource.js').ContentChannelsRow,true>;
+  const one = {channelUniqueName:true} satisfies Record<keyof import('../../customResolvers/contracts/contentChannelSource.js').ChannelNameRow,true>;
+  const references = {found:true,discussionChannelUniqueName:true,directChannelUniqueName:true} satisfies Record<keyof import('../../customResolvers/contracts/contentChannelSource.js').CommentChannelReferencesRow,true>;
+  for (const [query, columns] of [
+    [q.FIND_COMMENT_CHANNELS_QUERY,many], [q.FIND_DISCUSSION_CHANNELS_QUERY,many], [q.FIND_EVENT_CHANNELS_QUERY,many],
+    [q.FIND_ISSUE_CHANNEL_QUERY,one], [q.FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY,one], [q.FIND_COMMENT_CHANNEL_REFERENCES_QUERY,references],
+  ] as const) {
+    const result = await driver.executeQuery(query,{id:'target',ids:['target']});
+    assert.equal(result.records.length,1);
+    assert.deepEqual([...result.records[0].keys].sort(),Object.keys(columns).sort());
+  }
+  const repository = createContentChannelPermissionRepository(driver,'neo4j');
+  assert.deepEqual(await repository.findCommentChannels(['target']),{found:true,channelUniqueNames:['valid']});
+  assert.deepEqual(await repository.findDiscussionChannels(['target']),{found:true,channelUniqueNames:['valid']});
+  assert.deepEqual(await repository.findEventChannels(['target']),{found:true,channelUniqueNames:['valid']});
+  assert.deepEqual(await repository.findIssueChannel('target'),{found:true,channelUniqueName:null});
+  assert.deepEqual(await repository.findDiscussionChannelReference('target'),{found:true,channelUniqueName:null});
+  assert.deepEqual(await repository.findCommentChannelReferences('target'),{found:true,discussionChannelUniqueName:null,directChannelUniqueName:null});
+});

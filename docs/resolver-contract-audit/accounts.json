@@ -1,0 +1,945 @@
+{
+  "formatVersion": 1,
+  "family": "accounts-roles-collections-settings",
+  "fields": [
+    {
+      "field": "Mutation.acceptForumModInvite",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.acceptForumOwnerInvite",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.acceptServerAdminInvite",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.acceptServerModInvite",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.cancelInviteForumMod",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.cancelInviteForumOwner",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.cancelInviteServerAdmin",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.cancelInviteServerMod",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.inviteForumMod",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.inviteForumOwner",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.inviteServerAdmin",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.inviteServerMod",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.removeForumMod",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.removeForumOwner",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.becomeForumAdmin",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.addToCollection",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.removeFromCollection",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.reorderCollectionItem",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.shareCollectionAsDiscussion",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "Author.username",
+        "DiscussionChannels.id",
+        "DiscussionChannels.createdAt",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.archived",
+        "DiscussionChannels.Flairs.id",
+        "DiscussionChannels.Flairs.channelUniqueName",
+        "DiscussionChannels.Flairs.displayName",
+        "DiscussionChannels.Flairs.color",
+        "DiscussionChannels.Flairs.order",
+        "DiscussionChannels.Flairs.archived",
+        "DiscussionChannels.Channel.uniqueName",
+        "DiscussionChannels.Discussion.id",
+        "DiscussionChannels.UpvotedByUsers.username",
+        "createdAt",
+        "updatedAt",
+        "Tags.text"
+      ],
+      "residualPaths": [
+        "Unselected Discussion fields and outer GraphQL completion/delivery remain outside this selected contract."
+      ],
+      "evidence": [
+        "customResolvers/mutations/shareCollectionAsDiscussion.ts",
+        "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
+        "services/persistence/discussionCreationRepository.ts",
+        "tests/integration/shareCollectionResponseException.test.ts",
+        "tests/contracts/shareCollectionException.typecheck.ts",
+        "tests/integration/discussionItemTransactions.test.ts",
+        "customResolvers/contracts/accounts.ts"
+      ],
+      "reason": "The shared creation helper rejects empty input, appends each successful item or throws, and constructs a nonempty tuple after an explicit postcondition check without a cast. The actual sharing registration checks the same generated selected projection as discussion creation.",
+      "decision": "Preserve the per-item transaction, permissions, batch failure behavior and post-commit plugin ordering. Defensive nonempty postcondition is not rollback protection. An injected contract-violating empty dependency still produces the existing outer GraphQL non-null error."
+    },
+    {
+      "field": "Mutation.createScratchpadEntry",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "createdAt",
+        "text",
+        "isPublic",
+        "sourceType",
+        "sourceId",
+        "Author.username",
+        "Recipient.username"
+      ],
+      "residualPaths": [
+        "sourceChannelUniqueName",
+        "discussionId",
+        "superUpvotedByUsers.*",
+        "other author/recipient and entry fields"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/createScratchpadEntry.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
+      ],
+      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.deleteScratchpadEntry",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.updateScratchpadEntryVisibility",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "text",
+        "isPublic",
+        "sourceType",
+        "sourceId",
+        "sourceChannelUniqueName",
+        "discussionId",
+        "createdAt",
+        "Recipient.username",
+        "Author.username",
+        "Author.displayName",
+        "Author.profilePicURL"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths remain outside this boundary."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.createEmailAndUser",
+      "status": "selected-response",
+      "selectedPaths": [
+        "username"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths remain outside this boundary."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.createSignedStorageURL",
+      "status": "selected-response",
+      "selectedPaths": [
+        "url",
+        "storageBucket",
+        "storageObjectName",
+        "storageUrl",
+        "uploadedAt"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/mutations/createSignedStorageURL.ts:157",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
+      ],
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.dropDataForCypressTests",
+      "status": "selected-response",
+      "selectedPaths": [
+        "success",
+        "message"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.seedDataForCypressTests",
+      "status": "selected-response",
+      "selectedPaths": [
+        "success",
+        "message"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.sendBugReport",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [
+        "Positive mail delivery not exercised by this response suite; missing-support-config error path is exercised without sending. Boolean output is statically checked against mail service return type."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.setChannelDiscussionFlairConfig",
+      "status": "selected-response",
+      "selectedPaths": [
+        "channelUniqueName",
+        "flairs.channelUniqueName"
+      ],
+      "residualPaths": [
+        "flairRequired",
+        "flairs.id",
+        "flairs.displayName",
+        "flairs.color",
+        "flairs.order",
+        "flairs.archived"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "services/discussionFlairStore.ts"
+      ],
+      "reason": "Only matched channel identity selected. Persisted flags/string values are unknown; existing Number conversion does not establish finite GraphQL Int. No eager decoding introduced.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.setChannelIcon",
+      "status": "selected-response",
+      "selectedPaths": [
+        "uniqueName",
+        "channelIconURL",
+        "variantUrls",
+        "icon32Url",
+        "icon48Url",
+        "icon64Url",
+        "icon96Url"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths remain outside this boundary.",
+        "JSON variantUrls internal shape is unrestricted by codegen.",
+        "Merged #445 encodes variant maps as JSON text and resolves stored maps/aliases; generated JSON remains structurally unrestricted."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts",
+        "tests/integration/imageVariantPersistence.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "Retain the selected fields and explicit JSON domain boundary. Variant persistence is fixed by #445, with successful nonempty variants and claim/repeat regressions; do not count unrestricted generated JSON as structurally checked."
+    },
+    {
+      "field": "Mutation.setMyBirthday",
+      "status": "selected-response",
+      "selectedPaths": [
+        "birthday",
+        "meetsAccountMinimumAge",
+        "mayAccessSensitiveContent"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/mutations/setMyBirthday.ts:40",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
+      ],
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
+    },
+    {
+      "field": "Mutation.setProfileImage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "username",
+        "profilePicURL",
+        "variantUrls",
+        "avatar32Url",
+        "avatar48Url",
+        "avatar64Url",
+        "avatar96Url"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths remain outside this boundary.",
+        "JSON variantUrls internal shape is unrestricted by codegen.",
+        "Merged #445 encodes variant maps as JSON text and resolves stored maps/aliases; generated JSON remains structurally unrestricted."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts",
+        "tests/integration/imageVariantPersistence.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "Retain the selected fields and explicit JSON domain boundary. Variant persistence is fixed by #445, with successful nonempty variants and claim/repeat regressions; do not count unrestricted generated JSON as structurally checked."
+    },
+    {
+      "field": "Mutation.setRankingSettings",
+      "status": "selected-response",
+      "selectedPaths": [
+        "version",
+        "discussionHot.ageOffsetMonths",
+        "discussionHot.gravity",
+        "commentHot.ageOffsetMonths",
+        "commentHot.gravity",
+        "updatedAt",
+        "updatedBy"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Mutation.permanentlyDeleteChannelBanner",
+      "status": "selected-response",
+      "selectedPaths": [
+        "uniqueName",
+        "channelBannerURL"
+      ],
+      "residualPaths": [
+        "all other Channel fields"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
+      ],
+      "reason": "Matched uniqueName and SET-null banner URL; exact branch driver projection. External failure/reference race remain errors with existing sequencing.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.permanentlyDeleteChannelIcon",
+      "status": "selected-response",
+      "selectedPaths": [
+        "uniqueName",
+        "channelIconURL"
+      ],
+      "residualPaths": [
+        "all other Channel fields"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
+      ],
+      "reason": "Matched uniqueName and SET-null icon URL; exact branch driver projection. Existing clearing of icon variants retained; those unreturned values are not selected.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.permanentlyDeleteImage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "permanentlyRemoved",
+        "permanentlyRemovedAt",
+        "permanentlyRemovedByUsername",
+        "permanentlyRemovedByModName"
+      ],
+      "residualPaths": [
+        "all other persisted Image fields",
+        "storageDeletion (not a public Image field)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteStoredUpload.ts"
+      ],
+      "reason": "Shared removal columns derive from MATCH identity and SET literal/typed parameters; actual driver values retained. Existing duplicate/missing record errors preserved.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.permanentlyDeleteProfileImage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "username",
+        "profilePicURL"
+      ],
+      "residualPaths": [
+        "all other User fields"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyDeleteUrlBackedImage.ts"
+      ],
+      "reason": "Matched username and SET-null profile URL, exact branch driver projection. External deletion precedes conditional reference clear; reference-changed race still throws.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Mutation.permanentlyRemoveImage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "isOpen"
+      ],
+      "residualPaths": [
+        "all other Issue fields (raw persisted properties and unprojected relationships)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/imageRemovalSourceContracts.test.ts",
+        "customResolvers/mutations/permanentlyRemoveImage.ts",
+        "services/persistence/imageModerationRepository.ts",
+        "services/persistence/archiveIssueWrites.ts",
+        "services/persistence/moderationIssueWrites.ts"
+      ],
+      "reason": "Final append MATCH identity is guarded and its explicit isOpen:false assignment supplies the Boolean returned from the actual driver row. Existing issue discovery validates its own selected fields but does not validate the entire final raw Issue. Real-schema tests witness id/isOpen, server scope, repeated/missing target errors, middleware denial, read failure, image-write failure after the close action, and raw malformed body completion only when requested.",
+      "decision": "Select only id/isOpen. Preserve existing notification and image-write ordering, permission behavior, raw scalar completion and nontransactional failure effects; full persisted Issue validation requires a separately authorized behavior decision."
+    },
+    {
+      "field": "Query.publicCollectionsContaining",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "name",
+        "description",
+        "visibility",
+        "collectionType",
+        "itemCount",
+        "shareCount",
+        "createdAt",
+        "updatedAt",
+        "itemOrder",
+        "CreatedBy.username",
+        "CreatedBy.displayName",
+        "CreatedBy.profilePicURL",
+        "Downloads.id",
+        "Downloads.title",
+        "Downloads.createdAt",
+        "Downloads.hasSensitiveContent",
+        "Downloads.Album.id",
+        "Downloads.Album.imageOrder",
+        "Downloads.Album.Images.id",
+        "Downloads.Album.Images.url",
+        "Downloads.Album.Images.caption",
+        "Downloads.DiscussionChannels.id",
+        "Downloads.DiscussionChannels.channelUniqueName",
+        "Downloads.DiscussionChannels.CommentsConnection.aggregate.count.nodes",
+        "Downloads.DiscussionChannels.Channel.uniqueName",
+        "Downloads.DiscussionChannels.Channel.displayName",
+        "Downloads.Tags.text",
+        "Downloads.Author.username",
+        "Downloads.Author.displayName",
+        "Downloads.Author.profilePicURL",
+        "Downloads.Author.commentKarma",
+        "Downloads.Author.discussionKarma",
+        "Downloads.Author.createdAt"
+      ],
+      "residualPaths": [
+        "Schema fields outside selectedPaths remain outside this boundary."
+      ],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Query.getAgePolicy",
+      "status": "selected-response",
+      "selectedPaths": [
+        "accountAgeGateEnabled",
+        "minimumAccountAge",
+        "sensitiveContentAgeGateEnabled",
+        "minimumSensitiveContentAge"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Query.getChannelDiscussionFlairConfig",
+      "status": "selected-response",
+      "selectedPaths": [
+        "channelUniqueName",
+        "flairs.channelUniqueName"
+      ],
+      "residualPaths": [
+        "flairRequired",
+        "flairs.id",
+        "flairs.displayName",
+        "flairs.color",
+        "flairs.order",
+        "flairs.archived"
+      ],
+      "evidence": [
+        "customResolvers/contracts/accountWriteSources.ts",
+        "tests/contracts/accountWriteSources.typecheck.ts",
+        "tests/integration/accountWriteSourceContracts.test.ts",
+        "services/discussionFlairStore.ts"
+      ],
+      "reason": "Matched channel identity safe despite malformed unselected persisted values. Real GraphQL witness confirms malformed Boolean still fails lazily when requested; archive filtering/order unchanged.",
+      "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
+    },
+    {
+      "field": "Query.getDiscussionAgeGateCheck",
+      "status": "selected-response",
+      "selectedPaths": [
+        "requiresAgeCheck",
+        "status",
+        "minimumAge"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getDiscussionAgeGateCheck.ts:31",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
+      ],
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
+    },
+    {
+      "field": "Query.getInstanceSetupStatus",
+      "status": "selected-response",
+      "selectedPaths": [
+        "auth.configured",
+        "auth.enabled",
+        "auth.requiredEnvVarsMissing",
+        "auth.setupUrl",
+        "auth.docsPath",
+        "mail.configured",
+        "mail.enabled",
+        "mail.requiredEnvVarsMissing",
+        "mail.setupUrl",
+        "mail.docsPath",
+        "maps.configured",
+        "maps.enabled",
+        "maps.requiredEnvVarsMissing",
+        "maps.setupUrl",
+        "maps.docsPath",
+        "geocoding.configured",
+        "geocoding.enabled",
+        "geocoding.requiredEnvVarsMissing",
+        "geocoding.setupUrl",
+        "geocoding.docsPath",
+        "uploads.configured",
+        "uploads.enabled",
+        "uploads.requiredEnvVarsMissing",
+        "uploads.setupUrl",
+        "uploads.docsPath",
+        "downloads.configured",
+        "downloads.enabled",
+        "downloads.requiredEnvVarsMissing",
+        "downloads.setupUrl",
+        "downloads.docsPath",
+        "events.configured",
+        "events.enabled",
+        "events.requiredEnvVarsMissing",
+        "events.setupUrl",
+        "events.docsPath",
+        "plugins.configured",
+        "plugins.enabled",
+        "plugins.requiredEnvVarsMissing",
+        "plugins.setupUrl",
+        "plugins.docsPath"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Query.getMyAgeProfile",
+      "status": "selected-response",
+      "selectedPaths": [
+        "birthday",
+        "meetsAccountMinimumAge",
+        "mayAccessSensitiveContent"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getMyAgeProfile.ts:34",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
+      ],
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
+    },
+    {
+      "field": "Query.getOwnEmail",
+      "status": "selected-response",
+      "selectedPaths": [
+        "address",
+        "username",
+        "profilePicURL",
+        "modProfileName",
+        "unreadNotificationCount"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Query.getRankingSettings",
+      "status": "selected-response",
+      "selectedPaths": [
+        "version",
+        "discussionHot.ageOffsetMonths",
+        "discussionHot.gravity",
+        "commentHot.ageOffsetMonths",
+        "commentHot.gravity",
+        "updatedAt",
+        "updatedBy"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/accounts.ts",
+        "tests/contracts/accounts.typecheck.ts",
+        "tests/integration/accountResponseContracts.test.ts"
+      ],
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
+    },
+    {
+      "field": "Query.safetyCheck",
+      "status": "selected-response",
+      "selectedPaths": [
+        "environment.isTestEnvironment",
+        "environment.currentDatabase"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/safetyCheck.ts:12",
+        "customResolvers/contracts/accountSafety.ts",
+        "tests/contracts/accountSafety.typecheck.ts",
+        "tests/integration/accountSafetyResponseContracts.test.ts"
+      ],
+      "reason": "Actual generated signature checks the constructed result and exact toString projection where applicable. Real-schema tests preserve nullable response completion, permission denial, original null-input failures and write ordering; signing uses a test seam with external I/O denied.",
+      "decision": null
+    }
+  ]
+}

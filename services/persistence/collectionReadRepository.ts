@@ -1,3 +1,4 @@
+import type { ProfileCollectionProjection, PublicCollectionProjection, CollectionShareProjection, CollectionShareChannelProjection } from "../../customResolvers/contracts/accountProjections.js";
 import type { Driver } from "neo4j-driver";
 import type { CollectionSort, CollectionWhere } from "../../src/generated/graphql.js";
 
@@ -8,18 +9,12 @@ export type CollectionReadOptions = {
 };
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
-export type CollectionShareSnapshot = {
-  id: string;
-  name: string;
-  description?: string | null;
-  visibility: string;
-  CreatedBy?: { username?: string | null } | null;
-};
+export type CollectionShareSnapshot = CollectionShareProjection;
 export interface CollectionReadRepository {
-  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions): Promise<Record<string, unknown>[]>;
-  findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<Record<string, unknown>[]>;
+  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions, viewerUsername?: string): Promise<ProfileCollectionProjection[]>;
+  findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<PublicCollectionProjection[]>;
   findOwnedShareTarget(id: string, username: string): Promise<CollectionShareSnapshot[]>;
-  findShareChannel(uniqueName: string): Promise<Array<{ uniqueName: string }>>;
+  findShareChannel(uniqueName: string): Promise<CollectionShareChannelProjection[]>;
 }
 
 const PROFILE_COLLECTIONS = `query ProfileCollections($where: CollectionWhere, $sort: [CollectionSort!], $limit: Int, $offset: Int) {
@@ -146,27 +141,27 @@ const SHARE_CHANNEL = `query CollectionShareChannel($where: ChannelWhere) {
 
 export function createCollectionReadRepository(driver: Driver): CollectionReadRepository {
   return {
-    async findProfileCollections(where, options) {
-      const result = await executeGeneratedOperation<{collections: Record<string, unknown>[]}>(driver,
-        PROFILE_COLLECTIONS, { where, ...options });
+    async findProfileCollections(where, options, viewerUsername) {
+      const result = await executeGeneratedOperation<{collections: ProfileCollectionProjection[]}>(driver,
+        PROFILE_COLLECTIONS, { where, ...options }, undefined, viewerUsername ? { sub: viewerUsername } : undefined);
       return result.collections;
     },
     async findPublicContaining(where, canViewSensitiveContent) {
       // The caller has already resolved age-gate eligibility; convey it as the
       // jwt so the generated schema's @authorization sensitive-content filters
       // agree (otherwise an eligible viewer's sensitive rows are excluded).
-      const result = await executeGeneratedOperation<{collections: Record<string, unknown>[]}>(driver,
+      const result = await executeGeneratedOperation<{collections: PublicCollectionProjection[]}>(driver,
         PUBLIC_COLLECTIONS[canViewSensitiveContent ? 1 : 0], { where }, undefined,
         { mayAccessSensitiveContent: canViewSensitiveContent });
       return result.collections;
     },
     async findOwnedShareTarget(id, username) {
       const result = await executeGeneratedOperation<{collections: CollectionShareSnapshot[]}>(driver,
-        OWNED_SHARE_TARGET, { where: { id: { eq: id }, CreatedBy: { username: { eq: username } } } });
+        OWNED_SHARE_TARGET, { where: { id: { eq: id }, CreatedBy: { username: { eq: username } } } }, undefined, { sub: username });
       return result.collections;
     },
     async findShareChannel(uniqueName) {
-      const result = await executeGeneratedOperation<{channels: Array<{uniqueName: string}>}>(driver,
+      const result = await executeGeneratedOperation<{channels: CollectionShareChannelProjection[]}>(driver,
         SHARE_CHANNEL, { where: { uniqueName: { eq: uniqueName } } });
       return result.channels;
     },

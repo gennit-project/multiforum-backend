@@ -1,3 +1,4 @@
+import type { DownloadReviewRow } from "../contracts/downloadReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 
@@ -12,7 +13,7 @@ const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
     const limit = Math.min(Math.max(args.limit || 50, 1), 100);
     const session = driver.session();
     try {
-      const result = await session.run(
+      const result = await session.run<DownloadReviewRow>(
         `
         MATCH (discussion:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
         WHERE file.scanStatus IN ['SUSPICIOUS', 'INFECTED', 'FAILED']

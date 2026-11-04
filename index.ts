@@ -1,3 +1,4 @@
+import userChildIdentityMiddleware from "./middleware/userChildIdentityMiddleware.js";
 import { createSchemaFeatures } from "./services/schemaFeatures.js";
 import { registerGeneratedSchema } from "./services/persistence/generatedSchemaOperations.js";
 import { createSubscriptionEngine } from "./services/subscriptionEngine.js";
@@ -225,6 +226,7 @@ async function initializeServer() {
       // AGE_GATE_WRITE_VALIDATOR=enforce.
       ageGateWriteValidatorMiddleware as AppMiddleware,
       sensitiveContentPolicyMiddleware as AppMiddleware,
+      userChildIdentityMiddleware as AppMiddleware,
       permissions as AppMiddleware,
       intermediateNodeDeleteMiddleware as AppMiddleware,
       // Runs after the permission checks. Kept out of the custom resolvers so

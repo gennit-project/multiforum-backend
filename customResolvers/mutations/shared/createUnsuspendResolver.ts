@@ -24,7 +24,7 @@ type CreateUnsuspendResolverOptions = {
 
 type Args = {
   issueId: string
-  explanation: string
+  explanation?: string | null
 }
 
 export function createUnsuspendResolver ({

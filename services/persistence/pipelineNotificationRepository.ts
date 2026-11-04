@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { PluginPipelineRun, DownloadableFile } from "../../ogm_types.js";
+import type {PipelineNotificationAttempt,PipelineNotificationFile} from "../../customResolvers/contracts/pipelineNotificationProjections.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { executeManagedWrite } from "../neo4jTransactions.js";
 import { NOTIFICATION_USER_SELECTION } from "./notificationWriter.js";
@@ -15,19 +15,19 @@ export const PIPELINE_NOTIFICATION_FILE_SELECTION = `{
       }
     }`;
 export interface PipelineNotificationRepository {
-  findAttempt(pipelineId: string): Promise<PluginPipelineRun[]>;
-  findTargetFile(id: string): Promise<DownloadableFile[]>;
+  findAttempt(pipelineId: string): Promise<PipelineNotificationAttempt[]>;
+  findTargetFile(id: string): Promise<PipelineNotificationFile[]>;
   deliver(input: {pipelineId: string; timestamp: string; targetId: string; username: string; text: string; link: string | null}): Promise<boolean>;
 }
 export function createPipelineNotificationRepository(driver: Driver): PipelineNotificationRepository {
   return {
     async findAttempt(pipelineId) {
-      const r = await executeGeneratedOperation<{pluginPipelineRuns: PluginPipelineRun[]}>(driver,
+      const r = await executeGeneratedOperation<{pluginPipelineRuns: PipelineNotificationAttempt[]}>(driver,
         `query PipelineNotificationAttempt($where: PluginPipelineRunWhere) { pluginPipelineRuns(where: $where) ${PIPELINE_NOTIFICATION_ATTEMPT_SELECTION} }`, {where:{pipelineId:{eq:pipelineId}}});
       return r.pluginPipelineRuns;
     },
     async findTargetFile(id) {
-      const r = await executeGeneratedOperation<{downloadableFiles: DownloadableFile[]}>(driver,
+      const r = await executeGeneratedOperation<{downloadableFiles: PipelineNotificationFile[]}>(driver,
         `query PipelineNotificationFile($where: DownloadableFileWhere) { downloadableFiles(where: $where) ${PIPELINE_NOTIFICATION_FILE_SELECTION} }`, {where:{id:{eq:id}}});
       return r.downloadableFiles;
     },

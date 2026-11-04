@@ -22,17 +22,6 @@ type Input = {
   pluginConfigurationReadRepository?: PluginConfigurationReadRepository
 }
 
-type InstalledVersionEdge = {
-  properties?: {
-    enabled?: boolean | null
-    settingsJson?: unknown
-  } | null
-  node?: {
-    version?: string | null
-    Plugin?: { name?: string | null } | null
-  } | null
-}
-
 const mapCondition = (
   condition: PipelineCondition | null | undefined
 ): PipelineStep['condition'] | undefined => {
@@ -162,7 +151,7 @@ const getResolver = (input: Input) => {
 
     const edges = (
       config.InstalledVersionsConnection?.edges ?? []
-    ) as InstalledVersionEdge[]
+    )
     const secrets = await repository.listReconciliationSecretStatuses()
     const desired = mapPluginConfigurationDesiredStateInput(args.manifest)
     const channels = repository.listReconciliationChannels

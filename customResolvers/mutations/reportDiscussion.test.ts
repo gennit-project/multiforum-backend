@@ -276,7 +276,7 @@ const validArgs={discussionId:'discussion',channelUniqueName:'cats',selectedForu
 test('discussion channel lookup runs before issue creation and its failure aborts',async()=>{
  process.env.PLAYWRIGHT_MOCK_AUTH='true';
  const order:string[]=[];const ctx=createContext();
- const repository={findExisting:async()=>[],findDiscussion:async()=>[],findChannel:async()=>{order.push('channel');throw Error('channel failure');},createIssue:async()=>{order.push('create');return{issues:[{id:'i',issueNumber:1}]};},appendReport:async()=>{order.push('append');return{issues:[{id:'i',issueNumber:1}]};}};
+ const repository={findExisting:async()=>[],findDiscussion:async()=>[],findChannel:async()=>{order.push('channel');throw Error('channel failure');},createIssue:async()=>{order.push('create');return{issues:[{id:'i',issueNumber:1,isOpen:true,flaggedServerRuleViolation:false}]};},appendReport:async()=>{order.push('append');return{issues:[{id:'i',issueNumber:1,isOpen:true,flaggedServerRuleViolation:false}]};}};
  const call=reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo);
  await assert.rejects(call,/channel failure/);assert.deepEqual(order,['channel']);
 });
@@ -284,7 +284,7 @@ test('discussion detailed create failure differs from generic append failure',as
  process.env.PLAYWRIGHT_MOCK_AUTH='true';
  for(const phase of ['create','append']){
  const ctx=createContext();
- const repository={findExisting:async()=>phase==='append'?[{id:'i',issueNumber:1}]:[],findDiscussion:async()=>[],findChannel:async()=>[],createIssue:async()=>{throw Error('specific creation');},appendReport:async()=>{throw Error('specific append');}};
+ const repository={findExisting:async()=>phase==='append'?[{id:'i',issueNumber:1,isOpen:true,flaggedServerRuleViolation:false}]:[],findDiscussion:async()=>[],findChannel:async()=>[],createIssue:async()=>{throw Error('specific creation');},appendReport:async()=>{throw Error('specific append');}};
  await assert.rejects(reportDiscussionResolver({driver:createDriver(),discussionReportRepository:repository})(null,validArgs,ctx,null as unknown as GraphQLResolveInfo),new RegExp(phase==='create'?'Error creating issue: specific creation':'^Error updating issue$'));
  }
 });

@@ -1,3 +1,4 @@
+import { RepeatEndType, RepeatPatternType } from "../../src/generated/graphql.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import getResolver from "./createEventSeriesWithChannelConnections.js";
@@ -191,10 +192,10 @@ test("createEventSeriesWithChannelConnections handles repeat pattern", async () 
   const inputWithPattern = {
     ...baseSeriesInput,
     repeatPattern: {
-      type: "WEEKLY" as const,
+      type: RepeatPatternType.Weekly,
       count: 1,
       daysOfWeek: [3],
-      endType: "AFTER_COUNT" as const,
+      endType: RepeatEndType.AfterCount,
       endCount: 4,
     },
   };

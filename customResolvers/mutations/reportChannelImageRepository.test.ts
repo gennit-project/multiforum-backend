@@ -9,8 +9,8 @@ function fixture(options:{existing?:boolean;fail?:string;missing?:string}={}) {
  const repository:ChannelImageReportRepository={
   async findReportedChannel(name){enter('channel');values.name=name;return options.missing==='channel'?[]:[{uniqueName:'forum',displayName:'Forum Name',channelIconURL:options.missing==='icon'?null:'icon.png',channelBannerURL:options.missing==='banner'?null:'banner.png'}];},
   async findPriorChannelImageReport(where){enter('prior');values.prior=where;return options.existing?[{id:'issue',issueNumber:2,flaggedServerRuleViolation:false}]:[];},
-  async createChannelImageReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7}]};},
-  async appendChannelImageReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,relatedChannelUniqueName:'forum'}]};},
+  async createChannelImageReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7,isOpen:true,flaggedServerRuleViolation:input.flaggedServerRuleViolation}]};},
+  async appendChannelImageReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,isOpen:params.isOpen,flaggedServerRuleViolation:params.flaggedServerRuleViolation,relatedChannelUniqueName:'forum'}]};},
  };
  const driver={session:()=>{enter('session');return{executeWrite:async(fn:any)=>{enter('counter');return fn({run:async()=>({records:[{get:()=>7}]})});},close:async()=>enter('close')};}};
  return {calls,values,resolver:reportChannelImage({driver:driver as never,channelImageReportRepository:repository})};

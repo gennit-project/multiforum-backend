@@ -1,3 +1,4 @@
+import type { CommentSectionChannel, RootViewerComment } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
@@ -25,10 +26,10 @@ const ANSWER_LIMIT = 5
 type Args = {
   channelUniqueName: string
   discussionId: string
-  modName: string
-  offset: string
-  limit: string
-  sort: string
+  modName?: string | null
+  offset?: string | number | null
+  limit?: string | number | null
+  sort?: string | null
 }
 
 const getResolver = (input: Input) => {
@@ -69,7 +70,7 @@ const getResolver = (input: Input) => {
       // comment query selects the page before expanding votes, versions, or
       // replies, so the amount of hydration work is bounded by `limit`.
       return await session.executeWrite(async (transaction) => {
-        const channelResult = await transaction.run(
+        const channelResult = await transaction.run<{DiscussionChannel: CommentSectionChannel}>(
           getCommentSectionChannelQuery,
           {
             discussionId,
@@ -84,7 +85,7 @@ const getResolver = (input: Input) => {
           return { DiscussionChannel: null, Comments: [] }
         }
 
-        const queryResult = await transaction.run(getCommentsQuery, {
+        const queryResult = await transaction.run<{comment: RootViewerComment}>(getCommentsQuery, {
           discussionChannelId: discussionChannel.id,
           modName,
           offset,

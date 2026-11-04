@@ -1,3 +1,4 @@
+import {graphql} from 'graphql';
 import assert from 'node:assert/strict';
 import {before,beforeEach,after,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -31,3 +32,31 @@ test('missing reply parent fails before bot creation in either implementation',a
 // projection), so a broken default-field resolver never reaches it: the reply
 // still commits with its identity/relationships.
 test('owned bot comment write is insulated from a broken default projection resolver',async()=>{const field=(schema.getType('Comment') as GraphQLObjectType).getFields().botMentions;const old=field.resolve;field.resolve=()=>{throw new Error('bot comment projection failure');};try{for(const commentRepository of [createBotCommentRepository(driver)]){await resetDatabase(driver);await seed();events=[];const result=await createBotComment({driver,commentRepository,channelUniqueName:'cats',botName:'helper',text:'Bot text'});assert.ok(result.id);const rows=await state();assert.equal(rows.length,1);assert.equal(rows[0].author,'bot-cats-helper');assert.equal(rows[0].channel,'cats');assert.deepEqual(events,[]);}}finally{field.resolve=old;}});
+
+test('owned bot source completes requested fields without inventing relationship projections',async()=>{
+ await seed();
+ const source=(await createBotCommentRepository(driver).createReply({text:'source',id:'ignored',isSticky:false,Channel:{connect:{where:{node:{uniqueName:'cats'}}}}})).comments[0];
+ assert.notEqual(source.id,'ignored');assert.equal(Object.prototype.hasOwnProperty.call(source,'ageGateTouchedAt'),false);
+ assert.equal(Object.prototype.hasOwnProperty.call(source,'CommentAuthor'),false);
+ const field=schema.getQueryType()!.getFields().comments, original=field.resolve;
+ field.resolve=()=>[source];
+ try{
+  const result=await graphql({schema,source:'{comments{id text isSticky createdAt CommentAuthor{__typename}}}',contextValue:{driver,req:{headers:{}}}});
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const row=JSON.parse(JSON.stringify(result.data)).comments[0];
+  assert.equal(row.id,source.id);assert.equal(row.text,'source');assert.equal(row.isSticky,false);
+  assert.equal(typeof row.createdAt,'string');assert.equal(row.CommentAuthor,null);
+ }finally{field.resolve=original;}
+});
+test('owned bot source preserves lazy errors for malformed caller scalar values',async()=>{
+ const source=(await createBotCommentRepository(driver).createReply({text:['malformed']})).comments[0];
+ const field=schema.getQueryType()!.getFields().comments, original=field.resolve;
+ field.resolve=()=>[source];
+ try{
+  const identity=await graphql({schema,source:'{comments{id}}',contextValue:{driver,req:{headers:{}}}});
+  assert.equal(identity.errors,undefined);assert.equal(JSON.parse(JSON.stringify(identity.data)).comments[0].id,source.id);
+  const selected=await graphql({schema,source:'{comments{id text}}',contextValue:{driver,req:{headers:{}}}});
+  assert.equal(selected.errors?.length,1);assert.deepEqual(selected.errors?.[0].path,['comments',0,'text']);
+  assert.deepEqual(JSON.parse(JSON.stringify(selected.data)),{comments:[{id:source.id,text:null}]});
+ }finally{field.resolve=original;}
+});

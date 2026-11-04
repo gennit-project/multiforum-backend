@@ -1,13 +1,13 @@
 import type { Driver } from "neo4j-driver";
-import type { Comment, DiscussionChannel } from "../../ogm_types.js";
+import type {CommentEmojiState,DiscussionChannelEmojiState,ValidationDiscussionChannels,ValidationExistingFile} from "../../customResolvers/contracts/contentValidationProjections.js";
+export type {EmojiChannelPreference,EmojiDiscussionContext,CommentEmojiState,DiscussionChannelEmojiState} from "../../customResolvers/contracts/contentValidationProjections.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
-type DiscussionChannels = { DiscussionChannels?: Array<{channelUniqueName?: string | null}> | null };
 export interface ContentValidationRepository {
-  findDiscussionChannels(where: unknown): Promise<DiscussionChannels[]>;
-  findExistingDownloadableFiles(where: unknown): Promise<Array<{id: string; fileName: string}>>;
-  findDiscussionChannelEmojiState(id: string): Promise<DiscussionChannel[]>;
-  findCommentEmojiState(id: string): Promise<Comment[]>;
+  findDiscussionChannels(where: unknown): Promise<ValidationDiscussionChannels[]>;
+  findExistingDownloadableFiles(where: unknown): Promise<ValidationExistingFile[]>;
+  findDiscussionChannelEmojiState(id: string): Promise<DiscussionChannelEmojiState[]>;
+  findCommentEmojiState(id: string): Promise<CommentEmojiState[]>;
 }
 
 const DISCUSSION_CHANNELS = `query ValidationDiscussionChannels($where: DiscussionWhere) {
@@ -49,16 +49,16 @@ const COMMENT_EMOJI = `query ValidationCommentEmoji($where: CommentWhere) { comm
 export function createContentValidationRepository(driver: Driver): ContentValidationRepository {
  return {
   async findDiscussionChannels(where) {
-   return (await executeGeneratedOperation<{discussions: DiscussionChannels[]}>(driver,DISCUSSION_CHANNELS,{where})).discussions;
+   return (await executeGeneratedOperation<{discussions: ValidationDiscussionChannels[]}>(driver,DISCUSSION_CHANNELS,{where})).discussions;
   },
   async findExistingDownloadableFiles(where) {
-   return (await executeGeneratedOperation<{downloadableFiles: Array<{id:string;fileName:string}>}>(driver,EXISTING_FILES,{where})).downloadableFiles;
+   return (await executeGeneratedOperation<{downloadableFiles: ValidationExistingFile[]}>(driver,EXISTING_FILES,{where})).downloadableFiles;
   },
   async findDiscussionChannelEmojiState(id) {
-   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannel[]}>(driver,DISCUSSION_EMOJI,{where:{id:{eq:id}}})).discussionChannels;
+   return (await executeGeneratedOperation<{discussionChannels: DiscussionChannelEmojiState[]}>(driver,DISCUSSION_EMOJI,{where:{id:{eq:id}}})).discussionChannels;
   },
   async findCommentEmojiState(id) {
-   return (await executeGeneratedOperation<{comments: Comment[]}>(driver,COMMENT_EMOJI,{where:{id:{eq:id}}})).comments;
+   return (await executeGeneratedOperation<{comments: CommentEmojiState[]}>(driver,COMMENT_EMOJI,{where:{id:{eq:id}}})).comments;
   },
  };
 }

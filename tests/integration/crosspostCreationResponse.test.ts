@@ -1,3 +1,5 @@
+import { staticResponsePaths, declaredResponsePaths } from "../helpers/staticResponsePaths.js";
+import { crosspostIdentitySelection, createdDiscussionSelection } from "../../customResolvers/contracts/contentProjections.js";
 import assert from 'node:assert/strict';
 import { before, beforeEach, after, test } from 'node:test';
 import { Neo4jGraphQL } from '@neo4j/graphql';
@@ -16,6 +18,7 @@ import { startNeo4j, stopNeo4j, resetDatabase } from './neo4jHarness.js';
 let driver: Driver, schema: GraphQLSchema;
 let fault: 'empty' | 'duplicate' | 'wrong-id' | 'projection' | undefined;
 let failOn = 1, reads = 0, outerFailure = false;
+let projectionCalls: {operation:string;paths:string[]}[]=[];
 let dispatched: Array<{id:string;links:number}> = [];
 before(async()=>{
   driver=installAgeGateReconcile(await startNeo4j(),getAgeGateStatements(typeDefs));
@@ -30,9 +33,16 @@ before(async()=>{
     },
   });
   const raw=await new Neo4jGraphQL({driver,typeDefs,resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();
+  const createField=raw.getMutationType()!.getFields().createDiscussions;
+  const create=createField.resolve!;
+  createField.resolve=(source,args,context,info)=>{
+    if(info.operation.name?.value==='CreateCrosspost')projectionCalls.push({operation:'CreateCrosspost',paths:staticResponsePaths(info)});
+    return create(source,args,context,info);
+  };
   const field=raw.getQueryType()!.getFields().discussions;
   const read=field.resolve!;
   field.resolve=async(source,args,context,info)=>{
+    if(info.operation.name?.value==='CrosspostResult')projectionCalls.push({operation:'CrosspostResult',paths:staticResponsePaths(info)});
     const result=await read(source,args,context,info);
     if(info.operation.name?.value==='CrosspostResult' && ++reads===failOn){
       assert.ok(Array.isArray(result));
@@ -54,7 +64,7 @@ before(async()=>{
 },{timeout:240_000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
-  fault=undefined;failOn=1;reads=0;outerFailure=false;dispatched=[];
+  fault=undefined;failOn=1;reads=0;outerFailure=false;dispatched=[];projectionCalls=[];
   await resetDatabase(driver);
   await driver.executeQuery(`CREATE(a:User {username:'alice',createdAt:datetime()}),(b:User {username:'bob',createdAt:datetime()}),
     (c:Channel {uniqueName:'forum',imageUploadsEnabled:true}),(c2:Channel {uniqueName:'second',imageUploadsEnabled:true}),
@@ -137,4 +147,13 @@ test('outer GraphQL completion still happens after commit',async()=>{
   assert.match(JSON.stringify((await execute([item()])).errors),/Fixture outer completion failure/);
   assert.deepEqual(await titles(),['Crosspost']);
   assert.equal(dispatched.length,1);
+});
+
+test('actual ID-only CreateCrosspost and shared CrosspostResult documents match precise projections',async()=>{
+  const result=await execute([item()]);
+  assert.deepEqual(projectionCalls,[
+    {operation:'CreateCrosspost',paths:declaredResponsePaths({discussions:crosspostIdentitySelection})},
+    {operation:'CrosspostResult',paths:declaredResponsePaths(createdDiscussionSelection)},
+  ]);
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
 });

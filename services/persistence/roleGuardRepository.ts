@@ -1,17 +1,17 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
-export type RoleOwnerSnapshot = { Owner?: { uniqueName?: string | null } | null };
-export type RoleCapabilitySnapshot = Record<string, boolean | null>;
+import type { RoleChannelAdmins, RoleOwnerSnapshot, ServerRoleCapabilities, ModServerRoleCapabilities } from "../../customResolvers/contracts/roleGuardProjections.js";
+export type { RoleOwnerSnapshot } from "../../customResolvers/contracts/roleGuardProjections.js";
 export type RoleFilter = Record<string, unknown> | null | undefined;
 
 /** Fixed authorization snapshots; filters retain the generated GraphQL input language. */
 export interface RoleGuardRepository {
-  findChannelAdmins(uniqueName: string): Promise<Array<{ Admins: Array<{ username: string }> }>>;
+  findChannelAdmins(uniqueName: string): Promise<RoleChannelAdmins[]>;
   findChannelRoleOwners(where: RoleFilter): Promise<RoleOwnerSnapshot[]>;
   findModChannelRoleOwners(where: RoleFilter): Promise<RoleOwnerSnapshot[]>;
-  findServerRoleCapabilities(where: RoleFilter): Promise<RoleCapabilitySnapshot[]>;
-  findModServerRoleCapabilities(where: RoleFilter): Promise<RoleCapabilitySnapshot[]>;
+  findServerRoleCapabilities(where: RoleFilter): Promise<ServerRoleCapabilities[]>;
+  findModServerRoleCapabilities(where: RoleFilter): Promise<ModServerRoleCapabilities[]>;
 }
 
 const CHANNEL_ADMINS = `query RoleAuthoringChannelAdmins($where: ChannelWhere) {
@@ -44,7 +44,7 @@ const MOD_SERVER_ROLE_CAPABILITIES = `query ConnectedModServerRoleCapabilities($
 export function createRoleGuardRepository(driver: Driver): RoleGuardRepository {
   return {
     async findChannelAdmins(uniqueName) {
-      const data = await executeGeneratedOperation<{ channels: Array<{ Admins: Array<{ username: string }> }> }>(
+      const data = await executeGeneratedOperation<{ channels: RoleChannelAdmins[] }>(
         driver, CHANNEL_ADMINS, { where: { uniqueName: { eq: uniqueName } } }
       );
       return data.channels;
@@ -62,13 +62,13 @@ export function createRoleGuardRepository(driver: Driver): RoleGuardRepository {
       return data.modChannelRoles;
     },
     async findServerRoleCapabilities(where) {
-      const data = await executeGeneratedOperation<{ serverRoles: RoleCapabilitySnapshot[] }>(
+      const data = await executeGeneratedOperation<{ serverRoles: ServerRoleCapabilities[] }>(
         driver, SERVER_ROLE_CAPABILITIES, { where }
       );
       return data.serverRoles;
     },
     async findModServerRoleCapabilities(where) {
-      const data = await executeGeneratedOperation<{ modServerRoles: RoleCapabilitySnapshot[] }>(
+      const data = await executeGeneratedOperation<{ modServerRoles: ModServerRoleCapabilities[] }>(
         driver, MOD_SERVER_ROLE_CAPABILITIES, { where }
       );
       return data.modServerRoles;

@@ -51,7 +51,7 @@ export type PipelineApplicability =
   | 'ALL_FILES_IMMEDIATE'
 
 // Plugin edge data from GraphQL connection
-export type PluginEdgeData = {
+export type PluginEdgeSnapshot = {
   properties: {
     enabled: boolean
     settingsJson: unknown
@@ -60,7 +60,7 @@ export type PluginEdgeData = {
     id: string
     version: string
     repoUrl: string
-    tarballGsUri: string
+    tarballGsUri?: string | null
     entryPath: string
     manifest: unknown
     settingsDefaults: unknown
@@ -68,10 +68,17 @@ export type PluginEdgeData = {
     Plugin: {
       id: string
       name: string
-      displayName: string
-      description: string
+      displayName?: string | null
+      description?: string | null
       metadata: unknown
-    }
+    } | null | undefined
+  }
+}
+
+/** The existing enabled/name filter proves this relation before execution. */
+export type PluginEdgeData = PluginEdgeSnapshot & {
+  node: PluginEdgeSnapshot["node"] & {
+    Plugin: NonNullable<PluginEdgeSnapshot["node"]["Plugin"]>
   }
 }
 

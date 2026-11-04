@@ -1,6 +1,6 @@
-import { delegateToSchema } from "@graphql-tools/delegate";
+import { delegateQueryField } from "../../services/persistence/delegateQueryField.js";
 import type { Driver } from "neo4j-driver";
-import { GraphQLError, OperationTypeNode, type GraphQLResolveInfo } from "graphql";
+import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { getGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 
@@ -78,7 +78,7 @@ const getResolver = (deps: Input) => {
     const session = driver.session();
     try {
       await session.executeWrite(async (tx) => {
-        const actionResult = await tx.run(CREATE_ACTION, params);
+        const actionResult = await tx.run<{actionId:string}>(CREATE_ACTION, params);
         const actionId = actionResult.records[0]?.get("actionId");
         if (params.commentText && actionId) {
           await tx.run(CREATE_MODERATED_COMMENT, { ...params, actionId });
@@ -93,10 +93,9 @@ const getResolver = (deps: Input) => {
     // The write remains above this resolver so multiple payload aliases cannot
     // create duplicate actions or comments.
     return {
-      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo) =>
-        delegateToSchema({
+      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo): unknown =>
+        delegateQueryField({
           schema: getGeneratedSchema(driver),
-          operation: OperationTypeNode.QUERY,
           fieldName: "issues",
           args: { where: { id: { eq: issueId } } },
           // Preserve the existing post-moderation sensitive-content read policy.

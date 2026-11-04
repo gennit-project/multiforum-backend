@@ -44,12 +44,12 @@ for(const scenario of [
    t.assert.snapshot(await createEventSeriesDeletionRepository(driver).findSnapshot(scenario.eventId));
    let observed:any;let calls=0;
    if('projection' in scenario)field.resolve=(source,args,context,info)=>{if(++calls===2)throw Error('fixture second delete projection failure');return original?original(source,args,context,info):source.nodesDeleted;};
-   const repository={...repo,findSnapshot:async(id:string)=>{const rows=await repo.findSnapshot(id);
+   const repository={...repo,findSnapshot:async(id:string)=>{let rows=await repo.findSnapshot(id);
     // A partial failure must exercise an identical input sequence in both
     // runs. Fresh graph allocation does not promise the same native order.
     // Read parity above remains exact; real deletes and projection failure
     // below still run through the installed generated schema.
-    if('projection' in scenario){const occurrences=rows[0].EventSeries!.Occurrences;rows[0].EventSeries!.Occurrences=['e2','e0','e1'].map(id=>{const occurrence=occurrences.find(o=>o.id===id);assert.ok(occurrence);return occurrence;});}
+    if('projection' in scenario){const series=rows[0].EventSeries;assert.ok(series);const occurrences=series.Occurrences;rows=[{...rows[0],EventSeries:{...series,Occurrences:['e2','e0','e1'].map(id=>{const occurrence=occurrences.find(o=>o.id===id);assert.ok(occurrence);return occurrence;})}},...rows.slice(1)];}
     observed=rows[0];return rows;}};
    const resolver=getResolver({driver,eventSeriesDeletionRepository:repository});let response:unknown,error:string|null=null;
    try{response=await resolver(null,scenario as never,{} as never,null as never);}catch(failure){error=(failure as Error).message;}

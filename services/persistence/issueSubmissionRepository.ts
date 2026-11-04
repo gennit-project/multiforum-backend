@@ -1,3 +1,4 @@
+import type { SubmittedIssueProjection } from "../../customResolvers/contracts/content.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { SubmitIssueInput } from "../../src/generated/graphql.js";
@@ -48,7 +49,7 @@ export async function createSubmittedIssue(driver: Driver, input: SubmitIssueInp
         await tx.run(`MATCH (i:Issue {id:$id}), (t:${edge.targetLabel} {${edge.targetKey}:$value}) MERGE ${relationship}`,
           {id:issue.id,value:edge.value});
       }
-      const read = await executeGeneratedOperation<{issues:Array<{id:string;issueNumber:number}>}>(driver,
+      const read = await executeGeneratedOperation<{issues:SubmittedIssueProjection[]}>(driver,
         `query SubmittedIssue($id:ID!){issues(where:{id:{eq:$id}}){id issueNumber title body isOpen channelUniqueName authorName createdAt updatedAt relatedCommentId relatedDiscussionId relatedEventId relatedWikiPageId relatedWikiRevisionId relatedImageId relatedAlbumId relatedUsername relatedModProfileName relatedChannelUniqueName flaggedServerRuleViolation Channel{uniqueName} Author{... on User{username} ... on ModerationProfile{displayName}}}}`,{id:issue.id},tx,{mayAccessSensitiveContent:sensitive});
       return read.issues[0];
     });

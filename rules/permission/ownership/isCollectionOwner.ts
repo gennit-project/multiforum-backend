@@ -50,7 +50,7 @@ export const collectCollectionIds = (
   return [...new Set(collectionIds)];
 };
 
-export const isCollectionOwner = rule({ cache: "contextual" })(
+export const isCollectionOwner = rule({ cache: "strict" })(
   async (parent: { id?: string } | undefined, args: IsCollectionOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     ctx.user = await setUserDataOnContext({
       context: ctx,

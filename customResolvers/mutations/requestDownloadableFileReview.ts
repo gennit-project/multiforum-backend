@@ -11,12 +11,6 @@ import {
 
 type Input = { driver: Driver; downloadReviewRepository?: DownloadReviewRepository };
 
-type FileRecord = {
-  scanStatus?: string | null;
-  uploadedByUsername?: string | null;
-  Discussion?: { Author?: { username?: string | null } | null } | null;
-};
-
 type ReviewContext = GraphQLContext & AuthContextForUserLookup;
 
 const requestDownloadableFileReview = ({ driver, downloadReviewRepository }: Input) => {
@@ -32,7 +26,7 @@ const requestDownloadableFileReview = ({ driver, downloadReviewRepository }: Inp
     const username = context.user?.username;
     if (!username) throw new Error("You must be logged in to request review");
 
-    const files = await repository.findReviewAuthority(args.downloadableFileId) as FileRecord[];
+    const files = await repository.findReviewAuthority(args.downloadableFileId);
     const file = files[0];
     if (!file) throw new Error("Downloadable file not found");
 

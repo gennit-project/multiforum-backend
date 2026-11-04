@@ -1,5 +1,6 @@
+import type { FINDORPHANCANDIDATESProjection, CREATEORPHANPLUGINProjection, CREATEREGISTRYPLUGINProjection, FINDPLUGINBYNAMEProjection, FINDPLUGINDEFAULTBYNAMEProjection, FINDPLUGINSFORVERSIONProjection, FINDREGISTRYCONFIGSProjection, FINDREGISTRYRESULTProjection, FINDREGISTRYVERSIONProjection } from "../../customResolvers/contracts/pluginInstallationProjections.js";
 import type { Driver } from "neo4j-driver";
-import type { Plugin, PluginVersion, ServerConfig, PluginCreateInput, PluginUpdateInput, PluginVersionCreateInput, PluginVersionUpdateInput } from "../../ogm_types.js";
+import type { PluginCreateInput, PluginUpdateInput, PluginVersionCreateInput, PluginVersionUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const FINDREGISTRYCONFIGS_SELECTION = `{
           pluginRegistries
@@ -158,44 +159,44 @@ export const FINDREGISTRYRESULT_SELECTION = `{
               }
             }`;
 export interface PluginRegistryRepository {
-  findRegistryConfigs(): Promise<ServerConfig[]>;
-  findOrphanCandidates(): Promise<PluginVersion[]>;
-  findPluginsForVersion(versionId: string): Promise<Plugin[]>;
-  findPluginDefaultByName(name: string): Promise<Plugin[]>;
-  createOrphanPlugin(input: PluginCreateInput[]): Promise<{plugins:Plugin[]}>;
+  findRegistryConfigs(): Promise<FINDREGISTRYCONFIGSProjection[]>;
+  findOrphanCandidates(): Promise<FINDORPHANCANDIDATESProjection[]>;
+  findPluginsForVersion(versionId: string): Promise<FINDPLUGINSFORVERSIONProjection[]>;
+  findPluginDefaultByName(name: string): Promise<FINDPLUGINDEFAULTBYNAMEProjection[]>;
+  createOrphanPlugin(input: PluginCreateInput[]): Promise<{plugins:CREATEORPHANPLUGINProjection[]}>;
   connectOrphanVersion(id: string, pluginId: string): Promise<void>;
-  findPluginByName(name: string): Promise<Plugin[]>;
-  createRegistryPlugin(input: PluginCreateInput[]): Promise<{plugins:Plugin[]}>;
+  findPluginByName(name: string): Promise<FINDPLUGINBYNAMEProjection[]>;
+  createRegistryPlugin(input: PluginCreateInput[]): Promise<{plugins:CREATEREGISTRYPLUGINProjection[]}>;
   updateRegistryPlugin(id: string, update: PluginUpdateInput): Promise<void>;
-  findRegistryVersion(version: string, repoUrl: string): Promise<PluginVersion[]>;
+  findRegistryVersion(version: string, repoUrl: string): Promise<FINDREGISTRYVERSIONProjection[]>;
   createRegistryVersion(input: PluginVersionCreateInput[]): Promise<void>;
   updateRegistryVersion(id: string, update: PluginVersionUpdateInput, pluginId: string): Promise<void>;
-  findRegistryResult(id: string): Promise<Plugin[]>;
+  findRegistryResult(id: string): Promise<FINDREGISTRYRESULTProjection[]>;
 }
 export function createPluginRegistryRepository(driver: Driver): PluginRegistryRepository {
   return {
     async findRegistryConfigs() {
-      const result = await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,
+      const result = await executeGeneratedOperation<{serverConfigs:FINDREGISTRYCONFIGSProjection[]}>(driver,
         `query Registry_findRegistryConfigs { serverConfigs ${FINDREGISTRYCONFIGS_SELECTION} }`, {});
       return result.serverConfigs;
     },
     async findOrphanCandidates() {
-      const result = await executeGeneratedOperation<{pluginVersions:PluginVersion[]}>(driver,
+      const result = await executeGeneratedOperation<{pluginVersions:FINDORPHANCANDIDATESProjection[]}>(driver,
         `query Registry_findOrphanCandidates { pluginVersions ${FINDORPHANCANDIDATES_SELECTION} }`, {});
       return result.pluginVersions;
     },
     async findPluginsForVersion(versionId) {
-      const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
+      const result = await executeGeneratedOperation<{plugins:FINDPLUGINSFORVERSIONProjection[]}>(driver,
         `query Registry_findPluginsForVersion($where: PluginWhere) { plugins(where: $where) ${FINDPLUGINSFORVERSION_SELECTION} }`, {where:{Versions:{some:{id:{eq:versionId}}}}});
       return result.plugins;
     },
     async findPluginDefaultByName(name) {
-      const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
+      const result = await executeGeneratedOperation<{plugins:FINDPLUGINDEFAULTBYNAMEProjection[]}>(driver,
         `query Registry_findPluginDefaultByName($where: PluginWhere) { plugins(where: $where) ${FINDPLUGINDEFAULTBYNAME_SELECTION} }`, {where:{name:{eq:name}}});
       return result.plugins;
     },
     async createOrphanPlugin(input) {
-      const result = await executeGeneratedOperation<{createPlugins:{plugins:Plugin[]}}>(driver,
+      const result = await executeGeneratedOperation<{createPlugins:{plugins:CREATEORPHANPLUGINProjection[]}}>(driver,
         `mutation Registry_createOrphanPlugin($input: [PluginCreateInput!]!) { createPlugins(input: $input) ${CREATEORPHANPLUGIN_SELECTION} }`, {input});
       return result.createPlugins;
     },
@@ -209,12 +210,12 @@ export function createPluginRegistryRepository(driver: Driver): PluginRegistryRe
         {id, pluginId});
     },
     async findPluginByName(name) {
-      const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
+      const result = await executeGeneratedOperation<{plugins:FINDPLUGINBYNAMEProjection[]}>(driver,
         `query Registry_findPluginByName($where: PluginWhere) { plugins(where: $where) ${FINDPLUGINBYNAME_SELECTION} }`, {where:{name:{eq:name}}});
       return result.plugins;
     },
     async createRegistryPlugin(input) {
-      const result = await executeGeneratedOperation<{createPlugins:{plugins:Plugin[]}}>(driver,
+      const result = await executeGeneratedOperation<{createPlugins:{plugins:CREATEREGISTRYPLUGINProjection[]}}>(driver,
         `mutation Registry_createRegistryPlugin($input: [PluginCreateInput!]!) { createPlugins(input: $input) ${CREATEREGISTRYPLUGIN_SELECTION} }`, {input});
       return result.createPlugins;
     },
@@ -223,7 +224,7 @@ export function createPluginRegistryRepository(driver: Driver): PluginRegistryRe
         `mutation Registry_updateRegistryPlugin($where: PluginWhere, $update: PluginUpdateInput) { updatePlugins(where: $where, update: $update) ${UPDATEREGISTRYPLUGIN_SELECTION} }`, {where:{id:{eq:id}},update});
     },
     async findRegistryVersion(version, repoUrl) {
-      const result = await executeGeneratedOperation<{pluginVersions:PluginVersion[]}>(driver,
+      const result = await executeGeneratedOperation<{pluginVersions:FINDREGISTRYVERSIONProjection[]}>(driver,
         `query Registry_findRegistryVersion($where: PluginVersionWhere) { pluginVersions(where: $where) ${FINDREGISTRYVERSION_SELECTION} }`, {where:{AND:[{version:{eq:version}},{repoUrl:{eq:repoUrl}}]}});
       return result.pluginVersions;
     },
@@ -254,7 +255,7 @@ export function createPluginRegistryRepository(driver: Driver): PluginRegistryRe
         {id, pluginId});
     },
     async findRegistryResult(id) {
-      const result = await executeGeneratedOperation<{plugins:Plugin[]}>(driver,
+      const result = await executeGeneratedOperation<{plugins:FINDREGISTRYRESULTProjection[]}>(driver,
         `query Registry_findRegistryResult($where: PluginWhere) { plugins(where: $where) ${FINDREGISTRYRESULT_SELECTION} }`, {where:{id:{eq:id}}});
       return result.plugins;
     },

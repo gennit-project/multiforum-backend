@@ -386,6 +386,7 @@ test("canCreateComment resolves Event feedback through the compound target", asy
     counters
   );
 
+  ctx.user.data.ModerationProfile = { displayName: "AliceMod" };
   await ranToDecision(run(canCreateComment, { input }, ctx));
   assert.deepEqual(counters.eventChannels, [{
     eventId: "e-1",
@@ -416,6 +417,7 @@ test("canCreateComment reuses the DiscussionChannel lookup for feedback", async 
     counters
   );
 
+  ctx.user.data.ModerationProfile = { displayName: "AliceMod" };
   await ranToDecision(run(canCreateComment, { input }, ctx));
   assert.deepEqual(counters.discussionChannels, ["dc-1"]);
   assert.deepEqual(counters.permissionChannels, ["cats"]);

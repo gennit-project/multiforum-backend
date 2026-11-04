@@ -5,43 +5,10 @@ import { createEventSeriesCreationRepository, type EventSeriesCreationRepository
 import { logger } from "../../logger.js";
 import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 
-type DateOccurrence = {
-  startTime: string;
-  endTime: string;
-};
-
-type RepeatPatternInput = {
-  type: 'MANUAL' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  count?: number;
-  daysOfWeek?: number[];
-  endType: 'NEVER' | 'AFTER_COUNT' | 'ON_DATE';
-  endCount?: number;
-  endDate?: string;
-};
-
-type EventSeriesCreateInput = {
-  title: string;
-  description?: string;
-  locationName?: string;
-  address?: string;
-  virtualEventUrl?: string;
-  placeId?: string;
-  isInPrivateResidence?: boolean;
-  cost?: string;
-  free?: boolean;
-  latitude?: number;
-  longitude?: number;
-  isHostedByOP?: boolean;
-  isAllDay?: boolean;
-  coverImageURL?: string;
-  tags?: string[];
-  channelConnections: string[];
-  occurrences: DateOccurrence[];
-  repeatPattern?: RepeatPatternInput;
-};
+import type { CreateEventSeriesInput } from "../../src/generated/graphql.js";
 
 type Args = {
-  input: EventSeriesCreateInput;
+  input: CreateEventSeriesInput;
 };
 
 type Input = {

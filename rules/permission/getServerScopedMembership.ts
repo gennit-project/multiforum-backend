@@ -7,9 +7,9 @@ type EvaluateServerScopedMembershipInput = {
   modProfileName?: string | null;
   email?: string | null;
   cypressAdminTestEmail?: string | null;
-  serverAdminUsernames?: string[];
-  serverSuperAdminUsernames?: string[];
-  serverModeratorDisplayNames?: string[];
+  serverAdminUsernames?: unknown[];
+  serverSuperAdminUsernames?: unknown[];
+  serverModeratorDisplayNames?: unknown[];
 };
 
 export type ServerScopedMembership = {
@@ -40,11 +40,11 @@ export function evaluateServerScopedMembership(
     isServerAdmin:
       isCypressAdmin ||
       (Boolean(username) &&
-        (serverAdminUsernames.includes(username as string) ||
-          serverSuperAdminUsernames.includes(username as string))),
+        (serverAdminUsernames.includes(username) ||
+          serverSuperAdminUsernames.includes(username))),
     isServerModerator:
       Boolean(modProfileName) &&
-      serverModeratorDisplayNames.includes(modProfileName as string),
+      serverModeratorDisplayNames.includes(modProfileName),
   };
 }
 
@@ -65,15 +65,15 @@ export const getServerScopedMembership = async (
     email: context.user?.email,
     cypressAdminTestEmail: process.env.CYPRESS_ADMIN_TEST_EMAIL,
     serverAdminUsernames:
-      serverConfig?.Admins?.map((admin: { username: string }) => admin.username) ||
+      serverConfig?.Admins?.map((admin) => admin.username) ||
       [],
     serverSuperAdminUsernames:
       serverConfig?.SuperAdmins?.map(
-        (admin: { username: string }) => admin.username
+        (admin) => admin.username
       ) || [],
     serverModeratorDisplayNames:
       serverConfig?.Moderators?.map(
-        (moderator: { displayName: string }) => moderator.displayName
+        (moderator) => moderator.displayName
       ) || [],
   });
 };

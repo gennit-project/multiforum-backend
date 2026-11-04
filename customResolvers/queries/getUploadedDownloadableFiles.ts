@@ -1,3 +1,4 @@
+import type { UploadedGroupRow } from "../contracts/downloadReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
@@ -15,17 +16,6 @@ type Args = {
   username: string;
 };
 
-type UploadedDownloadableFileRecord = {
-  discussion: {
-    id: string;
-    title: string;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    channelUniqueNames: string[];
-  };
-  files: Array<Record<string, unknown>>;
-};
-
 const getUploadedDownloadableFiles = ({
   driver,
   agePolicyRepository,
@@ -34,7 +24,7 @@ const getUploadedDownloadableFiles = ({
     parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<UploadedDownloadableFileRecord[]> => {
+  ) => {
     if (!context.user?.username) {
       context.user = await setUserDataOnContext({ context });
     }
@@ -56,7 +46,7 @@ const getUploadedDownloadableFiles = ({
     const session = driver.session({ defaultAccessMode: "READ" });
 
     try {
-      const result = await session.run(
+      const result = await session.run<UploadedGroupRow>(
         `
         MATCH (discussion:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(file:DownloadableFile)
         WHERE file.uploadedByUsername = $username

@@ -1,30 +1,8 @@
 import neo4j, { type Driver } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
-export type UserOwnershipRecord = {
-  id: string;
-  username: string | null;
-};
-
-export type ActorIdentity = {
-  username: string | null;
-  displayName: string | null;
-};
-
-export type ActorAuthorizationRecord = {
-  found: boolean;
-  actor: ActorIdentity | null;
-};
-
-export type UserAuthorizationRecord = {
-  found: boolean;
-  username: string | null;
-};
-
-export type IssueLockRecord = {
-  found: boolean;
-  locked: boolean | null;
-};
+import type { UserOwnershipRecord, ActorIdentity, ActorAuthorizationRecord, UserAuthorizationRecord, IssueLockRecord } from "../../customResolvers/contracts/contentOwnershipSource.js";
+export type { UserOwnershipRecord, ActorIdentity, ActorAuthorizationRecord, UserAuthorizationRecord, IssueLockRecord } from "../../customResolvers/contracts/contentOwnershipSource.js";
 
 export interface ContentAuthorizationRepository {
   findAlbumOwners(ids: string[]): Promise<UserOwnershipRecord[]>;
@@ -112,7 +90,7 @@ export function createContentAuthorizationRepository(
 
     const session = openAuthorizationSession();
     try {
-      const result = await session.run(query, { ids });
+      const result = await session.run<UserOwnershipRecord>(query, { ids });
       return result.records.map((record) => ({
         id: record.get("id"),
         username: record.get("username") ?? null,
@@ -128,7 +106,7 @@ export function createContentAuthorizationRepository(
   ): Promise<UserAuthorizationRecord> => {
     const session = openAuthorizationSession();
     try {
-      const result = await session.run(query, { id });
+      const result = await session.run<{ username: unknown }>(query, { id });
       const record = result.records[0];
       return {
         found: Boolean(record),
@@ -145,7 +123,7 @@ export function createContentAuthorizationRepository(
   ): Promise<ActorAuthorizationRecord> => {
     const session = openAuthorizationSession();
     try {
-      const result = await session.run(query, { id });
+      const result = await session.run<ActorIdentity>(query, { id });
       const record = result.records[0];
       if (!record) return { found: false, actor: null };
 
@@ -193,7 +171,7 @@ export function createContentAuthorizationRepository(
     async findIssueLock(id) {
       const session = openAuthorizationSession();
       try {
-        const result = await session.run(FIND_ISSUE_LOCK_QUERY, { id });
+        const result = await session.run<{ locked: unknown }>(FIND_ISSUE_LOCK_QUERY, { id });
         const record = result.records[0];
         return {
           found: Boolean(record),

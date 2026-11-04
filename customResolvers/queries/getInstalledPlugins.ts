@@ -29,14 +29,10 @@ const getResolver = (input: Input) => {
       // without an ORDER BY. Select the config that actually carries installed
       // versions rather than assuming it is the first row returned, otherwise a
       // second, install-less config sorting first would mask the real one.
-      const typedConfigs = serverConfigs as Array<{
-        pluginRegistries?: string[]
-        InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] }
-      }>
       const serverConfig =
-        typedConfigs.find(
+        serverConfigs.find(
           (config) => config.InstalledVersionsConnection?.edges?.length
-        ) ?? typedConfigs[0]
+        ) ?? serverConfigs[0]
       const edges = serverConfig.InstalledVersionsConnection?.edges || []
 
       if (!edges.length) {
@@ -64,8 +60,8 @@ const getResolver = (input: Input) => {
       const installedPlugins = edges.map((edgeData: InstalledPluginEdge) => {
         const edgeProps = edgeData.properties || {}
         const node = edgeData.node || {}
-        const pluginData = node.Plugin || {}
-        const pluginName = pluginData.name
+        const pluginData = node.Plugin
+        const pluginName = pluginData?.name
         const installedVersion = node.version
 
         // Get version info from registry
@@ -77,16 +73,16 @@ const getResolver = (input: Input) => {
 
         return {
           plugin: {
-            id: pluginData.id,
-            name: pluginData.name,
-            displayName: pluginData.displayName,
-            description: pluginData.description,
-            authorName: pluginData.authorName,
-            authorUrl: pluginData.authorUrl,
-            homepage: pluginData.homepage,
-            license: pluginData.license,
-            tags: pluginData.tags || [],
-            metadata: pluginData.metadata || null
+            id: pluginData?.id,
+            name: pluginData?.name,
+            displayName: pluginData?.displayName,
+            description: pluginData?.description,
+            authorName: pluginData?.authorName,
+            authorUrl: pluginData?.authorUrl,
+            homepage: pluginData?.homepage,
+            license: pluginData?.license,
+            tags: pluginData?.tags || [],
+            metadata: pluginData?.metadata || null
           },
           version: installedVersion,
           scope: 'SERVER',

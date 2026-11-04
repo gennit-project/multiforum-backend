@@ -1,5 +1,7 @@
 import type { Driver } from "neo4j-driver";
-import type { PluginRunWhere, UpdatePluginRunsMutationResponse, UpdatePluginPipelineRunsMutationResponse } from "../../ogm_types.js";
+import type { PluginRunWhere } from "../../ogm_types.js";
+
+import type {PipelineAttemptPayload,PipelineJobPayload} from "../../customResolvers/contracts/pipelineLifecycleProjections.js";
 
 // FAMILY-3 / v7 (campaign #284). Generated updateX mutations need each scalar
 // wrapped as { set: value }. Callers are mixed: the executionLease wrappers add
@@ -77,18 +79,18 @@ export const PIPELINE_RUN_DEFAULT_SELECTION = `{
 type LeaseIdentity = {pluginRunId:string;leaseId:string};
 export type PluginEventClaimLimits = {concurrency:number;rateLimitPerMinute:number;windowStart:string};
 export interface PipelineLeaseRepository {
- cancelOlderPendingJobs(where:PluginRunWhere,update:Record<string,unknown>):Promise<UpdatePluginRunsMutationResponse>;
+ cancelOlderPendingJobs(where:PluginRunWhere,update:Record<string,unknown>):Promise<PipelineJobPayload>;
  claimPendingJob(id:string,update:Record<string,unknown>):Promise<{pluginRuns:Array<{id:string}>}>;
  claimPendingEventJob?(id:string,update:Record<string,unknown>,limits:PluginEventClaimLimits):Promise<{pluginRuns:Array<{id:string}>}>;
  renewOwnedJob(lease:LeaseIdentity,update:Record<string,unknown>):Promise<{pluginRuns:Array<{id:string}>}>;
- extendPendingJobs(pipelineId:string,timeoutAt:string):Promise<UpdatePluginRunsMutationResponse>;
- extendAttempt(pipelineId:string,update:Record<string,unknown>):Promise<UpdatePluginPipelineRunsMutationResponse>;
- rescheduleOwnedJob(lease:LeaseIdentity,update:Record<string,unknown>):Promise<UpdatePluginRunsMutationResponse>;
- completeOwnedJob(lease:LeaseIdentity,update:Record<string,unknown>):Promise<UpdatePluginRunsMutationResponse>;
+ extendPendingJobs(pipelineId:string,timeoutAt:string):Promise<PipelineJobPayload>;
+ extendAttempt(pipelineId:string,update:Record<string,unknown>):Promise<PipelineAttemptPayload>;
+ rescheduleOwnedJob(lease:LeaseIdentity,update:Record<string,unknown>):Promise<PipelineJobPayload>;
+ completeOwnedJob(lease:LeaseIdentity,update:Record<string,unknown>):Promise<PipelineJobPayload>;
 }
 export function createPipelineLeaseRepository(driver:Driver):PipelineLeaseRepository {
  return {
-  async cancelOlderPendingJobs(where,update){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation CancelOlderPendingPipelineJobs($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where,update:setify(update)});return r.updatePluginRuns;},
+  async cancelOlderPendingJobs(where,update){const r=await executeGeneratedOperation<{updatePluginRuns:PipelineJobPayload}>(driver,`mutation CancelOlderPendingPipelineJobs($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where,update:setify(update)});return r.updatePluginRuns;},
   async claimPendingJob(id,update){const r=await executeGeneratedOperation<{updatePluginRuns:{pluginRuns:Array<{id:string}>}}>(driver,`mutation ClaimPendingPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns{id}}}`,{where:{id:{eq:id},status:{eq:'PENDING'}},update:setify(update)});return r.updatePluginRuns;},
   async claimPendingEventJob(id,update,limits){
    const session=driver.session();
@@ -137,9 +139,9 @@ export function createPipelineLeaseRepository(driver:Driver):PipelineLeaseReposi
    }
   },
   async renewOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:{pluginRuns:Array<{id:string}>}}>(driver,`mutation RenewOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns{id}}}`,{where:{id:{eq:lease.pluginRunId},leaseId:{eq:lease.leaseId},status:{eq:'RUNNING'}},update:setify(update)});return r.updatePluginRuns;},
-  async extendPendingJobs(pipelineId,timeoutAt){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation ExtendPendingPipelineJobs($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId:{eq:pipelineId},status:{eq:'PENDING'}},update:setify({timeoutAt})});return r.updatePluginRuns;},
-  async extendAttempt(pipelineId,update){const r=await executeGeneratedOperation<{updatePluginPipelineRuns:UpdatePluginPipelineRunsMutationResponse}>(driver,`mutation ExtendPipelineAttempt($where:PluginPipelineRunWhere,$update:PluginPipelineRunUpdateInput){updatePluginPipelineRuns(where:$where,update:$update){pluginPipelineRuns${PIPELINE_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId:{eq:pipelineId}},update:setify(update)});return r.updatePluginPipelineRuns;},
-  async rescheduleOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation RescheduleOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:lease.pluginRunId},leaseId:{eq:lease.leaseId},status:{eq:'RUNNING'}},update:setify(update)});return r.updatePluginRuns;},
-  async completeOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:UpdatePluginRunsMutationResponse}>(driver,`mutation CompleteOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:lease.pluginRunId},leaseId:{eq:lease.leaseId},status:{eq:'RUNNING'}},update:setify(update)});return r.updatePluginRuns;},
+  async extendPendingJobs(pipelineId,timeoutAt){const r=await executeGeneratedOperation<{updatePluginRuns:PipelineJobPayload}>(driver,`mutation ExtendPendingPipelineJobs($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId:{eq:pipelineId},status:{eq:'PENDING'}},update:setify({timeoutAt})});return r.updatePluginRuns;},
+  async extendAttempt(pipelineId,update){const r=await executeGeneratedOperation<{updatePluginPipelineRuns:PipelineAttemptPayload}>(driver,`mutation ExtendPipelineAttempt($where:PluginPipelineRunWhere,$update:PluginPipelineRunUpdateInput){updatePluginPipelineRuns(where:$where,update:$update){pluginPipelineRuns${PIPELINE_RUN_DEFAULT_SELECTION}}}`,{where:{pipelineId:{eq:pipelineId}},update:setify(update)});return r.updatePluginPipelineRuns;},
+  async rescheduleOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:PipelineJobPayload}>(driver,`mutation RescheduleOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:lease.pluginRunId},leaseId:{eq:lease.leaseId},status:{eq:'RUNNING'}},update:setify(update)});return r.updatePluginRuns;},
+  async completeOwnedJob(lease,update){const r=await executeGeneratedOperation<{updatePluginRuns:PipelineJobPayload}>(driver,`mutation CompleteOwnedPipelineJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:lease.pluginRunId},leaseId:{eq:lease.leaseId},status:{eq:'RUNNING'}},update:setify(update)});return r.updatePluginRuns;},
  };
 }

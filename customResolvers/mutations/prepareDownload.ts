@@ -1,4 +1,5 @@
-import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
+import type { PreparedDownload } from "../contracts/downloadActions.js";
+import { createDownloadReviewRepository, type DownloadReviewRepository, type DownloadPreparationRow } from "../../services/persistence/downloadReviewRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
@@ -17,26 +18,14 @@ type Input = {
   driver: Driver;
 };
 
-type FileRecord = {
-  id: string;
-  url?: string | null;
-  storageBucket?: string | null;
-  storageObjectName?: string | null;
-  scanStatus?: string | null;
-  scanReason?: string | null;
-  scanCheckedAt?: string | null;
-  uploadedByUsername?: string | null;
-  Discussion?: {
-    id?: string | null;
-    Author?: { username?: string | null } | null;
-    hasSensitiveContent?: boolean | null;
-  } | null;
-};
+type FileRecord = DownloadPreparationRow;
 
 type PluginRunRecord = {
   pluginId?: string | null;
   status?: string | null;
 };
+
+type ScanTrigger = (...args: Parameters<typeof triggerPluginRunsForDownloadableFile>) => Promise<PluginRunRecord[]>;
 
 type TrackDownloadResolver = ReturnType<typeof trackDownload>;
 
@@ -78,14 +67,14 @@ const selectFile = async (
   repository: DownloadReviewRepository,
   downloadableFileId: string
 ): Promise<FileRecord | null> => {
-  const files = await repository.findPreparation(downloadableFileId) as FileRecord[];
+  const files = await repository.findPreparation(downloadableFileId);
 
   return files[0] || null;
 };
 
 export const createPrepareDownloadResolver = (
   input: Input,
-  triggerRuns: typeof triggerPluginRunsForDownloadableFile =
+  triggerRuns: ScanTrigger =
     triggerPluginRunsForDownloadableFile,
   checkServerModPermission: typeof hasServerModPermission =
     hasServerModPermission,
@@ -109,7 +98,7 @@ export const createPrepareDownloadResolver = (
       driver: input.driver,
       downloadableFileId,
       event: "downloadableFile.downloaded",
-    }) as Promise<PluginRunRecord[]>).finally(() => {
+    })).finally(() => {
       inFlightScans.delete(downloadableFileId);
     });
     inFlightScans.set(downloadableFileId, scan);
@@ -123,7 +112,7 @@ export const createPrepareDownloadResolver = (
       discussionId,
     }: { downloadableFileId: string; discussionId: string },
     context: GraphQLContext
-  ) => {
+  ): Promise<PreparedDownload> => {
     if (!downloadableFileId) throw new Error("Downloadable file ID is required");
     if (!discussionId) throw new Error("Discussion ID is required");
 

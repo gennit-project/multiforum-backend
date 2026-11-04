@@ -32,7 +32,7 @@ import { buildBotInvocationContext, collectParentCommentThread } from './buildBo
 import { createPromptDebugLogger } from './promptDebug.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput, Channel, Comment, ServerConfig } from '../../ogm_types.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 import {
   createContentRevisionHash,
@@ -95,18 +95,9 @@ export const triggerPluginRunsForComment = async (
     throw new Error(`Comment "${commentId}" not found`)
   }
 
-  // The selectionSet flattens CommentAuthor's inline-fragment fields (User and
-  // ModerationProfile branches) into a single accessor shape that the generated
-  // `Comment.CommentAuthor` union (User | ModerationProfile) doesn't model, so
-  // intersect the generated type with the queried author shape.
-  const comment = comments[0] as Comment & {
-    CommentAuthor?: {
-      username?: string | null
-      displayName?: string | null
-      isBot?: boolean | null
-      User?: { username?: string | null } | null
-    } | null
-  }
+  // The repository describes the actual User/ModerationProfile branches;
+  // omitted branch-only properties remain absent instead of becoming a full Comment.
+  const comment = comments[0]
   const discussionChannel = comment.DiscussionChannel || null
   const isDiscussionComment =
     Boolean(discussionChannel?.id) &&
@@ -130,7 +121,7 @@ export const triggerPluginRunsForComment = async (
 
   // Fetch channel pipelines and enabled plugins (for channel-level settings)
   const channels = await repository.findChannel(channelUniqueName)
-  const channel: Channel = channels[0]
+  const channel = channels[0]
   const parentComments = await collectParentCommentThread({
     repository: createBotThreadRepository(driver),
     parentCommentId: comment.ParentComment?.id || null
@@ -167,7 +158,7 @@ export const triggerPluginRunsForComment = async (
 
   const serverConfigs = await repository.findConfiguration()
 
-  const serverConfig: ServerConfig | undefined = serverConfigs[0]
+  const serverConfig = serverConfigs[0]
   if (!serverConfig) {
     return []
   }

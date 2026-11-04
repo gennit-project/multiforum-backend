@@ -1,4 +1,6 @@
-import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
+import {createDiscussionModerationRepository, type DiscussionModerationRepository} from "../../services/persistence/discussionModerationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
   DiscussionChannelUpdateInput,
@@ -14,7 +16,7 @@ import { notifyIssueSubscribers } from "../../services/issueNotifications.js";
 type Args = {
   discussionId: string;
   channelUniqueName: string;
-  explanation: string;
+  explanation?: string | null;
 };
 
 type Input = {
@@ -57,7 +59,7 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: DiscussionModerationIssue | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
 
     // Check if an issue already exists for the discussion ID and channel unique name.
     const issueData = await repository.findRelatedIssues({

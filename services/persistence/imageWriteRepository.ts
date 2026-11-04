@@ -1,5 +1,6 @@
-import neo4j, { type Driver } from "neo4j-driver";
-import type { Image, UserUpdateInput, ChannelUpdateInput } from "../../ogm_types.js";
+import type { ProfileImageProjection, ChannelIconProjection } from "../../customResolvers/contracts/accountProjections.js";
+import neo4j, { type Driver, type Node, type EagerResult } from "neo4j-driver";
+import type { UserUpdateInput, ChannelUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export const CREATED_IMAGE_SELECTION = `
   {
@@ -64,12 +65,25 @@ export type ImageCreateLike = Record<string, unknown> & {
   Albums?: { connect?: Array<{ where?: { node?: { id?: string | null } | null } | null } | null> | null } | null;
 };
 
+// CREATE overrides caller scalars with randomUUID()/datetime(); relationships
+// below are assembled from the matched username and string-filtered album ids.
+export type CreatedImageSource = Record<string,unknown> & {
+  id:string;
+  createdAt:string;
+  Uploader:{username:string}|null;
+  Albums:{id:string}[];
+};
+type CreatedImageRecord = {
+  image:Node<neo4j.Integer,Record<string,unknown>&{id:string;createdAt:neo4j.DateTime}>;
+  uploaderUsername:string|null;
+  albumIds:unknown[]|null;
+};
 export interface ImageCreationRepository {
   findUploader(username: string): Promise<Array<{username: string}>>;
-  createImage(input: ImageCreateLike): Promise<{images: Image[]}>;
+  createImage(input: ImageCreateLike): Promise<{images: CreatedImageSource[]}>;
 }
-export interface ProfileImageRepository {setProfileImage(username: string, update: UserUpdateInput): Promise<{users: Array<Record<string, unknown>>}>;}
-export interface ChannelIconRepository {setChannelIcon(uniqueName: string, update: ChannelUpdateInput): Promise<{channels: Array<Record<string, unknown>>}>;}
+export interface ProfileImageRepository {setProfileImage(username: string, update: UserUpdateInput): Promise<{users: ProfileImageProjection[]}>;}
+export interface ChannelIconRepository {setChannelIcon(uniqueName: string, update: ChannelUpdateInput): Promise<{channels: ChannelIconProjection[]}>;}
 // Keep the public JSON shape while using a Neo4j-compatible scalar property.
 // Null removes the property; omission preserves it. Existing scalar URL fields
 // remain unchanged and retain precedence in the public field resolver.
@@ -145,7 +159,7 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
  return {
   async findUploader(username) {return (await executeGeneratedOperation<{users: Array<{username: string}>}>(driver,UPLOADER,{where:{username:{eq:username}}})).users;},
   async createImage(input) {
-    const { Uploader, Albums, uploadedAt, ...rest } = input as ImageCreateLike & { uploadedAt?: unknown };
+    const { Uploader, Albums, uploadedAt, ...rest } = input;
     const uploaderUsername = Uploader?.connect?.where?.node?.username ?? null;
     const albumIds = (Albums?.connect ?? [])
       .map((c) => c?.where?.node?.id)
@@ -155,7 +169,7 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
         .filter(([, value]) => value !== undefined)
         .map(([key, value]) => [key, key === "variantUrls" ? encodeVariantUrls(value) : value])
     );
-    const result = await driver.executeQuery(CREATE_IMAGE, {
+    const result = await driver.executeQuery<EagerResult<CreatedImageRecord>>(CREATE_IMAGE, {
       scalars,
       uploadedAt: uploadedAt ?? null,
       uploaderUsername,
@@ -163,26 +177,26 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
     });
     const record = result.records[0];
     if (!record) return { images: [] };
-    const props = (record.get("image") as { properties: Record<string, unknown> }).properties;
-    const image: Record<string, unknown> = {};
+    const props = record.get("image").properties;
+    const image: CreatedImageSource = {id:props.id,createdAt:props.createdAt.toString(),Uploader:null,Albums:[]};
     for (const [key, value] of Object.entries(props)) {
       // ageGateTouchedAt is server-only (@selectable(onRead: false)); the generated
       // projection excluded it, so keep it out of the returned shape too.
       if (key === "ageGateTouchedAt") continue;
       image[key] = convertNeo4jValue(value);
     }
-    const connectedUploader = record.get("uploaderUsername") as string | null;
+    const connectedUploader = record.get("uploaderUsername");
     image.Uploader = connectedUploader ? { username: connectedUploader } : null;
-    image.Albums = ((record.get("albumIds") as Array<string | null>) ?? [])
+    image.Albums = (record.get("albumIds") ?? [])
       .filter((id): id is string => typeof id === "string")
       .map((id) => ({ id }));
-    return { images: [image as unknown as Image] };
+    return { images: [image] };
   },
  };
 }
 export function createProfileImageRepository(driver: Driver): ProfileImageRepository {
- return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:Array<Record<string,unknown>>}}>(driver,PROFILE,{where:{username:{eq:username}},update:encodeVariantUpdate(update)})).updateUsers;}};
+ return {async setProfileImage(username, update) {return (await executeGeneratedOperation<{updateUsers:{users:ProfileImageProjection[]}}>(driver,PROFILE,{where:{username:{eq:username}},update:encodeVariantUpdate(update)})).updateUsers;}};
 }
 export function createChannelIconRepository(driver: Driver): ChannelIconRepository {
- return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:Array<Record<string,unknown>>}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update:encodeVariantUpdate(update)})).updateChannels;}};
+ return {async setChannelIcon(uniqueName, update) {return (await executeGeneratedOperation<{updateChannels:{channels:ChannelIconProjection[]}}>(driver,ICON,{where:{uniqueName:{eq:uniqueName}},update:encodeVariantUpdate(update)})).updateChannels;}};
 }

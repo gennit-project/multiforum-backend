@@ -33,9 +33,9 @@ type Input = {
 type Args = {
   where: DiscussionWhere;
   discussionUpdateInput: DiscussionUpdateInput;
-  channelConnections?: string[];
-  channelDisconnections?: string[];
-  albumImageDisconnections?: string[];
+  channelConnections?: string[] | null;
+  channelDisconnections?: (string | null)[] | null;
+  albumImageDisconnections?: string[] | null;
   album?: DiscussionAlbumInput | null;
   channelFlairSelections?: DiscussionChannelFlairSelectionInput[] | null;
 };
@@ -86,6 +86,8 @@ const getResolver = (
       channelFlairSelections = [],
     } = args;
     const normalizedChannelFlairSelections = channelFlairSelections ?? [];
+    // Keep the native dereference failure before any persistence when null is supplied.
+    if (albumImageDisconnections === null) throw new TypeError("Cannot read properties of null (reading 'filter')");
     const normalizedAlbumImageDisconnections = [
       ...new Set(
         albumImageDisconnections.filter(
@@ -144,6 +146,7 @@ const getResolver = (
     const sanitizedUpdateInput = withoutAlbumOrTags as DiscussionUpdateInput;
 
     let flairIdsByChannel = new Map<string, string[]>();
+    if (channelConnections === null) throw new TypeError("Cannot read properties of null (reading 'length')");
     if (
       channelConnections.length > 0 ||
       normalizedChannelFlairSelections.length > 0
@@ -225,6 +228,8 @@ const getResolver = (
           });
         }
 
+        // This remains after the scalar update and inside the same managed transaction.
+        if (channelDisconnections === null) throw new TypeError("channelDisconnections is not iterable");
         for (const channelUniqueName of channelDisconnections) {
           await tx.run(severConnectionBetweenDiscussionAndChannelQuery, {
             discussionId: updatedDiscussionId,

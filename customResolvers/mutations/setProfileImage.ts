@@ -1,3 +1,4 @@
+import type { ProfileImageProjection } from "../contracts/accountProjections.js";
 import { createProfileImageRepository, type ProfileImageRepository } from "../../services/persistence/imageWriteRepository.js";
 import type { UserUpdateInput } from "../../src/generated/graphql.js";
 import { GraphQLError } from "graphql";
@@ -34,7 +35,7 @@ const getResolver = ({
     _parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<Record<string, unknown>> => {
+  ): Promise<ProfileImageProjection> => {
     if (!context.user?.username) {
       context.user = await setUserDataOnContext({ context });
     }

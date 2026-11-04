@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import type { PipelineStep, EventPipeline, PluginEdgeData } from './types.js'
+import type { PipelineStep, EventPipeline, PluginEdgeData, PluginEdgeSnapshot } from './types.js'
 
 export const generatePipelineId = (): string => {
   return `pipeline-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`
@@ -105,13 +105,16 @@ export const compareVersions = (v1: string, v2: string): number => {
  * Key format: "pluginName" -> array of all enabled versions
  * Returns both the multi-version map and a convenience map for latest versions.
  */
-export const buildPluginVersionMaps = (edges: PluginEdgeData[]) => {
+const hasEnabledNamedPlugin = (edge: PluginEdgeSnapshot): edge is PluginEdgeData =>
+  Boolean(edge.properties?.enabled && edge.node?.Plugin?.name)
+
+export const buildPluginVersionMaps = (edges: PluginEdgeSnapshot[]) => {
   // Map of pluginName -> array of {version, edgeData} sorted by version desc
   const pluginVersionsMap = new Map<string, Array<{ version: string; edgeData: PluginEdgeData }>>()
 
   for (const edge of edges) {
     const edgeData = edge
-    if (edgeData.properties?.enabled && edgeData.node?.Plugin?.name) {
+    if (hasEnabledNamedPlugin(edgeData)) {
       const pluginName = edgeData.node.Plugin.name
       const version = edgeData.node.version
 

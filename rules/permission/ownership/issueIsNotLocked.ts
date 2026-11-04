@@ -13,7 +13,7 @@ type IssueIsNotLockedInput = {
  * Check if the issue is not locked.
  * Locked issues cannot be modified by OPs (only by moderators).
  */
-export const issueIsNotLocked = rule({ cache: "contextual" })(
+export const issueIsNotLocked = rule({ cache: "strict" })(
   async (parent: unknown, args: IssueIsNotLockedInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const issueId = where?.id?.eq;

@@ -1,10 +1,11 @@
+import type { ModContributionRow } from "../contracts/contributionReadProjections.js";
 import {
   createContributionTargetRepository,
   type ContributionTargetRepository,
 } from "../../services/persistence/contributionTargetRepository.js";
 import { getModContributionsQuery } from "../cypher/cypherQueries.js";
 import { DateTime } from "luxon";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
 import { mayAccessSensitiveContent as resolveSensitiveContentAccess } from "../../services/sensitiveContentAccess.js";
@@ -18,9 +19,9 @@ interface Input {
 
 interface Args {
   displayName: string;
-  startDate?: string;
-  endDate?: string;
-  year?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  year?: number | null;
 }
 
 const getModContributionsResolver = (input: Input) => {
@@ -51,7 +52,7 @@ const getModContributionsResolver = (input: Input) => {
         ? `${year}-12-31`
         : (endDate || DateTime.utc().toISODate());
 
-      const result = await session.run(getModContributionsQuery, {
+      const result = await session.run<ModContributionRow>(getModContributionsQuery, {
         displayName,
         startDate: effectiveStartDate,
         endDate: effectiveEndDate,
@@ -59,16 +60,15 @@ const getModContributionsResolver = (input: Input) => {
       });
 
       const contributions = result.records
-        .map((record: Neo4jRecord) => {
+        .map((record) => {
           const date = record.get('date');
           if (!date) {
             return null;
           }
+          const count = record.get('count');
           return {
             date,
-            count: record.get('count').toNumber
-              ? record.get('count').toNumber()
-              : record.get('count'),
+            count: typeof count === 'number' ? count : count.toNumber(),
             activities: record.get('activities'),
           };
         })

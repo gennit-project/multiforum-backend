@@ -1,7 +1,11 @@
-import type {Driver} from 'neo4j-driver';
+import type {Driver, EagerResult} from 'neo4j-driver';
 import {executeGeneratedOperation} from './generatedSchemaOperations.js';
 
-export type ModeratedChannel = {uniqueName:string;displayName?:string|null;locked?:boolean|null;lockedAt?:string|null;lockReason?:string|null;LockedBy?:{displayName?:string|null}|null;Admins?:Array<{username:string}>};
+// Generated snapshot is independently validated; the write result leaves stored
+// display names unknown. Other write scalars follow MATCH/SET/toString below.
+export type ModeratedChannel = {uniqueName:string;displayName:string|null;locked:boolean|null;Admins:Array<{username:string}>};
+export type ChannelLockResult = {uniqueName:string;displayName:unknown;locked:boolean;lockedAt:string|null;lockReason:string|null;LockedBy:{displayName:unknown}|null};
+type ChannelLockRecord = {uniqueName:string;displayName:unknown;locked:boolean;lockedAt:string|null;lockReason:string|null;lockedByDisplayName:unknown};
 type RelatedIssue={id:string;issueNumber:number;isOpen?:boolean|null};
 
 // FAMILY-3 / v7 (campaign #284). The channel lock/unlock flow is relationship-
@@ -20,7 +24,7 @@ export interface ChannelModerationRepository {
  findRelatedIssues(uniqueName:string):Promise<RelatedIssue[]>;
  createLockIssue(params:{issueNumber:number;title:string;relatedChannelUniqueName:string;authorModName:string}):Promise<{id:string;issueNumber:number}>;
  recordAction(params:{issueId:string;actionType:string;actionDescription:string;commentText:string;modName:string;isOpen:boolean}):Promise<void>;
- updateLockState(params:{uniqueName:string;locked:boolean;lockReason:string|null;lockedAt:string|null;modName:string|null}):Promise<{channels:ModeratedChannel[]}>;
+ updateLockState(params:{uniqueName:string;locked:boolean;lockReason:string|null;lockedAt:string|null;modName:string|null}):Promise<{channels:ChannelLockResult[]}>;
 }
 
 // Create the activity feed's ModerationAction + embedded moderator Comment and
@@ -89,7 +93,7 @@ export function createChannelModerationRepository(driver:Driver):ChannelModerati
  async findChannel(uniqueName){const r=await executeGeneratedOperation<{channels:Array<ModeratedChannel & {Admins:Array<{username:string}>}>}>(driver,`query ChannelModerationSnapshot($where:ChannelWhere){channels(where:$where){uniqueName displayName locked Admins{username}}}`,{where:{uniqueName:{eq:uniqueName}}});return r.channels;},
  async findOpenIssues(uniqueName){const r=await executeGeneratedOperation<{issues:RelatedIssue[]}>(driver,`query OpenChannelModerationIssues($where:IssueWhere){issues(where:$where){id issueNumber}}`,{where:{channelUniqueName:{eq:null},relatedChannelUniqueName:{eq:uniqueName},isOpen:{eq:true}}});return r.issues;},
  async findRelatedIssues(uniqueName){const r=await executeGeneratedOperation<{issues:RelatedIssue[]}>(driver,`query RelatedChannelModerationIssues($where:IssueWhere){issues(where:$where){id issueNumber isOpen}}`,{where:{channelUniqueName:{eq:null},relatedChannelUniqueName:{eq:uniqueName}}});return r.issues;},
- async createLockIssue(params){const r=await driver.executeQuery(CREATE_LOCK_ISSUE,params);const row=r.records[0];if(!row)throw new Error('Error creating issue for channel lock');return{id:row.get('id') as string,issueNumber:params.issueNumber};},
+ async createLockIssue(params){const r=await driver.executeQuery<EagerResult<{id:string}>>(CREATE_LOCK_ISSUE,params);const row=r.records[0];if(!row)throw new Error('Error creating issue for channel lock');return{id:row.get('id'),issueNumber:params.issueNumber};},
  async recordAction(params){await driver.executeQuery(RECORD_ACTION,params);},
- async updateLockState(params){const r=await driver.executeQuery(UPDATE_LOCK_STATE,{uniqueName:params.uniqueName,locked:params.locked,lockReason:params.lockReason,lockedAt:params.lockedAt,modName:params.modName});const channels=r.records.map(row=>{const lockedBy=row.get('lockedByDisplayName');return{uniqueName:row.get('uniqueName') as string,displayName:row.get('displayName') as string|null,locked:row.get('locked') as boolean|null,lockedAt:row.get('lockedAt') as string|null,lockReason:row.get('lockReason') as string|null,LockedBy:lockedBy?{displayName:lockedBy as string}:null};});return{channels};},
+ async updateLockState(params){const r=await driver.executeQuery<EagerResult<ChannelLockRecord>>(UPDATE_LOCK_STATE,{uniqueName:params.uniqueName,locked:params.locked,lockReason:params.lockReason,lockedAt:params.lockedAt,modName:params.modName});const channels=r.records.map(row=>{const lockedBy=row.get('lockedByDisplayName');return{uniqueName:row.get('uniqueName'),displayName:row.get('displayName'),locked:row.get('locked'),lockedAt:row.get('lockedAt'),lockReason:row.get('lockReason'),LockedBy:lockedBy?{displayName:lockedBy}:null};});return{channels};},
 };}

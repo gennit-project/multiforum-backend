@@ -9,7 +9,7 @@ export type SecretValidationStatus =
 export type PluginConfigFieldStatus = {
   key: string
   label: string
-  scope: PluginConfigScope
+  scope: string
   kind: 'SETTING' | 'SECRET'
   required: boolean
   isSet: boolean
@@ -51,7 +51,7 @@ type Manifest = {
   secrets?: unknown
   settingsDefaults?: unknown
   ui?: {
-    forms?: Partial<Record<PluginConfigScope, unknown>>
+    forms?: Record<string, unknown>
   }
 }
 
@@ -139,7 +139,7 @@ export const buildPluginConfigStatus = (params: {
   manifest: unknown
   settingsJson: unknown
   secretStatuses?: SecretStatusRecord[]
-  scope: PluginConfigScope
+  scope: string
 }): PluginConfigStatus => {
   const manifest = parseRecord(params.manifest) as Manifest
   const defaults = parseRecord(asRecord(manifest.settingsDefaults)[params.scope])

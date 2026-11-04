@@ -1,3 +1,4 @@
+import type { ConfigurationApplyResponse } from "../contracts/pluginConfiguration.js";
 import type { GraphQLResolveInfo } from 'graphql'
 
 import type {
@@ -106,7 +107,7 @@ export const createApplyPluginConfigurationResolver = (
     args: MutationApplyPluginConfigurationArgs,
     context: GraphQLContext,
     info: GraphQLResolveInfo
-  ) => {
+  ): Promise<ConfigurationApplyResponse> => {
     const operations = operationsFactory({ input, context, info })
     const desired = mapPluginConfigurationDesiredStateInput(args.manifest)
     const planBefore = await operations.preview(args.manifest)

@@ -1,3 +1,19 @@
+import type { DownloadReadSourceQueryResolvers } from "./contracts/downloadReadSources.js";
+import type { WikiCountSourceQueryResolvers } from "./contracts/wikiCountSource.js";
+import type { ContributionReadQueryResolvers } from "./contracts/contributionReadSources.js";
+import type { ViewerReadQueryResolvers } from "./contracts/viewerReadSources.js";
+import type { AccountWriteSourceQueryResolvers } from "./contracts/accountWriteSources.js";
+import type { PluginSummaryMetadataQueryResolvers } from "./contracts/pluginSummaryMetadata.js";
+import type { PluginPolicyQueryResolvers } from "./contracts/pluginPolicies.js";
+import type { PluginSettingsReadResolvers } from "./contracts/pluginSettingsRead.js";
+import type { PluginCampaignQueryResolvers } from "./contracts/pluginCampaigns.js";
+import type { AccountSafetyQueryResolvers } from "./contracts/accountSafety.js";
+import type { PluginConfigurationQueryResolvers } from "./contracts/pluginConfiguration.js";
+import type { ContentPageQueryResolvers } from "./contracts/contentQueries.js";
+import type { ContentScalarQueryResolvers } from "./contracts/contentQueries.js";
+import type { AccountCollectionQueryResolvers } from "./contracts/accounts.js";
+import type { AccountQueryResolvers } from "./contracts/accounts.js";
+import type { PluginQueryResolvers } from "./contracts/plugins.js";
 import { createPipelineSummaryPage, createPipelineRunPage } from './queries/getPluginPipelinePage.js'
 import { createAccountRegistrationRepository } from "../services/persistence/accountRegistrationRepository.js";
 // Query resolvers. Extracted from customResolvers.ts; receives the shared
@@ -54,32 +70,62 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     driver,
   } = deps;
 
-  return {
-    getSiteWideDiscussionList: getSiteWideDiscussionList({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
+  const pluginResolvers = {
+    getServerPluginSecrets: getServerPluginSecrets({
+      driver
     }),
+    getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
+      driver
+    }),
+    getPipelineRuns: getPipelineRuns({
+      driver
+    }),
+    getPipelineSummary: getPipelineSummary({
+      driver,
+    }),
+    getPublicPipelineRun: getPublicPipelineRun({
+      driver,
+    }),
+    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
+      driver,
+    }),
+  } satisfies PluginQueryResolvers;
+
+  const accountResolvers = {
     getRankingSettings: getRankingSettings({
-      driver,
-    }),
-    getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
       driver,
     }),
     getInstanceSetupStatus: getInstanceSetupStatus({
       instancePolicyRepository,
     }),
-    getSiteWideIssueList: getSiteWideIssueList({
+    getOwnEmail: getOwnEmail({
+      accountRegistrationRepository: createAccountRegistrationRepository(driver)
+    }),
+    getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountQueryResolvers;
+
+  const collectionResolvers = {
+    publicCollectionsContaining: publicCollectionsContaining({
+      driver,
+      agePolicyRepository: instancePolicyRepository
+    }),
+  } satisfies AccountCollectionQueryResolvers;
+
+  const contentScalarResolvers = {
+    getUserFavoriteComment: getUserFavoriteComment({
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    getSiteWideWikiList: getSiteWideWikiList({
+    getUserWikiEditsCount: getUserWikiEditsCount({
       driver,
     }),
-    getDiscussionsInChannel: getDiscussionsInChannel({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
+    isOriginalPosterSuspended: isOriginalPosterSuspended({
+      agePolicyRepository: instancePolicyRepository
     }),
-    getDiscussionDetail: getDiscussionDetail({
+  } satisfies ContentScalarQueryResolvers;
+
+  const contentPageResolvers = {
+    getSiteWideDiscussionList: getSiteWideDiscussionList({
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
@@ -98,6 +144,68 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       agePolicyRepository: instancePolicyRepository,
       kind: "image",
     }),
+  } satisfies ContentPageQueryResolvers;
+
+  const pluginConfigurationResolvers = {
+    previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
+      driver,
+    }),
+  } satisfies PluginConfigurationQueryResolvers;
+
+  const accountSafetyResolvers = {
+    safetyCheck: safetyCheck,
+    getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
+    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountSafetyQueryResolvers;
+
+  const pluginCampaignResolvers = {
+    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
+      driver,
+    }),
+    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
+      driver,
+    }),
+    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
+      driver,
+    }),
+  } satisfies PluginCampaignQueryResolvers;
+
+  const pluginSettingsReadResolvers = {
+    getPluginConfigStatus: getPluginConfigStatus({ driver }),
+    getInstalledPlugins: getInstalledPlugins({
+      driver
+    }),
+  } satisfies PluginSettingsReadResolvers;
+
+  const pluginPolicyResolvers = {
+    getApplicablePluginPipeline: getApplicablePluginPipeline({
+      driver,
+    }),
+  } satisfies PluginPolicyQueryResolvers;
+
+  const pluginSummaryMetadataResolvers = {
+    getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
+    getPipelineRunPage: createPipelineRunPage({ driver }),
+    getServerHealthDashboard: getServerHealthDashboard({
+      driver
+    }),
+  } satisfies PluginSummaryMetadataQueryResolvers;
+
+  const accountWriteSourceResolvers = {
+    getChannelDiscussionFlairConfig: getChannelDiscussionFlairConfig({
+      driver,
+    }),
+  } satisfies AccountWriteSourceQueryResolvers;
+
+  const viewerReadResolvers = {
+    getDiscussionsInChannel: getDiscussionsInChannel({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+    }),
+    getDiscussionDetail: getDiscussionDetail({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
+    }),
     getCommentSection: getCommentSection({
       driver,
       agePolicyRepository: instancePolicyRepository,
@@ -109,19 +217,19 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    getUserFavoriteComment: getUserFavoriteComment({
-      driver,
-      agePolicyRepository: instancePolicyRepository,
-    }),
     getSortedChannels: getSortedChannels({
       driver,
+    }),
+  } satisfies ViewerReadQueryResolvers;
+
+  const contributionReadResolvers = {
+    getSiteWideIssueList: getSiteWideIssueList({
+      driver,
+      agePolicyRepository: instancePolicyRepository,
     }),
     getUserContributions: getUserContributions({
       driver,
       agePolicyRepository: instancePolicyRepository,
-    }),
-    getUserWikiEditsCount: getUserWikiEditsCount({
-      driver,
     }),
     getChannelContributions: getChannelContributions({
       driver,
@@ -131,70 +239,42 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
       agePolicyRepository: instancePolicyRepository,
     }),
-    isOriginalPosterSuspended: isOriginalPosterSuspended({
-      agePolicyRepository: instancePolicyRepository
-    }),
-    safetyCheck: safetyCheck,
-    getServerPluginSecrets: getServerPluginSecrets({
-      driver
-    }),
-    getPluginConfigStatus: getPluginConfigStatus({ driver }),
-    getInstalledPlugins: getInstalledPlugins({
-      driver
-    }),
-    previewPluginConfigurationReconciliation: previewPluginConfigurationReconciliation({
+  } satisfies ContributionReadQueryResolvers;
+
+  const wikiCountSourceResolvers = {
+    getSiteWideWikiList: getSiteWideWikiList({
       driver,
     }),
-    getPluginRunsForDownloadableFile: getPluginRunsForDownloadableFile({
-      driver
-    }),
-    getPipelineRuns: getPipelineRuns({
-      driver
-    }),
-    getApplicablePluginPipeline: getApplicablePluginPipeline({
-      driver,
-    }),
-    getPipelineSummaryPage: createPipelineSummaryPage({ driver }),
-    getPipelineRunPage: createPipelineRunPage({ driver }),
-    getPipelineSummary: getPipelineSummary({
-      driver,
-    }),
-    getPublicPipelineRun: getPublicPipelineRun({
-      driver,
-    }),
-    getInternalPluginPipelineRun: getInternalPluginPipelineRun({
-      driver,
-    }),
-    previewPluginPipelineCampaign: previewPluginPipelineCampaign({
-      driver,
-    }),
-    getPluginPipelineCampaigns: getPluginPipelineCampaigns({
-      driver,
-    }),
-    getPluginPipelineCampaignFailures: getPluginPipelineCampaignFailures({
-      driver,
-    }),
-    publicCollectionsContaining: publicCollectionsContaining({
-      driver,
-      agePolicyRepository: instancePolicyRepository
-    }),
-    getOwnEmail: getOwnEmail({
-      accountRegistrationRepository: createAccountRegistrationRepository(driver)
-    }),
-    getAgePolicy: getAgePolicy({ agePolicyRepository: instancePolicyRepository }),
-    getMyAgeProfile: getMyAgeProfile({ driver, agePolicyRepository: instancePolicyRepository }),
-    getDiscussionAgeGateCheck: getDiscussionAgeGateCheck({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies WikiCountSourceQueryResolvers;
+
+  const downloadReadSourceResolvers = {
     getUploadedDownloadableFiles: getUploadedDownloadableFiles({
       driver,
       agePolicyRepository: instancePolicyRepository
     }),
+    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies DownloadReadSourceQueryResolvers;
+
+  return {
+    ...contentPageResolvers,
+    ...accountResolvers,
+    ...accountWriteSourceResolvers,
+    ...contributionReadResolvers,
+    ...wikiCountSourceResolvers,
+    ...viewerReadResolvers,
+    ...contentScalarResolvers,
+    ...accountSafetyResolvers,
+    ...pluginResolvers,
+    ...pluginSettingsReadResolvers,
+    ...pluginConfigurationResolvers,
+    ...pluginPolicyResolvers,
+    ...pluginSummaryMetadataResolvers,
+    ...pluginCampaignResolvers,
+    ...collectionResolvers,
+    ...downloadReadSourceResolvers,
     getImageAlbumUsage: getImageAlbumUsage({
       driver,
       agePolicyRepository: instancePolicyRepository
     }),
-    getServerHealthDashboard: getServerHealthDashboard({
-      driver
-    }),
-    getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository })
   };
 }

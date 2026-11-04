@@ -1,4 +1,5 @@
 import neo4j, { type Driver } from "neo4j-driver";
+import type { RawServerCapabilities, NativeServerAuthorizationSnapshot, ServerAuthorizationRecord } from "../../customResolvers/contracts/serverAuthorizationSource.js";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 const SERVER_ROLE_CAPABILITIES = [
@@ -36,20 +37,22 @@ const MOD_SERVER_ROLE_CAPABILITIES = [
   "canPermanentlyRemoveImage",
 ] as const;
 
-type CapabilityMap = Record<string, boolean | null | undefined>;
+type CapabilityMap = RawServerCapabilities;
 
+// Optional properties retain the injected-reader compatibility contract. Native
+// query rows use the exact required map in NativeServerAuthorizationSnapshot.
 export type PermissionSuspension = {
-  id?: string | null;
-  username?: string | null;
-  modProfileName?: string | null;
-  serverName?: string | null;
+  id?: unknown;
+  username?: unknown;
+  modProfileName?: unknown;
+  serverName?: unknown;
   suspendedUntil?: string | null;
-  suspendedIndefinitely?: boolean | null;
-  RelatedIssue?: { id?: string | null; issueNumber?: number | null } | null;
+  suspendedIndefinitely?: unknown;
+  RelatedIssue?: { id?: unknown; issueNumber?: unknown } | null;
 };
 
 export type PermissionServerConfig = {
-  enableDownloads?: boolean | null;
+  enableDownloads?: unknown;
   DefaultServerRole?: CapabilityMap | null;
   DefaultSuspendedRole?: CapabilityMap | null;
   DefaultAdminRole?: CapabilityMap | null;
@@ -57,9 +60,9 @@ export type PermissionServerConfig = {
   DefaultModRole?: CapabilityMap | null;
   DefaultElevatedModRole?: CapabilityMap | null;
   DefaultSuspendedModRole?: CapabilityMap | null;
-  SuperAdmins: Array<{ username?: string | null }>;
-  Admins: Array<{ username?: string | null }>;
-  Moderators: Array<{ displayName?: string | null }>;
+  SuperAdmins: Array<{ username?: unknown }>;
+  Admins: Array<{ username?: unknown }>;
+  Moderators: Array<{ displayName?: unknown }>;
   SuspendedUsers: PermissionSuspension[];
   SuspendedMods: PermissionSuspension[];
 };
@@ -160,7 +163,7 @@ export const PERMISSION_SERVER_CONFIG_QUERY = `
   LIMIT 1
 `;
 
-const normalizeNeo4jValue = (value: unknown): any => {
+const normalizeNeo4jValue = (value: unknown): unknown => {
   if (neo4j.isInt(value)) return value.toNumber();
   if (Array.isArray(value)) return value.map(normalizeNeo4jValue);
   if (value && typeof value === "object") {
@@ -173,6 +176,45 @@ const normalizeNeo4jValue = (value: unknown): any => {
   }
   return value;
 };
+
+const normalizeCapabilities = (
+  role: RawServerCapabilities | null
+): RawServerCapabilities | null => role === null ? null : Object.fromEntries(
+  Object.entries(role).map(([key, value]) => [key, normalizeNeo4jValue(value)])
+);
+
+const normalizeSuspension = (
+  value: NativeServerAuthorizationSnapshot["SuspendedUsers"][number]
+): PermissionSuspension => ({
+  id: normalizeNeo4jValue(value.id),
+  username: normalizeNeo4jValue(value.username),
+  modProfileName: normalizeNeo4jValue(value.modProfileName),
+  serverName: normalizeNeo4jValue(value.serverName),
+  suspendedUntil: value.suspendedUntil,
+  suspendedIndefinitely: normalizeNeo4jValue(value.suspendedIndefinitely),
+  RelatedIssue: value.RelatedIssue == null ? value.RelatedIssue : {
+    id: normalizeNeo4jValue(value.RelatedIssue.id),
+    issueNumber: normalizeNeo4jValue(value.RelatedIssue.issueNumber),
+  },
+});
+
+const normalizeAuthorizationSnapshot = (
+  value: NativeServerAuthorizationSnapshot
+): PermissionServerConfig => ({
+  enableDownloads: normalizeNeo4jValue(value.enableDownloads),
+  DefaultServerRole: normalizeCapabilities(value.DefaultServerRole),
+  DefaultSuspendedRole: normalizeCapabilities(value.DefaultSuspendedRole),
+  DefaultAdminRole: normalizeCapabilities(value.DefaultAdminRole),
+  DefaultSuperAdminRole: normalizeCapabilities(value.DefaultSuperAdminRole),
+  DefaultModRole: normalizeCapabilities(value.DefaultModRole),
+  DefaultElevatedModRole: normalizeCapabilities(value.DefaultElevatedModRole),
+  DefaultSuspendedModRole: normalizeCapabilities(value.DefaultSuspendedModRole),
+  SuperAdmins: value.SuperAdmins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
+  Admins: value.Admins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
+  Moderators: value.Moderators.map(member => ({ displayName: normalizeNeo4jValue(member.displayName) })),
+  SuspendedUsers: value.SuspendedUsers.map(normalizeSuspension),
+  SuspendedMods: value.SuspendedMods.map(normalizeSuspension),
+});
 
 export function createPermissionServerConfigRepository(
   driver: Driver,
@@ -188,12 +230,12 @@ export function createPermissionServerConfigRepository(
         defaultAccessMode: neo4j.session.WRITE,
       });
       try {
-        const result = await session.run(PERMISSION_SERVER_CONFIG_QUERY, {
+        const result = await session.run<ServerAuthorizationRecord>(PERMISSION_SERVER_CONFIG_QUERY, {
           serverName: serverName ?? null,
         });
         const value = result.records[0]?.get("serverConfig");
         return value
-          ? (normalizeNeo4jValue(value) as PermissionServerConfig)
+          ? normalizeAuthorizationSnapshot(value)
           : null;
       } finally {
         await session.close();

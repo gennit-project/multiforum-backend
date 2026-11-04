@@ -1,3 +1,4 @@
+import type { ImageUsageRow } from "../contracts/imageUsageProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
@@ -15,19 +16,12 @@ type Args = {
   imageId: string;
 };
 
-type AlbumUsage = {
-  imageId: string;
-  uploaderUsername: string | null;
-  uploaderOwnedAlbums: Array<Record<string, unknown>>;
-  otherAlbums: Array<Record<string, unknown>>;
-};
-
 const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<AlbumUsage> => {
+  ) => {
     if (!args.imageId) {
       throw new GraphQLError("You must provide an image id.");
     }
@@ -44,7 +38,7 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
     const session = driver.session({ defaultAccessMode: "READ" });
 
     try {
-      const result = await session.run(
+      const result = await session.run<ImageUsageRow>(
         `
         MATCH (image:Image { id: $imageId })
         WHERE coalesce(image.archived, false) = false
@@ -102,7 +96,7 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
         { imageId: args.imageId, mayAccessSensitiveContent: canViewSensitiveContent }
       );
 
-      const usage = result.records[0]?.get("usage") as AlbumUsage | undefined;
+      const usage = result.records[0]?.get("usage");
 
       if (!usage) {
         throw new GraphQLError("Image not found.");

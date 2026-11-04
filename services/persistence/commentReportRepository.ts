@@ -4,7 +4,7 @@ import {
   createModerationIssue,
   appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
+  type ReportModerationActionsParams, type ReportModerationIssueRow,
 } from "./moderationIssueWrites.js";
 
 export type CommentReportIssue = { id: string; issueNumber: number; flaggedServerRuleViolation?: boolean | null };
@@ -14,8 +14,8 @@ export interface CommentReportRepository {
   // FAMILY-3 / v7 (campaign #284): the Issue + ModerationAction + Comment writes
   // are owned Cypher (moderationIssueWrites) instead of generated mutations with
   // the removed to-one connect inputs. Reads stay on the generated API.
-  createIssue(params: CreateModerationIssueParams): Promise<{issues: CommentReportIssue[]}>;
-  appendReport(params: AppendModerationActionsParams): Promise<{issues: CommentReportIssue[]}>;
+  createIssue(params: CreateModerationIssueParams): Promise<{issues: ReportModerationIssueRow[]}>;
+  appendReport(params: ReportModerationActionsParams): Promise<{issues: ReportModerationIssueRow[]}>;
 }
 type ReportedComment = { id: string; text?: string | null; CommentAuthor?: {__typename?: "User"; username?: string | null} | {__typename?: "ModerationProfile"; displayName?: string | null} | null };
 const ISSUE_FIELDS = `id issueNumber flaggedServerRuleViolation`;
@@ -34,11 +34,11 @@ export function createCommentReportRepository(driver: Driver): CommentReportRepo
     },
     async createIssue(params) {
       const issue = await createModerationIssue(driver, params);
-      return { issues: [issue as CommentReportIssue] };
+      return { issues: [issue] };
     },
     async appendReport(params) {
       const result = await appendModerationActions(driver, params);
-      return { issues: result.issues as CommentReportIssue[] };
+      return { issues: result.issues };
     },
   };
 }
