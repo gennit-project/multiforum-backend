@@ -392,14 +392,16 @@ Collection sharing remains deferred solely for the nonempty helper/wrapper contr
 its explicit optional return avoids hiding array cardinality behind unchecked indexing.
 The previous crosspost runtime dependency is resolved by #450.
 
-### Attachment processing reconciled from #451
+### Attachment processing reconciled from #451 and #452
 
 Crosspost attachment lookup remains inside the write transaction, after age-gate
 reconciliation, with the original no-JWT filtering context. The internal result
 now precisely carries the guarded discussion and attachment ID list. All distinct
 eligible files dispatch after commit before channel triggers; individual failures
-do not suppress remaining attempts. Ordinary creation retains its post-commit
-lookup and channel fallback. The attachment query has a generated ID-only nested
+do not suppress remaining attempts. Merged #452 also performs ordinary attachment lookup inside the per-item write
+transaction after visibility reconciliation. Lookup failures roll back that item;
+empty or filtered attachment lists remain valid. Earlier committed batch items
+are preserved, and retry callbacks do not dispatch external work. The attachment query has a generated ID-only nested
 projection and is included in actual executable repository-document drift checks.
 No boundary count changes: 175 selected / 34 deferred. Plugin delivery remains
 non-durable and outer GraphQL completion remains outside the transaction.

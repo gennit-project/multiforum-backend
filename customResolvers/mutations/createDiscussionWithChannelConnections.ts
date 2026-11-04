@@ -1,4 +1,5 @@
 import type { CreatedDiscussionProjection } from "../contracts/contentProjections.js";
+import { reconcileAgeGateBeforeRead } from "../../services/ageGate/reconcile.js";
 import { createExistingDiscussionCrosspost } from "../../services/persistence/crosspostWrite.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import { createInstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
@@ -287,7 +288,7 @@ export const createDiscussionsFromInput = async (
       // HAS_TAG edges (create-if-missing) after the generated create.
       const { cleaned: cleanedNoTags, tagTexts } = stripTags(cleaned as Record<string, any>);
       const resolvedAuthor = authorUsername ?? contextUsername ?? null;
-      const { newDiscussionId, createdChannelConnections, createdDiscussion } = await session.executeWrite(async (tx) => {
+      const { newDiscussionId, createdChannelConnections, createdDiscussion, downloadableFileIds } = await session.executeWrite(async (tx) => {
         const response = await repository.createDiscussion(
           cleanedNoTags as DiscussionCreateInput,
           tx
@@ -340,27 +341,18 @@ export const createDiscussionsFromInput = async (
         if (projected.length !== 1 || !projected[0] || projected[0].id !== newDiscussionId) {
           throw new GraphQLError("Created discussion is unavailable for the response.");
         }
-        return { newDiscussionId, createdChannelConnections, createdDiscussion: projected[0] };
+        let downloadableFileIds: string[] = [];
+        if (discussionCreateInput.hasDownload === true) {
+          // Keep the former post-commit read's materialized visibility and empty
+          // JWT, but let a lookup error roll back this item's owned writes.
+          await reconcileAgeGateBeforeRead(driver, tx);
+          const withFiles = await repository.findAttachedFiles(newDiscussionId, tx);
+          downloadableFileIds = withFiles[0]?.DownloadableFiles.map(file => file.id) ?? [];
+        }
+        return { newDiscussionId, createdChannelConnections, createdDiscussion: projected[0], downloadableFileIds };
       });
       // Plugin work is deliberately outside the retryable transaction. Failure
       // here cannot roll back the item and does not imply durable delivery.
-      const hasDownload = discussionCreateInput.hasDownload === true;
-
-      let downloadableFileIds: string[] = [];
-      if (hasDownload) {
-        try {
-          const withFile = await repository.findAttachedFiles(newDiscussionId);
-          downloadableFileIds = withFile?.[0]?.DownloadableFiles?.map(file => file.id) ?? [];
-        } catch (triggerError: unknown) {
-          const message =
-            triggerError instanceof Error ? triggerError.message : String(triggerError);
-          logger.error(
-            `downloadableFile.created plugin trigger error for ${newDiscussionId}:`,
-            message
-          );
-        }
-      }
-
       // Every successful DiscussionChannel creation emits its own channel event,
       // including ordinary text discussions. Downloads additionally emit the
       // file event for every eligible attachment before the channel events.

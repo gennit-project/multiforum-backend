@@ -118,7 +118,7 @@
           "tests/integration/discussionAttachmentProcessing.test.ts"
         ]
       },
-      "reason": "Merged #448 and #450 guard ordinary and crosspost responses before commit. Actual generated registration now checks precise successful list elements. ID-only CreateCrosspost and shared CrosspostResult documents are observed during real GraphQL execution and compared with their generated projection declarations. Merged #451 returns the guarded discussion plus attachment IDs; crosspost lookup stays inside the transaction after visibility reconciliation, and all eligible files dispatch after commit. Precise attachment projections and executable query checks preserve this boundary.",
+      "reason": "Merged #448 and #450 guard ordinary and crosspost responses before commit. Actual generated registration now checks precise successful list elements. ID-only CreateCrosspost and shared CrosspostResult documents are observed during real GraphQL execution and compared with their generated projection declarations. Merged #451 returns the guarded discussion plus attachment IDs; crosspost lookup stays inside the transaction after visibility reconciliation, and all eligible files dispatch after commit. Merged #452 gives ordinary creation the same transactional lookup and rollback behavior. Precise attachment projections and executable query checks preserve this boundary.",
       "decision": null
     },
     {

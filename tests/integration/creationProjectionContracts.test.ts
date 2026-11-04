@@ -15,15 +15,15 @@ after(async()=>stopNeo4j());
 
 test('actual discussion and event creation/read documents match their declared projections',async()=>{
  const schema=await buildPublicSchema();
- const calls:{root:string;paths:string[]}[]=[];
+ const calls:{root:string;paths:string[];executionContext:unknown}[]=[];
  for(const root of ['discussions','events']){
-  schema.getQueryType()!.getFields()[root].resolve=(_p,_a,_c,info)=>{
-   calls.push({root,paths:staticResponsePaths(info)});return [];
+  schema.getQueryType()!.getFields()[root].resolve=(_p,_a,context,info)=>{
+   calls.push({root,paths:staticResponsePaths(info),executionContext:context.executionContext});return [];
   };
  }
  for(const [root,field] of [['createDiscussions','discussions'],['createEvents','events']]){
-  schema.getMutationType()!.getFields()[root].resolve=(_p,_a,_c,info)=>{
-   calls.push({root,paths:staticResponsePaths(info)});return {[field]:[]};
+  schema.getMutationType()!.getFields()[root].resolve=(_p,_a,context,info)=>{
+   calls.push({root,paths:staticResponsePaths(info),executionContext:context.executionContext});return {[field]:[]};
   };
  }
  registerGeneratedSchema(driver,schema);
@@ -42,7 +42,7 @@ test('actual discussion and event creation/read documents match their declared p
    ];
    for(const [root,selection,invoke] of cases){
     calls.length=0;await invoke();
-    assert.deepEqual(calls,[{root,paths:declaredResponsePaths(selection)}],`${root}: executed selection drifted from its declared result`);
+    assert.deepEqual(calls,[{root,paths:declaredResponsePaths(selection),executionContext:tx}],`${root}: executed selection drifted from its declared result`);
    }
   });
  }finally{await session.close();}
