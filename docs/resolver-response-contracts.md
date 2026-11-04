@@ -840,3 +840,14 @@ no permission, routing, null or failure behavior changes. Compile-negative tests
 separate raw from normalized values, and real database checks guard the actual
 query columns and malformed-value normalization. Renaming a required column fails
 the guard. This source work does not change outer response inventory counts.
+
+### Role authorization read projections
+
+Role-guard reads now declare their fixed owner, administrator and capability
+selections against generated schema types. Selected owner keys are required
+(while nullable owners remain nullable), and server/moderator capability results
+have distinct complete field sets instead of arbitrary sparse dictionaries.
+An executable schema check compares all five actual repository documents with
+those selections; removing a guarded capability fails the check. Real database
+regressions cover nullable owners/flags, filters and rejected malformed scalar
+leaves. No source read behavior or outer response inventory count changes.
