@@ -1,3 +1,4 @@
+import shareCollectionAsDiscussion from "../../customResolvers/mutations/shareCollectionAsDiscussion.js";
 import setProfileImage from "../../customResolvers/mutations/setProfileImage.js";
 import setChannelIcon from "../../customResolvers/mutations/setChannelIcon.js";
 import publicCollectionsContaining from "../../customResolvers/queries/publicCollectionsContaining.js";
@@ -60,6 +61,7 @@ const scalars = {
 } satisfies AccountScalarMutationResolvers;
 const collectionQueries = {publicCollectionsContaining: publicCollectionsContaining({driver})} satisfies AccountCollectionQueryResolvers;
 const objects = {
+ shareCollectionAsDiscussion: shareCollectionAsDiscussion({driver}),
  setProfileImage: setProfileImage({driver}), setChannelIcon: setChannelIcon({driver}),
  dropDataForCypressTests: dropDataForCypressTests({driver}), seedDataForCypressTests: seedDataForCypressTests({driver}),
  setRankingSettings: setRankingSettings({driver}), createEmailAndUser: createEmailAndUser({accountRegistrationRepository,agePolicyRepository:policy}),

@@ -1,7 +1,7 @@
 # Remaining response-contract decisions after #450
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
-has 175 selected response/source boundaries and 34 deferred entries. The three
+has 176 selected response/source boundaries and 33 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
@@ -67,7 +67,7 @@ That earlier pipeline guard did not promote entries. After #449, event creation 
 | --- | --- | --- |
 | `createEventWithChannelConnections` | Fixed by merged #449: validate the response in the item transaction and omit rolled-back failures while continuing the batch. | Successful selected projections are now checked at the actual resolver registration. Outer GraphQL completion/delivery remain after commit. |
 | `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crosspost responses are guarded by #450 and successful elements now have checked types. Outer GraphQL completion and delivery remain after commit. |
-| `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. A nonempty ordinary-create type and actual wrapper boundary still need proof; no full-operation certification is claimed. |
+| `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. The nonempty result and actual wrapper boundary are now checked (see below); no full-operation certification is claimed. |
 | `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Return `NOT_FOUND` for a missing campaign and `BAD_USER_INPUT` for a conflicting transition, with a deliberate transaction/locking strategy for distinguishing them. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
 
 Source evidence: the two create helpers, collection-share resolver,
@@ -100,8 +100,7 @@ containers isolate selection shape; a real disposable managed transaction preser
 the repository interface. Exact response paths are compared with the generated-type
 derived declarations. This does not certify arbitrary rows or the generic adapter.
 Event successful results exclude undefined because #449 guards them before commit;
-compile-negative fixtures reject incomplete selected results. Discussion is now checked after #450. Sharing remains deferred for a precise
-nonempty ordinary-create contract; its negative fixture still rejects promotion.
+compile-negative fixtures reject incomplete selected results. Discussion is now checked after #450. Sharing now consumes the checked nonempty ordinary-create contract described below.
 No cast is used to make the wrapper appear complete.
 
 Failure experiments confirmed both guards: removing `title` from the actual
@@ -111,7 +110,7 @@ actual mutation registration. Both deliberate changes were restored.
 
 ## Crosspost safeguards after #450
 
-Current accounting: **175 selected / 34 deferred**. The merged runtime guard is
+At the crosspost checkpoint: **175 selected / 34 deferred**. The merged runtime guard is
 preserved without changing permission, sensitive-content, ownership or batch policy.
 Successful discussion elements are checked at the actual generated registration.
 The ID-only CreateCrosspost result has its own generated identity projection;
@@ -119,8 +118,8 @@ CrosspostResult retains the shared complete selected projection. Real GraphQL/Ne
 execution records both actual documents and compares selected response paths, while
 negative type fixtures reject unfetched fields and invalid identities. This does
 not certify arbitrary JSON, outer completion, delivery or generic adapter internals.
-Collection sharing remains deferred solely for the nonempty helper/wrapper contract;
-its explicit optional return avoids hiding array cardinality behind unchecked indexing.
+The later collection-sharing slice below resolves the nonempty helper/wrapper contract
+without hiding cardinality behind unchecked indexing.
 The previous crosspost runtime dependency is resolved by #450.
 
 Fault-injection checks rejected both an added `title` in the ID-only create query
@@ -140,3 +139,18 @@ are preserved, and retry callbacks do not dispatch external work. The attachment
 projection and is included in actual executable repository-document drift checks.
 No boundary count changes: 175 selected / 34 deferred. Plugin delivery remains
 non-durable and outer GraphQL completion remains outside the transaction.
+
+### Collection sharing: nonempty successful creation contract
+
+Current accounting: **176 selected / 33 deferred**. This supersedes the earlier
+collection-sharing cardinality limitation. The shared helper rejects empty input,
+appends one guarded snapshot per successful item or throws, then explicitly checks
+and constructs a nonempty tuple without a cast. Sharing consumes that tuple and
+its actual registration checks the same selected generated Discussion projection.
+The defensive postcondition runs after item processing; it is not new rollback
+protection and does not certify outer GraphQL completion or delivery. Existing
+transaction, permission, batch and plugin order are preserved. Compile-negative
+fixtures reject empty successful results and dependencies; a deliberately invalid
+runtime dependency retains the outer non-null error rather than fabricating data.
+Remaining entries are 27 object/scalar fields, four plugin entries, one dynamic
+moderation response and one image-usage query. Pause/resume policy remains undecided.

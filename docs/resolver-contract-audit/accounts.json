@@ -274,11 +274,32 @@
     },
     {
       "field": "Mutation.shareCollectionAsDiscussion",
-      "status": "deferred",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "Author.username",
+        "DiscussionChannels.id",
+        "DiscussionChannels.createdAt",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.archived",
+        "DiscussionChannels.Flairs.id",
+        "DiscussionChannels.Flairs.channelUniqueName",
+        "DiscussionChannels.Flairs.displayName",
+        "DiscussionChannels.Flairs.color",
+        "DiscussionChannels.Flairs.order",
+        "DiscussionChannels.Flairs.archived",
+        "DiscussionChannels.Channel.uniqueName",
+        "DiscussionChannels.Discussion.id",
+        "DiscussionChannels.UpvotedByUsers.username",
+        "createdAt",
+        "updatedAt",
+        "Tags.text"
+      ],
       "residualPaths": [
-        "Ordinary and crosspost responses are guarded before commit; successful elements are now typed.",
-        "The wrapper indexes an array whose nonempty cardinality is not encoded; its explicit return annotation retains undefined."
+        "Unselected Discussion fields and outer GraphQL completion/delivery remain outside this selected contract."
       ],
       "evidence": [
         "customResolvers/mutations/shareCollectionAsDiscussion.ts",
@@ -286,10 +307,11 @@
         "services/persistence/discussionCreationRepository.ts",
         "tests/integration/shareCollectionResponseException.test.ts",
         "tests/contracts/shareCollectionException.typecheck.ts",
-        "tests/integration/discussionItemTransactions.test.ts"
+        "tests/integration/discussionItemTransactions.test.ts",
+        "customResolvers/contracts/accounts.ts"
       ],
-      "reason": "The real share wrapper retains passing response/rollback regressions. #450 closes the crosspost response guard dependency, but array cardinality is not proven by the helper type. Explicit optional output prevents unchecked indexed access from silently certifying the non-null wrapper.",
-      "decision": "Develop a precise ordinary-create/nonempty result contract and check the actual registration; do not hide unfinished static work as an unresolved behavior decision."
+      "reason": "The shared creation helper rejects empty input, appends each successful item or throws, and constructs a nonempty tuple after an explicit postcondition check without a cast. The actual sharing registration checks the same generated selected projection as discussion creation.",
+      "decision": "Preserve the per-item transaction, permissions, batch failure behavior and post-commit plugin ordering. Defensive nonempty postcondition is not rollback protection. An injected contract-violating empty dependency still produces the existing outer GraphQL non-null error."
     },
     {
       "field": "Mutation.createScratchpadEntry",

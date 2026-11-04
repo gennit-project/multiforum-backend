@@ -150,7 +150,7 @@ export const createDiscussionsFromInput = async (
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext,
   triggerPipelines = triggerCreatedDiscussionPipelines
-): Promise<CreatedDiscussionProjection[]> => {
+): Promise<[CreatedDiscussionProjection, ...CreatedDiscussionProjection[]]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
@@ -378,7 +378,12 @@ export const createDiscussionsFromInput = async (
     await session.close();
   }
 
-  return discussions;
+  // Empty input is rejected above and each completed item appends one snapshot.
+  // Encode that invariant without an array-to-tuple cast. This is a defensive
+  // postcondition, not a transaction or outer GraphQL completion guarantee.
+  const [first, ...remaining] = discussions;
+  if (!first) throw new Error("Discussion creation returned no discussion");
+  return [first, ...remaining];
 };
 
 /**

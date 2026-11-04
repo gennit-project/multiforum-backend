@@ -1,3 +1,4 @@
+import { createdDiscussionSelection } from "./contentProjections.js";
 import { publicCollectionSelection, profileImageSelection, channelIconSelection } from "./accountProjections.js";
 import type { MutationResolvers, QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -14,10 +15,11 @@ export const accountScalarMutationNames = [
 ] as const;
 export type AccountScalarMutationResolvers = Required<Pick<MutationResolvers<GraphQLContext>, typeof accountScalarMutationNames[number]>>;
 
-export const accountObjectMutationNames = ["dropDataForCypressTests", "seedDataForCypressTests", "setRankingSettings", "createEmailAndUser", "updateScratchpadEntryVisibility", "setProfileImage", "setChannelIcon"] as const;
+export const accountObjectMutationNames = ["shareCollectionAsDiscussion", "dropDataForCypressTests", "seedDataForCypressTests", "setRankingSettings", "createEmailAndUser", "updateScratchpadEntryVisibility", "setProfileImage", "setChannelIcon"] as const;
 const testDataSelection = { success: true, message: true } as const;
 export const scratchpadSelection = { id: true, text: true, isPublic: true, sourceType: true, sourceId: true, sourceChannelUniqueName: true, discussionId: true, createdAt: true } as const;
 export type AccountObjectMutationResolvers = {
+  shareCollectionAsDiscussion: SelectedResolver<MutationResolvers<GraphQLContext>["shareCollectionAsDiscussion"], typeof createdDiscussionSelection>;
   setProfileImage: SelectedResolver<MutationResolvers<GraphQLContext>["setProfileImage"], typeof profileImageSelection>;
   setChannelIcon: SelectedResolver<MutationResolvers<GraphQLContext>["setChannelIcon"], typeof channelIconSelection>;
   dropDataForCypressTests: SelectedResolver<MutationResolvers<GraphQLContext>["dropDataForCypressTests"], typeof testDataSelection>;

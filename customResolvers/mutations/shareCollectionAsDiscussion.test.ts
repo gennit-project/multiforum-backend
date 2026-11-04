@@ -82,7 +82,7 @@ const buildResolver = ({
     permissions: [] as unknown[],
     createDiscussions: [] as unknown[],
   };
-  const create =
+  const create: NonNullable<Parameters<typeof shareCollectionAsDiscussion>[0]["createDiscussions"]> =
     createDiscussions ??
     (async (...args: unknown[]) => {
       calls.createDiscussions.push(args);

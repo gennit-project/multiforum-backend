@@ -50,7 +50,7 @@ const getResolver = (input: Input) => {
     args: Args,
     context: GraphQLContext,
     _info: GraphQLResolveInfo
-  ): Promise<CreatedDiscussionProjection | undefined> => {
+  ): Promise<CreatedDiscussionProjection> => {
     const collectionId = getTrimmed(args.collectionId);
     const channelUniqueName = getTrimmed(args.serverId);
     const title = getTrimmed(args.title);

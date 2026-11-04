@@ -49,6 +49,7 @@ test('missing transactional response rejects sharing and rolls back the item',as
 test('share wrapper does not fabricate a result when its creation dependency returns an empty array',async()=>{
  const field=schema.getMutationType()!.getFields().shareCollectionAsDiscussion;
  const original=field.resolve;
+ // @ts-expect-error deliberately violate the nonempty dependency contract to retain outer completion evidence
  field.resolve=shareCollection({driver,createDiscussions:async()=>[]});
  try{
   const result=await exec();
@@ -57,4 +58,43 @@ test('share wrapper does not fabricate a result when its creation dependency ret
   assert.match(result.errors?.[0].message??'',/Cannot return null for non-nullable field/);
   assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
  }finally{field.resolve=original;}
+});
+
+test('repeated sharing returns distinct complete selected snapshots with aliases and fragments',async()=>{
+ const source=`mutation { shared: shareCollectionAsDiscussion(collectionId:"collection",serverId:"forum",title:"Shared") { ...Created } }
+ fragment Created on Discussion { id title body Author { username } DiscussionChannels { id discussionId channelUniqueName archived Channel {uniqueName} Discussion {id} UpvotedByUsers {username} Flairs {id} } Tags {text} }`;
+ const execute=()=>graphql({schema,source,contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+ const first=await execute(),second=await execute();
+ for(const result of [first,second]){
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const item=JSON.parse(JSON.stringify(result.data)).shared;
+  assert.equal(typeof item.id,'string');assert.equal(item.title,'Shared');assert.equal(item.body,'');
+  assert.deepEqual(item.Author,{username:'alice'});assert.deepEqual(item.Tags,[]);
+  assert.equal(item.DiscussionChannels.length,1);
+  const channel=item.DiscussionChannels[0];assert.equal(channel.discussionId,item.id);
+  assert.equal(channel.channelUniqueName,'forum');assert.equal(channel.archived,false);
+  assert.deepEqual(channel.Channel,{uniqueName:'forum'});assert.deepEqual(channel.Discussion,{id:item.id});
+  assert.deepEqual(channel.UpvotedByUsers,[{username:'alice'}]);assert.deepEqual(channel.Flairs,[]);
+ }
+ assert.notEqual(JSON.parse(JSON.stringify(first.data)).shared.id,JSON.parse(JSON.stringify(second.data)).shared.id);
+ assert.equal((await driver.executeQuery("MATCH(:Discussion)-[:SHARES_COLLECTION]->(:Collection {id:'collection'}) RETURN count(*) AS n")).records[0].get('n').toNumber(),2);
+});
+
+for(const [name,setup,message] of [
+ ['private collection',"MATCH(c:Collection {id:'collection'}) SET c.visibility='PRIVATE'",/Only public collections/],
+ ['non-owner',"MATCH(:Collection)-[r:CREATED_BY]->(:User) DELETE r",/do not own/],
+ ['missing forum',"MATCH(c:Channel {uniqueName:'forum'}) DETACH DELETE c",/Forum not found/],
+] as const){
+ test(`share response rejects ${name} without creating a discussion`,async()=>{
+  await driver.executeQuery(setup);const result=await exec();
+  assert.equal(result.data,null);assert.match(result.errors?.[0].message??'',message);
+  assert.deepEqual(result.errors?.[0].path,['shareCollectionAsDiscussion']);
+  assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
+ });
+}
+
+test('empty discussion batches reject before creating any rows',async()=>{
+ const result=await graphql({schema,source:'mutation { createDiscussionWithChannelConnections(input:[]) {id} }',contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+ assert.match(result.errors?.[0].message??'',/Input cannot be empty/);
+ assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
 });

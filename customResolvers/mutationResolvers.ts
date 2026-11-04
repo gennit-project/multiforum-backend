@@ -374,6 +374,7 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   } satisfies AccountScalarMutationResolvers;
 
   const accountObjectResolvers = {
+    shareCollectionAsDiscussion: shareCollectionAsDiscussion({ driver }),
     setProfileImage: setProfileImage({
       driver,
     }),
@@ -599,9 +600,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...pluginPolicyDomainResolvers,
     ...pluginConfigurationResolvers,
     ...imageWriteSourceResolvers,
-    shareCollectionAsDiscussion: shareCollectionAsDiscussion({
-      driver
-    }),
     ...moderationUndoResolvers,
   };
 }

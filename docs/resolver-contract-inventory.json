@@ -467,7 +467,7 @@
     },
     {
       "field": "Mutation.shareCollectionAsDiscussion",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.softDeleteComment",
