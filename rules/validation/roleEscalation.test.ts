@@ -104,3 +104,14 @@ test("collectRequestedRoles: reads the update object", () => {
 test("collectRequestedRoles: no input or update yields an empty list", () => {
   assert.deepEqual(collectRequestedRoles({ where: { name: "Editor" } }), []);
 });
+
+test("generated scalar set updates enforce the same capability ceiling as creates", () => {
+  assert.deepEqual(findEscalatedCapabilities({
+    requested: [{canManageAdmins:{set:true},canManageRoles:{set:true},canCreateChannel:{set:false}}],
+    capabilityFields:SERVER_CAPS,actorRole:{canManageRoles:true},
+  }),['canManageAdmins']);
+  for (const value of [{set:false},{set:null},null,false]) {
+    assert.deepEqual(findEscalatedCapabilities({requested:[{canManageAdmins:value}],capabilityFields:SERVER_CAPS,actorRole:null}),[]);
+  }
+  assert.deepEqual(findEscalatedCapabilities({requested:[{canManageAdmins:{set:true}}],capabilityFields:SERVER_CAPS,actorRole:'all'}),[]);
+});

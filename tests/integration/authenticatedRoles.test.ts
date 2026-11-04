@@ -550,3 +550,40 @@ for (const item of remainingOwnershipCases) {
     } finally {await session.close();}
   });
 }
+
+async function withRoleManager(run: () => Promise<void>) {
+  const session=driver.session();
+  try {
+    const previous=await session.run('MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) RETURN r.canManageRoles AS capability',{name:SERVER_CONFIG_NAME});
+    await session.run('MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageRoles=true',{name:SERVER_CONFIG_NAME});
+    try {await run();}
+    finally {await session.run('MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageRoles=$previous',{name:SERVER_CONFIG_NAME,previous:previous.records[0].get('capability')});}
+  } finally {await session.close();}
+}
+for (const role of [
+  {label:'ServerRole',mutation:'createServerRoles',field:'serverRoles',capability:'canManageAdmins'},
+  {label:'ModServerRole',mutation:'createModServerRoles',field:'modServerRoles',capability:'canEditComments'},
+]) {
+  test(`${role.mutation} validates each alias capability input`,async()=>withRoleManager(async()=>{
+    const result=await graphql({schema,source:`mutation {
+      allowed:${role.mutation}(input:[{name:"cache-safe-${role.label}",${role.capability}:false}]){${role.field}{name}}
+      denied:${role.mutation}(input:[{name:"cache-denied-${role.label}",${role.capability}:true}]){${role.field}{name}}
+    }`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+    assert.ok(result.errors?.some(error=>error.path?.[0]==='denied'),JSON.stringify(result));
+    const rows=await driver.executeQuery(`MATCH(r:${role.label}) WHERE r.name IN [$safe,$denied] RETURN r.name AS name`,{safe:`cache-safe-${role.label}`,denied:`cache-denied-${role.label}`});
+    assert.deepEqual(rows.records.map(row=>row.get('name')),[`cache-safe-${role.label}`]);
+  }));
+}
+
+test('mod role updates check capabilities carried by generated scalar set inputs',async()=>withRoleManager(async()=>{
+  await driver.executeQuery("CREATE(:ModServerRole{name:'scalar-update-role',canEditComments:false})");
+  const allowed=await graphql({schema,source:`mutation {updateModServerRoles(where:{name:{eq:"scalar-update-role"}},update:{canEditComments:{set:false}}){modServerRoles{name}}}`,
+    contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+  assert.equal(allowed.errors,undefined,JSON.stringify(allowed));
+  const result=await graphql({schema,source:`mutation {updateModServerRoles(where:{name:{eq:"scalar-update-role"}},update:{canEditComments:{set:true}}){modServerRoles{name}}}`,
+    contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+  assert.ok(result.errors?.some(error=>error.path?.[0]==='updateModServerRoles'),JSON.stringify(result));
+  const rows=await driver.executeQuery("MATCH(r:ModServerRole{name:'scalar-update-role'}) RETURN r.canEditComments AS capability");
+  assert.equal(rows.records[0].get('capability'),false);
+}));
+

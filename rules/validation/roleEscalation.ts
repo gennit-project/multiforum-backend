@@ -47,7 +47,12 @@ export function findEscalatedCapabilities(input: {
       continue;
     }
     for (const field of capabilityFields) {
-      if (item[field] === true && granted[field] !== true) {
+      const value = item[field];
+      const enablesCapability = value === true || (
+        value !== null && typeof value === "object" && !Array.isArray(value) &&
+        "set" in value && value.set === true
+      );
+      if (enablesCapability && granted[field] !== true) {
         escalated.add(field);
       }
     }
@@ -80,7 +85,7 @@ const roleEscalationRule = ({
   capabilityFields,
   getActorRole,
 }: RoleEscalationRuleInput) =>
-  rule({ cache: "contextual" })(
+  rule({ cache: "strict" })(
     async (
       _parent: unknown,
       args: Record<string, unknown>,
