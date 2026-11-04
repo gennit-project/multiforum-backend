@@ -519,3 +519,9 @@ filters, relationships, aliases/fragments, pagination, aggregate counts and the
 existing denial on User.CollectionsConnection. This is read protection, not a
 change to collection writes or a certification of subscription event delivery.
 The selected-response inventory remains **176 selected / 33 deferred**.
+
+
+The pass-through registration guard also binds each fallback's explicit source
+field to its registered GraphQL field, preventing a validly typed list helper
+from silently reading a different relationship. This proves name alignment only;
+aliased response-key handling and deferred child completion are unchanged.

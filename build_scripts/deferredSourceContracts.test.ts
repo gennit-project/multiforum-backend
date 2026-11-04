@@ -20,6 +20,11 @@ test("opaque list sources check actual generated registrations without promoting
     assert.ok(ts.isSatisfiesExpression(expression));
     const typeName=type.name.getText(src),fieldName=field.name.getText(src);
     assert.equal(expression.type.getText(src),`OpaqueListSource<${typeName}Resolvers<GraphQLContext>["${fieldName}"]>`);
+    if (ts.isCallExpression(expression.expression) && expression.expression.expression.getText(src) === 'emptyArrayFallback') {
+     const source = expression.expression.arguments[0];
+     assert.ok(source && ts.isStringLiteral(source), `${typeName}.${fieldName}: expected an explicit source field`);
+     assert.equal(source.text, fieldName, `${typeName}.${fieldName}: fallback reads a different field`);
+    }
     names.push(`${typeName}.${fieldName}`);
    }
   }
