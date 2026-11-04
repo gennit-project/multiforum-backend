@@ -989,3 +989,12 @@ permissions, nullable relationships, omitted and skipped selections, empty resul
 local scalar failures and sensitive-image filtering. These explicit paths do not
 extend to arbitrary nested asset relationships or certify full returned User
 objects. Accounting remains 176 selected / 33 deferred.
+
+`moderationProfiles` and its root connection now declare only the computed
+`BotUser` source dependency. The initial owner Email probe failed without selected
+username. Nine real graph/Shield tests exercise computed sources, both root
+representations, aliases/fragments/directives, bot owner/other/anonymous callers,
+human and missing-account nulls, and local scalar errors. The separate `User` edge
+is still denied even to the account owner; no human moderator identity dependency
+is added or exposed. These checks do not certify arbitrary moderator descendants
+or full User values; accounting remains 176 selected / 33 deferred.

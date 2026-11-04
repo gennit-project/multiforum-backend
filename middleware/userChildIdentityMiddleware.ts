@@ -176,6 +176,8 @@ export default {
     imagesConnection: userChildIdentityAtPaths(["Uploader", "PermanentlyRemovedByUser"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     albums: userChildIdentityAtPath(["Owner"]),
     albumsConnection: userChildIdentityAtPath(["edges", "node", "Owner"], ["canonical", "canonical", "response"]),
+    moderationProfiles: userChildIdentityAtPath(["BotUser"]),
+    moderationProfilesConnection: userChildIdentityAtPath(["edges", "node", "BotUser"], ["canonical", "canonical", "response"]),
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },
