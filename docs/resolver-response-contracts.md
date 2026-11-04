@@ -851,3 +851,23 @@ An executable schema check compares all five actual repository documents with
 those selections; removing a guarded capability fails the check. Real database
 regressions cover nullable owners/flags, filters and rejected malformed scalar
 leaves. No source read behavior or outer response inventory count changes.
+
+### Moderator-edit input compatibility
+
+Comment, discussion and event moderator checks now consume the generated ID
+filter shape (`eq` and bounded `in`) as well as the existing legacy identifiers.
+Compile checks bind the handlers to generated mutation arguments. Single-owner
+checks do not authorize batches; for bounded lists they allow the alternative
+moderator check to evaluate every candidate channel. Missing-ID errors and
+single-owner behavior remain intact. Real GraphQL/Shield/database tests cover
+permitted edits, denied targets, authors, anonymous callers, missing records,
+active suspensions and application-owned discussion/event update operations.
+This input/permission correction does not promote deferred response children.
+
+The event application-owned update still requires explicit connection and
+disconnection arrays at runtime. Omitted or null lists retain the existing
+transactional `not iterable` rejection, even though the schema admits them.
+The moderator regression supplies empty lists for its successful update and
+separately verifies rollback for omitted/null lists. This slice does not choose
+new null/omission semantics; accepting those inputs as no changes remains a
+separate behavior decision.

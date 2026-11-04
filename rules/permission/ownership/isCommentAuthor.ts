@@ -38,6 +38,10 @@ export const isCommentAuthor = rule({ cache: "strict" })(
     logger.info("modName: ", modName);
 
     if (!commentId) {
+      // This single-owner rule cannot authorize a batch. Let the sibling
+      // moderator rule check all bounded targets instead of throwing before
+      // Shield can evaluate that alternative.
+      if (where?.id?.in?.length || where?.id_IN?.length) return false;
       throw new Error(ERROR_MESSAGES.comment.noId);
     }
     const repository =

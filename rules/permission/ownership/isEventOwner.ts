@@ -36,6 +36,10 @@ export const isEventOwner = rule({ cache: "strict" })(
 
     let username = ctx.user.username;
     if (!eventId) {
+      // This single-owner rule cannot authorize a batch. Let the sibling
+      // moderator rule check all bounded targets instead of throwing before
+      // Shield can evaluate that alternative.
+      if (where?.id?.in?.length || where?.id_IN?.length) return false;
       throw new Error(ERROR_MESSAGES.event.noId);
     }
     const repository =

@@ -1,3 +1,4 @@
+import { idsFromScalarFilter, type IdFilter } from "../../utils/scalarFilter.js";
 import { rule } from "graphql-shield";
 import { checkChannelModPermissions } from "./hasChannelModPermission.js";
 import { ModChannelPermission } from "./hasChannelModPermission.js";
@@ -6,9 +7,9 @@ import { createContentChannelPermissionRepository } from "../../services/persist
 
 type CanEditCommentsArgs = {
   where?: {
-    id?: string;
-    id_IN?: string[];
-  };
+    id?: IdFilter;
+    id_IN?: string[] | null;
+  } | null;
   commentId?: string;
 };
 
@@ -23,9 +24,7 @@ export const canEditCommentsHandler = async (
       commentIds.push(args.commentId);
     }
 
-    if (args.where?.id) {
-      commentIds.push(args.where.id);
-    }
+    commentIds.push(...idsFromScalarFilter(args.where?.id));
 
     if (args.where?.id_IN?.length) {
       commentIds.push(...args.where.id_IN);
@@ -63,6 +62,6 @@ export const canEditCommentsHandler = async (
     return true;
 };
 
-export const canEditComments = rule({ cache: "contextual" })(
+export const canEditComments = rule({ cache: "strict" })(
   canEditCommentsHandler
 );
