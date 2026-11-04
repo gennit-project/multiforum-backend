@@ -694,3 +694,19 @@ rows from that fallback. Existing disposable-database tests cover all outcomes,
 opt-out, repeated unread/read notifications, target-specific cleanup and valid
 issue links. No stored property is relabeled as validated data, and no notification
 or suspension behavior changes.
+
+### Native channel authorization source
+
+Channel authorization reads now distinguish Cypher-constructed containers from
+unvalidated stored leaves. Capability and identity values remain `unknown` through
+normalization instead of being asserted to be Boolean/string values. The snapshot
+adapter explicitly preserves the query's role/member containers and existing
+recursive integer normalization; the injected-adapter compatibility shape remains
+supported. Owner/default/moderator decision helpers retain exact-true comparisons.
+Compile fixtures reject Boolean/string assumptions, while real GraphQL + Shield
+mutations prove stored `"true"`, `1` and `false` cannot create a discussion and
+Boolean `true` can. Existing owner, moderator, lock, suspension and cleanup tests
+remain unchanged in behavior. Legacy suspension row normalization and server-config
+raw projections are separate limitations; this does not certify them or change
+role precedence, lock truthiness or permission policy. Counts remain **176 selected /
+33 deferred**.

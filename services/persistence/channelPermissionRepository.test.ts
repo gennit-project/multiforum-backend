@@ -33,6 +33,7 @@ test("loads and normalizes a leader-routed authorization snapshot", async () => 
                   Moderators: [{ displayName: "Mod A" }],
                   DefaultChannelRole: { canCreateComment: true },
                   DefaultModRole: { canReport: false },
+                  ElevatedChannelRole: null, SuspendedRole: null, ElevatedModRole: null, SuspendedModRole: null,
                 },
               }),
             ],
@@ -52,6 +53,7 @@ test("loads and normalizes a leader-routed authorization snapshot", async () => 
     Moderators: [{ displayName: "Mod A" }],
     DefaultChannelRole: { canCreateComment: true },
     DefaultModRole: { canReport: false },
+                  ElevatedChannelRole: null, SuspendedRole: null, ElevatedModRole: null, SuspendedModRole: null,
   });
   assert.deepEqual(configs, [
     {

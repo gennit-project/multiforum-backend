@@ -31,13 +31,13 @@ export enum ModChannelPermission {
 
 // A mod role is a flat map of permission name -> granted. Modeled loosely so the
 // decision logic is decoupled from the generated OGM role types.
-type ModRole = Record<string, boolean | null | undefined> | null | undefined;
+type ModRole = Record<string, unknown> | null | undefined;
 
 interface ChannelModRoles {
   DefaultModRole?: ModRole;
   ElevatedModRole?: ModRole;
   SuspendedModRole?: ModRole;
-  Moderators?: Array<{ displayName?: string | null }> | null;
+  Moderators?: Array<{ displayName?: unknown }> | null;
 }
 
 interface ServerModDefaults {

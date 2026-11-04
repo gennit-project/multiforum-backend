@@ -1,3 +1,4 @@
+import type {ChannelAuthorizationRecord,NativeChannelAuthorizationSnapshot,RawChannelCapabilities} from "../../customResolvers/contracts/channelAuthorizationSource.js";
 import neo4j, { type Driver } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
@@ -28,15 +29,12 @@ const MOD_CHANNEL_ROLE_CAPABILITIES = [
 ] as const;
 
 export type ChannelPermission = (typeof CHANNEL_ROLE_CAPABILITIES)[number];
-export type ChannelCapabilityMap = Record<
-  string,
-  boolean | null | undefined
->;
+export type ChannelCapabilityMap = RawChannelCapabilities;
 
 export type ChannelAuthorizationSnapshot = {
-  locked?: boolean | null;
-  Admins: Array<{ username?: string | null }>;
-  Moderators: Array<{ displayName?: string | null }>;
+  locked?: unknown;
+  Admins: Array<{ username?: unknown }>;
+  Moderators: Array<{ displayName?: unknown }>;
   DefaultChannelRole?: ChannelCapabilityMap | null;
   ElevatedChannelRole?: ChannelCapabilityMap | null;
   SuspendedRole?: ChannelCapabilityMap | null;
@@ -183,6 +181,22 @@ const normalizeNeo4jValue = (value: unknown): any => {
   return value;
 };
 
+// Unlike the legacy suspension adapter below, authorization source leaves are
+// not asserted to be schema-completed booleans or strings. Preserve the native
+// query's exact containers and existing recursive integer normalization.
+const normalizeCapabilities=(role:RawChannelCapabilities|null):RawChannelCapabilities|null=>role===null?null:Object.fromEntries(Object.entries(role).map(([key,value])=>[key,normalizeNeo4jValue(value)]));
+const normalizeAuthorizationSnapshot=(value:NativeChannelAuthorizationSnapshot):NativeChannelAuthorizationSnapshot=>({
+ locked:normalizeNeo4jValue(value.locked),
+ Admins:value.Admins.map(admin=>({username:normalizeNeo4jValue(admin.username)})),
+ Moderators:value.Moderators.map(moderator=>({displayName:normalizeNeo4jValue(moderator.displayName)})),
+ DefaultChannelRole:normalizeCapabilities(value.DefaultChannelRole),
+ ElevatedChannelRole:normalizeCapabilities(value.ElevatedChannelRole),
+ SuspendedRole:normalizeCapabilities(value.SuspendedRole),
+ DefaultModRole:normalizeCapabilities(value.DefaultModRole),
+ ElevatedModRole:normalizeCapabilities(value.ElevatedModRole),
+ SuspendedModRole:normalizeCapabilities(value.SuspendedModRole),
+});
+
 export function createChannelPermissionRepository(
   driver: Driver,
   database = resolveNeo4jDatabase()
@@ -199,12 +213,12 @@ export function createChannelPermissionRepository(
     async findAuthorizationSnapshot(channelUniqueName) {
       const session = openAuthorizationSession();
       try {
-        const result = await session.run(CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY, {
+        const result = await session.run<ChannelAuthorizationRecord>(CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY, {
           channelUniqueName,
         });
         const value = result.records[0]?.get("channel");
         return value
-          ? (normalizeNeo4jValue(value) as ChannelAuthorizationSnapshot)
+          ? normalizeAuthorizationSnapshot(value)
           : null;
       } finally {
         await session.close();

@@ -137,3 +137,11 @@ test("checks the specific permission requested, not others", () => {
   });
   assert.equal(r.allowed, false);
 });
+
+test('raw non-Boolean capabilities do not grant owner or default-role permissions',()=>{
+ for(const value of ['true',1,[],{},'false']){
+  const role={[PERM]:value};
+  assert.equal(evaluateChannelOwnerPermission(role,PERM),false);
+  assert.equal(evalPerm({channelData:{DefaultChannelRole:role}}).allowed,false);
+ }
+});

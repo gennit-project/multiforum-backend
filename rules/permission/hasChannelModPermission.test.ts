@@ -116,3 +116,9 @@ test("checks the specific permission requested, not others", () => {
   });
   assert.equal(r.allowed, false);
 });
+
+test('raw non-Boolean moderator capabilities do not grant permissions',()=>{
+ for(const value of ['true',1,[],{},'false']){
+  assert.equal(evalPerm({channelData:{Moderators:[],DefaultModRole:{canReport:value}}}).allowed,false);
+ }
+});

@@ -1,3 +1,4 @@
+import type {NativeChannelAuthorizationSnapshot} from "../../customResolvers/contracts/channelAuthorizationSource.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { canArchiveAndUnarchiveComment } from "./canArchiveAndUnarchiveComment.js";
@@ -316,9 +317,16 @@ test("suspension uses default issue and channel repositories", async () => {
               records: [
                 record({
                   channel: {
+                    locked: null,
                     Admins: [{ username: "target" }],
                     Moderators: [],
-                  },
+                    DefaultChannelRole: null,
+                    ElevatedChannelRole: null,
+                    SuspendedRole: null,
+                    DefaultModRole: null,
+                    ElevatedModRole: null,
+                    SuspendedModRole: null,
+                  } satisfies NativeChannelAuthorizationSnapshot,
                 }),
               ],
             };

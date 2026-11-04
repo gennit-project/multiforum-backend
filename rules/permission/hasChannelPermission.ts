@@ -25,7 +25,7 @@ type HasChannelPermissionInput = {
 
 // A channel role is a flat map of permission name -> granted, modeled loosely so
 // the decision logic is decoupled from the generated OGM role types.
-type ChannelRoleLike = Record<string, boolean | null | undefined> | null | undefined;
+type ChannelRoleLike = Record<string, unknown> | null | undefined;
 
 interface ChannelRoles {
   ElevatedChannelRole?: ChannelRoleLike;
@@ -40,7 +40,7 @@ interface ServerRoleDefaults {
 
 // True when the user is listed among the channel's owners (admins).
 export function isChannelAdmin(
-  admins: Array<{ username?: string | null }> | null | undefined,
+  admins: Array<{ username?: unknown }> | null | undefined,
   username: string | null | undefined
 ): boolean {
   return !!admins?.some((admin) => admin.username === username);

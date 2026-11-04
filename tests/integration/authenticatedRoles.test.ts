@@ -333,3 +333,22 @@ test('nullable persisted membership identities do not grant an authenticated use
   assert.equal(result.data,null);
  }finally{await driver.executeQuery("MATCH(n) WHERE n.fixture IN ['nullable-admin','nullable-mod'] DETACH DELETE n");}
 });
+
+test('native channel capability values grant discussion creation only for the Boolean true',async()=>{
+ const name='role-capability-fixture',title='role-capability-contract-discussion';
+ await driver.executeQuery("CREATE(c:Channel{uniqueName:$name,createdAt:datetime(),fixture:'role-capability'}),(r:ChannelRole{fixture:'role-capability'}) CREATE(c)-[:HAS_DEFAULT_CHANNEL_ROLE]->(r)",{name});
+ try{
+  for(const capability of ['true',1,false,true]){
+   await driver.executeQuery("MATCH(r:ChannelRole{fixture:'role-capability'}) SET r.canCreateDiscussion=$capability",{capability});
+   const result=await graphql({schema,source:'mutation($input:[DiscussionCreateInputWithChannels!]!){createDiscussionWithChannelConnections(input:$input){id title}}',variableValues:{input:[{discussionCreateInput:{title},channelConnections:[name]}]},contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test',email_verified:true})},body:{},isMutation:true}}});
+   if(capability===true){assert.equal(result.errors,undefined);assert.ok(result.data?.createDiscussionWithChannelConnections);}
+   else{assert.equal(result.errors?.[0].message,ERROR_MESSAGES.channel.noChannelPermission);assert.equal(result.data,null);}
+   const count=(await driver.executeQuery('MATCH(d:Discussion{title:$title}) RETURN count(d) AS count',{title})).records[0].get('count').toNumber();
+   assert.equal(count,capability===true?1:0);
+  }
+ }finally{
+  await driver.executeQuery('MATCH(d:Discussion{title:$title}) DETACH DELETE d',{title});
+  await driver.executeQuery('MATCH(dc:DiscussionChannel{channelUniqueName:$name}) DETACH DELETE dc',{name});
+  await driver.executeQuery("MATCH(n) WHERE n.fixture='role-capability' DETACH DELETE n");
+ }
+});
