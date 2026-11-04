@@ -3,7 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { buildSchema, graphql, Kind, type GraphQLResolveInfo } from "graphql";
-import { ownerProtectedUserFields, resolveUsersWithChildIdentity } from "./userChildIdentityMiddleware.js";
+import { ownerProtectedUserFields, resolveUsersWithChildIdentity, resolveUpdatedUsersWithChildIdentity } from "./userChildIdentityMiddleware.js";
 import { accountChildIdentity } from "../services/accountChildIdentity.js";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -58,4 +58,26 @@ test('source failures propagate without inventing a response',async()=>{
   const response=await execute('{users{Email}}',[],()=>{throw new Error('source failed');});
   assert.equal(response.errors?.[0].message,'source failed');
   assert.deepEqual(response.errors?.[0].path,['users']);
+});
+
+test('mutation response dependency traversal preserves payload fragments and internal identity',async()=>{
+  const mutationSchema=buildSchema('type Query{ok:Boolean} type Mutation{updateUsers:Payload} type Payload{users:[User]} type User{username:String Email:String}');
+  let row: Record<string, unknown> | undefined;
+  const response=await graphql({schema:mutationSchema,source:'mutation($show:Boolean=true){updateUsers{...PayloadFields @include(if:$show)}} fragment PayloadFields on Payload{users{... on User{Email}}}',contextValue:context,rootValue:{
+    updateUsers:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>resolveUpdatedUsersWithChildIdentity((_p,_a,_c,selected)=>{
+      const payload=selected.fragments.PayloadFields.selectionSet.selections[0];
+      assert.equal(payload.kind,Kind.FIELD);
+      if(payload.kind!==Kind.FIELD)throw new Error('expected users field');
+      const children=payload.selectionSet!.selections;
+      const dependency=children[children.length-1];
+      assert.equal(dependency.kind,Kind.FIELD);
+      if(dependency.kind!==Kind.FIELD)throw new Error('expected identity field');
+      row={[dependency.alias!.value]:'alice',Email:'private'};
+      return {users:[row]};
+    },null,args,ctx,info),
+  }});
+  assert.equal(response.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{updateUsers:{users:[{Email:'private'}]}});
+  assert.ok(row);
+  assert.deepEqual(accountChildIdentity(row),{found:true,value:'alice'});
 });

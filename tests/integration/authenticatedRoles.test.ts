@@ -744,3 +744,31 @@ test('account child permission does not hash malformed native integer siblings b
   assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{broken:null,contact:{address:'normaluser@private.test'}}]});
  } finally {await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio='normaluser'");}
 });
+
+for(const fields of ['users{Email{address}}','accounts:users{...Private}'])test(`updated account child identity supports ${fields}`,async()=>{
+ await seedIdentityAccounts();
+ const fragment=fields.includes('...Private')?'fragment Private on User{contact:Email{address}}':'';
+ const response=await graphql({schema,source:`mutation{updateUsers(where:{username:{eq:"normaluser"}},update:{bio:{set:"updated"}}){${fields}}} ${fragment}`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{updateUsers:fields.startsWith('accounts')?{accounts:[{contact:{address:'normaluser@private.test'}}]}:{users:[{Email:{address:'normaluser@private.test'}}]}});
+ const persisted=await driver.executeQuery("MATCH(u:User{username:'normaluser'}) RETURN u.bio AS bio");
+ assert.equal(persisted.records[0].get('bio'),'updated');
+});
+
+for(const username of ['normaluser',null])test(`updated account child identity retains denied writes for ${username??'anonymous'}`,async()=>{
+ await seedIdentityAccounts();
+ const response=await graphql({schema,source:'mutation{updateUsers(where:{username:{eq:"adminuser"}},update:{bio:{set:"must-not-write"}}){users{Email{address}}}}',contextValue:{driver,req:{headers:username?{authorization:mockToken({username,email:'normal@e2e.test'})}:{},body:{},isMutation:true}}});
+ assert.ok(response.errors?.length,JSON.stringify(response));
+ const persisted=await driver.executeQuery("MATCH(u:User{username:'adminuser'}) RETURN u.bio AS bio");
+ assert.equal(persisted.records[0].get('bio'),'normaluser');
+});
+
+test('updated account child identity preserves empty matches and skipped child selections',async()=>{
+ await seedIdentityAccounts();
+ const response=await graphql({schema,source:`mutation($hide:Boolean!=true){
+  empty:updateUsers(where:{username:{eq:"normaluser"},bio:{eq:"not-current"}},update:{bio:{set:"must-not-write"}}){users{Email{address}}}
+  own:updateUsers(where:{username:{eq:"normaluser"}},update:{bio:{set:"updated"}}){users{renamed:username Email @skip(if:$hide){address}}}
+ }`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{empty:{users:[]},own:{users:[{renamed:'normaluser'}]}});
+});

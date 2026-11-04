@@ -909,3 +909,12 @@ valid integer sibling fields in both result orders, and a malformed integer-arra
 sibling whose completion error must stay on that sibling. Authentication continues
 to use the existing request cache; ownership results are never reused across
 parents or mutation arguments. This changes neither visibility policy nor schema.
+
+The dependency adapter also covers selected User children of generated
+`Mutation.updateUsers` responses. It rewrites the executed selection and captures
+the resulting raw identity without re-running the mutation. Real graph tests cover
+ordinary/aliased response lists, User fragments, denied writes, empty matches and
+skipped private fields. A pre-fix probe reproduced a child ownership error after a
+successful owner update; the new dependency removes that response error while
+preserving write timing. This does not certify every generated mutation selection
+shape, custom User-producing source, or child value. Inventory counts are unchanged.
