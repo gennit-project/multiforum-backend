@@ -1,15 +1,16 @@
 import type {Driver} from 'neo4j-driver';
-import type {User,UserCreateInput,UserUpdateInput,Channel} from '../../ogm_types.js';
+import type {UserCreateInput,UserUpdateInput} from '../../ogm_types.js';
+import type {BotIdentityProjection,BotUserWriteProjection,BotChannelProjection,BotChannelWriteProjection} from '../../customResolvers/contracts/botProvisioningProjections.js';
 import {executeGeneratedOperation} from './generatedSchemaOperations.js';
 import {NOTIFICATION_USER_SELECTION} from './notificationWriter.js';
 import {CHANNEL_MEMBERSHIP_SELECTION} from './forumMembershipSelections.js';
 export interface BotIdentityRepository {
- findIdentity(username:string):Promise<User[]>;
- createIdentity(input:UserCreateInput):Promise<{users:User[]}>;
- reactivateIdentity(username:string,update:UserUpdateInput):Promise<{users:User[]}>;
- findChannelBots(uniqueName:string):Promise<Channel[]>;
- connectBot(uniqueName:string,username:string):Promise<{channels:Channel[]}>;
- disconnectBots(uniqueName:string,usernames:string[]):Promise<{channels:Channel[]}>;
+ findIdentity(username:string):Promise<BotIdentityProjection[]>;
+ createIdentity(input:UserCreateInput):Promise<{users:BotUserWriteProjection[]}>;
+ reactivateIdentity(username:string,update:UserUpdateInput):Promise<{users:BotUserWriteProjection[]}>;
+ findChannelBots(uniqueName:string):Promise<BotChannelProjection[]>;
+ connectBot(uniqueName:string,username:string):Promise<{channels:BotChannelWriteProjection[]}>;
+ disconnectBots(uniqueName:string,usernames:string[]):Promise<{channels:BotChannelWriteProjection[]}>;
 }
 const IDENTITY=`query BotIdentity($where:UserWhere){users(where:$where){username isBot botProfileId isDeprecated deprecatedReason}}`;
 const CREATE=`mutation CreateBotIdentity($input:[UserCreateInput!]!){createUsers(input:$input){users ${NOTIFICATION_USER_SELECTION}}}`;
@@ -20,10 +21,10 @@ const CHANNEL=`query BotChannelIdentities($where:ChannelWhere){channels(where:$w
 const CONNECT=`mutation ConnectBotIdentity($where:ChannelWhere,$update:ChannelUpdateInput){updateChannels(where:$where,update:$update){channels ${CHANNEL_MEMBERSHIP_SELECTION}}}`;
 const DISCONNECT=`mutation DisconnectBotIdentities($where:ChannelWhere,$update:ChannelUpdateInput){updateChannels(where:$where,update:$update){channels ${CHANNEL_MEMBERSHIP_SELECTION}}}`;
 export function createBotIdentityRepository(driver:Driver):BotIdentityRepository{return{
- async findIdentity(username){return(await executeGeneratedOperation<{users:User[]}>(driver,IDENTITY,{where:{username:{eq:username}}})).users;},
- async createIdentity(input){return(await executeGeneratedOperation<{createUsers:{users:User[]}}>(driver,CREATE,{input:[input]})).createUsers;},
- async reactivateIdentity(username,update){return(await executeGeneratedOperation<{updateUsers:{users:User[]}}>(driver,REACTIVATE,{where:{username:{eq:username}},update})).updateUsers;},
- async findChannelBots(uniqueName){return(await executeGeneratedOperation<{channels:Channel[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}})).channels;},
- async connectBot(uniqueName,username){return(await executeGeneratedOperation<{updateChannels:{channels:Channel[]}}>(driver,CONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Bots:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;},
- async disconnectBots(uniqueName,usernames){return(await executeGeneratedOperation<{updateChannels:{channels:Channel[]}}>(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Bots:[{disconnect:usernames.map(username=>({where:{node:{username:{eq:username}}}}))}]}})).updateChannels;},
+ async findIdentity(username){return(await executeGeneratedOperation<{users:BotIdentityProjection[]}>(driver,IDENTITY,{where:{username:{eq:username}}})).users;},
+ async createIdentity(input){return(await executeGeneratedOperation<{createUsers:{users:BotUserWriteProjection[]}}>(driver,CREATE,{input:[input]})).createUsers;},
+ async reactivateIdentity(username,update){return(await executeGeneratedOperation<{updateUsers:{users:BotUserWriteProjection[]}}>(driver,REACTIVATE,{where:{username:{eq:username}},update})).updateUsers;},
+ async findChannelBots(uniqueName){return(await executeGeneratedOperation<{channels:BotChannelProjection[]}>(driver,CHANNEL,{where:{uniqueName:{eq:uniqueName}}})).channels;},
+ async connectBot(uniqueName,username){return(await executeGeneratedOperation<{updateChannels:{channels:BotChannelWriteProjection[]}}>(driver,CONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Bots:[{connect:[{where:{node:{username:{eq:username}}}}]}]}})).updateChannels;},
+ async disconnectBots(uniqueName,usernames){return(await executeGeneratedOperation<{updateChannels:{channels:BotChannelWriteProjection[]}}>(driver,DISCONNECT,{where:{uniqueName:{eq:uniqueName}},update:{Bots:[{disconnect:usernames.map(username=>({where:{node:{username:{eq:username}}}}))}]}})).updateChannels;},
 };}

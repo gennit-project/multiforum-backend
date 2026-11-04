@@ -24,21 +24,6 @@ interface UpdateChannelsResult {
   [key: string]: unknown;
 }
 
-interface ServerPluginEdge {
-  properties?: {
-    enabled?: boolean;
-    settingsJson?: string;
-  };
-  node?: {
-    version?: string;
-    settingsDefaults?: string;
-    Plugin?: {
-      name?: string;
-      tags?: string[];
-    };
-  };
-}
-
 const BOT_TAGS = new Set(['bot', 'bots']);
 
 export const parseSettingsJson = (settingsJson: unknown): Record<string, unknown> => {
@@ -102,8 +87,7 @@ async function syncBotsForChannel(result: UpdateChannelsResult, args: UpdateChan
     const serverConfigs = await repository.findServerPlugins();
 
     const serverConfig = serverConfigs?.[0];
-    const serverEdges: ServerPluginEdge[] =
-      (serverConfig?.InstalledVersionsConnection?.edges as unknown as ServerPluginEdge[]) || [];
+    const serverEdges = serverConfig?.InstalledVersionsConnection?.edges || [];
 
     // Build a map of server-level settings by plugin name
     const serverSettingsMap = new Map<string, { settingsJson: Record<string, unknown>; settingsDefaults: Record<string, unknown> }>();

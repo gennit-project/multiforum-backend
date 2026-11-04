@@ -525,3 +525,21 @@ The pass-through registration guard also binds each fallback's explicit source
 field to its registered GraphQL field, preventing a validly typed list helper
 from silently reading a different relationship. This proves name alignment only;
 aliased response-key handling and deferred child completion are unchanged.
+
+
+### Bot provisioning source projections
+
+Bot identity and channel-bot repositories now expose exact generated selections
+rather than complete User/Channel/ServerConfig objects. The service preserves its
+distinct existing-identity and created-user response shapes, and middleware no
+longer casts server-plugin edges to an optional-property catch-all. Ten repository
+entry paths exercise nine actual documents through the schema, including default
+write projections and the delegated orphan disconnect. Compile-negative fixtures
+reject missing selected nullable fields, unsafe nullable Plugin access and unfetched
+user/channel relationships. Real GraphQL + Shield tests cover owner provisioning,
+repeat mutations, aliases/fragments and denial before anonymous/non-owner writes.
+Existing disposable-database tests retain sequential synchronization, the 25-bot
+read limit, stale original identity after reactivation, and post-commit projection
+failure ordering. No query, write, setting normalization or permission behavior is
+changed. JSON contents and dynamically requested Channel.Bots child fields remain
+outside this fixed-source guarantee; accounting stays **176 selected / 33 deferred**.

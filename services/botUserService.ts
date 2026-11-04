@@ -1,3 +1,4 @@
+import type {BotIdentityProjection,BotUserWriteProjection} from '../customResolvers/contracts/botProvisioningProjections.js'
 import { createBotCommentRepository, type BotCommentRepository, type CommentCreateLike } from './persistence/botCommentRepository.js'
 import { createBotIdentityRepository, type BotIdentityRepository } from './persistence/botIdentityRepository.js'
 import type { UserCreateInput } from '../ogm_types.js'
@@ -68,7 +69,7 @@ export const ensureBotUserForChannel = async (input: {
   const repository = injectedRepository ?? createBotIdentityRepository(driver as Driver)
   const existingUsers = await repository.findIdentity(username)
 
-  let user = existingUsers[0] || null
+  let user: BotIdentityProjection | BotUserWriteProjection | null = existingUsers[0] || null
 
   if (!user) {
     const created = await repository.createIdentity({
