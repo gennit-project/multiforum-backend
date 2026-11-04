@@ -656,3 +656,17 @@ notifications is a behavior decision, not a type assertion or automatic coercion
 The candidate remedy is to retain notification delivery with an empty excerpt;
 this commit does not implement that policy. Accounting remains **176 / 209 selected,
 33 deferred** and does not certify these consumers end to end.
+
+### Notification-delivery projections
+
+Pipeline-result delivery now uses exact attempt/file projections and removes the
+whole-file intersection cast from recipient/link selection. Email recipient reads
+reuse the required selected username/email projection. Six schema-executed document
+checks protect these reads and the default user selections after pipeline, email
+and general notification writes; an omitted archived-channel field is rejected.
+Existing graph tests preserve canonical author fallback, archived-only null links,
+concurrent single delivery, retry rollback and post-commit projection failures.
+Email ordering, duplicate notifications and the historical omitted notification
+type remain unchanged. These are source and query safeguards, not a new delivery
+policy or certification of arbitrary user fields. Counts remain **176 selected /
+33 deferred**.

@@ -1,9 +1,10 @@
+import type {SubscriberSnapshot} from "../../customResolvers/contracts/notificationProjections.js";
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { NOTIFICATION_USER_SELECTION } from "./notificationWriter.js";
 
 export interface EmailNotificationRepository {
-  findRecipient(username: string): Promise<Array<{username: string; Email?: {address: string} | null}>>;
+  findRecipient(username: string): Promise<SubscriberSnapshot[]>;
   createAfterEmailNotification(username: string, text: string): Promise<boolean>;
 }
 const EMAIL_RECIPIENT = `query EmailNotificationRecipient($where: UserWhere) {
@@ -15,7 +16,7 @@ const AFTER_EMAIL_NOTIFICATION = `mutation CreateAfterEmailNotification($where: 
 export function createEmailNotificationRepository(driver: Driver): EmailNotificationRepository {
   return {
     async findRecipient(username) {
-      const result = await executeGeneratedOperation<{users: Array<{username: string; Email?: {address: string} | null}>}>(
+      const result = await executeGeneratedOperation<{users: SubscriberSnapshot[]}>(
         driver, EMAIL_RECIPIENT, {where: {username: {eq: username}}}
       );
       return result.users;
