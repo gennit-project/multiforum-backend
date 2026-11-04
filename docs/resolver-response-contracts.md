@@ -686,3 +686,11 @@ persisted membership identities do not grant server privileges. This does not
 validate raw stored capability values, alter role precedence or change any
 permission decision. The repository's raw projection limitations remain explicit;
 accounting stays **176 selected / 33 deferred**.
+
+The native suspension-notification writer now types its result row from the
+query's three literal CASE outcomes and keeps `user-not-found` as the absent-row
+fallback, removing the final result cast. Compile fixtures distinguish returned
+rows from that fallback. Existing disposable-database tests cover all outcomes,
+opt-out, repeated unread/read notifications, target-specific cleanup and valid
+issue links. No stored property is relabeled as validated data, and no notification
+or suspension behavior changes.

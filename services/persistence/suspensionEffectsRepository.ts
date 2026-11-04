@@ -1,4 +1,6 @@
-import type { Driver } from "neo4j-driver";
+import type {SuspensionNotificationRow,SuspensionNotificationStatus} from "../../customResolvers/contracts/suspensionNotificationSource.js";
+export type {SuspensionNotificationStatus} from "../../customResolvers/contracts/suspensionNotificationSource.js";
+import type { Driver, EagerResult } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 export type DisconnectExpiredSuspensionsInput = {
@@ -6,12 +8,6 @@ export type DisconnectExpiredSuspensionsInput = {
   userSuspensionIds: string[];
   modSuspensionIds: string[];
 };
-
-export type SuspensionNotificationStatus =
-  | "created"
-  | "disabled"
-  | "duplicate"
-  | "user-not-found";
 
 export interface SuspensionEffectsRepository {
   disconnectExpiredChannelSuspensions(
@@ -105,14 +101,14 @@ export function createSuspensionEffectsRepository(
     },
 
     async createBlockNotification(input) {
-      const result = await driver.executeQuery(
+      const result = await driver.executeQuery<EagerResult<SuspensionNotificationRow>>(
         CREATE_SUSPENSION_BLOCK_NOTIFICATION_QUERY,
         input,
         { database }
       );
       return (
         result.records[0]?.get("status") ?? "user-not-found"
-      ) as SuspensionNotificationStatus;
+      );
     },
   };
 }
