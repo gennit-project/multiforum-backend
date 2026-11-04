@@ -39,7 +39,7 @@ const normalizeValue = (value: unknown): unknown => {
   return value;
 };
 
-const USER_SUSPENSION_QUERY = `
+export const USER_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_USER]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_USER]-(suspendedUser:User)
@@ -68,7 +68,7 @@ const USER_SUSPENSION_QUERY = `
   } AS suspension
 `;
 
-const MOD_SUSPENSION_QUERY = `
+export const MOD_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_MOD]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_MOD]-(suspendedMod:ModerationProfile)

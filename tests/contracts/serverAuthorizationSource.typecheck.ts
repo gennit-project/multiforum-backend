@@ -18,3 +18,9 @@ declare const effective: Exclude<EffectiveRole, "all" | null | undefined>;
 // @ts-expect-error selecting a role does not validate its capability values
 const effectiveCapability: boolean = effective.canManageRoles;
 void [capability, identity, missing, cachedCapability, downloads, effectiveCapability];
+
+// @ts-expect-error native suspension IDs are not completed GraphQL IDs
+const suspensionId: string = source.SuspendedUsers[0].id;
+// @ts-expect-error cached suspension flags are not completed Booleans
+const indefinite: boolean = cached.SuspendedUsers[0].suspendedIndefinitely;
+void [suspensionId, indefinite];

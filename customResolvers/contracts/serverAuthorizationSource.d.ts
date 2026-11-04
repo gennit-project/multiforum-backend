@@ -1,3 +1,4 @@
+import type { ServerSuspensionCore } from "./serverSuspensionSource.js";
 // Native Cypher constructs these containers, but does not complete their
 // property values through GraphQL scalar validation.
 export type RawServerCapabilities = Record<string, unknown>;
@@ -13,9 +14,8 @@ export type NativeServerAuthorizationSnapshot = {
   SuperAdmins: Array<{ username: unknown }>;
   Admins: Array<{ username: unknown }>;
   Moderators: Array<{ displayName: unknown }>;
-  // Legacy suspension conversion is not certified by this authorization slice.
-  SuspendedUsers: unknown[];
-  SuspendedMods: unknown[];
+  SuspendedUsers: Array<Omit<ServerSuspensionCore, "channelUniqueName">>;
+  SuspendedMods: Array<Omit<ServerSuspensionCore, "channelUniqueName">>;
 };
 export type ServerAuthorizationRecord = {
   serverConfig: NativeServerAuthorizationSnapshot;

@@ -8,7 +8,7 @@ import {
   type SuspensionEffectsRepository,
 } from "../../services/persistence/suspensionEffectsRepository.js";
 
-type SuspensionReference = { id: string };
+type SuspensionReference = { id: unknown };
 
 type DisconnectExpiredSuspensionsInput = {
   driver: Driver;
@@ -19,8 +19,8 @@ type DisconnectExpiredSuspensionsInput = {
 };
 
 type DisconnectExpiredSuspensionsResult = {
-  disconnectedUserSuspensionIds: string[];
-  disconnectedModSuspensionIds: string[];
+  disconnectedUserSuspensionIds: unknown[];
+  disconnectedModSuspensionIds: unknown[];
 };
 
 export async function disconnectExpiredSuspensions(

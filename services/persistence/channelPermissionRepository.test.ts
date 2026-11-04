@@ -110,12 +110,13 @@ test("loads user and mod suspensions sequentially in one session", async () => {
                   query === USER_CHANNEL_SUSPENSION_QUERY
                     ? {
                         id: "user-1",
+                        username: null, modProfileName: null, suspendedUntil: null, suspendedIndefinitely: null, SuspendedUser: null,
                         RelatedIssue: {
                           id: "issue-1",
                           issueNumber: neo4j.int(12),
                         },
                       }
-                    : { id: "mod-1" },
+                    : { id: "mod-1", username: null, modProfileName: null, suspendedUntil: null, suspendedIndefinitely: null, RelatedIssue: null, SuspendedMod: null },
               }),
             ],
           };
@@ -138,10 +139,11 @@ test("loads user and mod suspensions sequentially in one session", async () => {
       userSuspensions: [
         {
           id: "user-1",
+                        username: null, modProfileName: null, suspendedUntil: null, suspendedIndefinitely: null, SuspendedUser: null,
           RelatedIssue: { id: "issue-1", issueNumber: 12 },
         },
       ],
-      modSuspensions: [{ id: "mod-1" }],
+      modSuspensions: [{ id: "mod-1", username: null, modProfileName: null, suspendedUntil: null, suspendedIndefinitely: null, RelatedIssue: null, SuspendedMod: null }],
     }
   );
   assert.deepEqual(calls, [

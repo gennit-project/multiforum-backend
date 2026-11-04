@@ -401,6 +401,11 @@ test("native server suspension leaves stay untrusted through cached permission e
     assert.equal(typeof result.activeSuspension?.suspendedUntil, "string");
     assert.equal(result.relatedIssueId, 789);
     assert.equal(result.relatedIssueNumber, "9");
+    const { createPermissionServerConfigRepository } = await import("../../services/persistence/permissionServerConfigRepository.js");
+    const configuration = await createPermissionServerConfigRepository(driver).findByName(SERVER_CONFIG_NAME);
+    assert.equal(configuration?.SuspendedUsers[0].id, 123);
+    assert.equal(configuration?.SuspendedUsers[0].suspendedIndefinitely, "false");
+    assert.deepEqual(configuration?.SuspendedUsers[0].RelatedIssue, {id:789,issueNumber:"9"});
     assert.equal(result.expiredUserSuspensions.length, 0);
     const response = await execDeleteServerConfigs(mockToken({username:"normaluser",email:"normal@e2e.test"}));
     assert.equal(response.errors?.[0].message, ERROR_MESSAGES.server.noServerPermission);

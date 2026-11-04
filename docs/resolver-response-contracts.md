@@ -707,9 +707,9 @@ supported. Owner/default/moderator decision helpers retain exact-true comparison
 Compile fixtures reject Boolean/string assumptions, while real GraphQL + Shield
 mutations prove stored `"true"`, `1` and `false` cannot create a discussion and
 Boolean `true` can. Existing owner, moderator, lock, suspension and cleanup tests
-remain unchanged in behavior. Legacy suspension row normalization and server-config
-raw projections are separate limitations; this does not certify them or change
-role precedence, lock truthiness or permission policy. Counts remain **176 selected /
+remain unchanged in behavior. The server and suspension source follow-ups below now cover their native
+containers too; stored scalar leaves remain explicitly untrusted. Role precedence,
+lock truthiness and permission policy are unchanged. Counts remain **176 selected /
 33 deferred**.
 
 ### Native server authorization source
@@ -723,9 +723,9 @@ precedence, leader routing and recursive Neo4j integer normalization are unchang
 The download feature flag also remains untrusted until its existing `=== true`
 check. Compile-negative coverage prevents reintroducing trusted leaf assertions;
 a real GraphQL/Shield mutation checks string, numeric, false, null and true stored
-capabilities against a disposable database. Legacy nested suspension conversion
-remains separately unverified; this source safeguard does not increase the selected
-response-boundary count or certify the whole authorization system.
+capabilities against a disposable database. Nested suspension source conversion is covered by the follow-up below, with
+stored leaves explicitly untrusted. These source safeguards do not increase the
+selected response-boundary count or certify the whole authorization system.
 
 ### Instance age/feature policy source selections
 
@@ -764,6 +764,25 @@ notification formatting. Compile-negative fixtures reject treating raw IDs, flag
 or issue numbers as completed scalars. Real GraphQL/Shield and disposable-database
 tests retain suspension precedence, including legacy truthy non-Boolean flags,
 plus expiry, notification and cleanup behavior. Read routing, sequential queries,
-cache identity and transaction boundaries are unchanged. The unrelated server
-configuration suspension lists and channel suspension source remain separate
-migration work. No selected-response inventory promotion is made.
+cache identity and transaction boundaries are unchanged. The server configuration lists and channel suspension source are covered in
+the next section. No selected-response inventory promotion is made.
+
+### Channel and configuration suspension sources
+
+Targeted channel user/moderator reads now declare their distinct native map shapes,
+with no unrestricted normalization return or whole-entity assertion. Issue and
+identity values remain unknown through classification and cleanup. Server-config
+suspension lists now use an exact native selection too, replacing their legacy
+unrestricted conversion. Existing injected-reader compatibility remains explicit.
+This completes the previously noted native permission-source gap, not a promise
+that arbitrary stored scalars are valid. Compile-negative and real-database tests
+retain numeric identity values, string issue numbers, nullable links and existing
+indefinite-flag truthiness; GraphQL/Shield enforcement and notification regressions
+cover the downstream paths. No suspension policy, scope, routing, cleanup order,
+public schema or selected-response inventory count changes are introduced.
+
+Five actual native suspension queries additionally execute against a disposable
+Neo4j with their returned map keys checked against the source declarations,
+including nested issue/member projections and null-valued selected keys. Removing
+a required selection fails the guard; restoring it passes. This guards query/type
+drift without adding eager scalar rejection to production reads.

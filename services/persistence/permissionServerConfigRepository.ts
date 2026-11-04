@@ -39,14 +39,16 @@ const MOD_SERVER_ROLE_CAPABILITIES = [
 
 type CapabilityMap = RawServerCapabilities;
 
+// Optional properties retain the injected-reader compatibility contract. Native
+// query rows use the exact required map in NativeServerAuthorizationSnapshot.
 export type PermissionSuspension = {
-  id?: string | null;
-  username?: string | null;
-  modProfileName?: string | null;
-  serverName?: string | null;
+  id?: unknown;
+  username?: unknown;
+  modProfileName?: unknown;
+  serverName?: unknown;
   suspendedUntil?: string | null;
-  suspendedIndefinitely?: boolean | null;
-  RelatedIssue?: { id?: string | null; issueNumber?: number | null } | null;
+  suspendedIndefinitely?: unknown;
+  RelatedIssue?: { id?: unknown; issueNumber?: unknown } | null;
 };
 
 export type PermissionServerConfig = {
@@ -161,7 +163,7 @@ export const PERMISSION_SERVER_CONFIG_QUERY = `
   LIMIT 1
 `;
 
-const normalizeNeo4jValue = (value: unknown): any => {
+const normalizeNeo4jValue = (value: unknown): unknown => {
   if (neo4j.isInt(value)) return value.toNumber();
   if (Array.isArray(value)) return value.map(normalizeNeo4jValue);
   if (value && typeof value === "object") {
@@ -181,6 +183,21 @@ const normalizeCapabilities = (
   Object.entries(role).map(([key, value]) => [key, normalizeNeo4jValue(value)])
 );
 
+const normalizeSuspension = (
+  value: NativeServerAuthorizationSnapshot["SuspendedUsers"][number]
+): PermissionSuspension => ({
+  id: normalizeNeo4jValue(value.id),
+  username: normalizeNeo4jValue(value.username),
+  modProfileName: normalizeNeo4jValue(value.modProfileName),
+  serverName: normalizeNeo4jValue(value.serverName),
+  suspendedUntil: value.suspendedUntil,
+  suspendedIndefinitely: normalizeNeo4jValue(value.suspendedIndefinitely),
+  RelatedIssue: value.RelatedIssue == null ? value.RelatedIssue : {
+    id: normalizeNeo4jValue(value.RelatedIssue.id),
+    issueNumber: normalizeNeo4jValue(value.RelatedIssue.issueNumber),
+  },
+});
+
 const normalizeAuthorizationSnapshot = (
   value: NativeServerAuthorizationSnapshot
 ): PermissionServerConfig => ({
@@ -195,10 +212,8 @@ const normalizeAuthorizationSnapshot = (
   SuperAdmins: value.SuperAdmins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
   Admins: value.Admins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
   Moderators: value.Moderators.map(member => ({ displayName: normalizeNeo4jValue(member.displayName) })),
-  // Keep the pre-existing suspension adapter separate from the untrusted
-  // capability/identity contract. Its nested leaves still need migration.
-  SuspendedUsers: value.SuspendedUsers.map(normalizeNeo4jValue),
-  SuspendedMods: value.SuspendedMods.map(normalizeNeo4jValue),
+  SuspendedUsers: value.SuspendedUsers.map(normalizeSuspension),
+  SuspendedMods: value.SuspendedMods.map(normalizeSuspension),
 });
 
 export function createPermissionServerConfigRepository(
