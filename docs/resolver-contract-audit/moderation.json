@@ -15,9 +15,12 @@
         "tests/integration/issueActivityAndSoftDelete.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/queryDelegation.d.ts",
+        "services/persistence/delegateQueryField.ts",
+        "tests/contracts/queryDelegation.typecheck.ts"
       ],
-      "reason": "Merged #443 delegates each payload selection after one committed write. Real-schema regressions cover aliases/fragments/variables, merged selections, default values and outer Shield privacy. Actual registration checks generated mutation arguments and a child method with args/context/info; delegate result remains unknown.",
+      "reason": "Merged #443 delegates each payload selection after one committed write. Real-schema regressions cover aliases/fragments/variables, merged selections, default values and outer Shield privacy. Actual registration checks generated mutation arguments and a child method with args/context/info; delegate result remains unknown. Its actual upstream delegation now checks the query field name and matching generated arguments via a reusable query-only helper, with no eager validation or full-result cast. The action-ID write result is precise; skipped payloads do not read, and delegated read failures retain committed writes and requested error paths.",
       "decision": "Do not assert the library any result as a full Issue array. Derive/validate selection-dependent item types upstream before promoting response status; source-method shape alone is not completion."
     },
     {

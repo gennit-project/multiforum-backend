@@ -35,3 +35,13 @@ test("the actual activity mutation registration checks its delegated source meth
  assert.equal(field.initializer.type.getText(src),'DelegatedActivitySource');
  assert.equal(field.initializer.expression.getText(src),'addIssueActivityFeedItem({ driver })');
 });
+
+test('activity payload delegates through the generated query-argument boundary',()=>{
+ const file='customResolvers/mutations/addIssueActivityFeedItem.ts';
+ const src=ts.createSourceFile(file,readFileSync(file,'utf8'),ts.ScriptTarget.Latest,true);
+ const calls:ts.CallExpression[]=[];
+ function walk(node:ts.Node){if(ts.isCallExpression(node))calls.push(node);ts.forEachChild(node,walk);}
+ walk(src);
+ assert.equal(calls.filter(call=>call.expression.getText(src)==='delegateQueryField').length,1);
+ assert.equal(calls.filter(call=>call.expression.getText(src)==='delegateToSchema').length,0);
+});

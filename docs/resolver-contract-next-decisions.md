@@ -210,3 +210,16 @@ The existing comment-source query's moderator-author error is preserved: the
 fragment-only union currently resolves as User and fails username completion.
 Changing moderator attribution/union behavior is not part of this typing slice.
 Vote limits, age filtering, karma, notifications and write/error ordering remain.
+
+### Dynamic activity delegation input boundary
+
+The actual activity payload now delegates through a query-only helper whose field
+name and arguments are checked together against generated QueryResolvers. Compile
+fixtures reject misspelled fields, mutation names and incorrect field-specific
+filters. The helper preserves the exact context/info and library return value;
+errors, nulls and partial child results remain unknown rather than being cast as
+complete Issues. The owned write's randomUUID action-ID result is typed precisely.
+GraphQL/Shield regressions preserve aliases, fragments, defaults, one write per
+mutation, private fields, lazy skipped payloads and post-commit read-error paths.
+Accounting remains **176 selected / 33 deferred**. This is an upstream call
+contract, not a claim that arbitrary delegated child values are statically checked.

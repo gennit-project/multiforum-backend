@@ -254,3 +254,31 @@ test('unaliased activity selection forwards directive variables without a post-c
   assert.equal(result.errors, undefined, JSON.stringify(result.errors));
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {action:{issues:[{id:'selection',title:'Visible title'}]}});
 });
+
+test('typed activity delegation retains post-commit read errors and the requested payload path',async()=>{
+ await seedSelectionIssue();
+ const field=schema.getQueryType()!.getFields().issues;
+ const original=field.resolve;let reads=0;
+ field.resolve=(_parent,args,context)=>{
+  reads++;assert.deepEqual(args.where,{id:{eq:'selection'}});
+  assert.deepEqual(context,{jwt:{mayAccessSensitiveContent:true}});
+  throw new Error('delegated read unavailable');
+ };
+ try{
+  const result=await graphql({schema,source:selectionMutation('items:issues{id}'),contextValue:{}});
+  assert.equal(reads,1);assert.equal(result.data,null);
+  assert.ok(result.errors?.some(error=>error.message==='delegated read unavailable'&&JSON.stringify(error.path)===JSON.stringify(['action','items'])));
+  await assertOneWrite();
+ }finally{field.resolve=original;}
+});
+
+test('a skipped delegated payload does not read even when its source would fail',async()=>{
+ await seedSelectionIssue();
+ const field=schema.getQueryType()!.getFields().issues;const original=field.resolve;let reads=0;
+ field.resolve=()=>{reads++;throw new Error('must remain lazy');};
+ try{
+  const result=await graphql({schema,source:selectionMutation('items:issues @skip(if:true){id}'),contextValue:{}});
+  assert.equal(result.errors,undefined);assert.equal(reads,0);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{}});await assertOneWrite();
+ }finally{field.resolve=original;}
+});
