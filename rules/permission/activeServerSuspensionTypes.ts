@@ -1,11 +1,11 @@
-import type { Suspension } from "../../ogm_types.js";
+import type { ServerSuspensionSource } from "../../customResolvers/contracts/serverSuspensionSource.js";
 
 export type ActiveServerSuspensionResult = {
-  activeSuspension: Suspension | null;
+  activeSuspension: ServerSuspensionSource | null;
   isSuspended: boolean;
-  relatedIssueId: string | null;
-  relatedIssueNumber: number | null;
-  expiredUserSuspensions: Suspension[];
-  expiredModSuspensions: Suspension[];
+  relatedIssueId: unknown;
+  relatedIssueNumber: unknown;
+  expiredUserSuspensions: ServerSuspensionSource[];
+  expiredModSuspensions: ServerSuspensionSource[];
   suspendedEntity: "user" | "mod" | null;
 };

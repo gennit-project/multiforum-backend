@@ -753,3 +753,17 @@ test fail. No recipient selection, permission or karma policy changes are made;
 the existing documented moderator no-karma path is now reachable. The projection
 and compile-negative fixtures distinguish both branches. The raw returned
 super-upvoter child properties remain deferred, so counts do not increase.
+
+### Targeted server-suspension source
+
+The two native targeted suspension reads now have separate user/moderator source
+shapes instead of casting their results to complete generated Suspensions. Cypher
+provides the nullable date string; other stored leaves remain unknown through
+normalization, request caching, expiry classification, cleanup ID lists and
+notification formatting. Compile-negative fixtures reject treating raw IDs, flags
+or issue numbers as completed scalars. Real GraphQL/Shield and disposable-database
+tests retain suspension precedence, including legacy truthy non-Boolean flags,
+plus expiry, notification and cleanup behavior. Read routing, sequential queries,
+cache identity and transaction boundaries are unchanged. The unrelated server
+configuration suspension lists and channel suspension source remain separate
+migration work. No selected-response inventory promotion is made.

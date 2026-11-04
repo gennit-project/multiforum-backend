@@ -383,3 +383,31 @@ test("native server capability values permit a management mutation only for Bool
     );
   }
 });
+
+test("native server suspension leaves stay untrusted through cached permission enforcement", async () => {
+  const roleResult = await driver.executeQuery("MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) RETURN r.canManageServerSettings AS previous", {name:SERVER_CONFIG_NAME});
+  const previous = roleResult.records[0].get("previous");
+  await driver.executeQuery("MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageServerSettings=true", {name:SERVER_CONFIG_NAME});
+  await driver.executeQuery(`MATCH(s:ServerConfig{serverName:$name})
+    CREATE(x:Suspension{id:123,username:'normaluser',suspendedUntil:datetime('2000-01-01T00:00:00Z'),suspendedIndefinitely:'false'}),
+      (i:Issue{id:789,issueNumber:'9'})
+    CREATE(s)-[:SUSPENDED_AS_USER]->(x),(x)-[:HAS_CONTEXT]->(i)`, { name: SERVER_CONFIG_NAME });
+  try {
+    const { getActiveServerSuspension } = await import("../../rules/permission/getActiveServerSuspension.js");
+    const result = await getActiveServerSuspension({ context: {driver}, username:"normaluser" });
+    assert.equal(result.isSuspended, true, "retain existing truthiness of a stored indefinite flag");
+    assert.equal(result.activeSuspension?.id, 123);
+    assert.equal(result.activeSuspension?.suspendedIndefinitely, "false");
+    assert.equal(typeof result.activeSuspension?.suspendedUntil, "string");
+    assert.equal(result.relatedIssueId, 789);
+    assert.equal(result.relatedIssueNumber, "9");
+    assert.equal(result.expiredUserSuspensions.length, 0);
+    const response = await execDeleteServerConfigs(mockToken({username:"normaluser",email:"normal@e2e.test"}));
+    assert.equal(response.errors?.[0].message, ERROR_MESSAGES.server.noServerPermission);
+    assert.equal(response.data, null);
+  } finally {
+    await driver.executeQuery("MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageServerSettings=$previous", {name:SERVER_CONFIG_NAME,previous});
+    await driver.executeQuery("MATCH(x:Suspension{id:123}) DETACH DELETE x");
+    await driver.executeQuery("MATCH(i:Issue{id:789}) DETACH DELETE i");
+  }
+});

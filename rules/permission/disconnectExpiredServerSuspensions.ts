@@ -1,7 +1,7 @@
 import type { GraphQLContext } from "../../types/context.js";
 import { createSuspensionEffectsRepository } from "../../services/persistence/suspensionEffectsRepository.js";
 
-type SuspensionReference = { id: string };
+type SuspensionReference = { id: unknown };
 
 type DisconnectExpiredServerSuspensionsInput = {
   context: GraphQLContext;

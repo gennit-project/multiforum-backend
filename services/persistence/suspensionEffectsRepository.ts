@@ -5,8 +5,8 @@ import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 export type DisconnectExpiredSuspensionsInput = {
   scopeName: string;
-  userSuspensionIds: string[];
-  modSuspensionIds: string[];
+  userSuspensionIds: unknown[];
+  modSuspensionIds: unknown[];
 };
 
 export interface SuspensionEffectsRepository {
