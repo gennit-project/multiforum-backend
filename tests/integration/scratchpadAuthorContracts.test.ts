@@ -32,7 +32,7 @@ beforeEach(async () => {
       (m:ModerationProfile{displayName:'Moderator'}),
       (ch:Channel{uniqueName:'forum',createdAt:datetime()}),
       (r:ChannelRole{canUpvoteComment:true}),
-      (c:Comment{id:'comment',text:'comment text',createdAt:datetime(),weightedVotesCount:0}),
+      (c:Comment{id:'comment',text:'comment text',isRootComment:true,isFeedbackComment:false,createdAt:datetime(),weightedVotesCount:0}),
       (dc:DiscussionChannel{id:'post',discussionId:'discussion',channelUniqueName:'forum',createdAt:datetime()})
     CREATE(ch)-[:HAS_DEFAULT_CHANNEL_ROLE]->(r),
       (a)-[:UPVOTED_COMMENT]->(c),(m)-[:AUTHORED_COMMENT]->(c),
@@ -131,5 +131,49 @@ for (const sourceType of ["comment", "discussion"] as const) {
     assert.deepEqual(await snapshot(),created);
     await setPermission(true);
     assert.equal((await invoke(undo)).errors,undefined);
+  });
+}
+
+for (const [operation, target, effect] of [
+  ["upvoteComment","comment","addVote"],
+  ["undoUpvoteComment","comment","removeVote"],
+  ["upvoteDiscussionChannel","discussion","addVote"],
+  ["undoUpvoteDiscussionChannel","discussion","removeVote"],
+  ["addEmojiToComment","comment","addEmoji"],
+  ["removeEmojiFromComment","comment","removeEmoji"],
+  ["addEmojiToDiscussionChannel","discussion","addEmoji"],
+  ["removeEmojiFromDiscussionChannel","discussion","removeEmoji"],
+] as const) {
+  test(`${operation}: only the authenticated actor's vote or reaction may change`, async () => {
+    await driver.executeQuery(`MATCH(a:User{username:'alice'}),(b:User{username:'bob'}),(dc:DiscussionChannel{id:'post'}),(m:ModerationProfile)
+      SET b.discussionKarma=0,dc.weightedVotesCount=0,m.createdAt=datetime()
+      CREATE(d:Discussion{id:'discussion',title:'Discussion',createdAt:datetime()})
+      CREATE(dc)-[:POSTED_IN_CHANNEL]->(d),(b)-[:POSTED_DISCUSSION]->(d)`);
+    await driver.executeQuery("MATCH(r:ChannelRole) SET r.canUpvoteDiscussion=true");
+    await driver.executeQuery("MATCH()-[r:UPVOTED_COMMENT|UPVOTED_DISCUSSION]->() DELETE r");
+    const label = target === "comment" ? "Comment" : "DiscussionChannel";
+    const id = target === "comment" ? "comment" : "post";
+    const relation = target === "comment" ? "UPVOTED_COMMENT" : "UPVOTED_DISCUSSION";
+    if (effect === "removeVote") {
+      await driver.executeQuery(`MATCH(n:${label}{id:$id}),(u:User) WHERE u.username IN ['alice','bob'] CREATE(u)-[:${relation}]->(n) SET n.weightedVotesCount=2`, {id});
+    }
+    const emoji = effect === "removeEmoji" ? JSON.stringify({heart:{heart:["alice","bob"]}}) : "{}";
+    await driver.executeQuery(`MATCH(n:${label}{id:$id}) SET n.emoji=$emoji`,{id,emoji});
+    const argument = target === "comment" ? "commentId" : "discussionChannelId";
+    const emojiArgs = effect.includes("Emoji") ? `,emojiLabel:"heart"${effect === "addEmoji" ? ',unicode:"heart"' : ''}` : "";
+    const invoke = (username: string) => graphql({schema,source:`mutation{${operation}(${argument}:"${id}",username:"${username}"${emojiArgs}){id}}`,contextValue:{driver,req:{headers:{authorization:`Bearer ${jwt.sign({username:"alice",email:"alice@example.test",email_verified:true},"test-only-key")}`},body:{},isMutation:true}}});
+    const snapshot = async () => (await driver.executeQuery(`MATCH(n:${label}{id:$id})
+      RETURN n.emoji AS emoji,n.weightedVotesCount AS weight,
+        [(u:User)-[:${relation}]->(n)|u.username] AS voters,
+        COLLECT {MATCH(u:User) RETURN {username:u.username,commentKarma:u.commentKarma,discussionKarma:u.discussionKarma} ORDER BY u.username} AS karma,
+        COUNT {(:Notification)} AS notifications`,{id})).records[0].toObject();
+    const before = await snapshot();
+    const denied = await invoke("bob");
+    assert.ok(denied.errors, "a caller must not modify another user's vote or reaction");
+    assert.deepEqual(await snapshot(),before);
+    const allowed = await invoke("alice");
+    assert.equal(allowed.errors,undefined,JSON.stringify(allowed.errors));
+    assert.ok(allowed.data?.[operation]);
+    assert.notDeepEqual(await snapshot(),before,"the authenticated actor's operation must still execute");
   });
 }

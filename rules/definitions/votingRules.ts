@@ -3,8 +3,20 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import { setUserDataOnContext } from "../permission/userDataHelperFunctions.js";
 import { hasChannelPermission } from "../permission/hasChannelPermission.js";
 import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
+
+const assertVoteActor = async (context: GraphQLContext, username: string) => {
+  // Shield may evaluate sibling rules concurrently. Resolve through the same
+  // request identity cache rather than relying on isAuthenticated finishing first.
+  if (!context.user?.data) {
+    context.user = await setUserDataOnContext({ context });
+  }
+  if (!context.user?.username || context.user.username !== username) {
+    throw new Error("You may only change your own votes and reactions.");
+  }
+};
 
 type CanUpvoteCommentArgs = {
   commentId: string;
@@ -19,6 +31,7 @@ export const canUpvoteComment = rule({ cache: "contextual" })(
       throw new Error("All arguments (commentId, username) are required");
     }
 
+    await assertVoteActor(ctx, username);
     const repository = resolveContentChannelPermissionRepository(ctx);
     const commentData = await repository.findCommentChannelReferences(commentId);
 
@@ -136,6 +149,7 @@ export const canUpvoteDiscussion = rule({ cache: "contextual" })(
       );
     }
 
+    await assertVoteActor(ctx, username);
     const repository = resolveContentChannelPermissionRepository(ctx);
     const discussionChannelData =
       await repository.findDiscussionChannelReference(discussionChannelId);

@@ -798,3 +798,14 @@ does; restoring its old projection reproduces the moderator-author failure.
 Ordinary author karma, moderator no-karma behavior, notification preferences,
 limits and transaction ordering remain intact. This behavior correction does not
 certify the raw returned voter list or change selected-response accounting.
+
+### Voting actor checks
+
+The two shared vote/reaction permission guards now require the supplied username
+to match the authenticated request identity. Identity resolution uses the existing
+request cache, including when Shield evaluates sibling rules concurrently. Tests
+execute all eight add/remove operations through GraphQL and Shield, verifying
+rejection before content lookup and no vote, reaction, weight, karma or notification
+changes on denial. Each operation also has a successful self-action control.
+Required-argument validation, channel permissions, response contracts and ordinary
+voting/reaction behavior remain intact. No additional response boundary is counted.

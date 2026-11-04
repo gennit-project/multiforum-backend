@@ -213,3 +213,16 @@ test("canUpvoteDiscussion runs the permission check and denies without permissio
   const ctx = withChannelCtx({ DiscussionChannel: [{ id: "dc-1", channelUniqueName: "cats" }] });
   await expectDeniedOrError(run(canUpvoteDiscussion, { discussionChannelId: "dc-1", username: "alice" }, ctx));
 });
+
+for (const [permission,args] of [
+  [canUpvoteComment,{commentId:"comment",username:"bob"}],
+  [canUpvoteDiscussion,{discussionChannelId:"post",username:"bob"}],
+] as const) {
+  test(`vote actor mismatch is rejected before content lookup (${Object.keys(args)[0]})`, async () => {
+    const counters = makeCounters();
+    await assert.rejects(run(permission,args,makeCtx({},counters)),/only change your own/);
+    assert.equal(counters.commentCalls,0);
+    assert.equal(counters.discussionCalls,0);
+    assert.deepEqual(counters.permissionChannels,[]);
+  });
+}
