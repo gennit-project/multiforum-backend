@@ -162,12 +162,16 @@ export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["
 
 const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModInvites"] as const;
 
+const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "PendingModInvites"] as const;
+
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
     channels: userChildIdentityAtPaths(channelUserLists.map(field => ({path: [field]}))),
     channelsConnection: userChildIdentityAtPaths(channelUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
+    serverConfigs: userChildIdentityAtPaths(serverUserLists.map(field => ({path: [field]}))),
+    serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },

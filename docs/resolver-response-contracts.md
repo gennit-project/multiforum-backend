@@ -972,3 +972,11 @@ version and patch hash are locked by pnpm and included in container builds.
 
 This fixes concrete ordering/response behavior, not arbitrary descendant value
 contracts. Accounting remains **176 selected / 33 deferred**.
+
+Server-config roots now declare the four User-list source paths `SuperAdmins`,
+`Admins`, `PendingAdminInvites` and `PendingModInvites`, including their generated
+connection envelopes. Four pre-fix owner Email probes failed without username in
+the selection. Nine real graph/Shield regressions cover owner and anonymous
+results, aliases/fragments, sorted members, skipped dependencies, missing servers,
+empty lists and requested scalar errors. This preserves administrative capabilities
+and does not certify whole User children; accounting stays 176 selected / 33 deferred.

@@ -874,3 +874,75 @@ test('channel member pagination uses source ordering before private child comple
  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{Bots:[{key:'normaluser',username:'normaluser',Email:{address:'normaluser@private.test'}}]}]});
 });
+
+const identityServerMembers = [
+  { field: 'SuperAdmins', relationship: 'SUPER_ADMIN_OF_SERVER', incoming: true },
+  { field: 'Admins', relationship: 'ADMIN_OF_SERVER', incoming: true },
+  { field: 'PendingAdminInvites', relationship: 'HAS_PENDING_SERVER_ADMIN_INVITE', incoming: false },
+  { field: 'PendingModInvites', relationship: 'HAS_PENDING_SERVER_MOD_INVITE', incoming: false },
+];
+async function seedServerMemberIdentities() {
+  await seedIdentityAccounts();
+  await driver.executeQuery("MERGE(:ServerConfig{serverName:'identity-server'})");
+  for (const { relationship, incoming } of identityServerMembers) {
+    await driver.executeQuery(`MATCH(s:ServerConfig{serverName:'identity-server'}),(u:User)
+      WHERE u.username IN ['normaluser','adminuser']
+      MERGE ${incoming ? `(u)-[:${relationship}]->(s)` : `(s)-[:${relationship}]->(u)`}`);
+  }
+}
+for (const { field } of identityServerMembers) test(`server ${field} source supplies protected child identity`, async () => {
+  await seedServerMemberIdentities();
+  const response = await graphql({ schema,
+    source: `{serverConfigs(where:{serverName:{eq:"identity-server"}}){${field}(where:{username:{eq:"normaluser"}}){Email{address}}}}`,
+    contextValue: { driver, req: { headers: { authorization: mockToken({ username: 'normaluser', email: 'normal@e2e.test' }) }, body: {} } },
+  });
+  assert.equal(response.errors, undefined, JSON.stringify(response.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)), { serverConfigs: [{ [field]: [{ Email: { address: 'normaluser@private.test' } }] }] });
+});
+
+for (const connection of [false, true]) for (const viewer of ['normaluser', null]) {
+  test(`server member aliases preserve child permissions in ${connection ? 'connections' : 'lists'} for ${viewer ?? 'anonymous'}`, async () => {
+    await seedServerMemberIdentities();
+    const members = identityServerMembers.map(({ field }, index) => `list${index}:${field}(sort:[{username:ASC}]){key:username username:bio _accountIdentity:bio ...Private}`).join(' ');
+    const source = connection
+      ? 'query{page:serverConfigsConnection(where:{serverName:{eq:"identity-server"}}){links:edges{entry:node{...Members}}}}'
+      : 'query{page:serverConfigs(where:{serverName:{eq:"identity-server"}}){...Members}}';
+    const response = await graphql({ schema, source: source + ` fragment Members on ServerConfig{${members}} fragment Private on User{contact:Email{address}}`,
+      contextValue: { driver, req: { headers: viewer ? { authorization: mockToken({ username: viewer, email: 'normal@e2e.test' }) } : {}, body: {} } },
+    });
+    const prefix = connection ? ['page', 'links', 0, 'entry'] : ['page', 0];
+    const data = JSON.parse(JSON.stringify(response.data));
+    const item = connection ? data.page.links[0].entry : data.page[0];
+    const paths: unknown[][] = [];
+    identityServerMembers.forEach((_member, index) => {
+      assert.deepEqual(JSON.parse(JSON.stringify(item[`list${index}`])), ['adminuser', 'normaluser'].map(key => ({
+        key, username: 'normaluser', _accountIdentity: 'normaluser',
+        contact: viewer && key === viewer ? { address: 'normaluser@private.test' } : null,
+      })));
+      for (const [position, key] of ['adminuser', 'normaluser'].entries()) {
+        if (key !== viewer) paths.push([...prefix, `list${index}`, position, 'contact']);
+      }
+    });
+    assert.deepEqual(response.errors?.map(error => JSON.stringify(error.path)).sort(), paths.map(path => JSON.stringify(path)).sort(), JSON.stringify(response));
+  });
+}
+
+test('server member dependencies preserve directive variables, empty sources and local scalar errors', async () => {
+  await seedServerMemberIdentities();
+  await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio=[1,2]");
+  try {
+    const response = await graphql({ schema, source: `query($hide:Boolean!=true){
+      serverConfigs(where:{serverName:{eq:"identity-server"}}){
+        members:Admins(where:{username:{eq:"normaluser"}}){broken:bio Email{address}}
+        pending:PendingModInvites(where:{username:{eq:"adminuser"}}){key:username Email @skip(if:$hide){address}}
+        empty:SuperAdmins(where:{username:{eq:"missing-user"}}){Email{address}}
+        PendingAdminInvites @skip(if:$hide){Email{address}}
+      }
+      missing:serverConfigs(where:{serverName:{eq:"absent-server"}}){Admins{Email{address}}}
+    }`, contextValue: { driver, req: { headers: { authorization: mockToken({ username: 'normaluser', email: 'normal@e2e.test' }) }, body: {} } } });
+    assert.deepEqual(response.errors?.map(error => error.path), [['serverConfigs', 0, 'members', 0, 'broken']], JSON.stringify(response));
+    assert.deepEqual(JSON.parse(JSON.stringify(response.data)), { serverConfigs: [{ members: [{ broken: null, Email: { address: 'normaluser@private.test' } }], pending: [{ key: 'adminuser' }], empty: [] }], missing: [] });
+  } finally {
+    await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio='normaluser'");
+  }
+});
