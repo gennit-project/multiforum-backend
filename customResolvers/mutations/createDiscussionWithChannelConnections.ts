@@ -149,7 +149,7 @@ export const createDiscussionsFromInput = async (
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext,
   triggerPipelines = triggerCreatedDiscussionPipelines
-): Promise<Array<CreatedDiscussionProjection | undefined>> => {
+): Promise<CreatedDiscussionProjection[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
@@ -237,7 +237,7 @@ export const createDiscussionsFromInput = async (
   }
 
   const session = driver.session();
-  const discussions: Array<CreatedDiscussionProjection | undefined> = [];
+  const discussions: CreatedDiscussionProjection[] = [];
 
   try {
     for (const { channelConnections } of sanitizedInput) {

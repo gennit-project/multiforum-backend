@@ -235,6 +235,11 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   } satisfies SubscriptionMutationResolvers;
 
   const contentResolvers = {
+    createDiscussionWithChannelConnections:
+      createDiscussionWithChannelConnections({
+        driver,
+      }),
+
     createEventWithChannelConnections: createEventWithChannelConnections({
       driver,
     }),
@@ -565,10 +570,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   } satisfies ImageWriteSourceMutationResolvers;
 
   return {
-    createDiscussionWithChannelConnections:
-      createDiscussionWithChannelConnections({
-        driver,
-      }),
     ...accountWriteSourceResolvers,
     ...contentResolvers,
     ...moderationResolvers,

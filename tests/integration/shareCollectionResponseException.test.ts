@@ -45,3 +45,16 @@ test('missing transactional response rejects sharing and rolls back the item',as
  assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
  assert.equal((await driver.executeQuery("MATCH(c:Collection {id:'collection'}) RETURN c")).records.length,1);
 });
+
+test('share wrapper does not fabricate a result when its creation dependency returns an empty array',async()=>{
+ const field=schema.getMutationType()!.getFields().shareCollectionAsDiscussion;
+ const original=field.resolve;
+ field.resolve=shareCollection({driver,createDiscussions:async()=>[]});
+ try{
+  const result=await exec();
+  assert.equal(result.data,null);
+  assert.deepEqual(result.errors?.[0].path,['shareCollectionAsDiscussion']);
+  assert.match(result.errors?.[0].message??'',/Cannot return null for non-nullable field/);
+  assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
+ }finally{field.resolve=original;}
+});

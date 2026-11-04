@@ -207,7 +207,7 @@
     },
     {
       "field": "Mutation.createDiscussionWithChannelConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createDownloadableFiles",

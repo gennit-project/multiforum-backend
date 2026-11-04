@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 174 entries have a checked selected response boundary and 35 remain
+checkpoint, 175 entries have a checked selected response boundary and 34 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -254,9 +254,8 @@ storage, email, production Neo4j, or shared staging data.
   omitting failed items while continuing the batch. Ordinary discussion
   creation and sharing are fixed by #447/#448: owned writes and fixed response
   validation share an item transaction; the captured response survives plugin edits.
-  Their signatures remain deferred because the shared helper also includes the
-  separate crosspost branch and lacks a proven nonempty ordinary-create contract.
-  This is unfinished type work, not the old ordinary-create race.
+  Discussion successful elements are now checked after #450. The sharing wrapper
+  remains deferred for its nonempty array contract, not the old creation race.
 - Image/profile/icon variants are fixed by #445, using compatible JSON text
   storage and public normalization. Regression tests now assert nonempty variants
   and successful upload claims; unrestricted JSON remains a separate boundary.
@@ -270,11 +269,10 @@ boundary decisions is required before describing the campaign as complete.
 
 ## Current campaign accounting and decisions
 
-All 209 custom entries have been reviewed: 174 have a checked selected
-response/source boundary (83.3%); 35 remain explicit exceptions. This is **not** complete
+All 209 custom entries have been reviewed: 175 have a checked selected
+response/source boundary (83.7%); 34 remain explicit exceptions. This is **not** complete
 end-to-end response certification. The remaining entries are 1 moderation,
-27 object/scalar fields, 1 content query, 1 account/storage action, 1 content
-write and 4 plugin entries. Per-field selections, reasons and evidence remain
+27 object/scalar fields, 1 content query, 1 account/storage action and 4 plugin entries. Per-field selections, reasons and evidence remain
 in the six audit files rather than being hidden by the closed issue status.
 
 Two JSON-returning pipeline update mutations additionally have generated argument
@@ -326,8 +324,8 @@ schema tests guard Int!, child completion, zero/empty results and range failures
 This does not widen all generated Int outputs or certify raw wiki page fields.
 
 Image creation tests retain the existing lost-upload-claim behavior after image
-creation; changing claim/race policy is separate work. The 35 deferred entries and
-residual paths within the 174 selected entries still need explicit source or
+creation; changing claim/race policy is separate work. The 34 deferred entries and
+residual paths within the 175 selected entries still need explicit source or
 selection-aware contracts. This checkpoint is not completion of the full campaign.
 
 
@@ -373,10 +371,23 @@ that missing context after #447 began requiring successful owned forum links.
 
 ### Event result enforcement and creation-query guards after #449
 
-Current accounting is **174 selected / 35 deferred**. The event mutation now checks
+Current accounting is **175 selected / 34 deferred**. The event mutation now checks
 its precise non-undefined successful result at the actual generated registration.
 The four actual discussion/event create and response-read documents have executable
 projection-drift checks; persistence/rollback tests remain separate evidence.
-Collection sharing remains deferred: the shared helper includes the separate
-crosspost branch and does not yet expose a proven nonempty ordinary-create result.
-No runtime guard is fabricated here; the crosspost behavior fix is separate work.
+Collection sharing remains deferred for a proven nonempty ordinary-create result.
+The crosspost runtime guard is incorporated from #450.
+
+## Crosspost safeguards after #450
+
+Current accounting: **175 selected / 34 deferred**. The merged runtime guard is
+preserved without changing permission, sensitive-content, ownership or batch policy.
+Successful discussion elements are checked at the actual generated registration.
+The ID-only CreateCrosspost result has its own generated identity projection;
+CrosspostResult retains the shared complete selected projection. Real GraphQL/Neo4j
+execution records both actual documents and compares selected response paths, while
+negative type fixtures reject unfetched fields and invalid identities. This does
+not certify arbitrary JSON, outer completion, delivery or generic adapter internals.
+Collection sharing remains deferred solely for the nonempty helper/wrapper contract;
+its explicit optional return avoids hiding array cardinality behind unchecked indexing.
+The previous crosspost runtime dependency is resolved by #450.

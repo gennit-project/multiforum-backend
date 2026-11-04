@@ -70,14 +70,34 @@
     },
     {
       "field": "Mutation.createDiscussionWithChannelConnections",
-      "status": "exception",
-      "signature": null,
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.createDiscussionWithChannelConnections",
       "selection": "createdDiscussionSelection",
-      "selectedPaths": [],
+      "selectedPaths": [
+        "id",
+        "title",
+        "body",
+        "Author.username",
+        "DiscussionChannels.id",
+        "DiscussionChannels.createdAt",
+        "DiscussionChannels.channelUniqueName",
+        "DiscussionChannels.discussionId",
+        "DiscussionChannels.archived",
+        "DiscussionChannels.Flairs.id",
+        "DiscussionChannels.Flairs.channelUniqueName",
+        "DiscussionChannels.Flairs.displayName",
+        "DiscussionChannels.Flairs.color",
+        "DiscussionChannels.Flairs.order",
+        "DiscussionChannels.Flairs.archived",
+        "DiscussionChannels.Channel.uniqueName",
+        "DiscussionChannels.Discussion.id",
+        "DiscussionChannels.UpvotedByUsers.username",
+        "createdAt",
+        "updatedAt",
+        "Tags.text"
+      ],
       "residualPaths": [
-        "Ordinary creation now validates its fixed response inside the item transaction (#447/#448).",
-        "The shared helper still includes the separate crosspost branch, whose indexed response is not explicitly guarded; its declared element union retains undefined.",
-        "Full selected boundary and crosspost/nullability proof remain unfinished; outer GraphQL completion is still after commit."
+        "Generic generated-operation adapter remains trusted; outer completion and plugin/network delivery remain post-commit."
       ],
       "evidence": {
         "source": [
@@ -93,11 +113,12 @@
           "tests/integration/contentResponseContracts.test.ts",
           "tests/integration/frontendInputContracts.test.ts",
           "tests/integration/discussionItemTransactions.test.ts",
-          "tests/integration/creationProjectionContracts.test.ts"
+          "tests/integration/creationProjectionContracts.test.ts",
+          "tests/integration/crosspostCreationResponse.test.ts"
         ]
       },
-      "reason": "Merged #447 makes owned writes atomic per ordinary item; #448 validates and captures the fixed response before commit. Empty/mismatched projections roll back, and plugin edits cannot change the returned creation snapshot. The old post-commit refetch witness is replaced with a transactional missing-response regression. Crossposting is a separate unchanged branch, so the shared return annotation still permits undefined; do not treat this as evidence that ordinary creation retains the fixed race.",
-      "decision": "Retain deferred status pending a verified crosspost result and actual generated registration boundary. No new race policy is introduced in reconciliation."
+      "reason": "Merged #448 and #450 guard ordinary and crosspost responses before commit. Actual generated registration now checks precise successful list elements. ID-only CreateCrosspost and shared CrosspostResult documents are observed during real GraphQL execution and compared with their generated projection declarations.",
+      "decision": null
     },
     {
       "field": "Mutation.createEventSeriesWithChannelConnections",

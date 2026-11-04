@@ -1,3 +1,4 @@
+import createDiscussion from "../../customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import createEvent from "../../customResolvers/mutations/createEventWithChannelConnections.js";
 import updateDiscussion from "../../customResolvers/mutations/updateDiscussionWithChannelConnections.js";
 import updateEvent from "../../customResolvers/mutations/updateEventWithChannelConnections.js";
@@ -15,6 +16,7 @@ import { addImageToAlbum, removeImageFromAlbum } from "../../customResolvers/mut
 import redact from "../../customResolvers/mutations/redactTextVersionRevision.js";
 declare const driver: Driver;
 const checked = {
+ createDiscussionWithChannelConnections: createDiscussion({driver}),
  createEventWithChannelConnections: createEvent({driver}),
  updateDiscussionWithChannelConnections: updateDiscussion({driver}),
  updateEventWithChannelConnections: updateEvent({driver}),
@@ -45,14 +47,12 @@ declare const revision: RevisionProjection;
 // @ts-expect-error nested author projection does not fetch karma
 revision.Author?.commentKarma;
 void [checked,invalidAlbum,invalidRevision,invalidIssue,missingEvent];
-// Ordinary discussion creation is fixed by #448, but its shared crosspost union
-// and the event post-write read still need total-element proof.
+// Both creation paths now return only guarded successful elements.
 import type { createDiscussionsFromInput } from "../../customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import type { createEventsFromInput } from "../../customResolvers/mutations/createEventWithChannelConnections.js";
 import type { CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
 declare const discussions: Awaited<ReturnType<typeof createDiscussionsFromInput>>;
 declare const events: Awaited<ReturnType<typeof createEventsFromInput>>;
-// @ts-expect-error the shared helper still includes an unguarded crosspost response element
 const totalDiscussions: CreatedDiscussionProjection[] = discussions;
 const totalEvents: CreatedEventProjection[] = events;
 void [totalDiscussions,totalEvents];
@@ -60,3 +60,15 @@ void [totalDiscussions,totalEvents];
 // @ts-expect-error successful event responses require selected id and nested fields
 const brokenEvent: ContentMutationResolvers["createEventWithChannelConnections"] = async () => [{title:"incomplete"}];
 void brokenEvent;
+
+// @ts-expect-error successful discussions require all selected response fields
+const brokenDiscussion: ContentMutationResolvers["createDiscussionWithChannelConnections"] = async () => [{id:"missing-fields"}];
+void brokenDiscussion;
+
+import type { CrosspostIdentityProjection } from "../../customResolvers/contracts/contentProjections.js";
+declare const crosspostIdentity: CrosspostIdentityProjection;
+// @ts-expect-error the ID-only create document does not fetch title
+crosspostIdentity.title;
+// @ts-expect-error generated identity is a string
+const invalidCrosspostIdentity: CrosspostIdentityProjection = {id:123};
+void invalidCrosspostIdentity;

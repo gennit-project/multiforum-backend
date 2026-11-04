@@ -277,8 +277,8 @@
       "status": "deferred",
       "selectedPaths": [],
       "residualPaths": [
-        "Ordinary sharing uses the transactionally captured response from #448; the prior post-commit disappearance defect is fixed.",
-        "The shared helper declaration still includes the crosspost element union and the wrapper indexes its array; a precise nonempty ordinary-create contract is not yet enforced."
+        "Ordinary and crosspost responses are guarded before commit; successful elements are now typed.",
+        "The wrapper indexes an array whose nonempty cardinality is not encoded; its explicit return annotation retains undefined."
       ],
       "evidence": [
         "customResolvers/mutations/shareCollectionAsDiscussion.ts",
@@ -288,7 +288,7 @@
         "tests/contracts/shareCollectionException.typecheck.ts",
         "tests/integration/discussionItemTransactions.test.ts"
       ],
-      "reason": "Merged #447/#448 make the owned item writes and fixed response validation transactional. Missing responses roll back before plugin dispatch; the wrapper now has a passing rollback regression. Its static signature still inherits the shared helper array element union, so it remains deferred without asserting a remaining live post-commit refetch defect.",
+      "reason": "The real share wrapper retains passing response/rollback regressions. #450 closes the crosspost response guard dependency, but array cardinality is not proven by the helper type. Explicit optional output prevents unchecked indexed access from silently certifying the non-null wrapper.",
       "decision": "Develop a precise ordinary-create/nonempty result contract and check the actual registration; do not hide unfinished static work as an unresolved behavior decision."
     },
     {

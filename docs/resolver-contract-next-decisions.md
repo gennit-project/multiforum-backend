@@ -1,7 +1,7 @@
-# Remaining response-contract decisions after #449
+# Remaining response-contract decisions after #450
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
-has 174 selected response/source boundaries and 35 deferred entries. The three
+has 175 selected response/source boundaries and 34 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
@@ -59,14 +59,14 @@ an explicit optional/union projection rather than flattening them into required
 fields. JSON remains a scalar leaf; the guard does not prove its internal domain.
 This ties fixed upstream declarations to executed selections but does not remove
 the trusted generic execution adapter or certify arbitrary dynamic child values.
-That earlier pipeline guard did not promote entries. After #449, event creation adds one checked selected boundary: 174 selected / 35 deferred.
+That earlier pipeline guard did not promote entries. After #449, event creation adds one checked selected boundary: 175 selected / 34 deferred.
 
 ## Remaining race choices and merged discussion/share decisions
 
 | Operations | Current boundary | Proposed choice and tradeoff |
 | --- | --- | --- |
 | `createEventWithChannelConnections` | Fixed by merged #449: validate the response in the item transaction and omit rolled-back failures while continuing the batch. | Successful selected projections are now checked at the actual resolver registration. Outer GraphQL completion/delivery remain after commit. |
-| `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crossposts remain a separate branch; precise shared-helper/result typing is unfinished. Outer GraphQL completion and delivery remain after commit. |
+| `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crosspost responses are guarded by #450 and successful elements now have checked types. Outer GraphQL completion and delivery remain after commit. |
 | `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. A nonempty ordinary-create type and actual wrapper boundary still need proof; no full-operation certification is claimed. |
 | `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Return `NOT_FOUND` for a missing campaign and `BAD_USER_INPUT` for a conflicting transition, with a deliberate transaction/locking strategy for distinguishing them. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
 
@@ -100,12 +100,29 @@ containers isolate selection shape; a real disposable managed transaction preser
 the repository interface. Exact response paths are compared with the generated-type
 derived declarations. This does not certify arbitrary rows or the generic adapter.
 Event successful results exclude undefined because #449 guards them before commit;
-compile-negative fixtures reject incomplete selected results. Discussion and sharing
-remain deferred pending the separate crosspost runtime result guard and a precise
-nonempty ordinary-create contract. Their negative fixtures still reject promotion;
-no cast is used to make the wrapper appear complete.
+compile-negative fixtures reject incomplete selected results. Discussion is now checked after #450. Sharing remains deferred for a precise
+nonempty ordinary-create contract; its negative fixture still rejects promotion.
+No cast is used to make the wrapper appear complete.
 
 Failure experiments confirmed both guards: removing `title` from the actual
 discussion selection fails the executable comparison at `discussions.title`;
 changing the successful event projection ID to a number fails TypeScript at the
 actual mutation registration. Both deliberate changes were restored.
+
+## Crosspost safeguards after #450
+
+Current accounting: **175 selected / 34 deferred**. The merged runtime guard is
+preserved without changing permission, sensitive-content, ownership or batch policy.
+Successful discussion elements are checked at the actual generated registration.
+The ID-only CreateCrosspost result has its own generated identity projection;
+CrosspostResult retains the shared complete selected projection. Real GraphQL/Neo4j
+execution records both actual documents and compares selected response paths, while
+negative type fixtures reject unfetched fields and invalid identities. This does
+not certify arbitrary JSON, outer completion, delivery or generic adapter internals.
+Collection sharing remains deferred solely for the nonempty helper/wrapper contract;
+its explicit optional return avoids hiding array cardinality behind unchecked indexing.
+The previous crosspost runtime dependency is resolved by #450.
+
+Fault-injection checks rejected both an added `title` in the ID-only create query
+and a removed `title` in the shared response selection. Both failed the actual
+response-path comparison; the changes were restored before final validation.

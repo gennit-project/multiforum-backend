@@ -1,4 +1,4 @@
-import type { CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
+import type { CrosspostIdentityProjection, CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { DiscussionCreateInput } from "../../src/generated/graphql.js";
@@ -9,7 +9,7 @@ import { stripDiscussionToOneConnects } from "./discussionAlbumWrite.js";
 import { DISCUSSION_CREATE_SELECTION } from "./discussionCreationRepository.js";
 
 export async function createExistingDiscussionCrosspost(driver:Driver, input:DiscussionCreateInput,
-  targetId:string, username:string, channels:string[], flairs:Map<string,string[]>, sensitive:boolean) {
+  targetId:string, username:string, channels:string[], flairs:Map<string,string[]>, sensitive:boolean): Promise<CreatedDiscussionProjection> {
   if (input.CrosspostedDiscussion) throw new GraphQLError("Use crosspostedDiscussionId without nested crosspost creation.");
   return executeManagedWrite(driver, async tx => {
     const target = await tx.run(`MATCH (d:Discussion {id:$id})
@@ -23,7 +23,7 @@ export async function createExistingDiscussionCrosspost(driver:Driver, input:Dis
         RETURN i.id`,{id:imageId,sensitive});
       if (image.records.length !== 1) throw new GraphQLError("An album image is unavailable.");
     }
-    const result = await executeGeneratedOperation<{createDiscussions:{discussions:Array<{id:string}>}}>(driver,
+    const result = await executeGeneratedOperation<{createDiscussions:{discussions:CrosspostIdentityProjection[]}}>(driver,
       `mutation CreateCrosspost($input:[DiscussionCreateInput!]!){createDiscussions(input:$input){discussions{id}}}`,{input:[stripDiscussionToOneConnects(input).cleaned]},tx);
     const id = result.createDiscussions.discussions[0].id;
     await tx.run(`MATCH (d:Discussion {id:$id}),(target:Discussion {id:$target}),(u:User {username:$username})
@@ -41,6 +41,11 @@ export async function createExistingDiscussionCrosspost(driver:Driver, input:Dis
     }
     const read = await executeGeneratedOperation<{discussions:CreatedDiscussionProjection[]}>(driver,
       `query CrosspostResult($id:ID!){discussions(where:{id:{eq:$id}})${DISCUSSION_CREATE_SELECTION}}`,{id},tx,{mayAccessSensitiveContent:sensitive});
-    return read.discussions[0];
+    const created = read.discussions[0];
+    if (read.discussions.length !== 1 || created === null || typeof created !== "object" ||
+        !("id" in created) || created.id !== id) {
+      throw new GraphQLError("Created crosspost is unavailable for the response.");
+    }
+    return created;
   });
 }
