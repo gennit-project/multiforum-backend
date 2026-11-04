@@ -602,3 +602,18 @@ on a later projection failure. Existing GraphQL response tests retain selected
 success/count/message completion. This adds no batching, pagination, transaction
 or permission policy; the selected response count remains **176 / 209**, with
 **33 deferred**.
+
+### Content-validation source projections
+
+The four content-validation reads now derive exact source shapes from generated
+schema types. Discussion-channel membership is a required selected list with
+required identities, rather than an optional-property catch-all. File checks
+remain limited to id/name; emoji checks retain selected nullable channel links,
+lock/archive states and unrestricted JSON leaves. Executable comparisons guard
+all four actual documents. Removing the discussion lock selection is rejected.
+Compile-negative fixtures reject absent selected relationships/identities and
+unselected content/upload fields. Existing graph and permission tests preserve
+anonymous reads, noninheritance of privileged outer context, nested filtering,
+missing records and settings behavior. This is source precision only: no input,
+authorization, default, JSON validation or write behavior changes, and accounting
+remains **176 selected / 33 deferred**.
