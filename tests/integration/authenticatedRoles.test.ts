@@ -587,3 +587,30 @@ test('mod role updates check capabilities carried by generated scalar set inputs
   assert.equal(rows.records[0].get('capability'),false);
 }));
 
+
+for (const role of [
+  {label:'ChannelRole',plural:'ChannelRoles',field:'channelRoles',relation:'OWNS_CHANNEL_ROLE'},
+  {label:'ModChannelRole',plural:'ModChannelRoles',field:'modChannelRoles',relation:'OWNS_MOD_CHANNEL_ROLE'},
+]) {
+  for (const action of ['update','delete']) {
+    test(`${action}${role.plural} isolates owner checks across aliases`,async()=>{
+      const prefix=`role-scope-${action}-${role.label}`;
+      const own=`${prefix}-own`,other=`${prefix}-other`;
+      await driver.executeQuery(`MATCH(a:User{username:'normaluser'}),(b:User{username:'adminuser'})
+        CREATE(a)-[:ADMIN_OF_CHANNEL]->(own:Channel{uniqueName:$own})
+        CREATE(b)-[:ADMIN_OF_CHANNEL]->(other:Channel{uniqueName:$other})`,{own,other});
+      await driver.executeQuery(`UNWIND [$own,$other] AS name MATCH(c:Channel{uniqueName:name})
+        CREATE(c)-[:${role.relation}]->(:${role.label}{id:name,name:name,channelUniqueName:name,description:'original'})`,{own,other});
+      const operation=(name:string)=> action==='update'
+        ? `update${role.plural}(where:{id:{eq:"${name}"}},update:{description:{set:"changed"}}){${role.field}{name}}`
+        : `delete${role.plural}(where:{id:{eq:"${name}"}}){nodesDeleted}`;
+      const result=await graphql({schema,source:`mutation {allowed:${operation(own)} denied:${operation(other)}}`,
+        contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+      assert.ok(result.errors?.some(error=>error.path?.[0]==='denied'),JSON.stringify(result));
+      assert.ok(!result.errors?.some(error=>error.path?.[0]==='allowed'),JSON.stringify(result));
+      const rows=await driver.executeQuery(`MATCH(r:${role.label}) WHERE r.name IN [$own,$other] RETURN r.name AS name,r.description AS description ORDER BY r.name`,{own,other});
+      assert.deepEqual(rows.records.map(row=>({name:row.get('name'),description:row.get('description')})),
+        action==='delete' ? [{name:other,description:'original'}] : [{name:other,description:'original'},{name:own,description:'changed'}]);
+    });
+  }
+}
