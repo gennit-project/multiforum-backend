@@ -1,4 +1,4 @@
-# Remaining response-contract decisions after #444
+# Remaining response-contract decisions after #448
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
 has 173 selected response/source boundaries and 36 deferred entries. The three
@@ -61,18 +61,18 @@ This ties fixed upstream declarations to executed selections but does not remove
 the trusted generic execution adapter or certify arbitrary dynamic child values.
 No extra inventory entries are promoted; accounting remains 173 selected / 36 deferred.
 
-## Five race cases: choices requiring approval
+## Remaining race choices and merged discussion/share decisions
 
 | Operations | Current boundary | Proposed choice and tradeoff |
 | --- | --- | --- |
 | `createEventWithChannelConnections` | Each event's generated create, tags and channel writes share `executeWrite`; response refetch happens after commit. Errors inside the per-item block are logged/swallowed and the loop continues. | Return the existing response projection read inside that same transaction after owned writes. This closes the post-commit disappearance gap, but moves projection failure before commit: explicitly approve rollback on projection failure and preserve per-item batch semantics. |
-| `createDiscussionWithChannelConnections` | Generated creation, author/collection edges, tags, album ownership and channel writes use multiple committed steps; plugin triggers run before the final separate refetch. Existing crosspost handling has its own implementation. | A genuinely write-consistent result requires consolidating the ordinary-create graph writes and projection into a per-item transaction. Keep plugin/external side effects after commit and outside retry callbacks. This changes partial-failure atomicity and needs approval; merely returning the first create projection would omit later edges/state. Review crossposts separately to avoid changing existing-discussion semantics. |
-| `shareCollectionAsDiscussion` | Authenticated owner/public-collection checks and forum creation permission precede the same discussion helper; wrapper forwards `discussions[0]`. | Reuse the approved discussion snapshot policy and preserve collection ownership, visibility and channel permission checks. Do not fabricate a result when the helper returns no item. Decide whether an empty result is a clear error; today the non-null response fails during completion. |
+| `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crossposts remain a separate branch; precise shared-helper/result typing is unfinished. Outer GraphQL completion and delivery remain after commit. |
+| `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. A nonempty ordinary-create type and actual wrapper boundary still need proof; no full-operation certification is claimed. |
 | `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Return `NOT_FOUND` for a missing campaign and `BAD_USER_INPUT` for a conflicting transition, with a deliberate transaction/locking strategy for distinguishing them. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
 
 Source evidence: the two create helpers, collection-share resolver,
 `pluginPipelineCampaigns.ts`, `campaignControlRepository.ts`, and their existing
-real-driver disappearance witnesses. No race behavior changes are included here.
+real-driver regressions. Only event creation and campaign pause/resume retain the race choices above.
 The proposal is per-item, not whole-batch atomicity, and does not claim that an
 already-returned snapshot prevents a later deletion or permission change.
 
@@ -82,9 +82,9 @@ already-returned snapshot prevents a later deletion or permission change.
    fixed in merged #442. Supported plural attachment selections and current/legacy
    content hashes are retained. Precise generated projections and execution tests
    now cover these successful paths; first-attachment policy is unchanged.
-2. Profile/icon variant writes pass a nonempty object as a Neo4j property and fail.
-   Existing storage scalar columns and JSON domain normalization offer implementation
-   options, but storage compatibility and clearing/merge behavior need explicit tests.
+2. Image/profile/icon variant persistence is fixed by merged #445: compatible JSON
+   text storage, map/legacy scalar normalization and aliases are covered by real-schema
+   regressions. Generated JSON remains unrestricted; domain checks are separate.
 3. Image-usage traversal is fixed in #444. The list-alias and dynamic-selection
    bugs were fixed in #443; opaque child types still require precise upstream
    contracts, rather than another behavior fix.

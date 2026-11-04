@@ -14,15 +14,15 @@ let deleteBeforeRefetch=false;
 let committedIdentity:string|undefined;
 before(async()=>{
  driver=await startNeo4j();const app=getResolvers(driver);const repository=createDiscussionCreationRepository(driver);
- app.resolvers.Mutation.shareCollectionAsDiscussion=shareCollection({driver,discussionCreationRepository:{...repository,findCreatedDiscussion:async id=>{
+ app.resolvers.Mutation.shareCollectionAsDiscussion=shareCollection({driver,discussionCreationRepository:{...repository,findCreatedDiscussion:async (id,tx)=>{
   if(deleteBeforeRefetch){
-   // Separate driver query witnesses committed ownership/share edges before
-   // simulating another transaction deleting the discussion ahead of refetch.
-   const persisted=await driver.executeQuery("MATCH(:User {username:'alice'})-[:POSTED_DISCUSSION]->(d:Discussion {id:$id})-[:SHARES_COLLECTION]->(:Collection {id:'collection'}) RETURN d.id AS id",{id});
+   // Owned edges and response read share the transaction; an absent projection rolls back.
+   assert.ok(tx);
+   const persisted=await tx.run("MATCH(:User {username:'alice'})-[:POSTED_DISCUSSION]->(d:Discussion {id:$id})-[:SHARES_COLLECTION]->(:Collection {id:'collection'}) RETURN d.id AS id",{id});
    assert.equal(persisted.records.length,1);committedIdentity=persisted.records[0].get('id');
-   await driver.executeQuery('MATCH(d:Discussion {id:$id}) DETACH DELETE d',{id});
+   await tx.run('MATCH(d:Discussion {id:$id}) DETACH DELETE d',{id});
   }
-  return repository.findCreatedDiscussion(id);
+  return repository.findCreatedDiscussion(id,tx);
  }}});
  schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);
 },{timeout:240000});
@@ -37,11 +37,11 @@ test('share wrapper returns real created discussion identity and retains collect
  const rows=(await driver.executeQuery("MATCH(d:Discussion)-[:SHARES_COLLECTION]->(:Collection {id:'collection'}) RETURN d.id AS id")).records;
  assert.equal(rows.length,1);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{shareCollectionAsDiscussion:{id:rows[0].get('id'),title:'Shared'}});
 });
-test('post-commit disappearance propagates through share wrapper as non-null root failure',async()=>{
+test('missing transactional response rejects sharing and rolls back the item',async()=>{
  deleteBeforeRefetch=true;const result=await exec();
  assert.equal(typeof committedIdentity,'string');assert.equal(result.data,null);
  assert.deepEqual(result.errors?.[0].path,['shareCollectionAsDiscussion']);
- assert.match(result.errors?.[0].message??'',/Cannot return null for non-nullable field Mutation.shareCollectionAsDiscussion/);
+ assert.match(result.errors?.[0].message??'',/Created discussion is unavailable for the response/);
  assert.equal((await driver.executeQuery('MATCH(d:Discussion) RETURN d')).records.length,0);
  assert.equal((await driver.executeQuery("MATCH(c:Collection {id:'collection'}) RETURN c")).records.length,1);
 });

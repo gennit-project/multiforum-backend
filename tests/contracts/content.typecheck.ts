@@ -43,14 +43,14 @@ declare const revision: RevisionProjection;
 // @ts-expect-error nested author projection does not fetch karma
 revision.Author?.commentKarma;
 void [checked,invalidAlbum,invalidRevision,invalidIssue,missingEvent];
-// These two public list mutations retain their existing post-write missing-read
-// behavior and are explicitly excepted: never erase undefined array elements.
+// Ordinary discussion creation is fixed by #448, but its shared crosspost union
+// and the event post-write read still need total-element proof.
 import type { createDiscussionsFromInput } from "../../customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import type { createEventsFromInput } from "../../customResolvers/mutations/createEventWithChannelConnections.js";
 import type { CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
 declare const discussions: Awaited<ReturnType<typeof createDiscussionsFromInput>>;
 declare const events: Awaited<ReturnType<typeof createEventsFromInput>>;
-// @ts-expect-error a missing post-write read can leave an undefined non-null list item
+// @ts-expect-error the shared helper still includes an unguarded crosspost response element
 const totalDiscussions: CreatedDiscussionProjection[] = discussions;
 // @ts-expect-error a missing post-write read can leave an undefined non-null list item
 const totalEvents: CreatedEventProjection[] = events;

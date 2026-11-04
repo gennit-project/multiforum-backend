@@ -75,8 +75,9 @@
       "selection": "createdDiscussionSelection",
       "selectedPaths": [],
       "residualPaths": [
-        "Non-null array element can be undefined after a missing post-commit refetch.",
-        "Precise entity projection types and fixed-query selection drift guards are implemented, but do not certify total list elements."
+        "Ordinary creation now validates its fixed response inside the item transaction (#447/#448).",
+        "The shared helper still includes the separate crosspost branch, whose indexed response is not explicitly guarded; its declared element union retains undefined.",
+        "Full selected boundary and crosspost/nullability proof remain unfinished; outer GraphQL completion is still after commit."
       ],
       "evidence": {
         "source": [
@@ -90,11 +91,12 @@
         ],
         "execution": [
           "tests/integration/contentResponseContracts.test.ts",
-          "tests/integration/frontendInputContracts.test.ts"
+          "tests/integration/frontendInputContracts.test.ts",
+          "tests/integration/discussionItemTransactions.test.ts"
         ]
       },
-      "reason": "The write commits before the generated-operation refetch. A concurrent deletion between those operations makes the real refetch return an empty array; the resolver pushes fetched[0] and GraphQL reports an outer non-null list-element error with path [createDiscussionWithChannelConnections, 0]. TypeScript noUncheckedIndexedAccess=false previously hid this possibility; return annotations now retain undefined explicitly.",
-      "decision": "Choose a separately reviewed atomic/refetch or missing-item policy. Preserve existing commit timing and outer GraphQL non-null error path until that decision; do not filter missing items, throw early, or cast away undefined."
+      "reason": "Merged #447 makes owned writes atomic per ordinary item; #448 validates and captures the fixed response before commit. Empty/mismatched projections roll back, and plugin edits cannot change the returned creation snapshot. The old post-commit refetch witness is replaced with a transactional missing-response regression. Crossposting is a separate unchanged branch, so the shared return annotation still permits undefined; do not treat this as evidence that ordinary creation retains the fixed race.",
+      "decision": "Retain deferred status pending a verified crosspost result and actual generated registration boundary. No new race policy is introduced in reconciliation."
     },
     {
       "field": "Mutation.createEventSeriesWithChannelConnections",

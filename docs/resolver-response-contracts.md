@@ -250,14 +250,15 @@ storage, email, production Neo4j, or shared staging data.
   may succeed while selecting them yields a field-level serialization error.
   Eager row-wide decoding would change accepted requests and sometimes post-commit
   failure timing. A selection-aware completion strategy is needed for these paths.
-- Discussion/event creation can commit, then observe an empty response refetch
-  after concurrent deletion. Actual-driver tests reproduce the existing non-null
-  list-element error. Those two mutation signatures remain deferred, as does the
-  collection-sharing wrapper that can forward the same missing result.
-- Profile/icon writes currently reject nonempty variant URL maps as unsupported
-  Neo4j property values. Tests preserve this existing failure and also cover the
-  successful empty-variant projection. Fixing map persistence is separate behavior
-  work, not silently included in a type migration.
+- Event creation still has the post-commit empty-refetch race. Ordinary discussion
+  creation and sharing are fixed by #447/#448: owned writes and fixed response
+  validation share an item transaction; the captured response survives plugin edits.
+  Their signatures remain deferred because the shared helper also includes the
+  separate crosspost branch and lacks a proven nonempty ordinary-create contract.
+  This is unfinished type work, not the old ordinary-create race.
+- Image/profile/icon variants are fixed by #445, using compatible JSON text
+  storage and public normalization. Regression tests now assert nonempty variants
+  and successful upload claims; unrestricted JSON remains a separate boundary.
 - Dynamic caller-selected activity responses and unrestricted JSON scalars need
   their own explicit boundary strategy. Selected pagination metadata does not
   certify the accompanying raw item maps.
@@ -356,3 +357,15 @@ persistence tests remain necessary: this check validates documents and projectio
 paths with empty root data, not arbitrary driver values or JSON interiors.
 #444's passing image-usage graph/permission regressions replace the old omission
 witness. Counts remain 173 selected / 36 deferred; no race policy is changed.
+
+### Main reconciliation through #448
+
+Incorporates #445, #447 and #448, preserving the campaign's precise persistence
+projections alongside merged transaction/variant behavior. Former discussion/share
+missing-response witnesses now assert transactional rejection and rollback; profile
+and icon witnesses assert successful variants. Counts remain 173 selected and 36
+deferred: no signature is promoted solely because its behavior defect was fixed.
+
+The reconciliation also forwards the existing seed request context to discussion
+creation (matching event creation). The populated Cypress seed regression exposed
+that missing context after #447 began requiring successful owned forum links.

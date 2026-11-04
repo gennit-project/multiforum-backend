@@ -277,18 +277,19 @@
       "status": "deferred",
       "selectedPaths": [],
       "residualPaths": [
-        "Non-null Discussion root: post-commit refetch can return undefined, propagated directly by discussions[0].",
-        "Nested/scalar Discussion response fields cannot establish the non-null root guarantee."
+        "Ordinary sharing uses the transactionally captured response from #448; the prior post-commit disappearance defect is fixed.",
+        "The shared helper declaration still includes the crosspost element union and the wrapper indexes its array; a precise nonempty ordinary-create contract is not yet enforced."
       ],
       "evidence": [
         "customResolvers/mutations/shareCollectionAsDiscussion.ts",
         "customResolvers/mutations/createDiscussionWithChannelConnections.ts",
         "services/persistence/discussionCreationRepository.ts",
         "tests/integration/shareCollectionResponseException.test.ts",
-        "tests/contracts/shareCollectionException.typecheck.ts"
+        "tests/contracts/shareCollectionException.typecheck.ts",
+        "tests/integration/discussionItemTransactions.test.ts"
       ],
-      "reason": "Wrapper calls the real createDiscussionsFromInput and returns discussions[0] unchanged. Creation commits and then calls findCreatedDiscussion; disappearance before that read leaves undefined. The actual-schema wrapper witness first observes committed POSTED_DISCUSSION and SHARES_COLLECTION edges, deletes the discussion in a separate query, lets the real generated refetch return empty, and observes null data with error path [shareCollectionAsDiscussion]. This is not a routine missing registration: even an identity-only generated non-null boundary rejects the actual factory at compile time.",
-      "decision": "Preserve current behavior and retain deferred status. Requires a separate behavior decision for post-commit disappearance (for example explicit error/retry or a stable pre-delete response), or schema-nullability decision. Do not add a cast, certify only id while ignoring root nullability, or silently change write/refetch ordering."
+      "reason": "Merged #447/#448 make the owned item writes and fixed response validation transactional. Missing responses roll back before plugin dispatch; the wrapper now has a passing rollback regression. Its static signature still inherits the shared helper array element union, so it remains deferred without asserting a remaining live post-commit refetch defect.",
+      "decision": "Develop a precise ordinary-create/nonempty result contract and check the actual registration; do not hide unfinished static work as an unresolved behavior decision."
     },
     {
       "field": "Mutation.createScratchpadEntry",
@@ -482,15 +483,16 @@
       "residualPaths": [
         "Schema fields outside selectedPaths remain outside this boundary.",
         "JSON variantUrls internal shape is unrestricted by codegen.",
-        "Nonempty generated variantUrls map currently fails Neo4j property coercion before claim; empty variants succeed."
+        "Merged #445 encodes variant maps as JSON text and resolves stored maps/aliases; generated JSON remains structurally unrestricted."
       ],
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "tests/integration/imageVariantPersistence.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
-      "decision": "Separate behavior decision: serialize/map variant metadata before persistence? This slice deliberately preserves and tests the existing failure."
+      "decision": "Retain the selected fields and explicit JSON domain boundary. Variant persistence is fixed by #445, with successful nonempty variants and claim/repeat regressions; do not count unrestricted generated JSON as structurally checked."
     },
     {
       "field": "Mutation.setMyBirthday",
@@ -525,15 +527,16 @@
       "residualPaths": [
         "Schema fields outside selectedPaths remain outside this boundary.",
         "JSON variantUrls internal shape is unrestricted by codegen.",
-        "Nonempty generated variantUrls map currently fails Neo4j property coercion before claim; empty variants succeed."
+        "Merged #445 encodes variant maps as JSON text and resolves stored maps/aliases; generated JSON remains structurally unrestricted."
       ],
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "tests/integration/imageVariantPersistence.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
-      "decision": "Separate behavior decision: serialize/map variant metadata before persistence? This slice deliberately preserves and tests the existing failure."
+      "decision": "Retain the selected fields and explicit JSON domain boundary. Variant persistence is fixed by #445, with successful nonempty variants and claim/repeat regressions; do not count unrestricted generated JSON as structurally checked."
     },
     {
       "field": "Mutation.setRankingSettings",

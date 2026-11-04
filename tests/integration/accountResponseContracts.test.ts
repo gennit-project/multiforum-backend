@@ -170,16 +170,11 @@ for (const [name, args, key, urlField, sizeField] of [
   test(`${name} serializes exact generated projection after claiming upload; repeat fails`, async () => {
     await driver.executeQuery("CREATE(:UploadedFileAudit {id:'audit',storageBucket:'fixture',storageObjectName:'uploads/avatar',storageUrl:'https://example.test/avatar',uploadedAt:datetime(),uploadedByUsername:'actor'})");
     const source = `mutation{result:${name}(${args},imageUrl:"https://example.test/avatar"){${key} ${urlField} ${sizeField} variantUrls}}`;
-    const failed = await exec(source);
-    assert.equal(failed.data?.result, null);
-    assert.match(failed.errors?.[0].message ?? "", /Property values can only be of primitive types/);
-    assert.equal((await driver.executeQuery("MATCH(a:UploadedFileAudit) RETURN a.claimedAt IS NOT NULL AS claimed")).records[0].get("claimed"), false);
-    includeVariants = false;
     const result = data(await exec(source)).result;
     assert.equal(result[key], name === "setProfileImage" ? "actor" : "forum");
     assert.equal(result[urlField], "https://example.test/avatar");
-    assert.equal(result[sizeField], null);
-    assert.equal(result.variantUrls, null);
+    assert.equal(result[sizeField], "https://example.test/avatar32");
+    assert.deepEqual(result.variantUrls, {avatar32:"https://example.test/avatar32"});
     assert.equal((await driver.executeQuery("MATCH(a:UploadedFileAudit) RETURN a.claimedAt IS NOT NULL AS claimed")).records[0].get("claimed"), true);
     assert.ok((await exec(source)).errors);
     assert.ok((await exec(source, {secure:true,authenticated:false})).errors);
@@ -212,6 +207,7 @@ test("test-data seed rejects empty content and serializes populated success; dro
   assert.match((await exec(source)).errors?.[0].message ?? "", /Input cannot be empty/);
   const populated = source.replace('discussions:[]', 'discussions:[{discussionCreateInput:{title:"Seed discussion"},channelConnections:["forum"]}]').replace('events:[]', 'events:[{eventCreateInput:{title:"Seed event",startTime:"2026-01-01T00:00:00Z",endTime:"2026-01-02T00:00:00Z",canceled:false},channelConnections:["forum"]}]');
   assert.deepEqual(data(await exec(populated)), {result:{success:true,message:"All test data has been created."}});
+  assert.equal((await driver.executeQuery("MATCH(:User {username:'actor'})-[:POSTED_DISCUSSION]->(d:Discussion {title:'Seed discussion'})<-[:POSTED_IN_CHANNEL]-(:DiscussionChannel {channelUniqueName:'forum'}) RETURN count(d) AS count")).records[0].get("count").toNumber(), 1);
   assert.deepEqual(data(await exec('mutation{result:dropDataForCypressTests{success message}}')), {result:{success:true,message:"All test data has been dropped."}});
 });
 test("bug-report dependency failure completes as nullable error without sending mail", async () => {

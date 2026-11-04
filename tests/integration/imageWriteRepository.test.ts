@@ -64,12 +64,10 @@ test('owned image create is insulated from a broken default projection resolver'
  try{{await resetDatabase(driver);await seed();events=[];const response=await newCreate();assert.equal(response.images[0].Uploader?.username,'alice');const count=Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count'));assert.equal(count,1);assert.deepEqual(events,[]);t.assert.snapshot(normalize({count,events}));}}finally{field.resolve=original;}
 });
 
-test('object-valued variant JSON retains the existing database error without partial updates',async()=>{
- await seed();const variants={avatar32:'https://example.test/32'};const update={variantUrls:{set:variants}};let message='';
+test('invalid nested variant values are rejected without partial updates',async()=>{
+ await seed();const variants={avatar32:{url:'https://example.test/32'}};const update={variantUrls:{set:variants}};let message='';
  const operations=[()=>createProfileImageRepository(driver).setProfileImage('alice',update),()=>createChannelIconRepository(driver).setChannelIcon('forum',update),()=>createImageCreationRepository(driver).createImage({...input,variantUrls:variants})];
- // Generated updates (profile/icon) and the owned image create surface the same
- // underlying Neo4j error for a map-valued property, though their error wrapping
- // differs, so match the Neo4j message rather than requiring identical strings.
- for(const operation of operations)await assert.rejects(operation(),e=>{message=(e as Error).message;assert.match(message,/Property values can only/);return true;});assert.deepEqual(events,[]);assert.equal(Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count')),0);
+ // Reject malformed maps before writes, preserving failure atomicity.
+ for(const operation of operations)await assert.rejects(operation(),e=>{message=(e as Error).message;assert.match(message,/variantUrls must contain URL strings or null/);return true;});assert.deepEqual(events,[]);assert.equal(Number((await driver.executeQuery('MATCH (i:Image) RETURN count(i) AS count')).records[0].get('count')),0);
  const rows=(await driver.executeQuery("MATCH (u:User {username:'alice'}),(c:Channel {uniqueName:'forum'}) RETURN u.variantUrls AS userVariants,c.variantUrls AS channelVariants")).records.map(r=>r.toObject());assert.deepEqual(rows,[{userVariants:null,channelVariants:null}]);
 });

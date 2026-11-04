@@ -167,21 +167,22 @@ test('submitted issue serializes numbers, nullable identities, channels and auth
  const generic=data(await run(source,{input:{title:'Server help',body:'Details'}})).createIssue;
  assert.equal(generic.channelUniqueName,null);assert.equal(generic.Channel,null);assert.equal(generic.issueNumber,1);
 });
-test('discussion disappearance after commit leaves the existing undefined non-null list element',async()=>{
+test('discussion missing response rolls back the item before commit',async()=>{
  const repository=createDiscussionCreationRepository(driver);
  let createdId:string|undefined;
  const field=schema.getMutationType()!.getFields().createDiscussionWithChannelConnections;
  const original=field.resolve;
- field.resolve=createDiscussion({driver,discussionCreationRepository:{...repository,findCreatedDiscussion:async id=>{
+ field.resolve=createDiscussion({driver,discussionCreationRepository:{...repository,findCreatedDiscussion:async (id,tx)=>{
   createdId=id;
-  // Reproduce a concurrent deletion between the committed create and refetch.
-  await driver.executeQuery('MATCH(d:Discussion {id:$id}) DETACH DELETE d',{id});
-  return repository.findCreatedDiscussion(id);
+  // Remove the item within its transaction; the fixed response guard must roll back.
+  assert.ok(tx);
+  await tx.run('MATCH(d:Discussion {id:$id}) DETACH DELETE d',{id});
+  return repository.findCreatedDiscussion(id,tx);
  }}});
  try {
   const result=await run('mutation{createDiscussionWithChannelConnections(input:[{discussionCreateInput:{title:"Deleted"},channelConnections:["forum"]}]){id title}}');
-  assert.equal(result.data,null);assert.deepEqual(result.errors?.[0].path,['createDiscussionWithChannelConnections',0]);
-  assert.match(result.errors?.[0].message ?? '',/Cannot return null for non-nullable field/);assert.equal(typeof createdId,'string');
+  assert.equal(result.data,null);assert.deepEqual(result.errors?.[0].path,['createDiscussionWithChannelConnections']);
+  assert.match(result.errors?.[0].message ?? '',/Created discussion is unavailable for the response/);assert.equal(typeof createdId,'string');
  } finally {field.resolve=original;}
 });
 test('event disappearance after commit leaves the existing undefined non-null list element',async()=>{

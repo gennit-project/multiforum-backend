@@ -1,5 +1,5 @@
 import type { CreatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
-import type {Driver} from 'neo4j-driver';
+import type {Driver, ManagedTransaction} from 'neo4j-driver';
 import type {DiscussionCreateInput} from '../../src/generated/graphql.js';
 import {executeGeneratedOperation} from './generatedSchemaOperations.js';
 export const DISCUSSION_CREATE_SELECTION = `
@@ -42,12 +42,12 @@ export const DISCUSSION_CREATE_SELECTION = `
   }
 `;
 export interface DiscussionCreationRepository {
- createDiscussion(input:DiscussionCreateInput):Promise<{discussions:CreatedDiscussionProjection[]}>;
+ createDiscussion(input:DiscussionCreateInput, transaction?:ManagedTransaction):Promise<{discussions:CreatedDiscussionProjection[]}>;
  findAttachedFiles(id:string):Promise<Array<{id:string;DownloadableFiles:Array<{id:string}>}>>;
- findCreatedDiscussion(id:string):Promise<CreatedDiscussionProjection[]>;
+ findCreatedDiscussion(id:string, transaction?:ManagedTransaction):Promise<CreatedDiscussionProjection[]>;
 }
 export function createDiscussionCreationRepository(driver:Driver):DiscussionCreationRepository{return{
- async createDiscussion(input){const r=await executeGeneratedOperation<{createDiscussions:{discussions:CreatedDiscussionProjection[]}}>(driver,`mutation CreateDiscussionForChannels($input:[DiscussionCreateInput!]!){createDiscussions(input:$input){discussions${DISCUSSION_CREATE_SELECTION}}}`,{input:[input]});return r.createDiscussions;},
+ async createDiscussion(input,transaction){const r=await executeGeneratedOperation<{createDiscussions:{discussions:CreatedDiscussionProjection[]}}>(driver,`mutation CreateDiscussionForChannels($input:[DiscussionCreateInput!]!){createDiscussions(input:$input){discussions${DISCUSSION_CREATE_SELECTION}}}`,{input:[input]},transaction);return r.createDiscussions;},
  async findAttachedFiles(id){const r=await executeGeneratedOperation<{discussions:Array<{id:string;DownloadableFiles:Array<{id:string}>}>}>(driver,`query CreatedDiscussionFiles($where:DiscussionWhere){discussions(where:$where){id DownloadableFiles{id}}}`,{where:{id:{eq:id}}});return r.discussions;},
- async findCreatedDiscussion(id){const r=await executeGeneratedOperation<{discussions:CreatedDiscussionProjection[]}>(driver,`query CreatedDiscussionWithChannels($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_CREATE_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findCreatedDiscussion(id,transaction){const r=await executeGeneratedOperation<{discussions:CreatedDiscussionProjection[]}>(driver,`query CreatedDiscussionWithChannels($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_CREATE_SELECTION}}`,{where:{id:{eq:id}}},transaction);return r.discussions;},
 };}
