@@ -829,3 +829,14 @@ sets with their source types, and removing a required author column fails the
 check. GraphQL/Shield regressions retain denial for malformed ownership and
 legacy truthy lock values. These are source guarantees, not new certifications
 of outer response children: accounting remains **176 selected / 33 deferred**.
+
+### Channel authorization lookup columns
+
+All six native content-to-channel queries now have explicit row types, including
+Boolean existence expressions and raw channel-name properties. The shared
+single-record adapter accepts only selected column names. Existing normalization
+continues to discard non-string and empty channel names and deduplicate lists;
+no permission, routing, null or failure behavior changes. Compile-negative tests
+separate raw from normalized values, and real database checks guard the actual
+query columns and malformed-value normalization. Renaming a required column fails
+the guard. This source work does not change outer response inventory counts.

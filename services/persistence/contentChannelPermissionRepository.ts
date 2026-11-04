@@ -1,4 +1,5 @@
-import neo4j, { type Driver } from "neo4j-driver";
+import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
+import type { ContentChannelsRow, ChannelNameRow, CommentChannelReferencesRow } from "../../customResolvers/contracts/contentChannelSource.js";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 export type ContentChannelLookup = {
@@ -125,7 +126,7 @@ export const createContentChannelPermissionRepository = (
       defaultAccessMode: neo4j.session.WRITE,
     });
     try {
-      const result = await session.run(query, { ids });
+      const result = await session.run<ContentChannelsRow>(query, { ids });
       const record = result.records[0];
       return {
         found: record?.get("found") === true,
@@ -138,18 +139,18 @@ export const createContentChannelPermissionRepository = (
     }
   };
 
-  const runSingleLookup = async <T>(
+  const runSingleLookup = async <Row extends Record<string, unknown>, T>(
     query: string,
     id: string,
     missing: T,
-    mapRecord: (record: { get(key: string): unknown }) => T
+    mapRecord: (record: Neo4jRecord<Row>) => T
   ): Promise<T> => {
     const session = driver.session({
       database,
       defaultAccessMode: neo4j.session.WRITE,
     });
     try {
-      const result = await session.run(query, { id });
+      const result = await session.run<Row>(query, { id });
       const record = result.records[0];
       return record ? mapRecord(record) : missing;
     } finally {
@@ -171,7 +172,7 @@ export const createContentChannelPermissionRepository = (
     },
 
     findIssueChannel(issueId) {
-      return runSingleLookup<IssueChannelLookup>(
+      return runSingleLookup<ChannelNameRow, IssueChannelLookup>(
         FIND_ISSUE_CHANNEL_QUERY,
         issueId,
         { found: false, channelUniqueName: null },
@@ -183,7 +184,7 @@ export const createContentChannelPermissionRepository = (
     },
 
     findCommentChannelReferences(commentId) {
-      return runSingleLookup<CommentChannelReferences>(
+      return runSingleLookup<CommentChannelReferencesRow, CommentChannelReferences>(
         FIND_COMMENT_CHANNEL_REFERENCES_QUERY,
         commentId,
         {
@@ -204,7 +205,7 @@ export const createContentChannelPermissionRepository = (
     },
 
     findDiscussionChannelReference(discussionChannelId) {
-      return runSingleLookup<DiscussionChannelReference>(
+      return runSingleLookup<ChannelNameRow, DiscussionChannelReference>(
         FIND_DISCUSSION_CHANNEL_REFERENCE_QUERY,
         discussionChannelId,
         { found: false, channelUniqueName: null },
