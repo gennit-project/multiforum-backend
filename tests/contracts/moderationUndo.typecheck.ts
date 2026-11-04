@@ -13,3 +13,10 @@ const invalidSuccess:ModerationUndoMutationResolvers["undoSuperUpvote"]=async()=
 // @ts-expect-error raw post-write usernames remain unknown, not certified User data
 const users=(result:Awaited<ReturnType<typeof resolver>>):Array<{username:string}>=>result.superUpvotedByUsers;
 void [checked,text,title,invalidSuccess,users];
+
+const moderator: SuperVoteCommentSnapshot["CommentAuthor"] = {displayName:"Moderator"};
+// @ts-expect-error both author branches now select a discriminator field
+const missingAuthor: SuperVoteCommentSnapshot["CommentAuthor"] = {};
+// @ts-expect-error the source does not expose a moderator's backing User
+void moderator.User;
+void [moderator, missingAuthor];

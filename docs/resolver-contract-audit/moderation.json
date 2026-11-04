@@ -1741,9 +1741,10 @@
         "services/persistence/superVoteUndoRepository.ts",
         "tests/integration/moderationUndoResponseContracts.test.ts",
         "tests/integration/superVoteUndoRepository.test.ts",
-        "customResolvers/mutations/superVoteUndoOrdering.test.ts"
+        "customResolvers/mutations/superVoteUndoOrdering.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
       ],
-      "reason": "Resolver-owned success/message and validated source identity/type are checked against the generated response subset. Exact generated preliminary comment/discussion snapshots replace full models. The final in-transaction raw username list is explicitly unknown rather than asserted to User data. Real-schema tests exercise permissions, repeated/missing requests, read/write failures, persisted vote/karma/scratchpad effects, nullable authors that skip karma, post-snapshot malformed usernames and the uncapped final list.",
+      "reason": "Resolver-owned success/message and validated source identity/type are checked against the generated response subset. Exact generated preliminary comment/discussion snapshots replace full models. The final in-transaction raw username list is explicitly unknown rather than asserted to User data. Real-schema tests exercise permissions, repeated/missing requests, read/write failures, persisted vote/karma/scratchpad effects, nullable authors that skip karma, post-snapshot malformed usernames and the uncapped final list. Both author union branches now select their discriminator, allowing moderator-author undo with no user karma; a real GraphQL/Shield regression covers the complete create/undo flow.",
       "decision": "Preserve authorization, the preliminary nested default25 limit, in-transaction unbounded final list, commit/rollback/close and GraphQL selected-field completion. Only the computed four fields are certified. Raw usernames remain residual: malformed values may fail selected serialization after commit while an unselected list must not fail earlier. No eager validation or normalization is introduced."
     },
     {

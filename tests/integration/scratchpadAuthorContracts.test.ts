@@ -59,7 +59,7 @@ async function state() {
       COUNT {(:ScratchpadEntry)} AS entries,
       COUNT {(:User)-[:SUPER_UPVOTED_COMMENT]->(c)} AS votes,
       COUNT {(:User{username:'bob'})-[:HAS_NOTIFICATION]->(:Notification)} AS recipientNotifications,
-      COUNT {(:Notification)} AS notifications,
+      COUNT {(:Notification{notificationType:'scratchpad'})} AS notifications,
       COLLECT { MATCH(u:User) RETURN {username:u.username,karma:u.commentKarma} } AS karma`)).records[0];
   return { weight: Number(row.get("weight")), entries: Number(row.get("entries")), votes: Number(row.get("votes")),
     recipientNotifications: Number(row.get("recipientNotifications")), notifications: Number(row.get("notifications")),
@@ -97,3 +97,39 @@ test("a normal upvote remains required even for a moderator-author source", asyn
   assert.equal((await state()).votes, 0);
   assert.equal((await state()).notifications, 0);
 });
+
+for (const sourceType of ["comment", "discussion"] as const) {
+  test(`${sourceType}: super-vote authorization follows the source on create and undo`, async () => {
+    await driver.executeQuery(`MATCH(a:User{username:'alice'}),(b:User{username:'bob'}),(dc:DiscussionChannel{id:'post'})
+      CREATE(d:Discussion{id:'discussion',title:'Discussion',createdAt:datetime()})
+      CREATE(dc)-[:POSTED_IN_CHANNEL]->(d),(b)-[:POSTED_DISCUSSION]->(d),(a)-[:UPVOTED_DISCUSSION]->(dc)
+      CREATE(ch:Channel{uniqueName:'other-forum',createdAt:datetime()}),(r:ChannelRole{canUpvoteComment:true,canUpvoteDiscussion:true})
+      CREATE(ch)-[:HAS_DEFAULT_CHANNEL_ROLE]->(r)`);
+    const id = sourceType === "comment" ? "comment" : "post";
+    const create = `mutation{createScratchpadEntry(recipientUsername:"bob",text:"Thanks",sourceType:"${sourceType}",sourceId:"${id}",sourceChannelUniqueName:"other-forum"){id}}`;
+    const undo = `mutation{undoSuperUpvote(sourceType:"${sourceType}",sourceId:"${id}"){success message}}`;
+    const invoke = (operation: string) => graphql({schema,source:operation,contextValue:{driver,req:{headers:{authorization:`Bearer ${jwt.sign({username:"alice",email:"alice@example.test",email_verified:true},"test-only-key")}`},body:{},isMutation:true}}});
+    const setPermission = (allow: boolean) => driver.executeQuery("MATCH(:Channel{uniqueName:'forum'})-[:HAS_DEFAULT_CHANNEL_ROLE]->(r:ChannelRole) SET r.canUpvoteComment=$allow,r.canUpvoteDiscussion=$allow",{allow});
+    const snapshot = async () => (await driver.executeQuery(`RETURN COUNT {(:ScratchpadEntry)} AS entries,
+      COUNT {(:User)-[:SUPER_UPVOTED_COMMENT|SUPER_UPVOTED_DISCUSSION]->()} AS votes,
+      COUNT {(:Notification{notificationType:'scratchpad'})} AS notifications,
+      COLLECT { MATCH(n) WHERE n:Comment OR n:DiscussionChannel RETURN {id:n.id,weight:n.weightedVotesCount} ORDER BY n.id } AS weights,
+      COLLECT { MATCH(u:User) RETURN {username:u.username,karma:u.commentKarma,discussionKarma:u.discussionKarma} ORDER BY u.username } AS karma`)).records[0].toObject();
+    await setPermission(false);
+    const empty = await snapshot();
+    assert.ok((await invoke(create)).errors, "a different permitted channel must not authorize the source");
+    assert.deepEqual(await snapshot(),empty);
+    await setPermission(true);
+    await driver.executeQuery("MATCH(ch:Channel{uniqueName:'forum'}) CREATE(ch)-[:SUSPENDED_AS_USER]->(:Suspension{id:'active-source-suspension',username:'alice',suspendedIndefinitely:true})");
+    assert.ok((await invoke(create)).errors, "source suspension remains enforced");
+    assert.deepEqual(await snapshot(),empty);
+    await driver.executeQuery("MATCH(s:Suspension{id:'active-source-suspension'}) DETACH DELETE s");
+    assert.equal((await invoke(create)).errors,undefined, "an authorized source remains supported with the optional hint");
+    await setPermission(false);
+    const created = await snapshot();
+    assert.ok((await invoke(undo)).errors, "undo must check the source permission too");
+    assert.deepEqual(await snapshot(),created);
+    await setPermission(true);
+    assert.equal((await invoke(undo)).errors,undefined);
+  });
+}

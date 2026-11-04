@@ -786,3 +786,15 @@ Neo4j with their returned map keys checked against the source declarations,
 including nested issue/member projections and null-valued selected keys. Removing
 a required selection fails the guard; restoring it passes. This guards query/type
 drift without adding eager scalar rejection to production reads.
+
+
+### Super-vote source and undo regression
+
+Permission checks now resolve the persisted source for both supported content
+kinds. GraphQL/Shield regressions verify source permissions and suspensions,
+unchanged vote/karma/scratchpad state on denied mutations, and permitted create/undo
+flows. The undo source query now selects both author union branches as creation
+does; restoring its old projection reproduces the moderator-author failure.
+Ordinary author karma, moderator no-karma behavior, notification preferences,
+limits and transaction ordering remain intact. This behavior correction does not
+certify the raw returned voter list or change selected-response accounting.

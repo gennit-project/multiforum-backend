@@ -59,7 +59,7 @@ export const canUpvoteComment = rule({ cache: "contextual" })(
 type CanSuperUpvoteArgs = {
   sourceType: "comment" | "discussion";
   sourceId: string;
-  sourceChannelUniqueName?: string;
+  sourceChannelUniqueName?: string | null;
 };
 
 // Super upvoting is a second vote, so it requires the same channel permission as
@@ -68,34 +68,27 @@ type CanSuperUpvoteArgs = {
 // the source type. Reused for undoSuperUpvote, which sends the same args.
 export const canSuperUpvote = rule({ cache: "contextual" })(
   async (parent: unknown, args: CanSuperUpvoteArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { sourceType, sourceId, sourceChannelUniqueName } = args;
+    const { sourceType, sourceId } = args;
 
     if (!sourceType || !sourceId) {
       throw new Error("sourceType and sourceId are required");
     }
 
-    let channelName = sourceChannelUniqueName;
+    // The optional display/navigation hint is not an authorization target.
+    let channelName: string | undefined;
     let permission: "canUpvoteComment" | "canUpvoteDiscussion";
 
     if (sourceType === "comment") {
       permission = "canUpvoteComment";
-      if (!channelName) {
-        const repository = resolveContentChannelPermissionRepository(ctx);
-        const commentData =
-          await repository.findCommentChannelReferences(sourceId);
-        channelName =
-          commentData.discussionChannelUniqueName ||
-          commentData.directChannelUniqueName ||
-          undefined;
-      }
+      const repository = resolveContentChannelPermissionRepository(ctx);
+      const commentData = await repository.findCommentChannelReferences(sourceId);
+      channelName = commentData.discussionChannelUniqueName ||
+        commentData.directChannelUniqueName || undefined;
     } else if (sourceType === "discussion") {
       permission = "canUpvoteDiscussion";
-      if (!channelName) {
-        const repository = resolveContentChannelPermissionRepository(ctx);
-        const discussionChannel =
-          await repository.findDiscussionChannelReference(sourceId);
-        channelName = discussionChannel.channelUniqueName || undefined;
-      }
+      const repository = resolveContentChannelPermissionRepository(ctx);
+      const discussionChannel = await repository.findDiscussionChannelReference(sourceId);
+      channelName = discussionChannel.channelUniqueName || undefined;
     } else {
       throw new Error('sourceType must be "comment" or "discussion"');
     }
