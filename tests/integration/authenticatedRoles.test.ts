@@ -772,3 +772,39 @@ test('updated account child identity preserves empty matches and skipped child s
  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{empty:{users:[]},own:{users:[{renamed:'normaluser'}]}});
 });
+
+test('user connection source supplies identity to owner-only children without username selection',async()=>{
+ await seedIdentityAccounts();
+ const response=await graphql({schema,source:'{usersConnection(where:{username:{eq:"normaluser"}},first:1){totalCount edges{node{Email{address}}}}}',contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{usersConnection:{totalCount:1,edges:[{node:{Email:{address:'normaluser@private.test'}}}]}});
+});
+
+for(const username of ['normaluser',null])test(`user connection identity preserves aliases and private-field denial for ${username??'anonymous'}`,async()=>{
+ await seedIdentityAccounts();
+ const response=await graphql({schema,source:`query($show:Boolean!=true){
+  page:usersConnection(where:{username:{in:["normaluser","adminuser"]}},sort:[{username:ASC}]){
+   count:totalCount links:edges{person:node{username:bio _accountIdentity:bio ...Private @include(if:$show)}}
+  }
+ } fragment Private on User {contact:Email{address}}`,contextValue:{driver,req:{headers:username?{authorization:mockToken({username,email:'normal@e2e.test'})}:{},body:{}}}});
+ const expectedPaths=username?[['page','links',0,'person','contact']]:[['page','links',0,'person','contact'],['page','links',1,'person','contact']];
+ assert.deepEqual(response.errors?.map(error=>error.path),expectedPaths,JSON.stringify(response));
+ const person=(own:boolean)=>({username:'normaluser',_accountIdentity:'normaluser',contact:own?{address:'normaluser@private.test'}:null});
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{page:{count:2,links:[{person:person(false)},{person:person(Boolean(username))}]}});
+});
+
+test('user connection identity preserves cursors, empty pages, and skipped private fields',async()=>{
+ await seedIdentityAccounts();
+ const exec=(source:string,variableValues?:Record<string,unknown>)=>graphql({schema,source,variableValues,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ const first=await exec('{usersConnection(where:{username:{in:["adminuser","normaluser"]}},sort:[{username:ASC}],first:1){totalCount pageInfo{endCursor hasNextPage} edges{node{renamed:username Email @skip(if:true){address}}}}}');
+ assert.equal(first.errors,undefined,JSON.stringify(first.errors));
+ const firstPage=JSON.parse(JSON.stringify(first.data)).usersConnection;
+ assert.equal(firstPage.totalCount,2);assert.equal(firstPage.pageInfo.hasNextPage,true);
+ assert.deepEqual(firstPage.edges,[{node:{renamed:'adminuser'}}]);
+ const next=await exec('query($after:String!){usersConnection(where:{username:{in:["adminuser","normaluser"]}},sort:[{username:ASC}],first:1,after:$after){edges{node{Email{address}}} pageInfo{hasNextPage}}}',{after:firstPage.pageInfo.endCursor});
+ assert.equal(next.errors,undefined,JSON.stringify(next.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(next.data)),{usersConnection:{edges:[{node:{Email:{address:'normaluser@private.test'}}}],pageInfo:{hasNextPage:false}}});
+ const empty=await exec('{usersConnection(where:{username:{eq:"missing-user"}}){edges{node{Email{address}}} totalCount}}');
+ assert.equal(empty.errors,undefined,JSON.stringify(empty.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(empty.data)),{usersConnection:{edges:[],totalCount:0}});
+});

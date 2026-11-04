@@ -918,3 +918,15 @@ skipped private fields. A pre-fix probe reproduced a child ownership error after
 successful owner update; the new dependency removes that response error while
 preserving write timing. This does not certify every generated mutation selection
 shape, custom User-producing source, or child value. Inventory counts are unchanged.
+
+### User connection source dependency
+
+`Query.usersConnection` now supplies identity through the explicit `edges.node`
+source path. The path adapter records actual response aliases for ordinary
+projections, while the Neo4j root connection registration declares its canonical
+internal `edges`/`node` keys. It does not guess between the two representations.
+The original users read and update-response adapters retain their existing paths.
+Real graph tests cover owner and anonymous results, private-field denial, aliased
+edges/nodes, fragments and directive variables, cursor pagination and empty pages.
+This adds a verified source dependency, not a full User/connection child contract;
+the selected/deferred inventory is unchanged.

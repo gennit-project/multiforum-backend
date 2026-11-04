@@ -83,31 +83,72 @@ export async function resolveUsersWithChildIdentity(
   return result;
 }
 
-function responseUserFields(selection: SelectionSetNode | undefined, info: GraphQLResolveInfo, seen = new Set<string>()): import("graphql").FieldNode[] {
+type UserSourceSelection = {
+  node: import("graphql").FieldNode;
+  responsePath: readonly string[];
+};
+
+function sourceUserFields(
+  selection: SelectionSetNode | undefined,
+  info: GraphQLResolveInfo,
+  path: readonly string[],
+  responsePath: readonly string[] = [],
+  seen = new Set<string>()
+): UserSourceSelection[] {
   return (selection?.selections ?? []).flatMap(node => {
     if (!isIncluded(node.directives, info)) return [];
-    if (node.kind === Kind.FIELD) return node.name.value === "users" ? [node] : [];
-    if (node.kind === Kind.INLINE_FRAGMENT) return responseUserFields(node.selectionSet, info, seen);
+    if (node.kind === Kind.FIELD) {
+      if (node.name.value !== path[0]) return [];
+      const nextPath = [...responsePath, node.alias?.value ?? node.name.value];
+      return path.length === 1 ? [{ node, responsePath: nextPath }] :
+        sourceUserFields(node.selectionSet, info, path.slice(1), nextPath);
+    }
+    if (node.kind === Kind.INLINE_FRAGMENT) return sourceUserFields(node.selectionSet, info, path, responsePath, seen);
     if (seen.has(node.name.value)) return [];
-    seen.add(node.name.value);
-    return responseUserFields(info.fragments[node.name.value]?.selectionSet, info, seen);
+    const nextSeen = new Set(seen).add(node.name.value);
+    return sourceUserFields(info.fragments[node.name.value]?.selectionSet, info, path, responsePath, nextSeen);
   });
 }
 
-export const resolveUpdatedUsersWithChildIdentity: typeof resolveUsersWithChildIdentity = async (resolve, parent, args, context, info) => {
-  const nodes = info.fieldNodes.flatMap(node => responseUserFields(node.selectionSet, info));
-  const selected = prepareIdentitySelection(nodes, info);
-  if (!selected) return resolve(parent, args, context, info);
-  const replacements = new Map(nodes.map((node, index) => [node, selected.fieldNodes[index]]));
-  const visitor = { Field(node: import("graphql").FieldNode) { return replacements.get(node); } };
-  const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
-  const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
-  const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
-  if (isObjectSource(result)) for (const node of nodes) rememberRows(result[node.alias?.value ?? node.name.value], selected.alias);
-  return result;
-};
+function rememberPath(value: unknown, path: readonly string[], alias: string): void {
+  if (Array.isArray(value)) {
+    const values: readonly unknown[] = value;
+    for (const item of values) rememberPath(item, path, alias);
+  } else if (isObjectSource(value)) {
+    if (path.length) rememberPath(value[path[0]], path.slice(1), alias);
+    else rememberAccountChildIdentity(value, alias in value ? value[alias] : undefined);
+  }
+}
+
+/** Each registration names a verified source path, not arbitrary descendant objects. */
+export function userChildIdentityAtPath(
+  path: readonly string[],
+  sourceKeys: "response" | "canonical" = "response"
+): typeof resolveUsersWithChildIdentity {
+  if (!path.length) throw new Error("A nested User source path is required");
+  return async (resolve, parent, args, context, info) => {
+    const sources = info.fieldNodes.flatMap(node => sourceUserFields(node.selectionSet, info, path));
+    const selected = prepareIdentitySelection(sources.map(source => source.node), info);
+    if (!selected) return resolve(parent, args, context, info);
+    const replacements = new Map(sources.map((source, index) => [source.node, selected.fieldNodes[index]]));
+    const visitor = { Field(node: import("graphql").FieldNode) { return replacements.get(node); } };
+    const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
+    const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
+    const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
+    for (const source of sources) rememberPath(result, sourceKeys === "canonical" ? path : source.responsePath, selected.alias);
+    return result;
+  };
+}
+
+export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["users"]);
+// Neo4j root connections return canonical edges/node keys even when the caller
+// aliases them. Update payloads and ordinary projections use response keys.
+export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], "canonical");
 
 export default {
-  Query: { users: resolveUsersWithChildIdentity },
+  Query: {
+    users: resolveUsersWithChildIdentity,
+    usersConnection: resolveUserConnectionWithChildIdentity,
+  },
   Mutation: { updateUsers: resolveUpdatedUsersWithChildIdentity },
 };

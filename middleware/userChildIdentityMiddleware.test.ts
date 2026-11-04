@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
-import { buildSchema, graphql, Kind, type GraphQLResolveInfo } from "graphql";
-import { ownerProtectedUserFields, resolveUsersWithChildIdentity, resolveUpdatedUsersWithChildIdentity } from "./userChildIdentityMiddleware.js";
+import { buildSchema, graphql, Kind, visit, type GraphQLResolveInfo } from "graphql";
+import { ownerProtectedUserFields, resolveUsersWithChildIdentity, resolveUpdatedUsersWithChildIdentity, userChildIdentityAtPath } from "./userChildIdentityMiddleware.js";
 import { accountChildIdentity } from "../services/accountChildIdentity.js";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -80,4 +80,22 @@ test('mutation response dependency traversal preserves payload fragments and int
   assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{updateUsers:{users:[{Email:'private'}]}});
   assert.ok(row);
   assert.deepEqual(accountChildIdentity(row),{found:true,value:'alice'});
+});
+
+test('canonical connection source paths remain independent of requested aliases',async()=>{
+  assert.throws(()=>userChildIdentityAtPath([]),/path is required/);
+  const connectionSchema=buildSchema('type Query{usersConnection:Connection} type Connection{edges:[Edge]} type Edge{node:User} type User{username:String Email:String}');
+  const adapter=userChildIdentityAtPath(['edges','node'],'canonical');
+  let row: Record<string,unknown> | undefined;
+  const response=await graphql({schema:connectionSchema,source:'{usersConnection{links:edges{person:node{Email}}}}',contextValue:context,rootValue:{
+    usersConnection:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{
+      let alias='';
+      for(const node of selected.fieldNodes)visit(node,{Field(field){if(field.name.value==='username')alias=field.alias!.value;}});
+      assert.ok(alias);row={[alias]:'alice',Email:'private'};
+      return {edges:[{node:row},null]};
+    },null,args,ctx,info),
+  }});
+  assert.equal(response.errors,undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{usersConnection:{links:[{person:{Email:'private'}},null]}});
+  assert.ok(row);assert.deepEqual(accountChildIdentity(row),{found:true,value:'alice'});
 });
