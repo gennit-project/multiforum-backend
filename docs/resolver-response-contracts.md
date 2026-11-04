@@ -543,3 +543,13 @@ read limit, stale original identity after reactivation, and post-commit projecti
 failure ordering. No query, write, setting normalization or permission behavior is
 changed. JSON contents and dynamically requested Channel.Bots child fields remain
 outside this fixed-source guarantee; accounting stays **176 selected / 33 deferred**.
+
+
+The owned bot-comment write likewise no longer casts its scalar map to an entire
+Comment. Its record/source types guarantee the randomUUID identity written by the
+query and retain unknown caller/persisted leaves; no relationship objects are
+invented. Compile-negative fixtures reject treating the source as a full Comment
+or assuming caller text is validated. Real-schema completion tests preserve valid
+selected scalars, absent relationship projections and lazy nullable errors for
+malformed selected text. Existing ancestry/order/error/empty-result tests remain;
+this does not add a nonempty-result guarantee or change the write transaction.

@@ -1,5 +1,5 @@
-import neo4j, {type Driver} from 'neo4j-driver';
-import type {Comment} from '../../ogm_types.js';
+import neo4j, {type Driver,type EagerResult} from 'neo4j-driver';
+import type {BotCommentCreatedSource,BotCommentRecord} from '../../customResolvers/contracts/botCommentSource.js';
 
 // FAMILY-3 / v7 (campaign #284). A bot reply connects an existing author
 // (AUTHORED_COMMENT), channel (HAS_COMMENT), parent comment (IS_REPLY_TO),
@@ -15,7 +15,7 @@ export type CommentCreateLike = Record<string, unknown> & {
   Event?: { connect?: { where?: { node?: { id?: string | null } | null } | null } | null } | null;
 };
 
-export interface BotCommentRepository {createReply(input:CommentCreateLike):Promise<{comments:Comment[]}>;}
+export interface BotCommentRepository {createReply(input:CommentCreateLike):Promise<{comments:BotCommentCreatedSource[]}>;}
 
 // Mirrors the generated projection the callers/tests read back.
 const CREATE_REPLY = `
@@ -56,7 +56,7 @@ export const createBotCommentRepository=(driver:Driver):BotCommentRepository=>({
   async createReply(input){
     const {CommentAuthor, Channel, ParentComment, DiscussionChannel, Event, ...rest} = input;
     const scalars = Object.fromEntries(Object.entries(rest).filter(([,v])=>v!==undefined));
-    const result = await driver.executeQuery(CREATE_REPLY, {
+    const result = await driver.executeQuery<EagerResult<BotCommentRecord>>(CREATE_REPLY, {
       scalars,
       authorUsername: CommentAuthor?.User?.connect?.where?.node?.username ?? null,
       channelUniqueName: Channel?.connect?.where?.node?.uniqueName ?? null,
@@ -66,13 +66,14 @@ export const createBotCommentRepository=(driver:Driver):BotCommentRepository=>({
     });
     const record = result.records[0];
     if(!record) return {comments:[]};
-    const props = (record.get('comment') as {properties:Record<string,unknown>}).properties;
+    const props = record.get('comment').properties;
     const comment: Record<string,unknown> = {};
     for(const [k,v] of Object.entries(props)){
       // ageGateTouchedAt is server-only (@selectable(onRead:false)).
       if(k==='ageGateTouchedAt') continue;
       comment[k]=convertNeo4jValue(v);
     }
-    return {comments:[comment as unknown as Comment]};
+    // CREATE overwrites any supplied ID with randomUUID(); other leaves remain unknown.
+    return {comments:[{...comment,id:props.id}]};
   },
 });
