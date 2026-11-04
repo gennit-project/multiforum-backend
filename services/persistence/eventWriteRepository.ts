@@ -120,7 +120,7 @@ export const UPDATED_EVENT_SELECTION = `
 
 export interface EventWriteRepository {
   createWithinTransaction(input: EventCreateInput, tx: ManagedTransaction): Promise<CreatedEventProjection[]>;
-  findCreatedEvent(id: string): Promise<CreatedEventProjection[]>;
+  findCreatedEvent(id: string, tx?: ManagedTransaction): Promise<CreatedEventProjection[]>;
   findUpdateSnapshot(where: EventWhere): Promise<EventUpdateSnapshot[]>;
   updateWithinTransaction(where: EventWhere, update: EventUpdateInput, tx: ManagedTransaction): Promise<void>;
   findUpdatedEvent(id: string | undefined | null): Promise<UpdatedEventProjection[]>;
@@ -135,9 +135,9 @@ export function createEventWriteRepository(driver: Driver): EventWriteRepository
         }`, {input: [input]}, tx);
       return result.createEvents.events;
     },
-    async findCreatedEvent(id) {
+    async findCreatedEvent(id, tx) {
       const result = await executeGeneratedOperation<{events: CreatedEventProjection[]}>(driver,
-        `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}});
+        `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}}, tx);
       return result.events;
     },
     async findUpdateSnapshot(where) {

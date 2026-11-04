@@ -1,7 +1,7 @@
-# Remaining response-contract decisions after #448
+# Remaining response-contract decisions after #449
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
-has 173 selected response/source boundaries and 36 deferred entries. The three
+has 174 selected response/source boundaries and 35 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
@@ -59,20 +59,20 @@ an explicit optional/union projection rather than flattening them into required
 fields. JSON remains a scalar leaf; the guard does not prove its internal domain.
 This ties fixed upstream declarations to executed selections but does not remove
 the trusted generic execution adapter or certify arbitrary dynamic child values.
-No extra inventory entries are promoted; accounting remains 173 selected / 36 deferred.
+That earlier pipeline guard did not promote entries. After #449, event creation adds one checked selected boundary: 174 selected / 35 deferred.
 
 ## Remaining race choices and merged discussion/share decisions
 
 | Operations | Current boundary | Proposed choice and tradeoff |
 | --- | --- | --- |
-| `createEventWithChannelConnections` | Each event's generated create, tags and channel writes share `executeWrite`; response refetch happens after commit. Errors inside the per-item block are logged/swallowed and the loop continues. | Return the existing response projection read inside that same transaction after owned writes. This closes the post-commit disappearance gap, but moves projection failure before commit: explicitly approve rollback on projection failure and preserve per-item batch semantics. |
+| `createEventWithChannelConnections` | Fixed by merged #449: validate the response in the item transaction and omit rolled-back failures while continuing the batch. | Successful selected projections are now checked at the actual resolver registration. Outer GraphQL completion/delivery remain after commit. |
 | `createDiscussionWithChannelConnections` | Ordinary creation is fixed by #447/#448: owned writes and fixed response validation share the item transaction; plugins run after commit. | No outstanding ordinary-create race decision. Crossposts remain a separate branch; precise shared-helper/result typing is unfinished. Outer GraphQL completion and delivery remain after commit. |
 | `shareCollectionAsDiscussion` | Uses the same transactionally captured ordinary creation result from #448. Missing/mismatched internal projections roll back. | The prior response-read race is fixed. A nonempty ordinary-create type and actual wrapper boundary still need proof; no full-operation certification is claimed. |
 | `pausePluginPipelineCampaign`, `resumePluginPipelineCampaign` | Authenticated plugin-manager gate; status lookup validates transition, then a separate update matches only ID. Disappearance returns undefined for a non-null root; a concurrent status change can also invalidate the earlier decision. | Atomically match ID plus expected state and update. Return `NOT_FOUND` for a missing campaign and `BAD_USER_INPUT` for a conflicting transition, with a deliberate transaction/locking strategy for distinguishing them. Preserve plugin-manager permission checks; do not silently overwrite a concurrent state based on stale validation. |
 
 Source evidence: the two create helpers, collection-share resolver,
 `pluginPipelineCampaigns.ts`, `campaignControlRepository.ts`, and their existing
-real-driver regressions. Only event creation and campaign pause/resume retain the race choices above.
+real-driver regressions. Only campaign pause/resume retain the race choices above.
 The proposal is per-item, not whole-batch atomicity, and does not claim that an
 already-returned snapshot prevents a later deletion or permission change.
 
@@ -91,3 +91,21 @@ already-returned snapshot prevents a later deletion or permission change.
 
 No extra PR is created by this checkpoint. Coordinate the behavior fixes separately
 from #419; no merge/deployment/shared database writes or schema/permission changes.
+
+## Executed creation projection guards
+
+`creationProjectionContracts.test.ts` executes all four actual discussion/event
+create and response-read documents through the real generated schema. Empty root
+containers isolate selection shape; a real disposable managed transaction preserves
+the repository interface. Exact response paths are compared with the generated-type
+derived declarations. This does not certify arbitrary rows or the generic adapter.
+Event successful results exclude undefined because #449 guards them before commit;
+compile-negative fixtures reject incomplete selected results. Discussion and sharing
+remain deferred pending the separate crosspost runtime result guard and a precise
+nonempty ordinary-create contract. Their negative fixtures still reject promotion;
+no cast is used to make the wrapper appear complete.
+
+Failure experiments confirmed both guards: removing `title` from the actual
+discussion selection fails the executable comparison at `discussions.title`;
+changing the successful event projection ID to a number fails TypeScript at the
+actual mutation registration. Both deliberate changes were restored.

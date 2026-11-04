@@ -223,7 +223,7 @@
     },
     {
       "field": "Mutation.createEventWithChannelConnections",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.createImageWithUploader",

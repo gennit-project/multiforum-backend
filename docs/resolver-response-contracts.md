@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 173 entries have a checked selected response boundary and 36 remain
+checkpoint, 174 entries have a checked selected response boundary and 35 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -250,7 +250,8 @@ storage, email, production Neo4j, or shared staging data.
   may succeed while selecting them yields a field-level serialization error.
   Eager row-wide decoding would change accepted requests and sometimes post-commit
   failure timing. A selection-aware completion strategy is needed for these paths.
-- Event creation still has the post-commit empty-refetch race. Ordinary discussion
+- Event creation now validates its fixed response inside the item transaction (#449),
+  omitting failed items while continuing the batch. Ordinary discussion
   creation and sharing are fixed by #447/#448: owned writes and fixed response
   validation share an item transaction; the captured response survives plugin edits.
   Their signatures remain deferred because the shared helper also includes the
@@ -269,11 +270,11 @@ boundary decisions is required before describing the campaign as complete.
 
 ## Current campaign accounting and decisions
 
-All 209 custom entries have been reviewed: 173 have a checked selected
-response/source boundary (82.8%); 36 remain explicit exceptions. This is **not** complete
+All 209 custom entries have been reviewed: 174 have a checked selected
+response/source boundary (83.3%); 35 remain explicit exceptions. This is **not** complete
 end-to-end response certification. The remaining entries are 1 moderation,
-27 object/scalar fields, 1 content query, 1 account/storage action, 2 content
-writes and 4 plugin entries. Per-field selections, reasons and evidence remain
+27 object/scalar fields, 1 content query, 1 account/storage action, 1 content
+write and 4 plugin entries. Per-field selections, reasons and evidence remain
 in the six audit files rather than being hidden by the closed issue status.
 
 Two JSON-returning pipeline update mutations additionally have generated argument
@@ -325,8 +326,8 @@ schema tests guard Int!, child completion, zero/empty results and range failures
 This does not widen all generated Int outputs or certify raw wiki page fields.
 
 Image creation tests retain the existing lost-upload-claim behavior after image
-creation; changing claim/race policy is separate work. The 36 deferred entries and
-residual paths within the 173 selected entries still need explicit source or
+creation; changing claim/race policy is separate work. The 35 deferred entries and
+residual paths within the 174 selected entries still need explicit source or
 selection-aware contracts. This checkpoint is not completion of the full campaign.
 
 
@@ -369,3 +370,13 @@ deferred: no signature is promoted solely because its behavior defect was fixed.
 The reconciliation also forwards the existing seed request context to discussion
 creation (matching event creation). The populated Cypress seed regression exposed
 that missing context after #447 began requiring successful owned forum links.
+
+### Event result enforcement and creation-query guards after #449
+
+Current accounting is **174 selected / 35 deferred**. The event mutation now checks
+its precise non-undefined successful result at the actual generated registration.
+The four actual discussion/event create and response-read documents have executable
+projection-drift checks; persistence/rollback tests remain separate evidence.
+Collection sharing remains deferred: the shared helper includes the separate
+crosspost branch and does not yet expose a proven nonempty ordinary-create result.
+No runtime guard is fabricated here; the crosspost behavior fix is separate work.

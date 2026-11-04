@@ -32,13 +32,13 @@ export const createEventsFromInput = async (
   driver: Driver,
   input: EventCreateInputWithChannels[],
   context: GraphQLContext
-): Promise<Array<CreatedEventProjection | undefined>> => {
+): Promise<CreatedEventProjection[]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
 
   const session = driver.session();
-  const events: Array<CreatedEventProjection | undefined> = [];
+  const events: CreatedEventProjection[] = [];
 
   try {
     for (const { eventCreateInput, channelConnections } of input) {
@@ -54,7 +54,7 @@ export const createEventsFromInput = async (
           eventCreateInput as Record<string, any>
         );
 
-        const newEventId = await session.executeWrite(async (transaction) => {
+        const event = await session.executeWrite(async (transaction) => {
           const created = await repository.createWithinTransaction(
             eventScalars as typeof eventCreateInput,
             transaction
@@ -75,13 +75,17 @@ export const createEventsFromInput = async (
             });
           }
 
-          return newEvent.id;
+          // Validate the same fixed response before this item commits. Keep
+          // failures inside the existing per-item catch so later items proceed.
+          const projected = await repository.findCreatedEvent(newEvent.id, transaction);
+          if (projected.length !== 1 || !projected[0] || projected[0].id !== newEvent.id) {
+            throw new Error("Created event is unavailable for the response.");
+          }
+          return projected[0];
         });
 
-        // Refetch the event with all related data
-        const fetchedEvent = await repository.findCreatedEvent(newEventId);
-
-        events.push(fetchedEvent[0]);
+        // Outer GraphQL completion and network delivery remain post-commit.
+        events.push(event);
       } catch (error: unknown) {
         const err = error as { message?: string; code?: string; stack?: string; neo4jError?: unknown };
         const message = error instanceof Error ? error.message : String(error);

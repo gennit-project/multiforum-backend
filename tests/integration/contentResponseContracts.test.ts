@@ -185,19 +185,19 @@ test('discussion missing response rolls back the item before commit',async()=>{
   assert.match(result.errors?.[0].message ?? '',/Created discussion is unavailable for the response/);assert.equal(typeof createdId,'string');
  } finally {field.resolve=original;}
 });
-test('event disappearance after commit leaves the existing undefined non-null list element',async()=>{
+test('event missing transactional response rolls back and omits the failed item',async()=>{
  const repository=createEventWriteRepository(driver);
  let createdId:string|undefined;
  const field=schema.getMutationType()!.getFields().createEventWithChannelConnections;
  const original=field.resolve;
- field.resolve=createEvent({driver,eventWriteRepository:{...repository,findCreatedEvent:async id=>{
+ field.resolve=createEvent({driver,eventWriteRepository:{...repository,findCreatedEvent:async (id,tx)=>{
   createdId=id;
-  await driver.executeQuery('MATCH(e:Event {id:$id}) DETACH DELETE e',{id});
-  return repository.findCreatedEvent(id);
+  assert.ok(tx);await tx.run('MATCH(e:Event {id:$id}) DETACH DELETE e',{id});
+  return repository.findCreatedEvent(id,tx);
  }}});
  try {
   const result=await run('mutation{createEventWithChannelConnections(input:[{eventCreateInput:{title:"Deleted",startTime:"2030-01-01T00:00:00Z",endTime:"2030-01-01T01:00:00Z",canceled:false},channelConnections:["forum"]}]){id title}}');
-  assert.equal(result.data,null);assert.deepEqual(result.errors?.[0].path,['createEventWithChannelConnections',0]);
-  assert.match(result.errors?.[0].message ?? '',/Cannot return null for non-nullable field/);assert.equal(typeof createdId,'string');
+  assert.equal(result.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{createEventWithChannelConnections:[]});
+  assert.equal(typeof createdId,'string');assert.equal((await driver.executeQuery('MATCH(e:Event {id:$id}) RETURN e',{id:createdId})).records.length,0);
  } finally {field.resolve=original;}
 });

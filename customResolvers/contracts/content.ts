@@ -1,4 +1,4 @@
-import { createdEventSeriesSelection, updatedEventSelection, updatedSeriesOccurrenceSelection, updatedDiscussionSelection } from "./contentProjections.js";
+import { createdEventSelection, createdEventSeriesSelection, updatedEventSelection, updatedSeriesOccurrenceSelection, updatedDiscussionSelection } from "./contentProjections.js";
 import type { MutationResolvers, TextVersion, WikiPage, Issue, Comment, DeleteEventInSeriesResult } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { Selection, SelectedResolver, Projection } from "./selection.js";
@@ -28,6 +28,7 @@ export const ownedCommentSelection = { id: true, text: true, isRootComment: true
 export type OwnedCommentProjection = Projection<Comment, typeof ownedCommentSelection>;
 export const deleteEventSelection = { success: true, deletedCount: true, message: true } as const satisfies Selection<DeleteEventInSeriesResult>;
 export const contentMutationNames = [
+ "createEventWithChannelConnections",
  "updateDiscussionWithChannelConnections", "updateEventWithChannelConnections", "updateEventInSeries",
  "createEventSeriesWithChannelConnections",
  "addImageToAlbum", "removeImageFromAlbum", "setWikiHomePage", "writeWikiPage", "createIssue",
@@ -35,6 +36,7 @@ export const contentMutationNames = [
  "deleteDiscussionBodyRevision", "deleteEventDescriptionRevision", "deleteWikiRevision",
 ] as const;
 export type ContentMutationResolvers = {
+ createEventWithChannelConnections: SelectedResolver<MutationResolvers<GraphQLContext>["createEventWithChannelConnections"], typeof createdEventSelection>;
  updateDiscussionWithChannelConnections: SelectedResolver<MutationResolvers<GraphQLContext>["updateDiscussionWithChannelConnections"], typeof updatedDiscussionSelection>;
  updateEventWithChannelConnections: SelectedResolver<MutationResolvers<GraphQLContext>["updateEventWithChannelConnections"], typeof updatedEventSelection>;
  updateEventInSeries: SelectedResolver<MutationResolvers<GraphQLContext>["updateEventInSeries"], typeof updatedSeriesOccurrenceSelection>;

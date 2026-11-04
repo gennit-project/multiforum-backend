@@ -1,3 +1,4 @@
+import createEvent from "../../customResolvers/mutations/createEventWithChannelConnections.js";
 import updateDiscussion from "../../customResolvers/mutations/updateDiscussionWithChannelConnections.js";
 import updateEvent from "../../customResolvers/mutations/updateEventWithChannelConnections.js";
 import updateOccurrence from "../../customResolvers/mutations/updateEventInSeries.js";
@@ -14,6 +15,7 @@ import { addImageToAlbum, removeImageFromAlbum } from "../../customResolvers/mut
 import redact from "../../customResolvers/mutations/redactTextVersionRevision.js";
 declare const driver: Driver;
 const checked = {
+ createEventWithChannelConnections: createEvent({driver}),
  updateDiscussionWithChannelConnections: updateDiscussion({driver}),
  updateEventWithChannelConnections: updateEvent({driver}),
  updateEventInSeries: updateOccurrence({driver}),
@@ -52,6 +54,9 @@ declare const discussions: Awaited<ReturnType<typeof createDiscussionsFromInput>
 declare const events: Awaited<ReturnType<typeof createEventsFromInput>>;
 // @ts-expect-error the shared helper still includes an unguarded crosspost response element
 const totalDiscussions: CreatedDiscussionProjection[] = discussions;
-// @ts-expect-error a missing post-write read can leave an undefined non-null list item
 const totalEvents: CreatedEventProjection[] = events;
 void [totalDiscussions,totalEvents];
+
+// @ts-expect-error successful event responses require selected id and nested fields
+const brokenEvent: ContentMutationResolvers["createEventWithChannelConnections"] = async () => [{title:"incomplete"}];
+void brokenEvent;

@@ -92,7 +92,8 @@
         "execution": [
           "tests/integration/contentResponseContracts.test.ts",
           "tests/integration/frontendInputContracts.test.ts",
-          "tests/integration/discussionItemTransactions.test.ts"
+          "tests/integration/discussionItemTransactions.test.ts",
+          "tests/integration/creationProjectionContracts.test.ts"
         ]
       },
       "reason": "Merged #447 makes owned writes atomic per ordinary item; #448 validates and captures the fixed response before commit. Empty/mismatched projections roll back, and plugin edits cannot change the returned creation snapshot. The old post-commit refetch witness is replaced with a transactional missing-response regression. Crossposting is a separate unchanged branch, so the shared return annotation still permits undefined; do not treat this as evidence that ordinary creation retains the fixed race.",
@@ -164,13 +165,41 @@
     },
     {
       "field": "Mutation.createEventWithChannelConnections",
-      "status": "exception",
-      "signature": null,
+      "status": "selected-response",
+      "signature": "ContentMutationResolvers.createEventWithChannelConnections",
       "selection": "createdEventSelection",
-      "selectedPaths": [],
+      "selectedPaths": [
+        "id",
+        "title",
+        "description",
+        "startTime",
+        "startTimeDayOfWeek",
+        "startTimeHourOfDay",
+        "endTime",
+        "locationName",
+        "address",
+        "virtualEventUrl",
+        "canceled",
+        "cost",
+        "isAllDay",
+        "isHostedByOP",
+        "coverImageURL",
+        "Poster.username",
+        "EventChannels.id",
+        "EventChannels.createdAt",
+        "EventChannels.channelUniqueName",
+        "EventChannels.eventId",
+        "EventChannels.archived",
+        "EventChannels.Channel.uniqueName",
+        "EventChannels.Event.id",
+        "SubscribedToNotifications.username",
+        "SubscribedToEventUpdates.username",
+        "createdAt",
+        "updatedAt",
+        "Tags.text"
+      ],
       "residualPaths": [
-        "Non-null array element can be undefined after a missing post-commit refetch.",
-        "Precise entity projection types and fixed-query selection drift guards are implemented, but do not certify total list elements."
+        "Generated-operation execution adapter remains trusted; types do not certify outer completion or network delivery."
       ],
       "evidence": {
         "source": [
@@ -183,11 +212,13 @@
         ],
         "execution": [
           "tests/integration/contentResponseContracts.test.ts",
-          "tests/integration/frontendInputContracts.test.ts"
+          "tests/integration/frontendInputContracts.test.ts",
+          "tests/integration/eventCreationResponse.test.ts",
+          "tests/integration/creationProjectionContracts.test.ts"
         ]
       },
-      "reason": "The write commits before the generated-operation refetch. A concurrent deletion between those operations makes the real refetch return an empty array; the resolver pushes fetched[0] and GraphQL reports an outer non-null list-element error with path [createEventWithChannelConnections, 0]. TypeScript noUncheckedIndexedAccess=false previously hid this possibility; return annotations now retain undefined explicitly.",
-      "decision": "Choose a separately reviewed atomic/refetch or missing-item policy. Preserve existing commit timing and outer GraphQL non-null error path until that decision; do not filter missing items, throw early, or cast away undefined."
+      "reason": "Merged #449 validates the fixed event response within each item transaction. Successful entries now have precise non-undefined projections; failed items roll back and are omitted while later items continue. The actual generated registration, negative result fixtures and executable-document projection drift guard check this selected boundary.",
+      "decision": null
     },
     {
       "field": "Mutation.createImageWithUploader",
