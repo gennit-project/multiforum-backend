@@ -154,3 +154,23 @@ fixtures reject empty successful results and dependencies; a deliberately invali
 runtime dependency retains the outer non-null error rather than fabricating data.
 Remaining entries are 27 object/scalar fields, four plugin entries, one dynamic
 moderation response and one image-usage query. Pause/resume policy remains undecided.
+
+### Campaign transition decision: reproduced stale-status overwrite
+
+The real-schema `pluginCampaignResponseContracts.test.ts` now places a committed
+`COMPLETED` update between the status read and the pause/resume write. Both current
+mutations overwrite completion with `PAUSED`/`RUNNING` and return the old non-null
+`finishedAt`. These are deterministic failure witnesses, not assertions of desired
+semantics. Existing deletion, malformed projection, repeat-transition and anonymous
+permission regressions remain. No campaign behavior changed and neither boundary
+is promoted.
+
+Recommended decision: preserve terminal completion/cancellation, serialize the
+expected-state check with the write, return `NOT_FOUND` for disappearance and
+`BAD_USER_INPUT` for a changed state. Preserve existing manager permissions and
+explicitly retain the existing treatment of already-running provider jobs; stopping
+in-flight work is a different pause policy. A transaction alone is insufficient
+if the status predicate is evaluated before acquiring the write lock. The future
+fix needs real competing-transaction tests and validation before commit. The
+alternative is to retain last-writer-wins behavior, accepting the observed terminal
+state overwrite. This behavior choice requires approval before implementation.

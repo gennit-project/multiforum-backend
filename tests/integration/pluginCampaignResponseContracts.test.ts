@@ -14,14 +14,15 @@ import {campaignSelection,campaignPreviewSelection,campaignFailureSelection} fro
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema;
 let deleteAfterStatus=false;
+let completeAfterStatus=false;
 before(async()=>{
  driver=await startNeo4j();const app=getResolvers(driver).resolvers;
  const base=createCampaignControlRepository(driver);
- const controlRepository={...base,findStatus:async(id:string)=>{const result=await base.findStatus(id);if(deleteAfterStatus)await driver.executeQuery('MATCH(c:PluginPipelineCampaign{id:$id}) DELETE c',{id});return result;}};
+ const controlRepository={...base,findStatus:async(id:string)=>{const result=await base.findStatus(id);if(deleteAfterStatus)await driver.executeQuery('MATCH(c:PluginPipelineCampaign{id:$id}) DELETE c',{id});if(completeAfterStatus)await driver.executeQuery("MATCH(c:PluginPipelineCampaign{id:$id}) SET c.status='COMPLETED', c.finishedAt=datetime('2026-01-02T00:00:00Z')",{id});return result;}};
  schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app,Mutation:{...app.Mutation,pausePluginPipelineCampaign:pausePluginPipelineCampaign({driver,controlRepository}),resumePluginPipelineCampaign:resumePluginPipelineCampaign({driver,controlRepository})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();
  registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
 },{timeout:240000});
-after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);deleteAfterStatus=false;});
+after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);deleteAfterStatus=false;completeAfterStatus=false;});
 const fields=Object.keys(campaignSelection).join(' '),previewFields=Object.keys(campaignPreviewSelection).join(' '),failureFields=Object.keys(campaignFailureSelection).join(' ');
 const user={username:'actor',email:null,email_verified:true,data:null};
 const execute=(source:string,secure=false,authenticated=true)=>graphql({schema:secure?secured:schema,source,contextValue:{driver,req:{headers:{}},user:authenticated?user:undefined}});
@@ -62,3 +63,19 @@ test('malformed selected enum read retains schema error even with outer id-only 
 test('permission middleware denies all six anonymous campaign operations',async()=>{
  for(const source of ['{getPluginPipelineCampaigns{id}}','{getPluginPipelineCampaignFailures(campaignId:"campaign"){pipelineId}}','{previewPluginPipelineCampaign(policyId:"policy"){policyId}}','mutation{createPluginPipelineCampaign(policyId:"policy",concurrency:1,rateLimitPerMinute:5){id}}','mutation{pausePluginPipelineCampaign(campaignId:"campaign"){id}}','mutation{resumePluginPipelineCampaign(campaignId:"campaign"){id}}'])assert.ok((await execute(source,true,false)).errors,source);
 });
+
+// Failure witnesses, not desired transition semantics. A committed competing
+// update is placed after the status read to reproduce the race deterministically.
+for(const [field,initial,overwritten] of [
+ ['pausePluginPipelineCampaign','RUNNING','PAUSED'],
+ ['resumePluginPipelineCampaign','PAUSED','RUNNING'],
+] as const){
+ test(`${field}: stale validation currently overwrites completed status`,async()=>{
+  await seed(initial);completeAfterStatus=true;
+  const result=data(await execute(`mutation{${field}(campaignId:"campaign"){id status finishedAt}}`))[field];
+  assert.equal(result.status,overwritten);
+  assert.equal(result.finishedAt,'2026-01-02T00:00:00.000Z');
+  completeAfterStatus=false;
+  assert.equal((await createCampaignControlRepository(driver).findStatus('campaign'))[0].status,overwritten);
+ });
+}

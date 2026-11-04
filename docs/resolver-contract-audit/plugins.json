@@ -291,7 +291,7 @@
         "services/persistence/campaignServiceRepository.ts",
         "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
-      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root.",
+      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
       "decision": "Preserve behavior. A checked non-null response needs an explicit behavior decision for concurrent deletion (for example throw a deliberate error on missing update result); do not assert existence or silently alter error semantics. Exact persistence projections and populated/error response tests are implemented."
     },
     {
@@ -523,7 +523,7 @@
         "services/persistence/campaignServiceRepository.ts",
         "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
-      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root.",
+      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
       "decision": "Preserve behavior. A checked non-null response needs an explicit behavior decision for concurrent deletion (for example throw a deliberate error on missing update result); do not assert existence or silently alter error semantics. Exact persistence projections and populated/error response tests are implemented."
     },
     {
