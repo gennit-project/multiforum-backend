@@ -1008,3 +1008,12 @@ permissions, caller aliases and fragments, directive variables, null attribution
 missing records, selected scalar failures and sensitive-text filtering. This does
 not certify arbitrary descendants, custom content-list sources or complete User
 objects. Accounting remains 176 selected / 33 deferred.
+
+Discussion author/body-editor and event poster/description-editor sources now
+carry protected-child identity through their generated lists and root connections;
+event-series posters use the same explicit boundary. Five pre-fix probes failed
+without username selection. The 32 real graph/Shield regressions preserve aliases,
+fragments, directives, owner/anonymous permissions, null attribution, missing
+records, local scalar errors and sensitive-discussion filtering. Event-channel
+omission/null behavior is untouched. These source guarantees do not certify all
+content children; accounting remains 176 selected / 33 deferred.
