@@ -52,7 +52,7 @@ test("profile collections preserve arbitrary filters, options and computed count
   for (const where of [{}, {CreatedBy:{username:{eq:'owner'}}}, {OR:[{name:{contains:'First'}},{visibility:{eq:'PRIVATE'}}]},
     {Downloads:{some:{id:{eq:'clear'}}}}, {Channels:{some:{uniqueName:{eq:'cats'}}}}, {NOT:{name:{eq:'Second'}}}]) {
     for (const options of [{}, {sort:[]}, {sort:[{createdAt:'DESC'}],limit:1,offset:1}]) {
-      const actual = await outcome(() => repository.findProfileCollections(where as never,options as never));
+      const actual = await outcome(() => repository.findProfileCollections(where as never,options as never,'owner'));
       assert.ok('value' in actual, JSON.stringify(actual));
       t.assert.snapshot(norm(actual));
     }
@@ -89,7 +89,7 @@ test("owned sharing snapshots retain ownership filter and narrow projections", a
 test("filter and options validation preserve original first errors", async () => {
   const cases:[any,any,RegExp][]=[[{unknown:'field'},{},/Field "unknown" is not defined by type "CollectionWhere"/],[{visibility:{eq:'invalid'}},{},/does not exist in/],[{}, {limit:'bad'},/Int cannot represent non-integer value/],[{}, {sort:[{unknown:'ASC'}]},/Field "unknown" is not defined by type/]];
   for (const [where,options,message] of cases) {
-    await assert.rejects(repository.findProfileCollections(where as never,options as never), message);
+    await assert.rejects(repository.findProfileCollections(where as never,options as never,'owner'), message);
   }
 });
 
@@ -110,7 +110,7 @@ test("collections remain unbounded at root and public downloads retain limit fiv
   await driver.executeQuery(`MATCH (owner:User {username:'owner'}) UNWIND range(1,30) AS i
     CREATE (c:Collection {id:'extra-'+toString(i),name:'Extra',visibility:'PUBLIC',collectionType:'DOWNLOADS',itemOrder:[],createdAt:datetime(),updatedAt:datetime()})
     CREATE (c)-[:CREATED_BY]->(owner)`);
-  assert.equal((await repository.findProfileCollections({},{})).length,32);
+  assert.equal((await repository.findProfileCollections({},{},'owner')).length,32);
   await driver.executeQuery(`MATCH (c:Collection {id:'first'}) UNWIND range(1,10) AS i
     CREATE (d:Discussion {id:'download-'+toString(i),title:'Download',createdAt:datetime()}) CREATE (c)-[:CONTAINS_DOWNLOAD]->(d)`);
   const actual = await repository.findPublicContaining({id:{eq:'first'}},false);

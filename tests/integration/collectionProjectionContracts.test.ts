@@ -22,9 +22,9 @@ test('all five executed collection read documents match their declared selection
   const where={name:{eq:'example'}};
   const options={sort:[{name:SortDirection.Asc}],limit:2,offset:3};
   const cases:{root:string;selection:Record<string,unknown>;args:unknown;jwt?:unknown;invoke:()=>Promise<unknown>}[]=[
-   {root:'collections',selection:profileCollectionSelection,args:{where,...options},invoke:()=>repository.findProfileCollections(where,options)},
+   {root:'collections',selection:profileCollectionSelection,args:{where,...options},jwt:{sub:'alice'},invoke:()=>repository.findProfileCollections(where,options,'alice')},
    ...[false,true].map(allowed=>({root:'collections',selection:publicCollectionSelection,args:{where,sort:[{createdAt:SortDirection.Desc}]},jwt:{mayAccessSensitiveContent:allowed},invoke:()=>repository.findPublicContaining(where,allowed)})),
-   {root:'collections',selection:collectionShareSelection,args:{where:{id:{eq:'collection'},CreatedBy:{username:{eq:'alice'}}}},invoke:()=>repository.findOwnedShareTarget('collection','alice')},
+   {root:'collections',selection:collectionShareSelection,jwt:{sub:'alice'},args:{where:{id:{eq:'collection'},CreatedBy:{username:{eq:'alice'}}}},invoke:()=>repository.findOwnedShareTarget('collection','alice')},
    {root:'channels',selection:collectionShareChannelSelection,args:{where:{uniqueName:{eq:'forum'}}},invoke:()=>repository.findShareChannel('forum')},
   ];
   for(const {root,selection,args,jwt,invoke} of cases){

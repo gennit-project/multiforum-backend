@@ -206,7 +206,15 @@ const typeDefinitions = gql`
   }
 
 
-  type Collection @node {
+  type Collection @node
+    @authorization(filter: [{
+      operations: [READ, AGGREGATE]
+      requireAuthentication: false
+      where: { OR: [
+        { node: { visibility: { eq: PUBLIC } } }
+        { node: { CreatedBy: { username: { eq: "$jwt.sub" } } } }
+      ] }
+    }]) {
     id: ID! @id
     name: String!
     description: String

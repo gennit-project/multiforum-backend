@@ -12,34 +12,39 @@ const setup = () => {
   const calls: unknown[] = [];
   const rows: ProfileCollectionProjection[] = [{ id: "collection", name: "Collection", description: null, visibility: CollectionVisibility.Public, collectionType: CollectionType.Downloads, itemCount: 0, itemOrder: [], createdAt: "2026-01-01", updatedAt: null, Channels: [], Discussions: [], Comments: [], Downloads: [], Images: [] }];
   const repository: CollectionReadRepository = {
-    findProfileCollections: async (where, options) => { calls.push({ where, options }); return rows; },
+    findProfileCollections: async (where, options, viewerUsername) => { calls.push({ where, options, viewerUsername }); return rows; },
     findPublicContaining: async () => [], findOwnedShareTarget: async () => [], findShareChannel: async () => [],
   };
   return { calls, rows, resolver: userCollections({ driver: {} as Driver, collectionReadRepository: repository }) };
 };
 const ctx = (username: string) => ({ user: { username } }) as GraphQLContext;
 
-test("profile filters preserve incoming owner override and force public only for other viewers", async () => {
+test("profile filters intersect caller constraints with immutable owner and visibility scope", async () => {
   for (const username of ["profile", "visitor"]) {
     const state = setup();
     const where = { CreatedBy: { username: { eq: "override" } }, visibility: { eq: CollectionVisibility.Private },
-      OR: [{ name: { contains: "cats" } }, { Discussions_SOME: { id: { eq: "discussion" } } }] };
+      OR: [{ name: { contains: "cats" } }, { Discussions: { some: { id: { eq: "discussion" } } } }] };
+    const before = structuredClone(where);
     const result = await state.resolver({ username: "profile" }, { where }, ctx(username), {} as never);
     assert.equal(result, state.rows);
-    assert.deepEqual(state.calls, [{ where: { ...where, visibility: username === "profile" ? { eq: "PRIVATE" } : { eq: "PUBLIC" } }, options: { sort: [{ createdAt: "DESC" }] } }]);
-    assert.deepEqual(where.visibility, { eq: "PRIVATE" });
+    assert.deepEqual(state.calls, [{ where: { AND: [{ CreatedBy: { username: { eq: "profile" } },
+      ...(username === "profile" ? {} : { visibility: { eq: "PUBLIC" } }) }, where] }, options: { sort: [{ createdAt: "DESC" }] }, viewerUsername: username }]);
+    assert.deepEqual(where, before);
   }
 });
 
-test("profile defaults retain in-place options mutation and explicit empty sorting", async () => {
+test("profile accepts generated pagination arguments without mutating them", async () => {
   const state = setup();
-  const options = { limit: 3 };
-  await state.resolver({ username: "profile" }, { options }, ctx("profile"), {} as never);
-  assert.deepEqual(options, { limit: 3, sort: [{ createdAt: "DESC" }] });
-  const explicit = { sort: [] };
-  await state.resolver({ username: "profile" }, { options: explicit }, ctx("profile"), {} as never);
-  assert.deepEqual(explicit, { sort: [] });
-  assert.deepEqual(state.calls[1], { where: { CreatedBy: { username: { eq: "profile" } } }, options: explicit });
+  const args = { limit: 3, offset: 1 };
+  await state.resolver({ username: "profile" }, args, ctx("profile"), {} as never);
+  assert.deepEqual(args, { limit: 3, offset: 1 });
+  const explicit = { sort: [], limit: 0 };
+  await state.resolver({ username: "profile" }, explicit, ctx("profile"), {} as never);
+  assert.deepEqual(explicit, { sort: [], limit: 0 });
+  assert.deepEqual(state.calls, [
+    { where: { CreatedBy: { username: { eq: "profile" } } }, options: { sort: [{ createdAt: "DESC" }], limit: 3, offset: 1 }, viewerUsername: "profile" },
+    { where: { CreatedBy: { username: { eq: "profile" } } }, options: explicit, viewerUsername: "profile" },
+  ]);
 });
 
 test("profile read errors propagate unchanged", async () => {

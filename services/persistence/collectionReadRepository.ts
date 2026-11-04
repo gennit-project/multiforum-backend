@@ -11,7 +11,7 @@ import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
 export type CollectionShareSnapshot = CollectionShareProjection;
 export interface CollectionReadRepository {
-  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions): Promise<ProfileCollectionProjection[]>;
+  findProfileCollections(where: CollectionWhere, options: CollectionReadOptions, viewerUsername?: string): Promise<ProfileCollectionProjection[]>;
   findPublicContaining(where: CollectionWhere, canViewSensitiveContent: boolean): Promise<PublicCollectionProjection[]>;
   findOwnedShareTarget(id: string, username: string): Promise<CollectionShareSnapshot[]>;
   findShareChannel(uniqueName: string): Promise<CollectionShareChannelProjection[]>;
@@ -141,9 +141,9 @@ const SHARE_CHANNEL = `query CollectionShareChannel($where: ChannelWhere) {
 
 export function createCollectionReadRepository(driver: Driver): CollectionReadRepository {
   return {
-    async findProfileCollections(where, options) {
+    async findProfileCollections(where, options, viewerUsername) {
       const result = await executeGeneratedOperation<{collections: ProfileCollectionProjection[]}>(driver,
-        PROFILE_COLLECTIONS, { where, ...options });
+        PROFILE_COLLECTIONS, { where, ...options }, undefined, viewerUsername ? { sub: viewerUsername } : undefined);
       return result.collections;
     },
     async findPublicContaining(where, canViewSensitiveContent) {
@@ -157,7 +157,7 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
     },
     async findOwnedShareTarget(id, username) {
       const result = await executeGeneratedOperation<{collections: CollectionShareSnapshot[]}>(driver,
-        OWNED_SHARE_TARGET, { where: { id: { eq: id }, CreatedBy: { username: { eq: username } } } });
+        OWNED_SHARE_TARGET, { where: { id: { eq: id }, CreatedBy: { username: { eq: username } } } }, undefined, { sub: username });
       return result.collections;
     },
     async findShareChannel(uniqueName) {

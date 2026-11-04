@@ -503,3 +503,19 @@ schema visibility enum rather than optional catch-all properties. Negative type
 fixtures reject missing selected fields, invalid enums and unfetched child fields.
 This does not certify arbitrary outer Collection child selections or change
 profile filter composition. Accounting remains **176 selected / 33 deferred**.
+
+
+### Collection read authorization regression
+
+A reproduced profile-filter authorization defect is fixed by intersecting caller
+filters with the profile/visibility scope. Generated Collection READ/AGGREGATE
+filters independently restrict roots, relationship reads and counts to public
+collections or the verified graph owner. Internal profile and owned-share reads
+forward only the already-resolved viewer identity; public reads remain anonymous.
+The profile resolver accepts the generated sort/limit/offset arguments, retaining
+default ordering and the library's zero-limit semantics. Real GraphQL + Shield +
+disposable-Neo4j tests cover owner, visitor and anonymous access, nested Boolean
+filters, relationships, aliases/fragments, pagination, aggregate counts and the
+existing denial on User.CollectionsConnection. This is read protection, not a
+change to collection writes or a certification of subscription event delivery.
+The selected-response inventory remains **176 selected / 33 deferred**.

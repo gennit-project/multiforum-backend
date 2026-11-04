@@ -596,10 +596,11 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "tests/integration/collectionProfilePrivacy.test.ts"
       ],
       "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
-      "decision": "Selected response checked; retain documented residual scope."
+      "decision": "Caller filters intersect profile authorization; generated collection reads enforce public-or-owner visibility. Generated pagination arguments are forwarded. Response projection accounting remains selected-only."
     },
     {
       "field": "User.variantUrls",

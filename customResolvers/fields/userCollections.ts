@@ -3,7 +3,7 @@ import { createCollectionReadRepository, type CollectionReadRepository, type Col
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
-import type { CollectionWhere } from "../../ogm_types.js";
+import type { CollectionWhere, UserCollectionsArgs as CollectionsArgs } from "../../src/generated/graphql.js";
 import { SortDirection } from "../../src/generated/graphql.js";
 import { CollectionVisibility } from "../../ogm_types.js";
 
@@ -18,11 +18,6 @@ type UserCollectionsArgs = {
  * - If requester is NOT the account owner: return only PUBLIC collections
  * - Respects additional where filters passed from GraphQL queries (e.g., filtering by item relationships)
  */
-type CollectionsArgs = {
-  where?: CollectionWhere | null;
-  options?: CollectionReadOptions | null;
-};
-
 export default function ({ driver, collectionReadRepository = createCollectionReadRepository(driver) }: UserCollectionsArgs) {
   return async (
     parent: { username: string },
@@ -30,7 +25,6 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     context: GraphQLContext,
     info: GraphQLResolveInfo
   ) => {
-    const { req } = context;
 
     // Get the username of the user whose collections we're viewing
     const profileUsername = parent.username;
@@ -46,34 +40,18 @@ export default function ({ driver, collectionReadRepository = createCollectionRe
     const isOwnProfile = profileUsername === requestingUsername;
 
 
-    // Build the filter starting with CreatedBy
-    const filter: CollectionWhere = {
-      CreatedBy: {
-        username: { eq: profileUsername }
-      }
+    // Caller filters can narrow the authorized set, never replace its scope.
+    const authorized: CollectionWhere = {
+      CreatedBy: { username: { eq: profileUsername } },
+      ...(!isOwnProfile ? { visibility: { eq: CollectionVisibility.Public } } : {}),
     };
-
-    // Merge incoming where filters from the GraphQL query
-    // This allows queries like Collections(where: { Discussions: { some: { id: { eq: $itemId } } } }) to work
-    if (args.where) {
-      Object.assign(filter, args.where);
-    }
-
-    // If not viewing own profile, only show PUBLIC collections
-    // This takes precedence over any visibility filter in args.where
-    if (!isOwnProfile) {
-      filter.visibility = { eq: CollectionVisibility.Public };
-    }
-
-    // Merge incoming options with defaults
-    const options = args.options || {};
-    if (!options.sort) {
-      options.sort = [{ createdAt: SortDirection.Desc }];
-    }
-
-    // Get collections with the merged filter
-    // Include all relationship fields that clients might request
-    const collections = await collectionReadRepository.findProfileCollections(filter, options);
+    const filter: CollectionWhere = args.where ? { AND: [authorized, args.where] } : authorized;
+    const options: CollectionReadOptions = {
+      sort: args.sort ?? [{ createdAt: SortDirection.Desc }],
+      ...(args.limit != null ? { limit: args.limit } : {}),
+      ...(args.offset != null ? { offset: args.offset } : {}),
+    };
+    const collections = await collectionReadRepository.findProfileCollections(filter, options, requestingUsername ?? undefined);
 
     return collections;
   };
