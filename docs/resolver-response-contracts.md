@@ -472,9 +472,10 @@ fragments, null links and ownership failure before writes.
 
 Counts remain **176 selected / 33 deferred**. This advances the scratchpad source
 work, but the separately returned raw super-upvoter username leaves remain unknown.
-The existing comment-source query's moderator-author error is preserved: the
-fragment-only union currently resolves as User and fails username completion.
-Changing moderator attribution/union behavior is not part of this typing slice.
+The moderator-author source failure was subsequently fixed by selecting both
+User and ModerationProfile discriminator properties. A real GraphQL/Shield
+regression confirms successful moderator-author super-upvotes without user karma,
+with unchanged recipients, ordinary User-author karma and permission denials.
 Vote limits, age filtering, karma, notifications and write/error ordering remain.
 
 ### Dynamic activity delegation input boundary
@@ -738,3 +739,17 @@ Neo4j regressions for nulls, numeric conversions, malformed values, multiple con
 missing names and defaults. Routing, bookmarks, ordering, scalar coercion, error
 behavior and age/feature policy are unchanged. This strengthens an upstream read;
 it does not promote any of the 33 deferred outer response boundaries.
+
+
+### Scratchpad moderator author regression
+
+The source query now selects both supported author branches. Previously a valid
+ModerationProfile author was misclassified as User and failed username completion
+before creating the entry. Tests execute the mutation through GraphQL and Shield,
+checking the response, vote weight, notification recipient, no moderator-author
+user karma, ordinary User-author karma, repeated operations, missing normal votes
+and unauthorized callers. Restoring the old document makes the positive moderator
+test fail. No recipient selection, permission or karma policy changes are made;
+the existing documented moderator no-karma path is now reachable. The projection
+and compile-negative fixtures distinguish both branches. The raw returned
+super-upvoter child properties remain deferred, so counts do not increase.

@@ -340,9 +340,10 @@
         "customResolvers/contracts/scratchpadProjections.ts",
         "tests/contracts/scratchpadProjections.typecheck.ts",
         "tests/integration/scratchpadProjectionContracts.test.ts",
-        "tests/integration/scratchpadRepository.test.ts"
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
       ],
-      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
+      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
       "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
@@ -359,9 +360,10 @@
         "customResolvers/contracts/scratchpadProjections.ts",
         "tests/contracts/scratchpadProjections.typecheck.ts",
         "tests/integration/scratchpadProjectionContracts.test.ts",
-        "tests/integration/scratchpadRepository.test.ts"
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
       ],
-      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
     },
     {
@@ -391,9 +393,10 @@
         "customResolvers/contracts/scratchpadProjections.ts",
         "tests/contracts/scratchpadProjections.typecheck.ts",
         "tests/integration/scratchpadProjectionContracts.test.ts",
-        "tests/integration/scratchpadRepository.test.ts"
+        "tests/integration/scratchpadRepository.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
       ],
-      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, selecting both User and ModerationProfile branches. Real GraphQL/Shield regression tests now verify that moderator-author creation succeeds with no user karma, unchanged recipients and enforced permissions.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
     },
     {

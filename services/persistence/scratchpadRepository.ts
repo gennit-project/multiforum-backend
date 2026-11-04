@@ -13,7 +13,7 @@ export interface ScratchpadRepository {
 }
 export const SCRATCHPAD_DEFAULT_SELECTION = `{ id text isPublic sourceType sourceId sourceChannelUniqueName discussionId createdAt }`;
 const RECIPIENT=`query ScratchpadRecipient($where:UserWhere){users(where:$where){username displayName}}`;
-const COMMENT=`query ScratchpadCommentSource($where:CommentWhere){comments(where:$where){id UpvotedByUsers{username} SuperUpvotedByUsers{username} DiscussionChannel{discussionId channelUniqueName} CommentAuthor{... on User{username}}}}`;
+const COMMENT=`query ScratchpadCommentSource($where:CommentWhere){comments(where:$where){id UpvotedByUsers{username} SuperUpvotedByUsers{username} DiscussionChannel{discussionId channelUniqueName} CommentAuthor{... on User{username} ... on ModerationProfile{displayName}}}}`;
 const DISCUSSION=`query ScratchpadDiscussionSource($where:DiscussionChannelWhere){discussionChannels(where:$where){id discussionId channelUniqueName UpvotedByUsers{username} SuperUpvotedByUsers{username} Discussion{Author{username}}}}`;
 const OWNER=`query ScratchpadOwnership($where:ScratchpadEntryWhere){scratchpadEntries(where:$where){id Recipient{username}}}`;
 const VISIBILITY=`query ScratchpadVisibility($where:ScratchpadEntryWhere){scratchpadEntries(where:$where){id isPublic text sourceType sourceId sourceChannelUniqueName discussionId createdAt Recipient{username} Author{username displayName profilePicURL}}}`;

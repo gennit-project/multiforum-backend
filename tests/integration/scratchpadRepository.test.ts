@@ -87,11 +87,9 @@ for (const shift of [0, 1, 2]) test(`delete preserves detach cleanup, votes, not
 });
 
 test("source reads preserve User/Moderator union, nested vote limits and age filtering",async(t)=>{
- await seed();assert.equal((await repo().findCommentSource("comment"))[0].CommentAuthor?.username,"bob");
+ await seed();assert.deepEqual({...((await repo().findCommentSource("comment"))[0].CommentAuthor)},{username:"bob"});
  await driver.executeQuery("MATCH(u:User)-[r:AUTHORED_COMMENT]->(c:Comment) DELETE r CREATE(:ModerationProfile{displayName:'mod'})-[:AUTHORED_COMMENT]->(c)");
- // The installed anonymous OGM schema resolves this fragment-only union as
- // User and fails its username projection; preserve that existing error.
- await assert.rejects(repo().findCommentSource("comment"),/Cannot return null for non-nullable field User\.username/);
+ assert.deepEqual({...((await repo().findCommentSource("comment"))[0].CommentAuthor)},{displayName:"mod"});
  await driver.executeQuery("MATCH(:ModerationProfile)-[r:AUTHORED_COMMENT]->(c:Comment),(u:User{username:'bob'}) DELETE r CREATE(u)-[:AUTHORED_COMMENT]->(c)");
  await driver.executeQuery("MATCH(c:Comment) UNWIND range(1,30) AS i CREATE(:User{username:'voter'+toString(i)})-[:UPVOTED_COMMENT]->(c)");
  const source=await repo().findCommentSource("comment");assert.equal(source[0].UpvotedByUsers?.length,25);

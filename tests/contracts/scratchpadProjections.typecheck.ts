@@ -14,6 +14,8 @@ void discussion.Discussion?.body;
 // @ts-expect-error visibility query does not select the computed vote cache
 void entry.superUpvotedByUsers;
 const absentAuthor:ScratchpadCommentSource['CommentAuthor']=null;
-const otherBranch:ScratchpadCommentSource['CommentAuthor']={};
+// @ts-expect-error neither author branch can omit its selected discriminator
+const missingAuthor:ScratchpadCommentSource['CommentAuthor']={};
+const otherBranch:ScratchpadCommentSource['CommentAuthor']={displayName:'moderator'};
 const userAuthor:ScratchpadCommentSource['CommentAuthor']={username:'alice'};
-void [voters,discussionVoters,owner,incomplete,absentAuthor,otherBranch,userAuthor];
+void [voters,discussionVoters,owner,incomplete,absentAuthor,otherBranch,userAuthor,missingAuthor];
