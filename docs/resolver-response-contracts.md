@@ -998,3 +998,13 @@ human and missing-account nulls, and local scalar errors. The separate `User` ed
 is still denied even to the account owner; no human moderator identity dependency
 is added or exposed. These checks do not certify arbitrary moderator descendants
 or full User values; accounting remains 176 selected / 33 deferred.
+
+Generated wiki-page roots now declare `OriginalAuthor` and `VersionAuthor`;
+text-version roots declare `Author`; label-change-history roots declare `ActorUser`.
+Root connections use the same explicit paths with canonical connection envelopes.
+All four pre-fix owner-child probes failed without selected username. The 26
+real graph/Shield regressions cover both source representations, owner/anonymous
+permissions, caller aliases and fragments, directive variables, null attribution,
+missing records, selected scalar failures and sensitive-text filtering. This does
+not certify arbitrary descendants, custom content-list sources or complete User
+objects. Accounting remains 176 selected / 33 deferred.
