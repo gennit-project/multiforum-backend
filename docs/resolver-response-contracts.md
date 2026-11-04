@@ -568,3 +568,21 @@ regression rejects the old string-number mismatch while proving stored text and
 append side effects are unchanged. No post-commit number validation, extra read,
 or write/authorization policy is introduced; idempotent replay and other response
 fields are preserved.
+
+### Pipeline executor source projections
+
+Channel and comment executors now consume exact fixed schema projections for
+channels, content, configuration, pending/returned jobs and secrets instead of
+whole generated entities. The comment author retains its two distinct selected
+branches without inventing a discriminator. The current discussion read guarantees
+its plural attachment selection; the injected-adapter interface explicitly retains
+the pre-existing singular attachment fallback. Neither shape is a full file entity.
+All fifteen actual repository documents execute through the schema in a drift test,
+including mutation default selections, filter ordering and the one-file limit.
+Removing the moderator's selected display name makes that test fail. Compile-negative
+fixtures reject full-entity assignments, unselected mutation info/lease fields and
+unsafe author assumptions. Existing disposable-database and executor tests preserve
+write/event ordering, post-commit projection failures, retries, stale revisions and
+settings precedence. No query, permission, worker pause or persistence behavior is
+changed. JSON leaves and dynamic outer response children remain outside these fixed
+source guarantees; inventory remains **176 selected / 33 deferred**.

@@ -54,7 +54,7 @@ import { createBotReport, type ReportContentAsBotInput } from '../botReportServi
 import { buildBotUsername } from '../botUserService.js'
 import { getActiveSuspension } from '../../rules/permission/getActiveSuspension.js'
 import { createChannelPermissionRepository } from '../persistence/channelPermissionRepository.js'
-import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput, Channel, Discussion, DownloadableFile, ServerConfig } from '../../ogm_types.js'
+import type { PluginRunCreateInput, PluginRunUpdateInput, DownloadableFileUpdateInput } from '../../ogm_types.js'
 import { logger } from "../../logger.js";
 import {
   createContentRevisionHash,
@@ -123,7 +123,7 @@ export const triggerChannelPluginPipeline = async (
     throw new Error(`Channel "${channelUniqueName}" not found`)
   }
 
-  const channel: Channel = channels[0]
+  const channel = channels[0]
   const channelPipelines = parseStoredPipelines(channel.pluginPipelines)
   const channelEventPipeline = channelPipelines.find(p => p.event === event)
 
@@ -166,16 +166,14 @@ export const triggerChannelPluginPipeline = async (
   // Discussion creation permits one attached download. Read the first item from
   // the schema's plural relationship while retaining the legacy singular fixture
   // shape used by a few isolated unit tests.
-  const discussion = discussions[0] as Discussion & {
-    DownloadableFile?: DownloadableFile | null
-  }
+  const discussion = discussions[0]
   const downloadableFile =
     discussion.DownloadableFiles?.[0] || discussion.DownloadableFile
 
   // Get server config for enabled plugins (channels can only use server-enabled plugins)
   const serverConfigs = await repository.findConfiguration()
 
-  const serverConfig: ServerConfig | undefined = serverConfigs[0]
+  const serverConfig = serverConfigs[0]
   if (!serverConfig) {
     return []
   }
@@ -315,9 +313,7 @@ export const triggerChannelPluginPipeline = async (
   const isCurrentContentRevision = async () => {
     const currentDiscussions = await repository.findDiscussion(discussionId)
     if (!currentDiscussions.length) return false
-    const currentDiscussion = currentDiscussions[0] as Discussion & {
-      DownloadableFile?: DownloadableFile | null
-    }
+    const currentDiscussion = currentDiscussions[0]
     const currentFile =
       currentDiscussion.DownloadableFiles?.[0] || currentDiscussion.DownloadableFile
     return createContentRevisionHash({
