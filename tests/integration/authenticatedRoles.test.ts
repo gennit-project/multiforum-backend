@@ -723,3 +723,24 @@ test('selection-aware account identity preserves empty matches, pagination and n
   assert.equal(response.errors,undefined,JSON.stringify(response));
   assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{missing:[],page:[{stripeAccountId:null}]});
 });
+
+for(const order of ['ASC','DESC'])test(`account child permission accepts native integer siblings in ${order} order`,async()=>{
+ await seedIdentityAccounts();
+ await driver.executeQuery("MATCH(u:User) WHERE u.username IN ['normaluser','adminuser'] SET u.commentKarma=3,u.discussionKarma=5");
+ const response=await graphql({schema,source:`{users(where:{username:{in:["normaluser","adminuser"]}},sort:[{username:${order}}]){commentKarma discussionKarma Email{address}}}`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ const deniedIndex=order==='ASC'?0:1;
+ assert.deepEqual(response.errors?.map(error=>error.path),[['users',deniedIndex,'Email']],JSON.stringify(response));
+ const owner={commentKarma:3,discussionKarma:5,Email:{address:'normaluser@private.test'}};
+ const other={commentKarma:3,discussionKarma:5,Email:null};
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:order==='ASC'?[other,owner]:[owner,other]});
+});
+
+test('account child permission does not hash malformed native integer siblings before completion',async()=>{
+ await seedIdentityAccounts();
+ await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio=[1,2]");
+ try {
+  const response=await graphql({schema,source:'{users(where:{username:{eq:"normaluser"}}){broken:bio contact:Email{address}}}',contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+  assert.deepEqual(response.errors?.map(error=>error.path),[['users',0,'broken']],JSON.stringify(response));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{broken:null,contact:{address:'normaluser@private.test'}}]});
+ } finally {await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio='normaluser'");}
+});

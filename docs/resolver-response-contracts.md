@@ -900,3 +900,12 @@ fields, and owner/visitor/anonymous results. Invalid or unavailable source ident
 is an explicit field error rather than an unscoped repository read. User sources
 outside this pilot still need their own selection-dependency coverage; they are not
 marked complete by this change.
+
+Account ownership comparisons now run for every field/operation without hashing
+the parent object. Shield's default strict-cache hash throws when it encounters a
+Neo4j Integer constructor, before the permission comparison can run. Three real
+GraphQL regressions fail with strict hashing and pass with per-field comparison:
+valid integer sibling fields in both result orders, and a malformed integer-array
+sibling whose completion error must stay on that sibling. Authentication continues
+to use the existing request cache; ownership results are never reused across
+parents or mutation arguments. This changes neither visibility policy nor schema.
