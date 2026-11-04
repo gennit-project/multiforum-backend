@@ -859,3 +859,18 @@ test('channel member dependencies preserve filtered aliases, skipped fields and 
  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{own:[{Email:{address:'normaluser@private.test'}}],public:[{renamed:'adminuser'}],empty:[]}]});
 });
+
+for(const direction of ['ASC','DESC'])test(`channel member sort ${direction} is independent of response aliases and preserves authorization`,async()=>{
+ await seedChannelMemberIdentities();
+ const response=await graphql({schema,source:`{channels(where:{uniqueName:{eq:"identity-members"}}){members:Bots(sort:[{username:${direction}}]){key:username username:bio Email{address}}}}`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ const keys=direction==='ASC'?['adminuser','normaluser']:['normaluser','adminuser'];
+ assert.deepEqual(response.errors?.map(error=>error.path),[['channels',0,'members',keys.indexOf('adminuser'),'Email']],JSON.stringify(response));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{members:keys.map(key=>({key,username:'normaluser',Email:key==='normaluser'?{address:'normaluser@private.test'}:null}))}]});
+});
+
+test('channel member pagination uses source ordering before private child completion',async()=>{
+ await seedChannelMemberIdentities();
+ const response=await graphql({schema,source:'{channels(where:{uniqueName:{eq:"identity-members"}}){Bots(sort:[{username:ASC}],offset:1,limit:1){key:username username:bio Email{address}}}}',contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{Bots:[{key:'normaluser',username:'normaluser',Email:{address:'normaluser@private.test'}}]}]});
+});

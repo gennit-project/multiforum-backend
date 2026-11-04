@@ -947,7 +947,28 @@ adapter executes the source once and only adds dependencies to selections that
 request a protected child or profile collections. It preserves the pass-through
 list resolver's existing behavior. Real graph tests exercise each list, mixed
 aliases/fragments, owner and anonymous denial, independent filters, skipped fields,
-and empty results. An A/B probe confirmed that the pre-existing relation ordering
-with an aliased sort property is unchanged; this slice does not fix that ordering
-case. These source paths do not certify opaque list items or promote inventory
-entries.
+and empty results. These source paths do not certify opaque list items or promote
+inventory entries. The relation-sort regression found during this work is addressed
+by the following bounded dependency patch.
+
+
+### Relation ordering before response aliases
+
+The version-pinned `@neo4j/graphql@7.6.4` patch sorts nested reads by original
+stored/computed values before projecting response aliases. Previously an alias
+such as `username: bio` could make a username sort order by the biography instead,
+and computed sort projections could overwrite a requested response alias. The
+patch preserves implicit sort fields, existing filtering and pagination, and the
+unsorted projection path. It changes neither the schema nor authorization rules.
+
+Ten disposable-database regressions cover ascending/descending and multi-key
+ordering, nullable values, database property aliases, computed fields, omitted
+sort selections, independent relation aliases, filters/pagination, nested mutation
+responses and generated authorization filters. The initial eight cases all failed
+before the patch. Three application regressions verify channel member ordering
+and pagination with real Shield child permissions. Upgrade work must re-evaluate
+this version-specific patch and retain the executable regressions; the dependency
+version and patch hash are locked by pnpm and included in container builds.
+
+This fixes concrete ordering/response behavior, not arbitrary descendant value
+contracts. Accounting remains **176 selected / 33 deferred**.

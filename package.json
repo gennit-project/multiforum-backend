@@ -136,7 +136,8 @@
       "ssh2"
     ],
     "patchedDependencies": {
-      "graphql-shield@7.6.5": "patches/graphql-shield@7.6.5.patch"
+      "graphql-shield@7.6.5": "patches/graphql-shield@7.6.5.patch",
+      "@neo4j/graphql@7.6.4": "patches/@neo4j__graphql@7.6.4.patch"
     }
   }
 }
