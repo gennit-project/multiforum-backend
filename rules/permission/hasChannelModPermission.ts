@@ -105,8 +105,8 @@ export const hasChannelModPermission: (
   }
 
   // 2. Check if user has a moderation profile
-  const hasModProfile = context.user?.data?.ModerationProfile !== null;
-  if (!hasModProfile) {
+  const modProfileName = context.user?.data?.ModerationProfile?.displayName;
+  if (typeof modProfileName !== "string" || !modProfileName) {
     return new Error(ERROR_MESSAGES.channel.notMod);
   }
 
@@ -119,7 +119,6 @@ export const hasChannelModPermission: (
   if (!channelData) {
     return new Error(ERROR_MESSAGES.channel.notFound);
   }
-  const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
   // Request-cached (see hasChannelPermission for rationale); the cached
   // selection set is a superset of the mod-role fields read here.

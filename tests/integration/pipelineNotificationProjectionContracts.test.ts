@@ -8,10 +8,11 @@ import {createEmailNotificationRepository} from '../../services/persistence/emai
 import {createNotificationWriter} from '../../services/persistence/notificationWriter.js';
 import {notificationSubscriberSelection} from '../../customResolvers/contracts/notificationProjections.js';
 import {canonicalSelection,declaredSelection} from '../helpers/exactSelection.js';
-import {startNeo4j,stopNeo4j} from './neo4jHarness.js';
+import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 test('six delivery documents preserve recipient projections and post-commit default selections',async()=>{
  const driver=await startNeo4j();
  try{
+  await resetDatabase(driver);
   const schema=await buildPublicSchema(),calls:{root:string;selection:string}[]=[];
   for(const root of ['pluginPipelineRuns','downloadableFiles','users'])schema.getQueryType()!.getFields()[root].resolve=(_p,_a,_c,info)=>{const selection=info.fieldNodes[0].selectionSet;assert.ok(selection);calls.push({root,selection:canonicalSelection(selection)});return [];};
   schema.getMutationType()!.getFields().updateUsers.resolve=(_p,_a,_c,info)=>{const selection=info.fieldNodes[0].selectionSet;assert.ok(selection);calls.push({root:'updateUsers',selection:canonicalSelection(selection)});return {users:[]};};
