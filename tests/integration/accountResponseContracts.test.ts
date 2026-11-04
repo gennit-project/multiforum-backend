@@ -219,3 +219,14 @@ test("bug-report dependency failure completes as nullable error without sending 
     assert.match(result.errors?.[0].message ?? "", /SUPPORT_EMAIL is not set/);
   } finally { if (previous === undefined) delete process.env.SUPPORT_EMAIL; else process.env.SUPPORT_EMAIL = previous; }
 });
+
+test("scratchpad visibility preserves selected author/recipient projections, null links and ownership failures",async()=>{
+ await driver.executeQuery("MATCH(u:User {username:'actor'}) CREATE(e:ScratchpadEntry {id:'entry',text:'Text',sourceType:'comment',sourceId:'comment',isPublic:false,createdAt:datetime()}) CREATE(u)-[:HAS_SCRATCHPAD_ENTRY]->(e)");
+ const source='mutation{result:updateScratchpadEntryVisibility(scratchpadEntryId:"entry",isPublic:true){id author:Author{...Identity} recipient:Recipient{username}}} fragment Identity on User{username displayName profilePicURL}';
+ assert.deepEqual(data(await exec(source)),{result:{id:'entry',author:null,recipient:{username:'actor'}}});
+ await driver.executeQuery("MATCH(e:ScratchpadEntry {id:'entry'}) CREATE(a:User{username:'author',displayName:'Author',createdAt:datetime()})-[:WROTE_SCRATCHPAD_ENTRY]->(e)");
+ assert.deepEqual(data(await exec(source)),{result:{id:'entry',author:{username:'author',displayName:'Author',profilePicURL:null},recipient:{username:'actor'}}});
+ await driver.executeQuery("MATCH(:User)-[r:HAS_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry {id:'entry'}) DELETE r SET e.isPublic=false");
+ const rejected=await exec(source);assert.ok(rejected.errors?.some(error=>/Only the recipient/.test(error.message)));
+ assert.equal((await driver.executeQuery("MATCH(e:ScratchpadEntry {id:'entry'}) RETURN e.isPublic AS visible")).records[0].get('visible'),false);
+});

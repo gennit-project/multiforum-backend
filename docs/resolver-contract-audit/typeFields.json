@@ -539,9 +539,12 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Upstream recipient/source/ownership reads now have exact generated projections and executable document guards. The separate transaction-local super-upvoter read still contains unknown persisted username leaves, so this field is not promoted.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {

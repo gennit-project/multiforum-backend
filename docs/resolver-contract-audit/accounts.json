@@ -336,9 +336,13 @@
         "customResolvers/contracts/accountWriteSources.ts",
         "tests/contracts/accountWriteSources.typecheck.ts",
         "tests/integration/accountWriteSourceContracts.test.ts",
-        "customResolvers/mutations/createScratchpadEntry.ts"
+        "customResolvers/mutations/createScratchpadEntry.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts"
       ],
-      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged.",
+      "reason": "UUID/date-string/false and already typed+validated input fields are explicit creation-query columns. Raw source-channel/discussion fields and collected super-voter usernames remain unknown. Transaction vote/karma/notification ordering unchanged. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
       "decision": "Check only provenance-proven response fields. Preserve authorization, external I/O/write order, nullable/scalar completion, and existing failure/race behavior; residual validation requires a separate behavior decision."
     },
     {
@@ -351,9 +355,13 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts"
       ],
-      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
     },
     {
@@ -367,7 +375,11 @@
         "sourceId",
         "sourceChannelUniqueName",
         "discussionId",
-        "createdAt"
+        "createdAt",
+        "Recipient.username",
+        "Author.username",
+        "Author.displayName",
+        "Author.profilePicURL"
       ],
       "residualPaths": [
         "Schema fields outside selectedPaths remain outside this boundary."
@@ -375,9 +387,13 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "tests/integration/scratchpadRepository.test.ts"
       ],
-      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
+      "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts. Scratchpad repository result shapes now derive from exact generated selections rather than optional catch-all fields. Seven actual executable documents are compared with their declarations, preserving the explicit User union branch and existing moderator resolution failure.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
     },
     {

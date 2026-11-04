@@ -192,3 +192,21 @@ malformed child paths. This protects the request shape involved in forum-page
 failures, without certifying opaque child types or all frontend operations.
 Accounting stays **176 selected / 33 deferred**; source contract engineering is
 still distinct from this executable request evidence. No runtime behavior changes.
+
+### Scratchpad upstream source projections
+
+Recipient, comment/discussion source, ownership, visibility and mutation response
+shapes now derive from exact generated selections instead of optional-property
+catch-alls. Executable-schema guards compare all seven actual repository documents
+with those declarations, including the explicit `... on User` author branch.
+Compile-negative fixtures reject omitted selected fields and access to unfetched
+email/content/vote-cache fields. The actual visibility registration now also checks
+its selected nested author and recipient response; GraphQL tests preserve aliases,
+fragments, null links and ownership failure before writes.
+
+Counts remain **176 selected / 33 deferred**. This advances the scratchpad source
+work, but the separately returned raw super-upvoter username leaves remain unknown.
+The existing comment-source query's moderator-author error is preserved: the
+fragment-only union currently resolves as User and fails username completion.
+Changing moderator attribution/union behavior is not part of this typing slice.
+Vote limits, age filtering, karma, notifications and write/error ordering remain.

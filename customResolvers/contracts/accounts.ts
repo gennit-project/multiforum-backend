@@ -1,3 +1,4 @@
+import { scratchpadVisibilitySelection } from "./scratchpadProjections.js";
 import { createdDiscussionSelection } from "./contentProjections.js";
 import { publicCollectionSelection, profileImageSelection, channelIconSelection } from "./accountProjections.js";
 import type { MutationResolvers, QueryResolvers } from "../../src/generated/graphql.js";
@@ -17,7 +18,7 @@ export type AccountScalarMutationResolvers = Required<Pick<MutationResolvers<Gra
 
 export const accountObjectMutationNames = ["shareCollectionAsDiscussion", "dropDataForCypressTests", "seedDataForCypressTests", "setRankingSettings", "createEmailAndUser", "updateScratchpadEntryVisibility", "setProfileImage", "setChannelIcon"] as const;
 const testDataSelection = { success: true, message: true } as const;
-export const scratchpadSelection = { id: true, text: true, isPublic: true, sourceType: true, sourceId: true, sourceChannelUniqueName: true, discussionId: true, createdAt: true } as const;
+export const scratchpadSelection = scratchpadVisibilitySelection;
 export type AccountObjectMutationResolvers = {
   shareCollectionAsDiscussion: SelectedResolver<MutationResolvers<GraphQLContext>["shareCollectionAsDiscussion"], typeof createdDiscussionSelection>;
   setProfileImage: SelectedResolver<MutationResolvers<GraphQLContext>["setProfileImage"], typeof profileImageSelection>;
