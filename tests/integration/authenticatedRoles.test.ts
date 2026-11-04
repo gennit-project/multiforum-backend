@@ -614,3 +614,24 @@ for (const role of [
     });
   }
 }
+
+test('user update validation applies to each alias independently',async()=>{
+  const result=await graphql({schema,source:`mutation($bio:String!){
+    allowed:updateUsers(where:{username:{eq:"normaluser"}},update:{bio:{set:"valid profile"}}){users{username}}
+    denied:updateUsers(where:{username:{eq:"normaluser"}},update:{bio:{set:$bio}}){users{username}}
+  }`,variableValues:{bio:'x'.repeat(501)},contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+  assert.ok(result.errors?.some(error=>error.path?.[0]==='denied'));
+  assert.equal(await readBio('normaluser'),'valid profile');
+});
+
+test('image update validation isolates protected storage fields from a permitted alias',async()=>{
+  await driver.executeQuery("MATCH(u:User{username:'normaluser'}) CREATE(u)-[:UPLOADED_IMAGE]->(:Image{id:'audit-field-alias',caption:'original',storageBucket:'original-bucket'})");
+  const result=await graphql({schema,source:`mutation {
+    allowed:updateImages(where:{id:{eq:"audit-field-alias"}},update:{caption:{set:"valid caption"}}){images{id}}
+    denied:updateImages(where:{id:{eq:"audit-field-alias"}},update:{storageBucket:{set:"changed-bucket"}}){images{id}}
+  }`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+  assert.ok(result.errors?.some(error=>error.path?.[0]==='denied'),JSON.stringify(result));
+  const rows=await driver.executeQuery("MATCH(i:Image{id:'audit-field-alias'}) RETURN i.caption AS caption,i.storageBucket AS bucket");
+  assert.equal(rows.records[0].get('caption'),'valid caption');
+  assert.equal(rows.records[0].get('bucket'),'original-bucket');
+});
