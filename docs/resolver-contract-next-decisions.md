@@ -223,3 +223,22 @@ GraphQL/Shield regressions preserve aliases, fragments, defaults, one write per
 mutation, private fields, lazy skipped payloads and post-commit read-error paths.
 Accounting remains **176 selected / 33 deferred**. This is an upstream call
 contract, not a claim that arbitrary delegated child values are statically checked.
+
+
+### Bot-report append numbering source
+
+`botReportNumberSource.test.ts` reproduces a distinct source-contract gap without a
+race: an existing Issue with stored issueNumber `"7"` is read as numeric `7` by the
+GraphQL Int scalar, but createBotReport returns string `"7"` after its owned append.
+The API's declared numeric result is therefore not proved by its current whole-Issue
+assertion. This witness is not the desired regression contract. Fixed bot-report
+read projections and created-issue source typing can progress independently.
+
+Recommended choice: retain the already schema-validated number from the existing
+issue read (or the allocated number for a new issue) for the bot API result. That
+avoids trusting the raw append leaf or adding a post-commit validation error. It
+also explicitly chooses a stable previously-read number if stored data changes in
+between. Alternatively normalize/validate the returned leaf with GraphQL Int rules,
+with a deliberate decision about validation inside versus after the transaction.
+No number conversion, response snapshot or error/rollback policy has been changed
+by this contract slice; the append assertion remains an identified exception.

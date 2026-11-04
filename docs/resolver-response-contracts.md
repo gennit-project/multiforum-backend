@@ -553,3 +553,15 @@ or assuming caller text is validated. Real-schema completion tests preserve vali
 selected scalars, absent relationship projections and lazy nullable errors for
 malformed selected text. Existing ancestry/order/error/empty-result tests remain;
 this does not add a nonempty-result guarantee or change the write transaction.
+
+
+Bot-report lookups now use their five exact fixed projections, including required
+`__typename` and distinct nullable User/ModerationProfile author branches. The
+created-issue adapter retains the owned writer's actual source type instead of a
+whole-Issue cast. Executable schema comparisons preserve the union branches; the
+existing real-database report tests cover user/moderator authors, missing targets,
+new/existing reports, literal filters, idempotency/order and unchanged side effects.
+The append adapter remains explicitly unfinished: its legacy Issue assertion lets
+the bot API promise a numeric issueNumber although the owned writer retains unknown
+stored leaves. Fixing that requires a deliberate number-coercion/error decision;
+this read slice does not hide it with another assertion or change append behavior.

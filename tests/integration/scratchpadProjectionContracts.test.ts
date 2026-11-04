@@ -1,28 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import neo4j from 'neo4j-driver';
-import {parse,print,visit,type SelectionSetNode} from 'graphql';
+import {canonicalSelection as canonical,declaredSelection as expected} from '../helpers/exactSelection.js';
 import {buildPublicSchema} from '../../build_scripts/publicSchema.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {createScratchpadRepository} from '../../services/persistence/scratchpadRepository.js';
 import {scratchpadRecipientSelection,scratchpadCommentSelection,scratchpadDiscussionSelection,scratchpadOwnershipSelection,scratchpadVisibilitySelection,scratchpadEntrySelection} from '../../customResolvers/contracts/scratchpadProjections.js';
 
-// Compare exact fixed selections, retaining explicit inline-union branches.
-// This does not flatten a conditional union selection into guaranteed fields.
-function render(selection:Record<string,unknown>):string {
- return `{${Object.entries(selection).map(([name,value])=>value===true?name:
-  value&&typeof value==='object'&&!Array.isArray(value)?`${name}${render(Object.fromEntries(Object.entries(value)))}`:
-  assert.fail(`Invalid declared selection at ${name}`)).join(' ')}}`;
-}
-const canonical=(selection:SelectionSetNode)=>print(visit(selection,{SelectionSet(node){
- return {...node,selections:[...node.selections].sort((left,right)=>print(left).localeCompare(print(right)))};
-}}));
-function expected(selection:Record<string,unknown>):string {
- const document=parse(`query ${render(selection)}`);
- const operation=document.definitions[0];assert.equal(operation.kind,'OperationDefinition');
- if(operation.kind!=='OperationDefinition')assert.fail('Expected operation');
- return canonical(operation.selectionSet);
-}
 test('all actual scratchpad repository documents match their declared projections including union branches',async()=>{
  const driver=neo4j.driver('bolt://127.0.0.1:1',neo4j.auth.basic('projection','unused'));
  try{
