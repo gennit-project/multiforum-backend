@@ -18,7 +18,7 @@ const incomplete:BotExistingReport={id:'issue',issueNumber:1};
 declare const discussion:BotReportedDiscussion;
 // @ts-expect-error Author remains nullable
 const username:string=discussion.Author.username;
-declare const result:Awaited<ReturnType<BotReportRepository['createReportedIssue']>>;
+declare const result:Awaited<ReturnType<BotReportRepository['appendBotReport']>>;
 // @ts-expect-error raw owned write does not certify persisted numbering
 const number:number=result.issues[0].issueNumber;
 // @ts-expect-error raw owned write does not fetch author relationships

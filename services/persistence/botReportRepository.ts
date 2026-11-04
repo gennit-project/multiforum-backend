@@ -1,5 +1,5 @@
 import type { Driver } from "neo4j-driver";
-import type { Issue, IssueWhere } from "../../ogm_types.js";
+import type { IssueWhere } from "../../ogm_types.js";
 import type {BotExistingReport,BotReportedComment,BotReportedDiscussion,BotReportedEvent} from "../../customResolvers/contracts/botReportProjections.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import {
@@ -7,6 +7,7 @@ import {
   appendModerationActions,
   type CreateModerationIssueParams,
   type ReportModerationIssueRow,
+  type ModerationIssueRow,
   type AppendModerationActionsParams,
 } from "./moderationIssueWrites.js";
 export const FINDEXISTINGREPORT_SELECTION = `{
@@ -52,7 +53,7 @@ export interface BotReportRepository {
   // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
   // owned Cypher (moderationIssueWrites); reads stay on the generated API.
   createReportedIssue(params: CreateModerationIssueParams[]): Promise<{issues:ReportModerationIssueRow[]}>;
-  appendBotReport(params: AppendModerationActionsParams): Promise<{issues:Issue[]}>;
+  appendBotReport(params: AppendModerationActionsParams): Promise<{issues:ModerationIssueRow[]}>;
 }
 export function createBotReportRepository(driver: Driver): BotReportRepository {
   return {
@@ -92,10 +93,7 @@ export function createBotReportRepository(driver: Driver): BotReportRepository {
     },
     async appendBotReport(params) {
       const result = await appendModerationActions(driver, params);
-      // Existing append result remains deferred: the bot API promises a numeric
-      // issueNumber, but the owned row leaves stored values unknown. No new
-      // validation/error or race policy is introduced by the read-contract work.
-      return { issues: result.issues as unknown as Issue[] };
+      return { issues: result.issues };
     },
   };
 }

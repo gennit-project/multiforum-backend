@@ -225,20 +225,17 @@ Accounting remains **176 selected / 33 deferred**. This is an upstream call
 contract, not a claim that arbitrary delegated child values are statically checked.
 
 
-### Bot-report append numbering source
+### Bot-report append numbering source — resolved
 
-`botReportNumberSource.test.ts` reproduces a distinct source-contract gap without a
-race: an existing Issue with stored issueNumber `"7"` is read as numeric `7` by the
-GraphQL Int scalar, but createBotReport returns string `"7"` after its owned append.
-The API's declared numeric result is therefore not proved by its current whole-Issue
-assertion. This witness is not the desired regression contract. Fixed bot-report
-read projections and created-issue source typing can progress independently.
-
-Recommended choice: retain the already schema-validated number from the existing
-issue read (or the allocated number for a new issue) for the bot API result. That
-avoids trusting the raw append leaf or adding a post-commit validation error. It
-also explicitly chooses a stable previously-read number if stored data changes in
-between. Alternatively normalize/validate the returned leaf with GraphQL Int rules,
-with a deliberate decision about validation inside versus after the transaction.
-No number conversion, response snapshot or error/rollback policy has been changed
-by this contract slice; the append assertion remains an identified exception.
+The real-schema regression in `botReportNumberSource.test.ts` first reproduced an
+existing Issue whose stored issueNumber `"7"` was read as numeric `7` by GraphQL but
+returned as string `"7"` by the bot API after append. The approved fix now returns
+the already schema-validated number for an existing issue or the allocated number
+for a new issue. Both owned adapters retain their actual raw source types instead
+of whole-Issue casts, and compile-negative coverage prevents assuming the append
+leaf is numeric. Re-running the regression against the old service fails with
+`"7" !== 7`; the restored fix passes and leaves the stored string and one appended
+action unchanged. Replays, authorization, other response fields and write/error
+ordering remain unchanged. There is no additional read or post-commit validator.
+This resolves the bot API result mismatch without claiming that persisted source
+leaves or arbitrary JSON responses are fully certified.

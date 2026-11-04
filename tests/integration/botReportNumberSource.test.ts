@@ -7,8 +7,8 @@ import {registerGeneratedSchema} from '../../services/persistence/generatedSchem
 import {createBotReportRepository} from '../../services/persistence/botReportRepository.js';
 import {createBotReport} from '../../services/botReportService.js';
 import {startNeo4j,stopNeo4j} from './neo4jHarness.js';
-// Failure witness, not desired API behavior: replace once the response policy is chosen.
-test('known deferred bot report number source differs from GraphQL scalar completion',async()=>{
+// Regression: the old append-result path returned stored text despite a validated Int read.
+test('bot report returns the validated number without rewriting stored scalar data',async()=>{
  const driver=await startNeo4j();
  try{
   registerGeneratedSchema(driver,await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers}).getSchema());
@@ -16,7 +16,9 @@ test('known deferred bot report number source differs from GraphQL scalar comple
   const repository=createBotReportRepository(driver);
   const read=await repository.findExistingReport({id:{eq:'issue'}});assert.equal(read[0].issueNumber,7);
   const result=await createBotReport({driver,channelUniqueName:'forum',reportInput:{contentType:'comment',contentId:'content',reportText:'Review',selectedForumRules:['rule'],selectedServerRules:[],botName:'helper'}});
-  assert.ok(result);assert.equal(result.issueId,'issue');assert.equal(result.issueNumber,'7');
+  assert.ok(result);assert.equal(result.issueId,'issue');assert.equal(result.issueNumber,7);
+  const persisted=await driver.executeQuery("MATCH(i:Issue{id:'issue'}) OPTIONAL MATCH(i)-[:ACTIVITY_ON_ISSUE]->(action:ModerationAction) RETURN i.issueNumber AS number,count(action) AS actions");
+  assert.equal(persisted.records[0].get('number'),'7');assert.equal(persisted.records[0].get('actions').toNumber(),1);
   const replay=await repository.findExistingReport({id:{eq:'issue'}});assert.equal(replay[0].issueNumber,7);
  }finally{await stopNeo4j();}
 });

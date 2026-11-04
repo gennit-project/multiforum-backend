@@ -561,7 +561,10 @@ created-issue adapter retains the owned writer's actual source type instead of a
 whole-Issue cast. Executable schema comparisons preserve the union branches; the
 existing real-database report tests cover user/moderator authors, missing targets,
 new/existing reports, literal filters, idempotency/order and unchanged side effects.
-The append adapter remains explicitly unfinished: its legacy Issue assertion lets
-the bot API promise a numeric issueNumber although the owned writer retains unknown
-stored leaves. Fixing that requires a deliberate number-coercion/error decision;
-this read slice does not hide it with another assertion or change append behavior.
+The append adapter now also retains the owned writer's actual source type. The
+bot API returns the number already validated by the issue read, or the locally
+allocated number for a new issue, rather than the raw append leaf. A real-schema
+regression rejects the old string-number mismatch while proving stored text and
+append side effects are unchanged. No post-commit number validation, extra read,
+or write/authorization policy is introduced; idempotent replay and other response
+fields are preserved.
