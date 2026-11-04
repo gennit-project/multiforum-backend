@@ -980,3 +980,12 @@ the selection. Nine real graph/Shield regressions cover owner and anonymous
 results, aliases/fragments, sorted members, skipped dependencies, missing servers,
 empty lists and requested scalar errors. This preserves administrative capabilities
 and does not certify whole User children; accounting stays 176 selected / 33 deferred.
+
+Generated image and album roots now supply identity through `Image.Uploader`,
+`Image.PermanentlyRemovedByUser` and `Album.Owner`, for ordinary lists and root
+connections. Three owner-read probes failed before registration; 20 real
+schema/Shield/database regressions now cover aliases/fragments, owner/anonymous
+permissions, nullable relationships, omitted and skipped selections, empty results,
+local scalar failures and sensitive-image filtering. These explicit paths do not
+extend to arbitrary nested asset relationships or certify full returned User
+objects. Accounting remains 176 selected / 33 deferred.
