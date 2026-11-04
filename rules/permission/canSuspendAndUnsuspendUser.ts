@@ -34,7 +34,7 @@ async function isUserServerAdmin(username: string, context: GraphQLContext): Pro
   // Request-cached (see hasChannelPermission); the cached config includes Admins.
   const serverConfig = await getServerConfigForPermissions(context);
   return (
-    serverConfig?.Admins?.some((admin: { username: string }) => admin.username === username) ??
+    serverConfig?.Admins?.some((admin) => admin.username === username) ??
     false
   );
 }

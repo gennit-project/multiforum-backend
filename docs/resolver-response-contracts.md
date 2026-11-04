@@ -670,3 +670,17 @@ Email ordering, duplicate notifications and the historical omitted notification
 type remain unchanged. These are source and query safeguards, not a new delivery
 policy or certification of arbitrary user fields. Counts remain **176 selected /
 33 deferred**.
+
+### Permission request-cache boundary
+
+The request cache retains `PermissionServerConfig | null` instead of erasing the
+repository result to `any`. Membership mapping now preserves nullable identities,
+and channel permission consumers use the declared snapshot directly without
+unknown-to-role casts. Missing server defaults remain nullable and keep existing
+fallback behavior. Compile fixtures reject reintroducing `any`, unselected plugin
+fields and non-null identity assumptions. Focused tests preserve pending/null/error
+memoization and request isolation; real GraphQL + Shield tests prove nullable
+persisted membership identities do not grant server privileges. This does not
+validate raw stored capability values, alter role precedence or change any
+permission decision. The repository's raw projection limitations remain explicit;
+accounting stays **176 selected / 33 deferred**.

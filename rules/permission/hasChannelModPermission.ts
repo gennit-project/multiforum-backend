@@ -62,7 +62,7 @@ interface ServerModDefaults {
 export function evaluateChannelModPermission(args: {
   permission: ModChannelPermission;
   channelData: ChannelModRoles;
-  serverDefaults: ServerModDefaults | undefined;
+  serverDefaults: ServerModDefaults | null | undefined;
   isSuspended: boolean;
   modProfileName: string | null | undefined;
 }): { role: ModRole; allowed: boolean } {
@@ -150,8 +150,8 @@ export const hasChannelModPermission: (
   // tested without a database.
   const { role: roleToUse, allowed } = evaluateChannelModPermission({
     permission,
-    channelData: channelData as unknown as ChannelModRoles,
-    serverDefaults: serverConfig as unknown as ServerModDefaults | undefined,
+    channelData,
+    serverDefaults: serverConfig,
     isSuspended: suspensionInfo.isSuspended,
     modProfileName,
   });

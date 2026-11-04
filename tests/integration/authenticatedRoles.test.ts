@@ -318,3 +318,18 @@ test("updateUsers: an over-length bio is blocked by updateUserInputIsValid even 
   assert.match(result.errors[0].message, /bio cannot exceed/i);
   assert.notEqual(await readBio("normaluser"), longBio, "invalid bio must not be persisted");
 });
+
+test('nullable persisted membership identities do not grant an authenticated user server permissions',async()=>{
+ await driver.executeQuery(`MATCH(s:ServerConfig{serverName:$name})
+  CREATE(u:User{fixture:'nullable-admin'}),(m:ModerationProfile{fixture:'nullable-mod'})
+  CREATE(u)-[:ADMIN_OF_SERVER]->(s),(u)-[:SUPER_ADMIN_OF_SERVER]->(s),(m)-[:MODERATOR_OF_SERVER]->(s)`,{name:SERVER_CONFIG_NAME});
+ try{
+  const {createPermissionServerConfigRepository}=await import('../../services/persistence/permissionServerConfigRepository.js');
+  const snapshot=await createPermissionServerConfigRepository(driver).findByName(SERVER_CONFIG_NAME);
+  assert.ok(snapshot?.Admins.some(member=>member.username===null));
+  assert.ok(snapshot?.Moderators.some(member=>member.displayName===null));
+  const result=await execDeleteServerConfigs(mockToken({username:'normaluser',email:'normal@e2e.test'}));
+  assert.equal(result.errors?.[0].message,ERROR_MESSAGES.server.noServerPermission);
+  assert.equal(result.data,null);
+ }finally{await driver.executeQuery("MATCH(n) WHERE n.fixture IN ['nullable-admin','nullable-mod'] DETACH DELETE n");}
+});
