@@ -632,7 +632,7 @@ post-commit projection failures. Raw event claims still return their existing
 string-converted identity; no transition, scheduling or pause policy changes.
 Accounting remains **176 selected / 33 deferred**.
 
-### Notification source projections and nullable-text exception
+### Notification source projections and nullable-text delivery
 
 All ten notification read paths now declare exact selected recipient preferences,
 email links, content links and User/ModerationProfile branches, instead of complete
@@ -643,19 +643,21 @@ fallbacks. Executable selection comparisons and compile-negative fixtures protec
 these boundaries, including nested reply preferences and absent email fields.
 Existing graph tests retain recipient exclusion, preference filtering, permission
 filters, default limits and successful discussion/event/reply notification writes.
-No mail provider is configured in these disposable-database tests.
+Delivery regressions capture fake provider requests and block real HTTP requests;
+no messages leave the disposable test environment.
 
-A newly reproduced consumer exception remains: a stored comment with null `text`
-passes the generated GraphQL read but fails the Markdown email renderer with
-`Input data should be a String`. Discussion, event and reply paths all fail before
-creating subscriber notifications, even without a configured mail provider. Three
-real-graph witnesses assert that failure and the absence of notifications. The
-three rendering helpers still have unchecked inputs; their full contract is not
-claimed complete. Choosing empty-excerpt delivery versus skipping textless-comment
-notifications is a behavior decision, not a type assertion or automatic coercion.
-The candidate remedy is to retain notification delivery with an empty excerpt;
-this commit does not implement that policy. Accounting remains **176 / 209 selected,
-33 deferred** and does not certify these consumers end to end.
+The newly reproduced null-text consumer defect is now fixed with the authorized
+empty-excerpt policy. Discussion, event and reply paths normalize nullable text
+only at email-content creation; stored comment text, recipients, authorization,
+notification formats and non-null Markdown rendering are unchanged. All six
+notification helpers now consume the precise comment projection. Real-database
+regressions cover null/non-null text, self-exclusion, reply opt-out, captured email
+content and unchanged persisted text. Restoring the old handler makes all three
+null-text delivery regressions fail while non-null controls still pass. The direct
+renderer contract still requires a string, protected by a compile-negative fixture.
+Accounting remains **176 / 209 selected, 33 deferred**; this fixes the concrete
+consumer defect without claiming arbitrary nested operation correctness.
+
 
 ### Notification-delivery projections
 

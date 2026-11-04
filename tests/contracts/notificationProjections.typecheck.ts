@@ -26,5 +26,5 @@ void comment.ParentComment?.DiscussionChannel;
 void [full,subscriber];
 
 import {createCommentReplyNotificationEmail} from '../../customResolvers/mutations/shared/emailUtils.js';
-// @ts-expect-error known consumer exception: schema-nullable text is not accepted by the renderer
+// @ts-expect-error renderers require a string; handlers must explicitly normalize nullable excerpts
 createCommentReplyNotificationEmail(comment.text,'title','author','url');

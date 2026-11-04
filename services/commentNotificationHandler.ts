@@ -177,7 +177,7 @@ export const createNotificationsForUsers = async (
  */
 export const processDiscussionCommentNotification = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string,
   commenterUsername: string
 ): Promise<void> => {
@@ -201,7 +201,7 @@ export const processDiscussionCommentNotification = async (
   });
 
   const emailContent = createCommentNotificationEmail(
-    fullComment.text,
+    fullComment.text ?? "",
     discussion.title,
     commenterUsername,
     channelName || "",
@@ -230,7 +230,7 @@ export const processDiscussionCommentNotification = async (
  */
 export const processEventCommentNotification = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string,
   commenterUsername: string
 ): Promise<void> => {
@@ -253,7 +253,7 @@ export const processEventCommentNotification = async (
   });
 
   const emailContent = createEventCommentNotificationEmail(
-    fullComment.text,
+    fullComment.text ?? "",
     event.title,
     commenterUsername,
     channelName,
@@ -283,7 +283,7 @@ export const processEventCommentNotification = async (
  */
 export const processCommentReplyNotification = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string,
   commenterUsername: string
 ): Promise<void> => {
@@ -323,7 +323,7 @@ export const processCommentReplyNotification = async (
   });
 
   const emailContent = createCommentReplyNotificationEmail(
-    fullComment.text,
+    fullComment.text ?? "",
     contentTitle,
     commenterUsername,
     commentPermalinkUrl
