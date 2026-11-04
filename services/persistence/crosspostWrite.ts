@@ -40,6 +40,11 @@ export async function createExistingDiscussionCrosspost(driver:Driver, input:Dis
     }
     const read = await executeGeneratedOperation<{discussions:unknown[]}>(driver,
       `query CrosspostResult($id:ID!){discussions(where:{id:{eq:$id}})${DISCUSSION_CREATE_SELECTION}}`,{id},tx,{mayAccessSensitiveContent:sensitive});
-    return read.discussions[0];
+    const created = read.discussions[0];
+    if (read.discussions.length !== 1 || created === null || typeof created !== "object" ||
+        !("id" in created) || created.id !== id) {
+      throw new GraphQLError("Created crosspost is unavailable for the response.");
+    }
+    return created;
   });
 }
