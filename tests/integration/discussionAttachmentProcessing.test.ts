@@ -114,7 +114,7 @@ for (const crosspost of [true,false]) {
     ok(await execute([{...input,discussionCreateInput:{...input.discussionCreateInput,DownloadableFiles:attachments}}]));
     allFiles([...(mode==='connect'?[]:['new-0.zip','new-1.zip']),...(mode==='create'?[]:['existing.zip','another.zip'])]);
     assert.equal(observedCommit,1);
-    assert.deepEqual(lookupContexts,[{transaction:crosspost,jwt:undefined}]);
+    assert.deepEqual(lookupContexts,[{transaction:true,jwt:undefined}]);
   });
   test(`${crosspost?'crosspost':'ordinary'} accepts empty attachments and respects hasDownload=false`,async()=>{
     ok(await execute([item(crosspost,'Empty',0)]));allFiles([]);
@@ -137,13 +137,10 @@ test('crosspost batch preserves earlier item and does not attempt later items af
   assert.ok((await execute([item(true,'First'),item(true,'Failed'),item(true,'Unattempted')])).errors);
   assert.deepEqual(await titles(),['First']);assert.equal(reads,2);assert.equal(observedCommit,1);allFiles(['new-0.zip','new-1.zip']);
 });
-test('retry rolls back the first attempt and dispatches each file once after commit',async()=>{
-  retry=true;ok(await execute([item()]));assert.equal(attempts,1);assert.equal(reads,2);
+for (const crosspost of [true,false]) test(`${crosspost?'crosspost':'ordinary'} retry rolls back the first attempt and dispatches each file once after commit`,async()=>{
+  retry=true;ok(await execute([item(crosspost)]));assert.equal(attempts,1);assert.equal(reads,2);
   allFiles(['new-0.zip','new-1.zip']);assert.equal(observedCommit,1);assert.deepEqual(await titles(),['Created']);
   assert.equal((await driver.executeQuery('MATCH(f:DownloadableFile) RETURN f')).records.length,2);
-});
-test('ordinary attachment lookup errors retain their existing channel-only success behavior',async()=>{
-  lookupFailure=true;ok(await execute([item(false)]));allFiles([]);assert.deepEqual(await titles(),['Created']);
 });
 test('eligible caller does not confer a JWT on the attachment read for a sensitive crosspost',async()=>{
   const input=item();ok(await execute([{...input,discussionCreateInput:{...input.discussionCreateInput,hasSensitiveContent:true}}],true));
@@ -151,8 +148,8 @@ test('eligible caller does not confer a JWT on the attachment read for a sensiti
   const flags=await driver.executeQuery('MATCH(f:DownloadableFile) RETURN f.ageGateRestricted AS restricted');
   assert.deepEqual(flags.records.map(r=>r.get('restricted')),[true,true]);
 });
-test('newly sensitive nested attachments are reconciled before the no-JWT lookup',async()=>{
-  const input=item();
+for (const crosspost of [true,false]) test(`${crosspost?'crosspost':'ordinary'} newly sensitive nested attachments are reconciled before the no-JWT lookup`,async()=>{
+  const input=item(crosspost);
   const hidden={node:{...file('hidden.zip'),Discussion:{create:{node:{title:'Sensitive parent',hasSensitiveContent:true}}}}};
   ok(await execute([{...input,discussionCreateInput:{...input.discussionCreateInput,DownloadableFiles:{create:[...input.discussionCreateInput.DownloadableFiles.create,hidden]}}}],true));
   allFiles(['new-0.zip','new-1.zip']);
@@ -160,4 +157,31 @@ test('newly sensitive nested attachments are reconciled before the no-JWT lookup
 });
 test('unauthorized callers do not create or dispatch attachments',async()=>{
   assert.ok((await execute([item()],false,'')).errors);assert.deepEqual(await titles(),[]);assert.equal(reads,0);assert.deepEqual(events,[]);
+});
+
+test('ordinary attachment lookup failure rolls back owned data and retains reused files and images',async()=>{
+  await driver.executeQuery(`CREATE(u:User {username:'bob',createdAt:datetime()}),
+    (i:Image {id:'reused-image',url:'reused.jpg',createdAt:datetime()}),
+    (f:DownloadableFile {id:'reused-file',fileName:'reused.zip',url:'reused.zip',kind:'ZIP',createdAt:datetime()})
+    CREATE(u)-[:UPLOADED_IMAGE]->(i)`);
+  await driver.executeQuery('MATCH(c:Channel) SET c.imageUploadsEnabled=true');
+  const input=item(false);
+  lookupFailure=true;
+  const result=await execute([{...input,discussionCreateInput:{...input.discussionCreateInput,
+    DownloadableFiles:{...input.discussionCreateInput.DownloadableFiles,connect:[{where:{node:{id:{eq:'reused-file'}}}}]},
+    Album:{create:{node:{imageOrder:[],Images:{create:[{node:{url:'new.jpg'}}],connect:[{where:{node:{id:{eq:'reused-image'}}}}]}}}},
+  }}]);
+  assert.match(JSON.stringify(result.errors),/Fixture attachment lookup failure/);
+  assert.deepEqual(await titles(),[]);assert.deepEqual(events,[]);assert.equal(observedCommit,0);
+  assert.equal((await driver.executeQuery('MATCH(n) WHERE n:Album OR n:DiscussionChannel OR (n:Image AND n.id<>"reused-image") OR (n:DownloadableFile AND n.id<>"reused-file") RETURN n')).records.length,0);
+  assert.equal((await driver.executeQuery('MATCH(:User {username:"bob"})-[:UPLOADED_IMAGE]->(:Image {id:"reused-image"}) RETURN 1')).records.length,1);
+  assert.equal((await driver.executeQuery('MATCH(f:DownloadableFile {id:"reused-file"}) WHERE NOT EXISTS { MATCH (:Discussion)-[:HAS_DOWNLOADABLE_FILE]->(f) } RETURN f')).records.length,1);
+});
+for (const firstCrosspost of [true,false]) test(`mixed batch retains ${firstCrosspost?'crosspost':'ordinary'} commit when ordinary attachment lookup fails`,async()=>{
+  lookupFailure=true;failOn=2;
+  const result=await execute([item(firstCrosspost,'First'),item(false,'Failed'),item(!firstCrosspost,'Unattempted')]);
+  assert.match(JSON.stringify(result.errors),/Fixture attachment lookup failure/);
+  assert.deepEqual(await titles(),['First']);assert.equal(reads,2);assert.equal(observedCommit,1);
+  allFiles(['new-0.zip','new-1.zip']);
+  assert.equal((await driver.executeQuery('MATCH(f:DownloadableFile) RETURN f')).records.length,2);
 });
