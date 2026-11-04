@@ -14,7 +14,7 @@ type IsEventOwnerInput = {
   channelDisconnections: string[];
 };
 
-export const isEventOwner = rule({ cache: "contextual" })(
+export const isEventOwner = rule({ cache: "strict" })(
   async (parent: unknown, args: IsEventOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
 
     let eventId;

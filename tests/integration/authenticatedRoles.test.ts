@@ -452,3 +452,36 @@ for (const order of ["ASC", "DESC"]) {
     ])});
   });
 }
+
+const contentOwnershipCases = [
+  {label: "Comment", mutation: "deleteComments", relation: "AUTHORED_COMMENT", incoming: true},
+  {label: "Discussion", mutation: "deleteDiscussions", relation: "POSTED_DISCUSSION", incoming: true},
+  {label: "Event", mutation: "deleteEvents", relation: "POSTED_BY", incoming: true},
+  {label: "Issue", mutation: "deleteIssues", relation: "AUTHORED_ISSUE", incoming: false},
+  {label: "Album", mutation: "deleteAlbums", relation: "HAS_ALBUM", incoming: true},
+  {label: "Collection", mutation: "deleteCollections", relation: "CREATED_BY", incoming: false},
+];
+for (const {label, mutation, relation, incoming} of contentOwnershipCases) {
+  test(`${mutation} checks ownership independently across aliases`, async () => {
+    const ownId = `alias-own-${label}`;
+    const otherId = `alias-other-${label}`;
+    const session = driver.session();
+    try {
+      await session.run(`UNWIND [{id:$ownId, username:'normaluser'}, {id:$otherId, username:'adminuser'}] AS item
+        MATCH (u:User {username:item.username}) CREATE (n:${label} {id:item.id})
+        CREATE ${incoming ? `(u)-[:${relation}]->(n)` : `(n)-[:${relation}]->(u)`}`, {ownId, otherId});
+      const result = await graphql({
+        schema,
+        source: `mutation($own: ID!, $other: ID!) {
+          allowed: ${mutation}(where:{id:{eq:$own}}) {nodesDeleted}
+          denied: ${mutation}(where:{id:{eq:$other}}) {nodesDeleted}
+        }`,
+        variableValues: {own: ownId, other: otherId},
+        contextValue: {driver, req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}},
+      });
+      assert.ok(result.errors?.some(error => error.path?.[0] === 'denied'), JSON.stringify(result));
+      const remaining = await session.run(`MATCH(n:${label}) WHERE n.id IN [$ownId,$otherId] RETURN n.id AS id`, {ownId, otherId});
+      assert.deepEqual(remaining.records.map(record => record.get('id')), [otherId]);
+    } finally { await session.close(); }
+  });
+}

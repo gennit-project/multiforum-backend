@@ -17,7 +17,7 @@ type IsDiscussionOwnerInput = {
   channelDisconnections: string[];
 };
 
-export const isDiscussionOwner = rule({ cache: "contextual" })(
+export const isDiscussionOwner = rule({ cache: "strict" })(
   async (parent: unknown, args: IsDiscussionOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     let discussionId;
 

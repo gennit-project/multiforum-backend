@@ -13,7 +13,7 @@ type IsCommentAuthorInput = {
   update: CommentWhere;
 };
 
-export const isCommentAuthor = rule({ cache: "contextual" })(
+export const isCommentAuthor = rule({ cache: "strict" })(
   async (parent: unknown, args: IsCommentAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     logger.info("isCommentAuthor rule");
     let commentId;
