@@ -1,3 +1,4 @@
+import userChildIdentityMiddleware from "../../middleware/userChildIdentityMiddleware.js";
 import assert from 'node:assert/strict';
 import {before,after,test} from 'node:test';
 import type {Driver} from 'neo4j-driver';
@@ -8,12 +9,13 @@ import typeDefs from '../../typeDefs.js';
 import permissions from '../../permissions.js';
 import getResolvers from '../helpers/getTestResolvers.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
-import {startNeo4j,stopNeo4j} from './neo4jHarness.js';
+import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver;let schema:GraphQLSchema;
 before(async()=>{
  driver=await startNeo4j();
+ await resetDatabase(driver);
  const raw=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers}).getSchema();
- registerGeneratedSchema(driver,raw);schema=applyMiddleware(raw,permissions);
+ registerGeneratedSchema(driver,raw);schema=applyMiddleware(raw,userChildIdentityMiddleware,permissions);
  await driver.executeQuery(`
  CREATE (channel:Channel {uniqueName:'forum'})
  WITH channel UNWIND ['alice','bob'] AS username
@@ -95,4 +97,31 @@ test('root filters cannot request private rows outside viewer ownership',async()
   assert.deepEqual(data.collections.map((row:{id:string})=>row.id),viewer?['alice-1']:[]);
   assert.equal(data.collectionsConnection.aggregate.count.nodes,viewer?1:0);
  }
+});
+
+for(const viewer of ['alice','bob',null]) {
+ test(`profile collections retain source identity without a username selection for ${viewer??'anonymous'}`,async()=>{
+  const result=await graphql({schema,source:`{users(where:{username:{eq:"alice"}}){items:Collections(sort:[{name:ASC}]){id}}}`,contextValue:context(viewer)});
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const expected=viewer==='alice'?['alice-0','alice-1','alice-2']:['alice-0','alice-2'];
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)).users[0].items.map((row:{id:string})=>row.id),expected);
+ });
+}
+
+test('profile collection aliases and fragments preserve source identity and caller narrowing',async()=>{
+ await driver.executeQuery("MATCH(u:User{username:'alice'}) SET u.bio='bob'");
+ for(const viewer of ['alice','bob',null])for(const where of [null,{CreatedBy:{username:{eq:'bob'}}}]) {
+  const response=await graphql({schema,source:`query($where:CollectionWhere,$include:Boolean!){
+   profile:users(where:{username:{eq:"alice"}}){username:bio _accountIdentity:bio ...Lists @include(if:$include)}
+  } fragment Lists on User {items:Collections(where:$where,sort:[{name:ASC}],limit:1,offset:1){id}}`,variableValues:{where,include:true},contextValue:context(viewer)});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+  const expected=where?[]:[{id:viewer==='alice'?'alice-1':'alice-2'}];
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{profile:[{username:'bob',_accountIdentity:'bob',items:expected}]});
+ }
+});
+
+test('skipped profile collection selections do not alter public response fields',async()=>{
+ const response=await graphql({schema,source:'query($skip:Boolean!=true){users(where:{username:{eq:"alice"}}){renamed:username Collections @skip(if:$skip){id}}}',contextValue:context(null)});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{renamed:'alice'}]});
 });

@@ -15,6 +15,8 @@ export const ownerProtectedUserFields = new Set([
   "notificationBundleInterval", "notificationBundleEnabled", "notificationBundleContent",
 ]);
 
+const identityDependentUserFields = new Set([...ownerProtectedUserFields, "Collections"]);
+
 function isIncluded(directives: readonly DirectiveNode[] | undefined, info: GraphQLResolveInfo): boolean {
   return !(directives ?? []).some(directive => {
     const argument = directive.arguments?.find(arg => arg.name.value === "if");
@@ -26,7 +28,7 @@ function isIncluded(directives: readonly DirectiveNode[] | undefined, info: Grap
 function needsIdentity(selection: SelectionSetNode | undefined, info: GraphQLResolveInfo, seen = new Set<string>()): boolean {
   return selection?.selections.some(node => {
     if (!isIncluded(node.directives, info)) return false;
-    if (node.kind === Kind.FIELD) return ownerProtectedUserFields.has(node.name.value);
+    if (node.kind === Kind.FIELD) return identityDependentUserFields.has(node.name.value);
     if (node.kind === Kind.INLINE_FRAGMENT) return needsIdentity(node.selectionSet, info, seen);
     if (seen.has(node.name.value)) return false;
     seen.add(node.name.value);

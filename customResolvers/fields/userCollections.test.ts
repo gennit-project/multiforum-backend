@@ -1,3 +1,4 @@
+import { rememberAccountChildIdentity } from "../../services/accountChildIdentity.js";
 import type { ProfileCollectionProjection } from "../contracts/accountProjections.js";
 import { CollectionType } from "../../src/generated/graphql.js";
 import assert from "node:assert/strict";
@@ -53,4 +54,23 @@ test("profile read errors propagate unchanged", async () => {
     findProfileCollections: async () => { throw failure; },
   } as unknown as CollectionReadRepository });
   await assert.rejects(resolver({ username: "profile" }, {}, ctx("profile"), {} as never), error => error === failure);
+});
+
+test("profile reads require a valid source identity before constructing database filters",async()=>{
+  for(const username of [undefined,null,7,{},""]) {
+    const state=setup();
+    await assert.rejects(state.resolver({username},{},ctx("profile"),{} as never),/username/i);
+    assert.deepEqual(state.calls,[]);
+  }
+});
+test("source-selected account identity takes precedence over response keys",async()=>{
+  const state=setup();const parent={username:"other"};
+  rememberAccountChildIdentity(parent,"profile");
+  await state.resolver(parent,{},ctx("profile"),{} as never);
+  assert.deepEqual(state.calls,[{where:{CreatedBy:{username:{eq:"profile"}}},options:{sort:[{createdAt:"DESC"}]},viewerUsername:"profile"}]);
+  for(const value of [undefined,null,7,{},""]) {
+    rememberAccountChildIdentity(parent,value);
+    await assert.rejects(state.resolver(parent,{},ctx("profile"),{} as never),/username/i);
+  }
+  assert.equal(state.calls.length,1);
 });

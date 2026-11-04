@@ -891,3 +891,12 @@ additional cases cover active directives, empty matches and pagination.
 This is a source dependency guarantee for `Query.users`, not certification of all
 User-producing operations or arbitrary child projections. The inventory remains
 176 selected-response entries and 33 deferred entries.
+
+The same `Query.users` dependency now covers the custom `User.Collections` reader.
+That reader requires a nonempty string source identity before constructing its
+profile filter, and keeps the existing visibility/filter intersection and pagination.
+Real graph tests cover omitted identity selections, fragments, aliases, skipped
+fields, and owner/visitor/anonymous results. Invalid or unavailable source identity
+is an explicit field error rather than an unscoped repository read. User sources
+outside this pilot still need their own selection-dependency coverage; they are not
+marked complete by this change.

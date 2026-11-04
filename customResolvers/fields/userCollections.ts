@@ -1,3 +1,5 @@
+import { accountChildIdentity } from "../../services/accountChildIdentity.js";
+import { ERROR_MESSAGES } from "../../rules/errorMessages.js";
 import type { Driver } from "neo4j-driver";
 import { createCollectionReadRepository, type CollectionReadRepository, type CollectionReadOptions } from "../../services/persistence/collectionReadRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -20,14 +22,18 @@ type UserCollectionsArgs = {
  */
 export default function ({ driver, collectionReadRepository = createCollectionReadRepository(driver) }: UserCollectionsArgs) {
   return async (
-    parent: { username: string },
+    parent: { username?: unknown },
     args: CollectionsArgs,
     context: GraphQLContext,
     info: GraphQLResolveInfo
   ) => {
 
     // Get the username of the user whose collections we're viewing
-    const profileUsername = parent.username;
+    const selectedIdentity = accountChildIdentity(parent);
+    const profileUsername = selectedIdentity.found ? selectedIdentity.value : parent.username;
+    if (typeof profileUsername !== "string" || !profileUsername) {
+      throw new Error(ERROR_MESSAGES.user.noUsername);
+    }
 
     // Get the authenticated user making the request
     if (!context.user) {
