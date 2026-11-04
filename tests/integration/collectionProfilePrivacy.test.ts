@@ -23,6 +23,7 @@ before(async()=>{
  WITH channel,u,username UNWIND [0,1,2] AS i
  CREATE(c:Collection{id:username+'-'+toString(i),name:username+'-'+toString(i),visibility:CASE i WHEN 1 THEN 'PRIVATE' ELSE 'PUBLIC' END,collectionType:'DISCUSSIONS',itemOrder:[],createdAt:datetime('2026-01-0'+toString(i+1)+'T00:00:00Z'),updatedAt:datetime()})-[:CREATED_BY]->(u)
  CREATE(c)-[:CONTAINS_CHANNEL]->(channel)`);
+ await driver.executeQuery("MATCH(u:User) MERGE(e:Email{address:u.username+'@creator.test'}) MERGE(e)-[:HAS_EMAIL]->(u)");
 },{timeout:240000});
 after(async()=>stopNeo4j());
 const context=(viewer:string|null)=>({driver,req:{headers:{}},jwt:viewer?{sub:viewer}:undefined,user:viewer?{username:viewer,email:null,email_verified:true,data:null}:null,mayAccessSensitiveContent:false});

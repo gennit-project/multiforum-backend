@@ -940,3 +940,14 @@ fields and local scalar completion errors. A two-case pre-fix probe failed for
 owner Email reads without a selected username. The dependency fixes those reads
 without changing collection visibility or certifying all descendant User values.
 Inventory counts remain unchanged.
+
+Generated `channels` and `channelsConnection` now declare User source paths for
+`Admins`, `Bots`, `PendingOwnerInvites` and `PendingModInvites`. The multi-path
+adapter executes the source once and only adds dependencies to selections that
+request a protected child or profile collections. It preserves the pass-through
+list resolver's existing behavior. Real graph tests exercise each list, mixed
+aliases/fragments, owner and anonymous denial, independent filters, skipped fields,
+and empty results. An A/B probe confirmed that the pre-existing relation ordering
+with an aliased sort property is unchanged; this slice does not fix that ordering
+case. These source paths do not certify opaque list items or promote inventory
+entries.

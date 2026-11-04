@@ -3,8 +3,8 @@ import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode } from "graphq
 import type { GraphQLContext } from "../types/context.js";
 import { rememberAccountChildIdentity } from "../services/accountChildIdentity.js";
 
-// This pilot covers generated users reads and updateUsers responses. Other User-producing
-// sources retain their existing behavior and are not certified by this adapter.
+// Only the explicit generated sources registered below are covered. Other
+// User-producing sources are not certified by this adapter.
 export const ownerProtectedUserFields = new Set([
   "FavoriteDiscussions", "FavoriteComments", "FavoriteDownloads", "FavoriteImages",
   "FavoriteImagesConnection", "FavoriteChannels", "OwnedDownloads", "Email",
@@ -120,15 +120,25 @@ function rememberPath(value: unknown, path: readonly string[], alias: string): v
   }
 }
 
-/** Each registration names a verified source path, not arbitrary descendant objects. */
-export function userChildIdentityAtPath(
-  path: readonly string[],
-  sourceKeys: readonly ("response" | "canonical")[] = path.map(() => "response")
-): typeof resolveUsersWithChildIdentity {
-  if (!path.length) throw new Error("A nested User source path is required");
-  if (sourceKeys.length !== path.length) throw new Error("Each source path segment needs a key convention");
+type UserSourcePath = {
+  path: readonly string[];
+  sourceKeys?: readonly ("response" | "canonical")[];
+};
+
+/** Each registration names verified source paths, never arbitrary descendants. */
+export function userChildIdentityAtPaths(paths: readonly UserSourcePath[]): typeof resolveUsersWithChildIdentity {
+  if (!paths.length) throw new Error("At least one User source path is required");
+  const registrations = paths.map(({path, sourceKeys = path.map(() => "response")}) => {
+    if (!path.length) throw new Error("A nested User source path is required");
+    if (sourceKeys.length !== path.length) throw new Error("Each source path segment needs a key convention");
+    return { path: [...path], sourceKeys: [...sourceKeys] };
+  });
   return async (resolve, parent, args, context, info) => {
-    const sources = info.fieldNodes.flatMap(node => sourceUserFields(node.selectionSet, info, path));
+    const sources = registrations.flatMap(({path, sourceKeys}) =>
+      info.fieldNodes.flatMap(node => sourceUserFields(node.selectionSet, info, path))
+        .filter(source => needsIdentity(source.node.selectionSet, info))
+        .map(source => ({...source, sourcePath: path.map((field, index) => sourceKeys[index] === "canonical" ? field : source.responsePath[index])}))
+    );
     const selected = prepareIdentitySelection(sources.map(source => source.node), info);
     if (!selected) return resolve(parent, args, context, info);
     const replacements = new Map(sources.map((source, index) => [source.node, selected.fieldNodes[index]]));
@@ -136,9 +146,13 @@ export function userChildIdentityAtPath(
     const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
     const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
     const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
-    for (const source of sources) rememberPath(result, path.map((field, index) => sourceKeys[index] === "canonical" ? field : source.responsePath[index]), selected.alias);
+    for (const source of sources) rememberPath(result, source.sourcePath, selected.alias);
     return result;
   };
+}
+
+export function userChildIdentityAtPath(path: readonly string[], sourceKeys?: UserSourcePath["sourceKeys"]): typeof resolveUsersWithChildIdentity {
+  return userChildIdentityAtPaths([{path, sourceKeys}]);
 }
 
 export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["users"]);
@@ -146,10 +160,14 @@ export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["us
 // aliases them. Update payloads and ordinary projections use response keys.
 export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], ["canonical", "canonical"]);
 
+const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModInvites"] as const;
+
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
+    channels: userChildIdentityAtPaths(channelUserLists.map(field => ({path: [field]}))),
+    channelsConnection: userChildIdentityAtPaths(channelUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },

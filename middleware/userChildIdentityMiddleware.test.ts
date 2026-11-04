@@ -3,7 +3,7 @@ import test from "node:test";
 import { readFileSync } from "node:fs";
 import ts from "typescript";
 import { buildSchema, graphql, Kind, visit, type GraphQLResolveInfo } from "graphql";
-import { ownerProtectedUserFields, resolveUsersWithChildIdentity, resolveUpdatedUsersWithChildIdentity, userChildIdentityAtPath } from "./userChildIdentityMiddleware.js";
+import { ownerProtectedUserFields, resolveUsersWithChildIdentity, resolveUpdatedUsersWithChildIdentity, userChildIdentityAtPath, userChildIdentityAtPaths } from "./userChildIdentityMiddleware.js";
 import { accountChildIdentity } from "../services/accountChildIdentity.js";
 import type { GraphQLContext } from "../types/context.js";
 
@@ -99,4 +99,24 @@ test('canonical connection source paths remain independent of requested aliases'
   assert.equal(response.errors,undefined);
   assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{usersConnection:{links:[{person:{Email:'private'}},null]}});
   assert.ok(row);assert.deepEqual(accountChildIdentity(row),{found:true,value:'alice'});
+});
+
+test('multiple source dependencies execute once and leave public-only paths untouched',async()=>{
+ assert.throws(()=>userChildIdentityAtPaths([]),/source path is required/);
+ const nestedSchema=buildSchema('type Query{channels:[Channel]} type Channel{Admins:[User] Bots:[User]} type User{username:String Email:String}');
+ const adapter=userChildIdentityAtPaths([{path:['Admins']},{path:['Bots']}]);
+ let calls=0;let admin:Record<string,unknown>|undefined;
+ const bot={username:'bob'};
+ const response=await graphql({schema:nestedSchema,source:'{channels{Admins{Email} Bots{username}}}',contextValue:context,rootValue:{
+  channels:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{
+   calls++;const aliases:string[]=[];
+   for(const node of selected.fieldNodes)visit(node,{Field(field){if(field.name.value==='username'&&field.alias)aliases.push(field.alias.value);}});
+   assert.equal(aliases.length,1);admin={[aliases[0]]:'alice',Email:'private'};
+   return [{Admins:[admin],Bots:[bot]}];
+  },null,args,ctx,info),
+ }});
+ assert.equal(response.errors,undefined);assert.equal(calls,1);
+ assert.ok(admin);assert.deepEqual(accountChildIdentity(admin),{found:true,value:'alice'});
+ assert.deepEqual(accountChildIdentity(bot),{found:false});
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{Admins:[{Email:'private'}],Bots:[{username:'bob'}]}]});
 });

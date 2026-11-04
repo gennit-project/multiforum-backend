@@ -808,3 +808,54 @@ test('user connection identity preserves cursors, empty pages, and skipped priva
  assert.equal(empty.errors,undefined,JSON.stringify(empty.errors));
  assert.deepEqual(JSON.parse(JSON.stringify(empty.data)),{usersConnection:{edges:[],totalCount:0}});
 });
+
+const identityChannelMembers = [
+ {field:'Admins',relationship:'ADMIN_OF_CHANNEL',incoming:true},
+ {field:'Bots',relationship:'BOT',incoming:false},
+ {field:'PendingOwnerInvites',relationship:'HAS_PENDING_INVITE',incoming:false},
+ {field:'PendingModInvites',relationship:'HAS_PENDING_MOD_INVITE',incoming:false},
+];
+async function seedChannelMemberIdentities() {
+ await seedIdentityAccounts();
+ await driver.executeQuery("MERGE(:Channel{uniqueName:'identity-members'})");
+ for(const {relationship,incoming} of identityChannelMembers) await driver.executeQuery(`MATCH(c:Channel{uniqueName:'identity-members'}),(u:User) WHERE u.username IN ['normaluser','adminuser'] MERGE ${incoming?'(u)-[:'+relationship+']->(c)':'(c)-[:'+relationship+']->(u)'}`);
+}
+for(const {field} of identityChannelMembers)test(`channel ${field} source provides identity without a selected username`,async()=>{
+ await seedChannelMemberIdentities();
+ const response=await graphql({schema,source:`{channels(where:{uniqueName:{eq:"identity-members"}}){${field}(where:{username:{eq:"normaluser"}}){Email{address}}}}`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{[field]:[{Email:{address:'normaluser@private.test'}}]}]});
+});
+
+for(const connection of [false,true])for(const viewer of ['normaluser',null])test(`channel member identities preserve aliases in ${connection?'connections':'lists'} for ${viewer??'anonymous'}`,async()=>{
+ await seedChannelMemberIdentities();
+ const members=identityChannelMembers.map(({field},index)=>`list${index}:${field}{key:username username:bio _accountIdentity:bio ...Private}`).join(' ');
+ const source=connection?'query{page:channelsConnection(where:{uniqueName:{eq:"identity-members"}}){links:edges{entry:node{...Members}}}}':'query{page:channels(where:{uniqueName:{eq:"identity-members"}}){...Members}}';
+ const response=await graphql({schema,source:source+` fragment Members on Channel{${members}} fragment Private on User{contact:Email{address}}`,contextValue:{driver,req:{headers:viewer?{authorization:mockToken({username:viewer,email:'normal@e2e.test'})}:{},body:{}}}});
+ const prefix=connection?['page','links',0,'entry']:['page',0];
+ const data=JSON.parse(JSON.stringify(response.data));
+ const item=connection?data.page.links[0].entry:data.page[0];
+ const paths: unknown[][]=[];
+ for(let index=0;index<identityChannelMembers.length;index++) {
+  const rows=item[`list${index}`];
+  assert.deepEqual(rows.map((row:{key:string})=>row.key).sort(),['adminuser','normaluser']);
+  rows.forEach((row:{key:string;username:string;_accountIdentity:string;contact:unknown},position:number)=>{
+   const owns=viewer==='normaluser'&&row.key==='normaluser';
+   assert.deepEqual(row,{key:row.key,username:'normaluser',_accountIdentity:'normaluser',contact:owns?{address:'normaluser@private.test'}:null});
+   if(!owns)paths.push([...prefix,`list${index}`,position,'contact']);
+  });
+ }
+ assert.deepEqual(response.errors?.map(error=>JSON.stringify(error.path)).sort(),paths.map(path=>JSON.stringify(path)).sort(),JSON.stringify(response));
+});
+
+test('channel member dependencies preserve filtered aliases, skipped fields and empty lists',async()=>{
+ await seedChannelMemberIdentities();
+ const response=await graphql({schema,source:`query($hide:Boolean!=true){channels(where:{uniqueName:{eq:"identity-members"}}){
+  own:Bots(where:{username:{eq:"normaluser"}}){Email{address}}
+  public:Bots(where:{username:{eq:"adminuser"}}){renamed:username Email @skip(if:$hide){address}}
+  empty:PendingOwnerInvites(where:{username:{eq:"no-member"}}){Email{address}}
+  Admins @skip(if:$hide){Email{address}}
+ }}`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{own:[{Email:{address:'normaluser@private.test'}}],public:[{renamed:'adminuser'}],empty:[]}]});
+});
