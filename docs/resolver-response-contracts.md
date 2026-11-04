@@ -710,3 +710,18 @@ remain unchanged in behavior. Legacy suspension row normalization and server-con
 raw projections are separate limitations; this does not certify them or change
 role precedence, lock truthiness or permission policy. Counts remain **176 selected /
 33 deferred**.
+
+### Native server authorization source
+
+The native server-config query now declares its constructed role/membership
+containers without pretending stored capability flags or member identities have
+passed GraphQL scalar completion. Raw leaves remain `unknown` through the request
+cache, role-tier selection, membership checks and no-escalation consumers. Existing
+strict Boolean comparisons, exact identity comparisons, root/tier/suspension
+precedence, leader routing and recursive Neo4j integer normalization are unchanged.
+The download feature flag also remains untrusted until its existing `=== true`
+check. Compile-negative coverage prevents reintroducing trusted leaf assertions;
+a real GraphQL/Shield mutation checks string, numeric, false, null and true stored
+capabilities against a disposable database. Legacy nested suspension conversion
+remains separately unverified; this source safeguard does not increase the selected
+response-boundary count or certify the whole authorization system.

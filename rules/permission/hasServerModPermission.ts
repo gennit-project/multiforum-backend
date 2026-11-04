@@ -67,7 +67,7 @@ export const hasServerModPermission: (
     return true;
   }
 
-  let roleToCheck: ModServerRole | null = null;
+  let roleToCheck: Record<string, unknown> | null = null;
 
   if (suspensionInfo.isSuspended) {
     roleToCheck = serverConfig.DefaultSuspendedModRole ?? null;

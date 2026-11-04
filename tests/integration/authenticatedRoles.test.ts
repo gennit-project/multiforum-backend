@@ -352,3 +352,34 @@ test('native channel capability values grant discussion creation only for the Bo
   await driver.executeQuery("MATCH(n) WHERE n.fixture='role-capability' DETACH DELETE n");
  }
 });
+
+test("native server capability values permit a management mutation only for Boolean true", async () => {
+  const before = await driver.executeQuery(
+    "MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) RETURN r.canManageServerSettings AS capability",
+    { name: SERVER_CONFIG_NAME }
+  );
+  const previous = before.records[0].get("capability");
+  try {
+    for (const capability of ["true", 1, false, null, true]) {
+      await driver.executeQuery(
+        "MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageServerSettings=$capability",
+        { name: SERVER_CONFIG_NAME, capability }
+      );
+      const result = await execDeleteServerConfigs(
+        mockToken({ username: "normaluser", email: "normal@e2e.test" })
+      );
+      if (capability === true) {
+        assert.equal(result.errors, undefined);
+        assert.ok(result.data?.deleteServerConfigs);
+      } else {
+        assert.equal(result.errors?.[0].message, ERROR_MESSAGES.server.noServerPermission);
+        assert.equal(result.data, null);
+      }
+    }
+  } finally {
+    await driver.executeQuery(
+      "MATCH(s:ServerConfig{serverName:$name})-[:HAS_DEFAULT_SERVER_ROLE]->(r:ServerRole) SET r.canManageServerSettings=$capability",
+      { name: SERVER_CONFIG_NAME, capability: previous }
+    );
+  }
+});

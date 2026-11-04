@@ -1,4 +1,5 @@
 import neo4j, { type Driver } from "neo4j-driver";
+import type { RawServerCapabilities, NativeServerAuthorizationSnapshot, ServerAuthorizationRecord } from "../../customResolvers/contracts/serverAuthorizationSource.js";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 const SERVER_ROLE_CAPABILITIES = [
@@ -36,7 +37,7 @@ const MOD_SERVER_ROLE_CAPABILITIES = [
   "canPermanentlyRemoveImage",
 ] as const;
 
-type CapabilityMap = Record<string, boolean | null | undefined>;
+type CapabilityMap = RawServerCapabilities;
 
 export type PermissionSuspension = {
   id?: string | null;
@@ -49,7 +50,7 @@ export type PermissionSuspension = {
 };
 
 export type PermissionServerConfig = {
-  enableDownloads?: boolean | null;
+  enableDownloads?: unknown;
   DefaultServerRole?: CapabilityMap | null;
   DefaultSuspendedRole?: CapabilityMap | null;
   DefaultAdminRole?: CapabilityMap | null;
@@ -57,9 +58,9 @@ export type PermissionServerConfig = {
   DefaultModRole?: CapabilityMap | null;
   DefaultElevatedModRole?: CapabilityMap | null;
   DefaultSuspendedModRole?: CapabilityMap | null;
-  SuperAdmins: Array<{ username?: string | null }>;
-  Admins: Array<{ username?: string | null }>;
-  Moderators: Array<{ displayName?: string | null }>;
+  SuperAdmins: Array<{ username?: unknown }>;
+  Admins: Array<{ username?: unknown }>;
+  Moderators: Array<{ displayName?: unknown }>;
   SuspendedUsers: PermissionSuspension[];
   SuspendedMods: PermissionSuspension[];
 };
@@ -174,6 +175,32 @@ const normalizeNeo4jValue = (value: unknown): any => {
   return value;
 };
 
+const normalizeCapabilities = (
+  role: RawServerCapabilities | null
+): RawServerCapabilities | null => role === null ? null : Object.fromEntries(
+  Object.entries(role).map(([key, value]) => [key, normalizeNeo4jValue(value)])
+);
+
+const normalizeAuthorizationSnapshot = (
+  value: NativeServerAuthorizationSnapshot
+): PermissionServerConfig => ({
+  enableDownloads: normalizeNeo4jValue(value.enableDownloads),
+  DefaultServerRole: normalizeCapabilities(value.DefaultServerRole),
+  DefaultSuspendedRole: normalizeCapabilities(value.DefaultSuspendedRole),
+  DefaultAdminRole: normalizeCapabilities(value.DefaultAdminRole),
+  DefaultSuperAdminRole: normalizeCapabilities(value.DefaultSuperAdminRole),
+  DefaultModRole: normalizeCapabilities(value.DefaultModRole),
+  DefaultElevatedModRole: normalizeCapabilities(value.DefaultElevatedModRole),
+  DefaultSuspendedModRole: normalizeCapabilities(value.DefaultSuspendedModRole),
+  SuperAdmins: value.SuperAdmins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
+  Admins: value.Admins.map(member => ({ username: normalizeNeo4jValue(member.username) })),
+  Moderators: value.Moderators.map(member => ({ displayName: normalizeNeo4jValue(member.displayName) })),
+  // Keep the pre-existing suspension adapter separate from the untrusted
+  // capability/identity contract. Its nested leaves still need migration.
+  SuspendedUsers: value.SuspendedUsers.map(normalizeNeo4jValue),
+  SuspendedMods: value.SuspendedMods.map(normalizeNeo4jValue),
+});
+
 export function createPermissionServerConfigRepository(
   driver: Driver,
   database = resolveNeo4jDatabase()
@@ -188,12 +215,12 @@ export function createPermissionServerConfigRepository(
         defaultAccessMode: neo4j.session.WRITE,
       });
       try {
-        const result = await session.run(PERMISSION_SERVER_CONFIG_QUERY, {
+        const result = await session.run<ServerAuthorizationRecord>(PERMISSION_SERVER_CONFIG_QUERY, {
           serverName: serverName ?? null,
         });
         const value = result.records[0]?.get("serverConfig");
         return value
-          ? (normalizeNeo4jValue(value) as PermissionServerConfig)
+          ? normalizeAuthorizationSnapshot(value)
           : null;
       } finally {
         await session.close();

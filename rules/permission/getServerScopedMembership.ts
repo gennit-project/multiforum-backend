@@ -7,9 +7,9 @@ type EvaluateServerScopedMembershipInput = {
   modProfileName?: string | null;
   email?: string | null;
   cypressAdminTestEmail?: string | null;
-  serverAdminUsernames?: Array<string | null | undefined>;
-  serverSuperAdminUsernames?: Array<string | null | undefined>;
-  serverModeratorDisplayNames?: Array<string | null | undefined>;
+  serverAdminUsernames?: unknown[];
+  serverSuperAdminUsernames?: unknown[];
+  serverModeratorDisplayNames?: unknown[];
 };
 
 export type ServerScopedMembership = {
