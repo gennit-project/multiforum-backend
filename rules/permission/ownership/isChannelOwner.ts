@@ -16,7 +16,7 @@ type IsChannelOwnerInput = {
   commentId?: string;
 };
 
-export const isChannelOwner = rule({ cache: "contextual" })(
+export const isChannelOwner = rule({ cache: "strict" })(
   async (parent: unknown, args: IsChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     logger.info('🔐 isChannelOwner rule called with args:', JSON.stringify(args));
 

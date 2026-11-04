@@ -506,3 +506,47 @@ test("native malformed ownership and truthy lock values remain denied through Gr
     assert.equal(result.records[0].get('title'),'original');
   } finally { await session.close(); }
 });
+
+const remainingOwnershipCases = [
+  {name:'channel owner', seed:`MATCH(own:User{username:'normaluser'}),(other:User{username:'adminuser'})
+    CREATE(own)-[:ADMIN_OF_CHANNEL]->(:Channel{uniqueName:'cache-own-forum'})
+    CREATE(other)-[:ADMIN_OF_CHANNEL]->(:Channel{uniqueName:'cache-other-forum'})`,
+   allowed:`deleteChannels(where:{uniqueName:{eq:"cache-own-forum"}}){nodesDeleted}`,
+   denied:`deleteChannels(where:{uniqueName:{eq:"cache-other-forum"}}){nodesDeleted}`,
+   read:`MATCH(n:Channel) WHERE n.uniqueName STARTS WITH 'cache-' RETURN n.uniqueName AS value`, expected:['cache-other-forum']},
+  {name:'image uploader', seed:`MATCH(own:User{username:'normaluser'}),(other:User{username:'adminuser'})
+    CREATE(own)-[:UPLOADED_IMAGE]->(:Image{id:'cache-own-image',caption:'original'})
+    CREATE(other)-[:UPLOADED_IMAGE]->(:Image{id:'cache-other-image',caption:'original'})`,
+   allowed:`updateImages(where:{id:{eq:"cache-own-image"}},update:{caption:{set:"changed"}}){images{id}}`,
+   denied:`updateImages(where:{id:{eq:"cache-other-image"}},update:{caption:{set:"changed"}}){images{id}}`,
+   read:`MATCH(n:Image) WHERE n.id IN ['cache-other-image','cache-own-image'] RETURN n.caption AS value ORDER BY n.id`,expected:['original','changed']},
+  {name:'discussion channel owner', seed:`MATCH(own:User{username:'normaluser'}),(other:User{username:'adminuser'})
+    CREATE(own)-[:POSTED_DISCUSSION]->(d1:Discussion{id:'cache-own-discussion'})
+    CREATE(other)-[:POSTED_DISCUSSION]->(d2:Discussion{id:'cache-other-discussion'})
+    CREATE(c:Channel{uniqueName:'cache-discussion-forum'})
+    CREATE(:DiscussionChannel{id:'cache-own-dc',discussionId:d1.id,channelUniqueName:c.uniqueName,locked:false})-[:POSTED_IN_CHANNEL]->(d1)
+    CREATE(:DiscussionChannel{id:'cache-other-dc',discussionId:d2.id,channelUniqueName:c.uniqueName,locked:false})-[:POSTED_IN_CHANNEL]->(d2)`,
+   allowed:`updateDiscussionChannels(where:{discussionId:{eq:"cache-own-discussion"},channelUniqueName:{eq:"cache-discussion-forum"}},update:{locked:{set:true}}){discussionChannels{id}}`,
+   denied:`updateDiscussionChannels(where:{discussionId:{eq:"cache-other-discussion"},channelUniqueName:{eq:"cache-discussion-forum"}},update:{locked:{set:true}}){discussionChannels{id}}`,
+   read:`MATCH(n:DiscussionChannel) WHERE n.id IN ['cache-other-dc','cache-own-dc'] RETURN n.locked AS value ORDER BY n.id`,expected:[false,true]},
+  {name:'issue lock', seed:`MATCH(own:User{username:'normaluser'})
+    CREATE(:Issue{id:'cache-unlocked',locked:false,title:'original'})-[:AUTHORED_ISSUE]->(own)
+    CREATE(:Issue{id:'cache-locked',locked:true,title:'original'})-[:AUTHORED_ISSUE]->(own)`,
+   allowed:`updateIssues(where:{id:{eq:"cache-unlocked"}},update:{title:{set:"changed"}}){issues{id}}`,
+   denied:`updateIssues(where:{id:{eq:"cache-locked"}},update:{title:{set:"changed"}}){issues{id}}`,
+   read:`MATCH(n:Issue) WHERE n.id IN ['cache-locked','cache-unlocked'] RETURN n.title AS value ORDER BY n.id`,expected:['original','changed']},
+];
+for (const item of remainingOwnershipCases) {
+  test(`${item.name} decisions are scoped to the actual target`, async () => {
+    const session=driver.session();
+    try {
+      await session.run(item.seed);
+      const result=await graphql({schema,source:`mutation {allowed:${item.allowed} denied:${item.denied}}`,
+        contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{},isMutation:true}}});
+      assert.ok(result.errors?.some(error=>error.path?.[0]==='denied'),JSON.stringify(result));
+      assert.ok(!result.errors?.some(error=>error.path?.[0]==='allowed'),JSON.stringify(result));
+      const rows=await session.run(item.read);
+      assert.deepEqual(rows.records.map(row=>row.get('value')),item.expected);
+    } finally {await session.close();}
+  });
+}

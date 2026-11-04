@@ -12,7 +12,7 @@ type IsDiscussionChannelOwnerInput = {
   where: DiscussionChannelWhere;
 };
 
-export const isDiscussionChannelOwner = rule({ cache: "contextual" })(
+export const isDiscussionChannelOwner = rule({ cache: "strict" })(
   async (parent: unknown, args: IsDiscussionChannelOwnerInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // Set user data
     // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
