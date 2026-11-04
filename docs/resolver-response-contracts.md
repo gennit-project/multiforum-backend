@@ -631,3 +631,28 @@ claims, ownership, renewal, rescheduling, completion, rate/concurrency limits an
 post-commit projection failures. Raw event claims still return their existing
 string-converted identity; no transition, scheduling or pause policy changes.
 Accounting remains **176 selected / 33 deferred**.
+
+### Notification source projections and nullable-text exception
+
+All ten notification read paths now declare exact selected recipient preferences,
+email links, content links and User/ModerationProfile branches, instead of complete
+nested User/Comment entities. Only queries that select `__typename` guarantee that
+discriminator. The entry point no longer casts author data; feedback and mention
+helpers consume the precise snapshot, preserving their existing undefined/null
+fallbacks. Executable selection comparisons and compile-negative fixtures protect
+these boundaries, including nested reply preferences and absent email fields.
+Existing graph tests retain recipient exclusion, preference filtering, permission
+filters, default limits and successful discussion/event/reply notification writes.
+No mail provider is configured in these disposable-database tests.
+
+A newly reproduced consumer exception remains: a stored comment with null `text`
+passes the generated GraphQL read but fails the Markdown email renderer with
+`Input data should be a String`. Discussion, event and reply paths all fail before
+creating subscriber notifications, even without a configured mail provider. Three
+real-graph witnesses assert that failure and the absence of notifications. The
+three rendering helpers still have unchecked inputs; their full contract is not
+claimed complete. Choosing empty-excerpt delivery versus skipping textless-comment
+notifications is a behavior decision, not a type assertion or automatic coercion.
+The candidate remedy is to retain notification delivery with an empty excerpt;
+this commit does not implement that policy. Accounting remains **176 / 209 selected,
+33 deferred** and does not certify these consumers end to end.

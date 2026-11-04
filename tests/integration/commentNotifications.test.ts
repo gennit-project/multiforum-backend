@@ -152,3 +152,30 @@ test("handleCommentCreatedNotification is a no-op for an unknown comment id", as
   const all = await run(`MATCH (n:Notification) RETURN count(n) AS n`);
   assert.equal(Number(all[0].n), 0);
 });
+
+// Known response-consumer exception: the schema permits null Comment.text,
+// whereas the three email renderers require a string. Preserve and expose the
+// current failure until notification behavior for textless comments is decided.
+for(const path of ['discussion','event','reply'] as const)test(`nullable comment text blocks ${path} notifications after a successful schema read`,async()=>{
+ await run(`
+  CREATE(bob:User{username:'bob'}),(alice:User{username:'alice',notifyOnReplyToCommentByDefault:true})
+  CREATE(ch:Channel{uniqueName:'cats',createdAt:datetime()})
+  CREATE(d:Discussion{id:'d1',title:'Discussion',createdAt:datetime()})
+  CREATE(dc:DiscussionChannel{id:'dc1',discussionId:'d1',channelUniqueName:'cats',createdAt:datetime()})
+  CREATE(e:Event{id:'e1',title:'Event'}),(ec:EventChannel{id:'ec1',eventId:'e1',channelUniqueName:'cats'})
+  CREATE(parent:Comment{id:'p1',text:'parent',isRootComment:true,createdAt:datetime()})
+  CREATE(c:Comment{id:'c1',isRootComment:$root,createdAt:datetime()})
+  CREATE(dc)-[:POSTED_IN_CHANNEL]->(d), (dc)-[:POSTED_IN_CHANNEL]->(ch)
+  CREATE(ec)-[:POSTED_IN_CHANNEL]->(e), (ec)-[:POSTED_IN_CHANNEL]->(ch)
+  CREATE(ch)-[:HAS_COMMENT]->(c), (bob)-[:AUTHORED_COMMENT]->(c), (alice)-[:AUTHORED_COMMENT]->(parent)
+  FOREACH(_ IN CASE WHEN $path='event' THEN [1] ELSE [] END | CREATE(e)-[:HAS_COMMENT]->(c) CREATE(alice)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(e))
+  FOREACH(_ IN CASE WHEN $path<>'event' THEN [1] ELSE [] END | CREATE(dc)-[:CONTAINS_COMMENT]->(c) CREATE(alice)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(dc))
+  FOREACH(_ IN CASE WHEN $path='reply' THEN [1] ELSE [] END | CREATE(c)-[:IS_REPLY_TO]->(parent))
+ `,{path,root:path!=='reply'});
+ const {createNotificationSnapshotRepository}=await import('../../services/persistence/notificationSnapshotRepository.js');
+ const snapshot=await createNotificationSnapshotRepository(env.driver).findCommentNotificationSnapshot('c1');
+ assert.equal(snapshot.length,1);assert.equal(snapshot[0].text,null);
+ await assert.rejects(handleCommentCreatedNotification(deps(),'c1'),/Input data should be a String/);
+ assert.deepEqual(await notificationsFor('alice'),[]);
+ assert.equal((await run("MATCH(c:Comment{id:'c1'}) RETURN count(c) AS count"))[0].count.toNumber(),1);
+});

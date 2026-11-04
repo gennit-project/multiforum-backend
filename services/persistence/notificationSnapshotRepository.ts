@@ -1,19 +1,16 @@
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import type { Driver } from "neo4j-driver";
-import type { Comment, Issue } from "../../ogm_types.js";
-import type { CommentSnapshot } from "../../utils/buildCommentMentionContext.js";
-import type { DiscussionSnapshot } from "../../utils/buildDiscussionMentionContext.js";
-
-export type SubscriberSnapshot = { username: string; Email?: {address: string} | null };
+import type {NotificationArchivedAuthor,NotificationFeedbackRecipient,NotificationMentionRecipient,NotificationMentionComment,NotificationMentionDiscussion,NotificationComment,NotificationEntitySubscribers,NotificationIssueSubscribers} from "../../customResolvers/contracts/notificationProjections.js";
+export type {SubscriberSnapshot} from "../../customResolvers/contracts/notificationProjections.js";
 export interface NotificationSnapshotRepository {
-  findArchivedAuthor(username: string): Promise<{username: string}[]>;
-  findFeedbackRecipient(username: string): Promise<{username: string; notifyOnFeedback: boolean | null}[]>;
-  findMentionRecipients(usernames: string[]): Promise<{username: string; notifyWhenTagged: boolean | null; Email?: {address:string} | null}[]>;
-  findCommentMentionSnapshot(id: string): Promise<CommentSnapshot[]>;
-  findDiscussionMentionSnapshot(id: string): Promise<DiscussionSnapshot[]>;
-  findCommentNotificationSnapshot(id: string): Promise<Pick<Comment, "id" | "text" | "isRootComment" | "isFeedbackComment" | "Channel" | "CommentAuthor" | "DiscussionChannel" | "Event" | "GivesFeedbackOnComment" | "GivesFeedbackOnDiscussion" | "GivesFeedbackOnEvent" | "ParentComment">[]>;
-  findEntitySubscribers(type: "DiscussionChannel" | "Event" | "Comment", id: string): Promise<{id:string; SubscribedToNotifications: SubscriberSnapshot[]}[]>;
-  findIssueSubscribers(id: string): Promise<Pick<Issue, "id" | "issueNumber" | "title" | "channelUniqueName" | "SubscribedToNotifications">[]>;
+  findArchivedAuthor(username: string): Promise<NotificationArchivedAuthor[]>;
+  findFeedbackRecipient(username: string): Promise<NotificationFeedbackRecipient[]>;
+  findMentionRecipients(usernames: string[]): Promise<NotificationMentionRecipient[]>;
+  findCommentMentionSnapshot(id: string): Promise<NotificationMentionComment[]>;
+  findDiscussionMentionSnapshot(id: string): Promise<NotificationMentionDiscussion[]>;
+  findCommentNotificationSnapshot(id: string): Promise<NotificationComment[]>;
+  findEntitySubscribers(type: "DiscussionChannel" | "Event" | "Comment", id: string): Promise<NotificationEntitySubscribers[]>;
+  findIssueSubscribers(id: string): Promise<NotificationIssueSubscribers[]>;
 }
 
 const COMMENT_SELECTION_SET = `{
@@ -197,7 +194,7 @@ const ENTITY_OPERATIONS = {
 export function createNotificationSnapshotRepository(driver: Driver): NotificationSnapshotRepository {
   return {
     async findArchivedAuthor(username) {
-      return (await executeGeneratedOperation<{users:{username:string}[]}>(driver, OPERATIONS.archived, {where:{username:{eq:username}}})).users;
+      return (await executeGeneratedOperation<{users:NotificationArchivedAuthor[]}>(driver, OPERATIONS.archived, {where:{username:{eq:username}}})).users;
     },
     async findFeedbackRecipient(username) {
       return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findFeedbackRecipient"]>>}>(driver, OPERATIONS.feedback, {where:{username:{eq:username}}})).users;
@@ -206,17 +203,17 @@ export function createNotificationSnapshotRepository(driver: Driver): Notificati
       return (await executeGeneratedOperation<{users:Awaited<ReturnType<NotificationSnapshotRepository["findMentionRecipients"]>>}>(driver, OPERATIONS.mentions, {where:{username:{in:usernames}}})).users;
     },
     async findCommentMentionSnapshot(id) {
-      return (await executeGeneratedOperation<{comments:CommentSnapshot[]}>(driver, OPERATIONS.commentMention, {where:{id:{eq:id}}})).comments;
+      return (await executeGeneratedOperation<{comments:NotificationMentionComment[]}>(driver, OPERATIONS.commentMention, {where:{id:{eq:id}}})).comments;
     },
     async findDiscussionMentionSnapshot(id) {
-      return (await executeGeneratedOperation<{discussions:DiscussionSnapshot[]}>(driver, OPERATIONS.discussionMention, {where:{id:{eq:id}}})).discussions;
+      return (await executeGeneratedOperation<{discussions:NotificationMentionDiscussion[]}>(driver, OPERATIONS.discussionMention, {where:{id:{eq:id}}})).discussions;
     },
     async findCommentNotificationSnapshot(id) {
       return (await executeGeneratedOperation<{comments:Awaited<ReturnType<NotificationSnapshotRepository["findCommentNotificationSnapshot"]>>}>(driver, OPERATIONS.commentNotification, {where:{id:{eq:id}}})).comments;
     },
     async findEntitySubscribers(type, id) {
       const operation = ENTITY_OPERATIONS[type];
-      const result = await executeGeneratedOperation<Record<string, {id:string;SubscribedToNotifications:SubscriberSnapshot[]}[]>>(driver, operation.source, {where:{id:{eq:id}}});
+      const result = await executeGeneratedOperation<Record<string, NotificationEntitySubscribers[]>>(driver, operation.source, {where:{id:{eq:id}}});
       return result[operation.root];
     },
     async findIssueSubscribers(id) {

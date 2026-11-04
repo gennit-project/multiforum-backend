@@ -1,3 +1,4 @@
+import type {NotificationComment} from "../customResolvers/contracts/notificationProjections.js";
 import type { NotificationWriter } from "./persistence/notificationWriter.js";
 import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 export { FULL_COMMENT_SELECTION_SET } from "./persistence/notificationSnapshotRepository.js";
@@ -99,7 +100,7 @@ export const createBatchNotifications = async (
 
     const entity = entityResults[0];
     const subscribedUsersData =
-      entity.SubscribedToNotifications?.map((user: any) => ({
+      entity.SubscribedToNotifications?.map((user) => ({
         username: user.username,
         email: user.Email?.address || null,
       })) || [];
@@ -358,18 +359,18 @@ export const processCommentReplyNotification = async (
  */
 export const processFeedbackNotification = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string,
   authorUsername: string,
   authorDisplayName: string,
   channelUniqueName: string | null
 ): Promise<void> => {
   try {
-    let targetAuthorUsername: string | null = null;
+    let targetAuthorUsername: string | null | undefined = null;
     let targetType: "comment" | "discussion" | "event" = "comment";
     let targetId: string | null = null;
-    let discussionId: string | null = null;
-    let eventId: string | null = null;
+    let discussionId: string | null | undefined = null;
+    let eventId: string | null | undefined = null;
 
     if (fullComment.GivesFeedbackOnComment) {
       const feedbackTarget = fullComment.GivesFeedbackOnComment;
@@ -423,7 +424,7 @@ export const processFeedbackNotification = async (
  */
 export const processModMentionNotifications = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string,
   authorUsername: string,
   authorLabel: string,
@@ -459,7 +460,7 @@ export const processModMentionNotifications = async (
  */
 export const processUserMentionNotifications = async (
   deps: NotificationDeps,
-  fullComment: any,
+  fullComment: NotificationComment,
   commentId: string
 ): Promise<void> => {
   try {
@@ -498,7 +499,7 @@ export const handleCommentCreatedNotification = async (
 
   const fullComment = fullComments[0];
 
-  const author = fullComment.CommentAuthor as {username?: string; User?: {username?: string}} | null;
+  const author = fullComment.CommentAuthor;
   const commenterUsername =
     author?.username ||
     author?.User?.username ||
