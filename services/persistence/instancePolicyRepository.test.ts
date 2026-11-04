@@ -57,3 +57,27 @@ test("database failure propagates and always closes each session", async () => {
   await assert.rejects(repository.findSetupConfigs(), /db unavailable/);
   assert.deepEqual(state.counts(), {closed: 2, transactions: 2});
 });
+
+test("native policy query selections match their source contract keys", () => {
+  // These queries contain one literal property projection. Check the actual
+  // document rather than a second unused selection string.
+  const selected = (query: string) => {
+    const projection = /RETURN config\s*\{([^}]+)\}\s+AS config/.exec(query);
+    assert.ok(projection);
+    return [...projection[1].matchAll(/\.([A-Za-z][A-Za-z0-9_]*)/g)]
+      .map(match => match[1]).sort();
+  };
+  const age = {
+    accountAgeGateEnabled: true,
+    minimumAccountAge: true,
+    sensitiveContentAgeGateEnabled: true,
+    minimumSensitiveContentAge: true,
+  } satisfies Record<keyof import("../../customResolvers/contracts/instancePolicySource.js").NativeAgePolicy, true>;
+  const setup = {
+    serverName: true,
+    enableDownloads: true,
+    enableEvents: true,
+  } satisfies Record<keyof import("../../customResolvers/contracts/instancePolicySource.js").NativeSetupPolicy, true>;
+  assert.deepEqual(selected(FIND_AGE_POLICY_CONFIGS), Object.keys(age).sort());
+  assert.deepEqual(selected(FIND_SETUP_CONFIGS), Object.keys(setup).sort());
+});

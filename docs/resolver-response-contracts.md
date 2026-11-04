@@ -725,3 +725,16 @@ a real GraphQL/Shield mutation checks string, numeric, false, null and true stor
 capabilities against a disposable database. Legacy nested suspension conversion
 remains separately unverified; this source safeguard does not increase the selected
 response-boundary count or certify the whole authorization system.
+
+### Instance age/feature policy source selections
+
+The two native policy reads now select distinct, required property-map contracts
+instead of casting both results to an open dictionary. Native leaf values remain
+unknown until the existing GraphQL Boolean/Int/String conversions run. The concrete
+repository exposes the completed nullable fields; injected reader interfaces keep
+their existing optional-key compatibility. Actual Cypher selection keys are checked
+against the source declarations, alongside compile-negative checks and disposable
+Neo4j regressions for nulls, numeric conversions, malformed values, multiple configs,
+missing names and defaults. Routing, bookmarks, ordering, scalar coercion, error
+behavior and age/feature policy are unchanged. This strengthens an upstream read;
+it does not promote any of the 33 deferred outer response boundaries.
