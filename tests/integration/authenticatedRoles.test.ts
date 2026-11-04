@@ -635,3 +635,91 @@ test('image update validation isolates protected storage fields from a permitted
   assert.equal(rows.records[0].get('caption'),'valid caption');
   assert.equal(rows.records[0].get('bucket'),'original-bucket');
 });
+
+async function seedIdentityAccounts() {
+  await driver.executeQuery(`MATCH(u:User) WHERE u.username IN ['normaluser','adminuser']
+    SET u.bio='normaluser'
+    MERGE(e:Email{address:u.username+'@private.test'}) MERGE(e)-[:HAS_EMAIL]->(u)`);
+}
+
+for (const selection of [
+  'contact:Email{address}',
+  '...PrivateAccount',
+  '... on User {contact:Email{address}}',
+  'renamed:username contact:Email{address}',
+  '_accountIdentity:bio username:bio contact:Email{address}',
+]) {
+  test(`selection-aware account identity supports ${selection}`, async () => {
+    await seedIdentityAccounts();
+    const fragment = selection === '...PrivateAccount' ? 'fragment PrivateAccount on User { contact:Email{address} }' : '';
+    const response = await graphql({schema,
+      source:`query { users(where:{username:{in:["normaluser","adminuser"]}},sort:[{username:ASC}]) {${selection}} } ${fragment}`,
+      contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}},
+    });
+    assert.deepEqual(response.errors?.map(error=>error.path),[['users',0,'contact']],JSON.stringify(response));
+    const users = JSON.parse(JSON.stringify(response.data)).users;
+    assert.equal(users[0].contact,null);
+    assert.deepEqual(users[1].contact,{address:'normaluser@private.test'});
+    assert.ok(users.every((row:object)=>!Object.keys(row).includes('_accountIdentity_')));
+    if (!selection.includes('_accountIdentity:')) assert.ok(users.every((row:object)=>!Object.keys(row).includes('_accountIdentity')));
+  });
+}
+
+test('selection-aware account identity preserves skipped fields and independent merged selections',async()=>{
+  await seedIdentityAccounts();
+  const response=await graphql({schema,source:`query($hide:Boolean! = true,$show:Boolean! = false){
+    own:users(where:{username:{eq:"normaluser"}}){...PrivateAccount @skip(if:$hide) bio}
+    own:users(where:{username:{eq:"normaluser"}}){renamed:username}
+    other:users(where:{username:{eq:"adminuser"}}){... on User @include(if:$show){Email{address}} bio}
+  } fragment PrivateAccount on User { Email{address} }`,
+    contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}},
+  });
+  assert.equal(response.errors,undefined,JSON.stringify(response));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{own:[{bio:'normaluser',renamed:'normaluser'}],other:[{bio:'normaluser'}]});
+});
+
+test('selection-aware account identity denies anonymous access without selecting username',async()=>{
+  await seedIdentityAccounts();
+  const response=await graphql({schema,source:'{users(where:{username:{eq:"normaluser"}}){Email{address}}}',contextValue:{driver,req:{headers:{},body:{}}}});
+  assert.ok(response.errors?.length,JSON.stringify(response));
+  assert.equal(JSON.stringify(response.data).includes('normaluser@private.test'),false);
+});
+
+test('selection-aware account identity keeps requested-field errors at their original path',async()=>{
+  await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio=['invalid'] MERGE(e:Email{address:'normaluser@private.test'}) MERGE(e)-[:HAS_EMAIL]->(u)");
+  try {
+    const response=await graphql({schema,source:'{users(where:{username:{eq:"normaluser"}}){broken:bio contact:Email{address}}}',contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+    assert.deepEqual(response.errors?.map(error=>error.path),[['users',0,'broken']],JSON.stringify(response));
+    assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{broken:null,contact:{address:'normaluser@private.test'}}]});
+  } finally {await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.bio='normaluser'");}
+});
+
+ test('selection-aware account identity supports a single owner without a sort dependency',async()=>{
+  await seedIdentityAccounts();
+  const response=await graphql({schema,source:'{users(where:{username:{eq:"normaluser"}}){Email{address}}}',contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+  assert.equal(response.errors,undefined,JSON.stringify(response));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{users:[{Email:{address:'normaluser@private.test'}}]});
+});
+
+test('selection-aware account identity supports active directive variables and merged private selections',async()=>{
+  await seedIdentityAccounts();
+  const response=await graphql({schema,source:`query($hide:Boolean!,$show:Boolean!){
+    own:users(where:{username:{eq:"normaluser"}}){...PrivateAccount @skip(if:$hide)}
+    own:users(where:{username:{eq:"normaluser"}}){renamed:username}
+    other:users(where:{username:{eq:"adminuser"}}){... on User @include(if:$show){contact:Email{address}}}
+  } fragment PrivateAccount on User {contact:Email{address}}`,variableValues:{hide:false,show:true},
+    contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}},
+  });
+  assert.deepEqual(response.errors?.map(error=>error.path),[['other',0,'contact']],JSON.stringify(response));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{own:[{contact:{address:'normaluser@private.test'},renamed:'normaluser'}],other:[{contact:null}]});
+});
+
+test('selection-aware account identity preserves empty matches, pagination and nullable private fields',async()=>{
+  await driver.executeQuery("MATCH(u:User{username:'normaluser'}) SET u.stripeAccountId=null");
+  const response=await graphql({schema,source:`{
+    missing:users(where:{username:{eq:"not-an-account"}}){Email{address}}
+    page:users(where:{username:{in:["adminuser","normaluser"]}},sort:[{username:ASC}],offset:1,limit:1){stripeAccountId}
+  }`,contextValue:{driver,req:{headers:{authorization:mockToken({username:'normaluser',email:'normal@e2e.test'})},body:{}}}});
+  assert.equal(response.errors,undefined,JSON.stringify(response));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{missing:[],page:[{stripeAccountId:null}]});
+});

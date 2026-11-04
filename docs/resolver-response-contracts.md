@@ -871,3 +871,23 @@ The moderator regression supplies empty lists for its successful update and
 separately verifies rollback for omitted/null lists. This slice does not choose
 new null/omission semantics; accepting those inputs as no changes remains a
 separate behavior decision.
+
+### Selection-aware account child identity pilot
+
+The generated `Query.users` source now adds an internal username dependency only
+when an owner-protected User field is selected. The dependency uses a collision-free
+response alias and is retained in a private weak map for the account ownership rule;
+it is not part of the caller's response. The dependency field list is checked against
+the actual permission registrations. Fragment spreads, merged field nodes, aliases,
+and variable/default `skip` and `include` directives retain their GraphQL meaning.
+
+Raw identity stays `unknown` until the existing ownership comparison. Other child
+values remain lazy: the adapter neither validates unrequested children nor converts
+nullable errors into whole-object failures. Real schema, Shield and disposable graph
+tests cover owner/non-owner/anonymous results and requested-field error paths.
+Removing the adapter makes three of the initial nine pilot regressions fail;
+additional cases cover active directives, empty matches and pagination.
+
+This is a source dependency guarantee for `Query.users`, not certification of all
+User-producing operations or arbitrary child projections. The inventory remains
+176 selected-response entries and 33 deferred entries.
