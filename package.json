@@ -57,7 +57,7 @@
     "@graphql-tools/schema": "^10.1.0",
     "@neo4j/graphql": "^7.6.4",
     "@sendgrid/mail": "^8.1.4",
-    "@types/tar-stream": "^3.1.4",
+    "@types/tar-stream": "^3.1.5",
     "axios": "^1.20.0",
     "compression": "^1.8.2",
     "cors": "^2.8.6",
@@ -81,7 +81,7 @@
     "random-word-slugs": "^0.1.7",
     "resend": "^6.34.1",
     "sharp": "^0.35.5",
-    "tar-stream": "^3.1.7"
+    "tar-stream": "^3.2.2"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "7.4.6",
