@@ -1,3 +1,4 @@
+import { canonicalSortedChannel } from "../../services/canonicalSortedChannel.js";
 import type { SortedViewerChannel } from "../contracts/viewerReadProjections.js";
 import type { Driver, Integer } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -134,7 +135,7 @@ const getSortedChannelsResolver = (input: Input) => {
       );
 
       const channels = result.records.map((record) =>
-        record.get("channel")
+        canonicalSortedChannel(record.get("channel"))
       );
 
       const aggregateChannelCount =

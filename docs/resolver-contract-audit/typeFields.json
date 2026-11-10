@@ -315,9 +315,11 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "services/canonicalSortedChannel.ts",
+        "tests/integration/sortedChannelSourceContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The owned sorted-channel source now declares every fixed scalar, tag item and native count map, checked against the generated root selection and real query keys. Canonical source provenance preserves colliding scalar/list aliases and nested connection count aliases; malformed stored leaves still fail only when selected. This does not certify other generated or custom Channel producers or unprojected child fields.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {

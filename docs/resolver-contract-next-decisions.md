@@ -546,3 +546,21 @@ intentional JSON structural limits, one now-characterized delegated runtime
 boundary, two campaign-transition dependencies, and **18 shared child-list
 engineering gates**. The shared lists still need producer-specific source work;
 these tests do not discharge those obligations or certify whole operations.
+
+### Sorted channel source: tags and count projections
+
+The sorted-channel producer no longer uses a catch-all persisted map. Its exact
+scalar, tag and native-integer count maps are checked against a generated raw
+root selection and the actual executable query's keys. Negative type fixtures
+reject absent tag selections, serialized count substitutions, unvalidated string
+claims and unprojected admin lists. A missing required child selection also fails
+the actual root registration contract.
+
+Three pre-fix real-schema regressions reproduced wrong scalar values, an empty
+tag list and a connection error under aliases. Only this owned query result is
+now marked as canonical, including its nested tag/count maps. Generated alias
+projections pass through unchanged. Real tests preserve lazy malformed-scalar
+errors, nullable fields, filtering, search, ordering, pagination and favorites;
+no missing child relationships are fabricated. `Channel.Tags` stays deferred:
+this closes one fixed producer's source gap, not every shared dynamic producer.
+Accounting remains 178 selected / 31 deferred and 18 shared-list engineering gates.

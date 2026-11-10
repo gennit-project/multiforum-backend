@@ -335,9 +335,11 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "services/canonicalSortedChannel.ts",
+        "tests/integration/sortedChannelSourceContracts.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The owned sorted-channel source now declares every fixed scalar, tag item and native count map, checked against the generated root selection and real query keys. Canonical source provenance preserves colliding scalar/list aliases and nested connection count aliases; malformed stored leaves still fail only when selected. This does not certify other generated or custom Channel producers or unprojected child fields.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {

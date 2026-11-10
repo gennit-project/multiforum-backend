@@ -1,3 +1,4 @@
+import type { RawSelectedResolver } from "./rawSelectedSource.js";
 import type { QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { SelectedResolver } from "./selection.js";
@@ -19,5 +20,10 @@ export type ViewerReadQueryResolvers = {
   getDiscussionsInChannel: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionsInChannel"], {
     discussionChannels:{UpvotedByUsers:{username:true};SuperUpvotedByUsers:{username:true};isFavorited:true;Discussion:{authorIsChannelModerator:true}};
   }>;
-  getSortedChannels: SelectedResolver<QueryResolvers<GraphQLContext>["getSortedChannels"], {channels:{isFavorited:true}}>;
+  getSortedChannels: SelectedResolver<QueryResolvers<GraphQLContext>["getSortedChannels"], {channels:{isFavorited:true}}> &
+    RawSelectedResolver<QueryResolvers<GraphQLContext>["getSortedChannels"], {
+      aggregateChannelCount:true;channels:{uniqueName:true;displayName:true;channelIconURL:true;description:true;isFavorited:true;Tags:{text:true};
+        EventChannelsConnection:{totalCount:true;aggregate:{count:{nodes:true}}};
+        DiscussionChannelsConnection:{totalCount:true;aggregate:{count:{nodes:true}}}};
+    }>;
 };

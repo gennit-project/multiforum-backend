@@ -6,7 +6,8 @@
 
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Driver } from "neo4j-driver";
+import { int, type Driver } from "neo4j-driver";
+import type { SortedViewerChannel } from "../contracts/viewerReadProjections.js";
 import type { GraphQLContext } from "../../types/context.js";
 import getSortedChannelsResolver from "./getSortedChannels.js";
 import { CHANNEL_FULLTEXT_INDEX } from "../../services/channelFulltext.js";
@@ -130,19 +131,25 @@ test("whitespace-only search input falls back to the unfiltered path", async () 
 
 // --- result mapping ---
 
+const sourceChannel=(uniqueName:string):SortedViewerChannel=>({
+ uniqueName,displayName:null,channelIconURL:null,description:null,isFavorited:null,Tags:[],
+ EventChannelsAggregate:{count:int(0)},DiscussionChannelsAggregate:{count:int(0)},
+ EventChannelsConnection:{totalCount:int(0),aggregate:{count:{nodes:int(0)}}},
+ DiscussionChannelsConnection:{totalCount:int(0),aggregate:{count:{nodes:int(0)}}},
+});
 test("maps records to channels and reads the aggregate from the first record", async () => {
   const driver = createMockDriver({
     records: [
-      { channel: { uniqueName: "cats" }, aggregateChannelCount: 2 },
-      { channel: { uniqueName: "dogs" }, aggregateChannelCount: 2 },
+      { channel: sourceChannel("cats"), aggregateChannelCount: 2 },
+      { channel: sourceChannel("dogs"), aggregateChannelCount: 2 },
     ],
   });
 
   const result = await call(driver, { searchInput: "" });
 
   assert.deepEqual(result.channels, [
-    { uniqueName: "cats" },
-    { uniqueName: "dogs" },
+    sourceChannel("cats"),
+    sourceChannel("dogs"),
   ]);
   assert.equal(result.aggregateChannelCount, 2);
 });

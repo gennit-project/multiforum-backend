@@ -46,3 +46,16 @@ const invalidSourceAuthor: import('../../customResolvers/contracts/customComment
 // @ts-expect-error arbitrary stored voter names are not validated viewer identities
 const arbitraryVoter:string=commentSource.SuperUpvotedByUsers[0]!.username;
 void [arbitraryCommentProperty,invalidSourceAuthor,arbitraryVoter];
+
+declare const sortedSource:import('../../customResolvers/contracts/viewerReadProjections.js').SortedViewerChannel;
+// @ts-expect-error tags require their explicitly selected raw text property
+const missingTag:typeof sortedSource={...sortedSource,Tags:[{}]};
+// @ts-expect-error a computed connection count is a native database integer
+const wrongCount:typeof sortedSource={...sortedSource,EventChannelsConnection:{totalCount:1,aggregate:{count:{nodes:1}}}};
+// @ts-expect-error stored channel names have not been proven as response strings
+const unvalidatedName:string=sortedSource.uniqueName;
+// @ts-expect-error the exact fixed source cannot claim unprojected account lists
+const unselectedAdmins=sortedSource.Admins;
+// @ts-expect-error the actual registered root must preserve its tag item source shape
+const invalidSortedResult:ViewerReadQueryResolvers['getSortedChannels']=()=>({aggregateChannelCount:0,channels:[{...sortedSource,Tags:[{}]}]});
+void [missingTag,wrongCount,unvalidatedName,unselectedAdmins,invalidSortedResult];

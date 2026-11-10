@@ -52,4 +52,11 @@ export type DiscussionListViewerChannel = {
   isFavorited: boolean | null; Discussion: DiscussionListDiscussion;
   Channel: {uniqueName: unknown};
 };
-export type SortedViewerChannel = Persisted & { isFavorited: boolean | null };
+export type SortedChannelCount = {totalCount:Integer;aggregate:{count:{nodes:Integer}}};
+/** Exact inline sorted-channel query map. Stored leaves remain GraphQL-owned. */
+export type SortedViewerChannel = {
+ uniqueName:unknown;displayName:unknown;channelIconURL:unknown;description:unknown;
+ isFavorited:boolean|null;Tags:{text:unknown}[];
+ EventChannelsAggregate:{count:Integer};DiscussionChannelsAggregate:{count:Integer};
+ EventChannelsConnection:SortedChannelCount;DiscussionChannelsConnection:SortedChannelCount;
+};
