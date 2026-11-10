@@ -1,3 +1,5 @@
+import { userSourcePaths } from "./userSourcePaths.js";
+import type { Album, Channel, Comment, DiscussionChannel, ServerConfig, Image, ModerationProfile, WikiPage, TextVersion, LabelChangeHistory, Discussion, Event, EventSeries, Collection } from "../src/generated/graphql.js";
 import { Kind, valueFromASTUntyped, visit } from "graphql";
 import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode, FieldNode, SelectionNode } from "graphql";
 import { sourceMetadataRecorder, type SourceMetadataRecorder } from "../services/delegatedSourceMetadata.js";
@@ -189,11 +191,31 @@ export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["us
 // aliases them. Update payloads and ordinary projections use response keys.
 export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], ["canonical", "canonical"]);
 
-const channelUserPaths = [["Admins"], ["Bots"], ["PendingOwnerInvites"], ["PendingModInvites"], ["Moderators", "BotUser"]] as const;
+const channelUserPaths = userSourcePaths<Channel>()([["Admins"], ["Bots"], ["PendingOwnerInvites"], ["PendingModInvites"], ["Moderators", "BotUser"]]);
 
-const albumUserPaths = [["Owner"], ["Images", "Uploader"], ["Images", "PermanentlyRemovedByUser"]] as const;
+const albumUserPaths = userSourcePaths<Album>()([["Owner"], ["Images", "Uploader"], ["Images", "PermanentlyRemovedByUser"]]);
 
-const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "PendingModInvites"] as const;
+const commentVoterPaths = userSourcePaths<Comment>()([["UpvotedByUsers"], ["SuperUpvotedByUsers"]]);
+const discussionVoterPaths = userSourcePaths<DiscussionChannel>()(commentVoterPaths);
+const commentVoterFields = new Set<string>(commentVoterPaths.map(([field]) => field));
+
+const serverUserPaths = userSourcePaths<ServerConfig>()([["SuperAdmins"], ["Admins"], ["PendingAdminInvites"], ["PendingModInvites"]]);
+const imageUserPaths = userSourcePaths<Image>()([["Uploader"], ["PermanentlyRemovedByUser"]]);
+const profileUserPaths = userSourcePaths<ModerationProfile>()([["BotUser"]]);
+const wikiUserPaths = userSourcePaths<WikiPage>()([["OriginalAuthor"], ["VersionAuthor"]]);
+const textVersionUserPaths = userSourcePaths<TextVersion>()([["Author"]]);
+const labelChangeUserPaths = userSourcePaths<LabelChangeHistory>()([["ActorUser"]]);
+const discussionUserPaths = userSourcePaths<Discussion>()([["Author"], ["BodyLastEditedBy"]]);
+const eventUserPaths = userSourcePaths<Event>()([["Poster"], ["DescriptionLastEditedBy"]]);
+const seriesUserPaths = userSourcePaths<EventSeries>()([["Poster"]]);
+const collectionUserPaths = userSourcePaths<Collection>()([["CreatedBy"]]);
+
+function rootUserPaths(paths: readonly (readonly string[])[]): typeof resolveUsersWithChildIdentity {
+  return userChildIdentityAtPaths(paths.map(path => ({path})));
+}
+function connectionUserPaths(paths: readonly (readonly string[])[]): typeof resolveUsersWithChildIdentity {
+  return userChildIdentityAtPaths(paths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]})));
+}
 
 /** Discover only declared identity paths along explicitly selected Comment reply edges.
  * The document is finite and already GraphQL-validated; unrelated descendants
@@ -206,7 +228,7 @@ function selectedCommentPaths(info: GraphQLResolveInfo, prefix: UserSourcePath, 
       if (!isIncluded(node.directives, info)) continue;
       if (node.kind === Kind.FIELD) {
         const next = [...path, node.name.value];
-        if (kind === "author" ? node.name.value === "CommentAuthor" : node.name.value === "UpvotedByUsers" || node.name.value === "SuperUpvotedByUsers") paths.set(next.join("."), {
+        if (kind === "author" ? node.name.value === "CommentAuthor" : commentVoterFields.has(node.name.value)) paths.set(next.join("."), {
           path: next,
           sourceKeys: [...(prefix.sourceKeys ?? prefix.path.map((): "response" => "response")), ...next.slice(prefix.path.length).map((): "response" => "response")],
           ...(kind === "author" ? {userUnion: true} : {}),
@@ -309,34 +331,34 @@ export default {
     usersConnection: resolveUserConnectionWithChildIdentity,
     channels: selectedCommentChildIdentity({path: ["Comments"]}, channelUserPaths.map(path => ({path}))),
     channelsConnection: selectedCommentChildIdentity({path: ["edges", "node", "Comments"], sourceKeys: ["canonical", "canonical", "response"]}, channelUserPaths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]}))),
-    serverConfigs: userChildIdentityAtPaths(serverUserLists.map(field => ({path: [field]}))),
-    serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    images: userChildIdentityAtPaths([{path: ["Uploader"]}, {path: ["PermanentlyRemovedByUser"]}]),
-    imagesConnection: userChildIdentityAtPaths(["Uploader", "PermanentlyRemovedByUser"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    albums: userChildIdentityAtPaths(albumUserPaths.map(path => ({path}))),
-    albumsConnection: userChildIdentityAtPaths(albumUserPaths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]}))),
-    moderationProfiles: userChildIdentityAtPath(["BotUser"]),
-    moderationProfilesConnection: userChildIdentityAtPath(["edges", "node", "BotUser"], ["canonical", "canonical", "response"]),
-    wikiPages: userChildIdentityAtPaths(["OriginalAuthor", "VersionAuthor"].map(field => ({path: [field]}))),
-    wikiPagesConnection: userChildIdentityAtPaths(["OriginalAuthor", "VersionAuthor"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    textVersions: userChildIdentityAtPath(["Author"]),
-    textVersionsConnection: userChildIdentityAtPath(["edges", "node", "Author"], ["canonical", "canonical", "response"]),
-    labelChangeHistories: userChildIdentityAtPath(["ActorUser"]),
-    labelChangeHistoriesConnection: userChildIdentityAtPath(["edges", "node", "ActorUser"], ["canonical", "canonical", "response"]),
-    discussions: userChildIdentityAtPaths(["Author", "BodyLastEditedBy"].map(field => ({path: [field]}))),
-    discussionsConnection: userChildIdentityAtPaths(["Author", "BodyLastEditedBy"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    events: userChildIdentityAtPaths(["Poster", "DescriptionLastEditedBy"].map(field => ({path: [field]}))),
-    eventsConnection: userChildIdentityAtPaths(["Poster", "DescriptionLastEditedBy"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    eventSeries: userChildIdentityAtPath(["Poster"]),
-    eventSeriesConnection: userChildIdentityAtPath(["edges", "node", "Poster"], ["canonical", "canonical", "response"]),
-    discussionChannels: userChildIdentityAtPaths(["UpvotedByUsers", "SuperUpvotedByUsers"].map(field => ({path: [field]}))),
-    discussionChannelsConnection: userChildIdentityAtPaths(["UpvotedByUsers", "SuperUpvotedByUsers"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
+    serverConfigs: rootUserPaths(serverUserPaths),
+    serverConfigsConnection: connectionUserPaths(serverUserPaths),
+    images: rootUserPaths(imageUserPaths),
+    imagesConnection: connectionUserPaths(imageUserPaths),
+    albums: rootUserPaths(albumUserPaths),
+    albumsConnection: connectionUserPaths(albumUserPaths),
+    moderationProfiles: rootUserPaths(profileUserPaths),
+    moderationProfilesConnection: connectionUserPaths(profileUserPaths),
+    wikiPages: rootUserPaths(wikiUserPaths),
+    wikiPagesConnection: connectionUserPaths(wikiUserPaths),
+    textVersions: rootUserPaths(textVersionUserPaths),
+    textVersionsConnection: connectionUserPaths(textVersionUserPaths),
+    labelChangeHistories: rootUserPaths(labelChangeUserPaths),
+    labelChangeHistoriesConnection: connectionUserPaths(labelChangeUserPaths),
+    discussions: rootUserPaths(discussionUserPaths),
+    discussionsConnection: connectionUserPaths(discussionUserPaths),
+    events: rootUserPaths(eventUserPaths),
+    eventsConnection: connectionUserPaths(eventUserPaths),
+    eventSeries: rootUserPaths(seriesUserPaths),
+    eventSeriesConnection: connectionUserPaths(seriesUserPaths),
+    discussionChannels: rootUserPaths(discussionVoterPaths),
+    discussionChannelsConnection: connectionUserPaths(discussionVoterPaths),
     comments: selectedCommentChildIdentity(),
     commentsConnection: selectedCommentChildIdentity({path: ["edges", "node"], sourceKeys: ["canonical", "canonical"]}),
     issues: issueSourceIdentity(),
     issuesConnection: issueSourceIdentity({path:["edges","node"],sourceKeys:["canonical","canonical"]}),
-    collections: userChildIdentityAtPath(["CreatedBy"]),
-    collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
+    collections: rootUserPaths(collectionUserPaths),
+    collectionsConnection: connectionUserPaths(collectionUserPaths),
   },
   Mutation: {
     updateUsers: resolveUpdatedUsersWithChildIdentity,

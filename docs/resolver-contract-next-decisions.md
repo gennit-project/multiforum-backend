@@ -682,3 +682,19 @@ omitted identity fields, skipped private fields, empty selections and both root
 shapes. This is one checked nested producer of `Channel.Moderators`, not a claim
 that every profile descendant or dynamic source is statically certified. The
 shared-list inventory remains deferred.
+
+### Generated source-path declaration checks
+
+Explicit User paths for channel/album/voter, server, image, profile, wiki/version,
+label-change, discussion/event/series and collection sources now use a reusable
+compile-time gate against their declared generated schema root types. It accepts
+nullable/list edges and rejects misspelled fields, non-User endpoints, unknown or
+JSON sources and impossible/mixed discriminators. The path arrays retain their
+literal types and are passed unchanged to the existing selection-aware adapter.
+
+Compile-negative fixtures fail if the gate is removed (verified by temporarily
+removing it and restoring it before final checks). This proves declaration drift
+coverage, not persistence values, authorization, completeness of the registration
+catalog or arbitrary generated result shapes. Author-union paths keep their
+separate discriminator machinery. Existing real query source tests remain the
+behavioral evidence; no inventory entry is promoted by this declaration check.
