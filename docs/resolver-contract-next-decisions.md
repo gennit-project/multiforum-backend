@@ -731,3 +731,19 @@ date/id properties, timestamp ties and event filtering before page limits. Full 
 must pass on the final head; earlier failing heads remain failures. Failing plans
 are retained in the existing always-uploaded performance artifact for future
 investigation.
+
+### Metadata adapters preserve upstream types
+
+The identity/author metadata adapters now preserve a caller's declared parent,
+arguments, context, result shape and nullability, for synchronous and asynchronous
+resolvers. Known fixed-source projections no longer become `unknown` merely by
+passing through metadata capture. Unknown source values remain unknown; the
+adapter still does not decode scalars or invent fields. The fixed collection
+capture wrapper follows the same contract.
+
+Compile fixtures reject widened usernames, invented fields, lost nullability and
+invalid arguments. Restoring the earlier erased signatures made the positive
+fixtures fail; restoring the generic signatures passes. TypeScript transpilation
+of both changed runtime files produces identical executable JavaScript. This is a
+source-type preservation improvement, not a new claim about unchecked producers
+or a promotion of any shared-list inventory entry.

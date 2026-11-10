@@ -88,16 +88,16 @@ function rememberRows(result: unknown, alias: string): void {
   }
 }
 
-export async function resolveUsersWithChildIdentity<Context>(
-  resolve: (parent: unknown, args: Record<string, unknown>, context: Context, info: GraphQLResolveInfo) => unknown,
-  parent: unknown,
-  args: Record<string, unknown>,
+export async function resolveUsersWithChildIdentity<Parent, Args extends Record<string, unknown>, Context, Result>(
+  resolve: (parent: Parent, args: Args, context: Context, info: GraphQLResolveInfo) => Result | PromiseLike<Result>,
+  parent: Parent,
+  args: Args,
   context: Context,
   info: GraphQLResolveInfo
-): Promise<unknown> {
+): Promise<Result> {
   const selected = prepareIdentitySelection(info.fieldNodes, info);
   if (!selected) return resolve(parent, args, context, info);
-  const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes: selected.fieldNodes });
+  const result = await resolve(parent, args, context, { ...info, fieldNodes: selected.fieldNodes });
   // GraphQL retains requested-field completion, nullability and errors.
   rememberRows(result, selected.alias);
   return result;
@@ -176,7 +176,7 @@ export function userChildIdentityAtPaths(paths: readonly UserSourcePath[]): type
     const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
     const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
     const capture = sourceMetadataRecorder(context, info);
-    const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
+    const result = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
     for (const source of sources) rememberPath(result, source.sourcePath, selected.alias, source.userUnion ? selected.moderatorAlias : undefined, capture, source.responsePath);
     return result;
   };
@@ -390,7 +390,7 @@ export function generatedAuthorTypesAtPaths(paths: readonly UserSourcePath[]): t
     }
   }
   return async (resolve, parent, args, context, info) => {
-    const result: unknown = await resolve(parent, args, context, info);
+    const result = await resolve(parent, args, context, info);
     for (const {path, sourceKeys} of registrations) {
       for (const node of info.fieldNodes) for (const source of sourceUserFields(node.selectionSet, info, path)) {
         remember(result, path.map((field, index) => sourceKeys[index] === 'canonical' ? field : source.responsePath[index]));

@@ -35,7 +35,7 @@ export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema 
   if(queryFields?.collections && getNamedType(queryFields.collections.type).name==='Collection') {
     roots.collections=async(resolve,parent,args,context,info)=>{
       const capture=sourceMetadataRecorder(context,info);
-      const result:unknown=await resolve(parent,args,context,info);
+      const result=await resolve(parent,args,context,info);
       if(capture)captureFixedCollectionUsers(result,capture);
       return result;
     };
