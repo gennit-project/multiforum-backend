@@ -40,3 +40,15 @@ test('dashboard permission middleware still denies anonymous reads',async()=>{
  const result=await graphql({schema:applyMiddleware(schema,permissions),source:'{getServerHealthDashboard{timeSeries{date}}}',contextValue:{driver,req:{headers:{}}}});
  assert.ok(result.errors?.length);assert.equal(result.data,null);
 });
+test('dashboard envelope preserves independent summary and time-series aliases',async()=>{
+ const result=await graphql({schema,source:'{getServerHealthDashboard(startDate:"2026-01-01",endDate:"2026-01-01"){summary:timeSeries{date} timeSeries:summary{discussionCount}}}',contextValue:{driver}});
+ assert.equal(result.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{getServerHealthDashboard:{summary:[{date:'2026-01-01'}],timeSeries:{discussionCount:0}}});
+});
+test('computed summary, aging and attention maps preserve aliases',async()=>{
+ await driver.executeQuery("CREATE(:DownloadableFile {id:'bad',scanStatus:'FAILED'})");
+ const result=await graphql({schema,source:'{getServerHealthDashboard(startDate:"2026-01-01",endDate:"2026-01-01"){summary{discussionCount:failedDownloadScanCount} issueAging{count:minDays} attentionItems{severity:title title:severity}}}',contextValue:{driver}});
+ assert.equal(result.errors,undefined);
+ const value=JSON.parse(JSON.stringify(result.data)).getServerHealthDashboard;
+ assert.equal(value.summary.discussionCount,1);assert.deepEqual(value.issueAging.map((row:{count:number})=>row.count),[0,1,4,8,31]);
+ assert.deepEqual(value.attentionItems,[{severity:'Download security scans failing',title:'CRITICAL'}]);
+});

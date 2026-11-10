@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import {canonicalChannelAnswer} from "../../services/customCommentSources.js";
 import {canonicalDetailFile,canonicalDetailImage} from "../../services/canonicalDiscussionDetail.js";
 import type {CustomChannelAnswer} from "../contracts/customCommentSources.js";
@@ -117,10 +118,10 @@ const createPageResolver = <T>({driver,agePolicyRepository,config}:Input & {conf
               })
             : null;
 
-        return {
+        return rememberCanonicalSource({
           items: selectedRecords.map((record) => record.item),
-          pageInfo: { endCursor, hasNextPage },
-        };
+          pageInfo: rememberCanonicalSource({ endCursor, hasNextPage }),
+        });
       });
     } finally {
       await session.close();
@@ -136,15 +137,15 @@ export function createDiscussionDetailCollectionPageResolver<K extends DetailCol
 export function createDiscussionDetailCollectionPageResolver(input:Input & {kind:DetailCollectionKind}):PageResolver<'answer'>|PageResolver<'file'>|PageResolver<'image'> {
  if(input.kind==='answer'){
   const read=createPageResolver({...input,config:configs.answer});
-  const resolver:PageResolver<'answer'>=async(...args)=>{const result=await read(...args);return {answers:result.items,pageInfo:result.pageInfo};};
+  const resolver:PageResolver<'answer'>=async(...args)=>{const result=await read(...args);return rememberCanonicalSource({answers:result.items,pageInfo:result.pageInfo});};
   return resolver;
  }
  if(input.kind==='file'){
   const read=createPageResolver({...input,config:configs.file});
-  const resolver:PageResolver<'file'>=async(...args)=>{const result=await read(...args);return {files:result.items,pageInfo:result.pageInfo};};
+  const resolver:PageResolver<'file'>=async(...args)=>{const result=await read(...args);return rememberCanonicalSource({files:result.items,pageInfo:result.pageInfo});};
   return resolver;
  }
  const read=createPageResolver({...input,config:configs.image});
- const resolver:PageResolver<'image'>=async(...args)=>{const result=await read(...args);return {images:result.items,pageInfo:result.pageInfo};};
+ const resolver:PageResolver<'image'>=async(...args)=>{const result=await read(...args);return rememberCanonicalSource({images:result.items,pageInfo:result.pageInfo});};
  return resolver;
 }

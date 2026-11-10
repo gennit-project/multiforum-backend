@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { canonicalReplyComment } from "../../services/customCommentSources.js";
 import type { CommentRepliesRow } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
@@ -51,7 +52,7 @@ const getResolver = (input: Input) => {
       !canViewSensitiveContent &&
       await isSensitiveContentTarget(driver, { commentId })
     ) {
-      return { ChildComments: [], aggregateChildCommentCount: 0 };
+      return rememberCanonicalSource({ ChildComments: [], aggregateChildCommentCount: 0 });
     }
 
     const session = driver.session();
@@ -78,18 +79,18 @@ const getResolver = (input: Input) => {
 
       const record = commentRepliesResult.records[0];
       if (!record) {
-        return {
+        return rememberCanonicalSource({
           ChildComments: [],
           aggregateChildCommentCount: 0,
-        };
+        });
       }
 
       const aggregateCount = record.get("aggregateChildCommentCount");
 
-      return {
+      return rememberCanonicalSource({
         ChildComments: (record.get("ChildComments") || []).map(canonicalReplyComment),
         aggregateChildCommentCount: aggregateCount?.toNumber() || 0,
-      };
+      });
     } catch (error: unknown) {
       logger.error("Error getting comment replies:", error);
       const message = error instanceof Error ? error.message : String(error);

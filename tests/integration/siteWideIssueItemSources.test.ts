@@ -58,3 +58,7 @@ test('sensitive targets remain excluded before item serialization',async()=>{
  const result=await execute('id @skip(if:$skip)');assert.equal(result.errors,undefined);
  assert.deepEqual(plain(result.data),{getSiteWideIssueList:{aggregateIssueCount:0,issues:[]}});
 });
+test('site-wide issue envelope preserves colliding root child aliases',async()=>{
+ const result=await graphql({schema,source:'{getSiteWideIssueList(isOpen:true,showOnlyServerRuleViolations:false){issues:aggregateIssueCount aggregateIssueCount:issues{id}}}',contextValue:{driver,mayAccessSensitiveContent:false,user:{username:'owner',email:null,email_verified:true,data:null}}});
+ assert.equal(result.errors,undefined);assert.deepEqual(plain(result.data),{getSiteWideIssueList:{issues:1,aggregateIssueCount:[{id:'issue'}]}});
+});

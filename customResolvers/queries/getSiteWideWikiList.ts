@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import {canonicalWikiListSource} from '../../services/canonicalWikiListSource.js';
 import type { WikiCountRow, FeaturedWikiRow } from "../contracts/wikiCountProjections.js";
 import type { Driver, Integer } from "neo4j-driver";
@@ -59,11 +60,11 @@ const getResolver = (input: Input) => {
       );
       const featuredWikiPages = await getFeaturedWikiPages(driver);
 
-      return {
+      return rememberCanonicalSource({
         wikiPages,
         featuredWikiPages,
         aggregateWikiPageCount: totalCount,
-      };
+      });
     } catch (error: unknown) {
       logger.error("Error getting wiki pages:", error);
       const message = error instanceof Error ? error.message : String(error);

@@ -1073,3 +1073,30 @@ property validity) remain explicit: no whole-object guarantee or inventory
 promotion follows from this census. All previously enumerated fixed contribution,
 media, moderation and dashboard producer obligations are now addressed; upstream
 selection/native scalar limits and the two policy/dependency entries remain.
+
+### Owned query envelopes and computed dashboard maps
+
+Child projection checks did not cover collisions in the surrounding result maps.
+Real GraphQL probes reproduced collisions in the dashboard and issue-list envelopes,
+and in computed dashboard summary/aging/attention maps. The same audit covers ten
+additional read operations: site-wide discussions, channel discussions, sorted
+channels, wiki listings, comment replies/sections, event comments and the three
+discussion detail pages. Only application-owned envelopes and page-info maps receive
+canonical metadata. The generated response-key objects remain unmarked; no query,
+authorization, pagination, sorting, missing-target or error behavior changes.
+
+Fifteen dedicated read-envelope cases cover swapped fields, nullable pagination
+cursors, fragments and variable directives under real Shield. Three initial probes
+hit the pre-existing omitted-argument errors instead of exercising aliases; after
+supplying explicit supported arguments, disabling the relevant metadata reproduces
+all three alias failures. Pagination alias comparisons use a single request so a
+fresh ranking timestamp cannot create a false failure. Alongside three dashboard/
+issue-envelope regressions and the existing response suites, 63 focused cases pass.
+Precise source types are preserved by the identity helper; no count is promoted.
+
+The audit also records ordinary remaining work: omitted optional `showArchived`,
+`countDownloads` and `modName` can reach driver queries as absent parameters, and
+the site-wide discussion count still comes from an untyped driver result. These
+are separate from alias completion and must not be relabeled as intentional
+native-scalar limits. Additional plugin/configuration envelopes require the same
+owned-versus-generated source audit before claiming campaign-wide alias coverage.

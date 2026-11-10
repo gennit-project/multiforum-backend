@@ -842,9 +842,9 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       };
       const openIssueAges = (openIssueSummary?.get("openIssueAges") || [])
         .map(toNumber);
-      const issueAging = buildIssueAging(openIssueAges);
+      const issueAging = buildIssueAging(openIssueAges).map(rememberCanonicalSource);
       const medianOpenIssueAgeDays = getMedian(openIssueAges);
-      const summary = {
+      const summary = rememberCanonicalSource({
         activeChannelCount: allChannelHealth.filter((row) => row.activityScore > 0).length,
         discussionCount: allChannelHealth.reduce((total, row) => total + toNumber(row.discussionCount), 0),
         commentCount: allChannelHealth.reduce((total, row) => total + toNumber(row.commentCount), 0),
@@ -861,9 +861,9 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         failedDownloadScanCount,
         ...pipelineOperations,
         medianOpenIssueAgeDays,
-      };
+      });
 
-      return {
+      return rememberCanonicalSource({
         startDate,
         endDate,
         generatedAt: now.toISO(),
@@ -875,8 +875,8 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
           channelHealth,
           failedDownloadScanCount,
           pipelineOperations
-        ),
-      };
+        ).map(rememberCanonicalSource),
+      });
     } catch (error) {
       logger.error("Error fetching server health dashboard:", error);
       throw new Error("Failed to fetch server health dashboard");

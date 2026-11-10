@@ -135,10 +135,10 @@ const getResolver = (input: Input) => {
         ) ?? []);
 
         if (discussionChannelIds.length === 0) {
-          return {
+          return rememberCanonicalSource({
             discussionChannels: [],
             aggregateDiscussionChannelsCount: aggregateCount,
-          };
+          });
         }
 
         const discussionChannelsResult = await transaction.run<{DiscussionChannel: DiscussionListViewerChannel}>(
@@ -171,10 +171,10 @@ const getResolver = (input: Input) => {
           }
         );
 
-        return {
+        return rememberCanonicalSource({
           discussionChannels,
           aggregateDiscussionChannelsCount: aggregateCount,
-        };
+        });
       });
     } catch (error: unknown) {
       logger.error("Error getting discussionChannels:", error);

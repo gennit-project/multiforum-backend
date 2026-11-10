@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { canonicalCommentSectionChannel, canonicalRootComment } from "../../services/customCommentSources.js";
 import type { CommentSectionChannel, RootViewerComment } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
@@ -53,7 +54,7 @@ const getResolver = (input: Input) => {
       !canViewSensitiveContent &&
       await isSensitiveContentTarget(driver, { discussionId })
     ) {
-      return { DiscussionChannel: null, Comments: [] };
+      return rememberCanonicalSource({ DiscussionChannel: null, Comments: [] });
     }
 
     const session = driver.session()
@@ -83,7 +84,7 @@ const getResolver = (input: Input) => {
         const discussionChannel = channelResult.records[0]?.get('DiscussionChannel')
 
         if (!discussionChannel) {
-          return { DiscussionChannel: null, Comments: [] }
+          return rememberCanonicalSource({ DiscussionChannel: null, Comments: [] })
         }
 
         const queryResult = await transaction.run<{comment: RootViewerComment}>(getCommentsQuery, {
@@ -96,10 +97,10 @@ const getResolver = (input: Input) => {
           ...rankingParams,
         })
 
-        return {
+        return rememberCanonicalSource({
           DiscussionChannel: canonicalCommentSectionChannel(discussionChannel),
           Comments: queryResult.records.map((record) => canonicalRootComment(record.get('comment'))),
-        }
+        })
       })
     } catch (error: unknown) {
       logger.error('Error getting comment section:', error)

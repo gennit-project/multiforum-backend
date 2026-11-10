@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { canonicalSiteWideDiscussion } from "../../services/canonicalSiteWideDiscussion.js";
 import type { SiteWideDiscussionSource } from "../contracts/siteWideDiscussionSources.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -182,10 +183,10 @@ const getResolver = (input: Input) => {
               rankingAnchor,
             })
           : null;
-        const pageInfo = { endCursor, hasNextPage };
+        const pageInfo = rememberCanonicalSource({ endCursor, hasNextPage });
 
         if (discussionIds.length === 0) {
-          return { discussions: [], aggregateDiscussionCount, pageInfo };
+          return rememberCanonicalSource({ discussions: [], aggregateDiscussionCount, pageInfo });
         }
 
         const discussionsResult = await transaction.run<{discussion:SiteWideDiscussionSource}>(
@@ -202,7 +203,7 @@ const getResolver = (input: Input) => {
           (record) => canonicalSiteWideDiscussion(record.get("discussion"))
         );
 
-        return { discussions, aggregateDiscussionCount, pageInfo };
+        return rememberCanonicalSource({ discussions, aggregateDiscussionCount, pageInfo });
       });
     } catch (error: unknown) {
       logger.error("Error getting discussions:", error);

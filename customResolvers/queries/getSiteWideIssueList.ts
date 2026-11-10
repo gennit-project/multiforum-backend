@@ -135,10 +135,10 @@ const getResolver = (input: Input) => {
     // An unauthenticated caller cannot match any identity filter, so short
     // circuit to an empty result instead of running the query.
     if (requestedIdentityFilter && !hasIdentity) {
-      return {
+      return rememberCanonicalSource({
         aggregateIssueCount: 0,
         issues: [],
-      };
+      });
     }
 
     const session = driver.session();
@@ -174,10 +174,10 @@ const getResolver = (input: Input) => {
         normalizeIssue(record.get("issue"))
       );
 
-      return {
+      return rememberCanonicalSource({
         aggregateIssueCount,
         issues,
-      };
+      });
     } catch (error: unknown) {
       logger.error("Error getting site wide issues:", error);
       const message = error instanceof Error ? error.message : String(error);

@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { canonicalSortedChannel } from "../../services/canonicalSortedChannel.js";
 import type { SortedViewerChannel } from "../contracts/viewerReadProjections.js";
 import type { Driver, Integer } from "neo4j-driver";
@@ -143,7 +144,7 @@ const getSortedChannelsResolver = (input: Input) => {
           ? result.records[0].get("aggregateChannelCount")
           : 0;
 
-      return { channels, aggregateChannelCount };
+      return rememberCanonicalSource({ channels, aggregateChannelCount });
     } catch (error) {
       logger.error("Error fetching sorted channels:", error);
       throw new Error("Failed to fetch sorted channels");

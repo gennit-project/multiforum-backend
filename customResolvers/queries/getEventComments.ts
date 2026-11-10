@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import {canonicalEventMetadata} from "../../services/canonicalEventMetadata.js";
 import { canonicalEventComment } from "../../services/customCommentSources.js";
 import type { EventViewerMetadata, EventViewerComment } from "../contracts/viewerReadProjections.js";
@@ -61,7 +62,7 @@ const getResolver = (input: Input) => {
           }
         );
         const event = eventResult.records[0]?.get("Event");
-        if (!event) return { Event: null, Comments: [] };
+        if (!event) return rememberCanonicalSource({ Event: null, Comments: [] });
 
         const commentsResult = await transaction.run<{comment: EventViewerComment}>(getEventCommentsQuery, {
           eventId,
@@ -72,17 +73,17 @@ const getResolver = (input: Input) => {
           ...rankingParams,
         });
 
-        return {
+        return rememberCanonicalSource({
           Event: canonicalEventMetadata(event),
           Comments: commentsResult.records.map((record) => canonicalEventComment(record.get("comment"))),
-        };
+        });
       });
     } catch (error: unknown) {
       logger.error("Error getting event comments:", error);
-      return {
+      return rememberCanonicalSource({
         Event: null,
         Comments: [],
-      };
+      });
     } finally {
       await session.close();
     }
