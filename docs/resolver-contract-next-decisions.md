@@ -820,3 +820,16 @@ completion. Generated field-parent arguments keep their existing optionality, so
 the change does not pretend arbitrary upstream parents emitted a fixed projection.
 This strengthens existing owned-source obligations without runtime changes or
 claiming a full response-value guarantee; inventory counts remain unchanged.
+
+### Undo-super-vote remaining-user items
+
+Both actual transaction reads now retain exact `{username: unknown}` items instead
+of an opaque result. The registered resolver checks that fixed child selection in
+addition to its existing completed success/message/source fields. Compile fixtures
+reject primitive or missing-key items and claims about unselected User fields.
+Real GraphQL/Shield alias probes pass before and after the type change; no runtime
+bug or new response behavior is claimed. Removing username from the real comment
+and discussion read queries makes both probes fail. All 34 focused integration
+cases pass, including uncapped results, lazy malformed usernames, committed
+successful undo state, permission failures and rollback on write failures.
+The mutation's completed scalar coverage and overall inventory counts are unchanged.

@@ -7,6 +7,7 @@ import type { Driver } from "neo4j-driver";
 import typeDefs from "../../typeDefs.js";
 import getResolvers from "../helpers/getTestResolvers.js";
 import permissions from "../../permissions.js";
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import undo from "../../customResolvers/mutations/undoSuperUpvote.js";
 import { createSuperVoteUndoRepository } from "../../services/persistence/superVoteUndoRepository.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
@@ -25,7 +26,7 @@ before(async()=>{
  const resolve=undo({driver,repository:{findComment:async id=>{const rows=await repository.findComment(id);await afterRead();return rows;},findDiscussion:async id=>{const rows=await repository.findDiscussion(id);await afterRead();return rows;}}});
  const app=getResolvers(driver);
  schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Mutation:{...app.resolvers.Mutation,undoSuperUpvote:resolve}},features:{filters:{String:{MATCHES:true}}}}).getSchema();
- registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
+ registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,sourceIdentity,permissions);
 },{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
@@ -76,4 +77,11 @@ test('nullable content authors skip karma while both votes still undo',async()=>
   const result=await execute(type,id);assert.equal(result.errors,undefined);assert.equal(plain(result.data).undoSuperUpvote.success,true);
  }
  const after=await state();assert.equal(after.ck,7);assert.equal(after.dk,7);assert.equal(after.cw,1);assert.equal(after.dw,1);
+});
+
+for(const type of ['comment','discussion'])test(`${type} fixed remaining voters preserve selected aliases`,async()=>{
+ if(type==='discussion')await driver.executeQuery("MATCH(u:User {username:'remaining'}),(dc:DiscussionChannel {id:'dc'}) CREATE(u)-[:SUPER_UPVOTED_DISCUSSION]->(dc)");
+ const result=await execute(type,type==='comment'?'c':'dc','success people:superUpvotedByUsers{... on User{person:username}}');
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ assert.deepEqual(plain(result.data).undoSuperUpvote,{success:true,people:[{person:'remaining'}]});
 });
