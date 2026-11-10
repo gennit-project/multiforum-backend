@@ -334,6 +334,7 @@ export default {
   Event: resolveCanonicalSourceField,
   EventChannel: resolveCanonicalSourceField,
   TextVersion: resolveCanonicalSourceField,
+  WikiPage: resolveCanonicalSourceField,
   CommentChildCommentsConnection: resolveCanonicalSourceField,
   CommentCommentChildCommentsAggregateSelection: resolveCanonicalSourceField,
   CommentUpvotedByUsersConnection: resolveCanonicalSourceField,

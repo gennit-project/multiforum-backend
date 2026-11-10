@@ -1,5 +1,10 @@
 import type { Integer } from "neo4j-driver";
-/** COUNT is the only proven scalar here. All wiki properties, including
- * featured IDs drawn from persisted server configuration, remain unknown. */
-export type WikiCountRow = {totalCount: Integer | number; wikiPage: Record<string, unknown>};
-export type FeaturedWikiRow = {wikiPage: Record<string, unknown>};
+/** Exact fixed maps shared by ordinary and featured queries. Persisted scalar
+ * values and native dates remain raw until selected GraphQL completion. */
+export type WikiListItemSource={
+ id:unknown;title:unknown;body:unknown;slug:unknown;channelUniqueName:unknown;
+ createdAt:unknown;updatedAt:unknown;
+ VersionAuthor:{username:unknown;displayName:unknown;profilePicURL:unknown}|null;
+};
+export type WikiCountRow = {totalCount: Integer | number; wikiPage: WikiListItemSource};
+export type FeaturedWikiRow = {wikiPage: WikiListItemSource};

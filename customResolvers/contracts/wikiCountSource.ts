@@ -1,3 +1,4 @@
+import type {WikiListSource} from './wikiListSource.js';
 import type { Integer } from "neo4j-driver";
 import type { QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -16,5 +17,5 @@ type WikiCountSource<T> = T extends null | undefined ? T
 type Source = WikiCountSource<SelectedOutput> | (null extends GeneratedOutput ? undefined : never);
 export const wikiCountSourceQueryNames = ["getSiteWideWikiList"] as const;
 export type WikiCountSourceQueryResolvers = {
-  getSiteWideWikiList: (...args: Parameters<Callable>) => Source | Promise<Source>;
+  getSiteWideWikiList: ((...args: Parameters<Callable>) => Source | Promise<Source>) & WikiListSource;
 };

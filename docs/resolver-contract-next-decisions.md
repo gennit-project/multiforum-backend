@@ -833,3 +833,21 @@ and discussion read queries makes both probes fail. All 34 focused integration
 cases pass, including uncapped results, lazy malformed usernames, committed
 successful undo state, permission failures and rollback on write failures.
 The mutation's completed scalar coverage and overall inventory counts are unchanged.
+
+### Ordinary and featured wiki item producers
+
+Both `getSiteWideWikiList` queries now retain exact eight-key wiki maps and
+three-key nullable VersionAuthor maps. Their actual root registration checks the
+fixed raw selections alongside the existing Integer/count completion boundary.
+Compile fixtures reject omitted keys, incomplete authors, invented relationships
+and completed-string claims about raw dates. Removing the nullable body selection
+from the actual query documents makes the executed-key guard fail.
+
+Four baseline probes reproduced collisions between response aliases and stored
+wiki/author keys. Only these owned maps are now marked canonical, with private
+raw author identity; generated wiki sources remain unmarked. The 36 focused wiki
+source and attribution cases pass, covering aliases/fragments, native date
+completion, nullable authors, skipped malformed values, owner/outsider/anonymous
+checks, featured duplicates/order and ordinary filtering/pagination. Existing
+count/search behavior is retained. This closes this fixed producer's structural
+gap; persisted values remain lazy and no shared-list inventory entry is promoted.

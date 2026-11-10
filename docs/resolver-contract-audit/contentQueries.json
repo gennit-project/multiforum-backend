@@ -332,9 +332,12 @@
         "customResolvers/contracts/wikiCountSource.ts",
         "customResolvers/contracts/wikiCountProjections.d.ts",
         "tests/contracts/wikiCountSource.typecheck.ts",
-        "tests/integration/wikiCountScalarWitness.test.ts"
+        "tests/integration/wikiCountScalarWitness.test.ts",
+        "customResolvers/contracts/wikiListSource.ts",
+        "services/canonicalWikiListSource.ts",
+        "tests/integration/wikiListSourceContracts.test.ts"
       ],
-      "reason": "This is an explicit accepted-source boundary, not a claim that the root emits a generated number: fixed Cypher COUNT yields Integer/native number, and the installed Neo4j numerical child resolver completes aggregateWikiPageCount to Int!. The local adapter retains generated arguments/root nullability and maps only this field. Actual-schema tests guard the exact Int! field, working Integer/native conversion, and demonstrate failure if the child resolver is removed. Persisted wiki fields remain unknown.",
+      "reason": "This is an explicit accepted-source boundary, not a claim that the root emits a generated number: fixed Cypher COUNT yields Integer/native number, and the installed Neo4j numerical child resolver completes aggregateWikiPageCount to Int!. The numerical adapter retains generated arguments/root nullability and maps only this count field. Actual-schema tests guard the exact Int! field, working Integer/native conversion, and demonstrate failure if the child resolver is removed. Both ordinary and featured wiki/author source maps now have exact keys tied to the generated root selection and real executed query results. Canonical source metadata preserves colliding aliases and raw author identity. Persisted scalar values and unselected relationships remain GraphQL-owned, not complete generated entity guarantees.",
       "decision": "Keep the narrow named source/completion adapter; do not widen global scalars or eagerly normalize counts. A change to field SDL or numerical completion must fail its drift witness and trigger review. Preserve null-search TypeError timing and zero fallback for empty/exhausted pages. This working runtime path is not a serialization bug."
     },
     {

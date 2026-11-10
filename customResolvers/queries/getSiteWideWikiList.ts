@@ -1,3 +1,4 @@
+import {canonicalWikiListSource} from '../../services/canonicalWikiListSource.js';
 import type { WikiCountRow, FeaturedWikiRow } from "../contracts/wikiCountProjections.js";
 import type { Driver, Integer } from "neo4j-driver";
 import { buildSiteWideWikiPagesQuery } from "../cypher/buildContentSearchQueries.js";
@@ -54,7 +55,7 @@ const getResolver = (input: Input) => {
       }
 
       const wikiPages = result.records.map((record) =>
-        record.get("wikiPage")
+        canonicalWikiListSource(record.get("wikiPage"))
       );
       const featuredWikiPages = await getFeaturedWikiPages(driver);
 
@@ -107,7 +108,7 @@ const getFeaturedWikiPages = async (driver: Driver) => {
     `);
 
     return result.records.map((record) =>
-      record.get("wikiPage")
+      canonicalWikiListSource(record.get("wikiPage"))
     );
   } finally {
     await session.close();
