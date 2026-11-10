@@ -189,19 +189,47 @@ const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModIn
 
 const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "PendingModInvites"] as const;
 
-// Explicit one-hop paths only; deeper reply trees are not certified here.
-export const commentAuthorSourcePaths = [["CommentAuthor"], ["ParentComment", "CommentAuthor"], ["ChildComments", "CommentAuthor"]] as const;
-const channelUserSourcePaths: readonly UserSourcePath[] = [
-  ...channelUserLists.map(field => ({path: [field]})),
-  ...commentAuthorSourcePaths.map((path): UserSourcePath => ({path: ["Comments", ...path], userUnion: true})),
-];
+/** Discover only author paths along explicitly selected Comment reply edges.
+ * The document is finite and already GraphQL-validated; unrelated descendants
+ * are never traversed. Canonical paths are deduplicated across aliases/fragments.
+ */
+export function selectedCommentAuthorPaths(info: GraphQLResolveInfo, prefix: UserSourcePath = {path: []}): UserSourcePath[] {
+  const paths = new Map<string, UserSourcePath>();
+  function scan(selection: SelectionSetNode | undefined, path: readonly string[], seen: ReadonlySet<string>): void {
+    for (const node of selection?.selections ?? []) {
+      if (!isIncluded(node.directives, info)) continue;
+      if (node.kind === Kind.FIELD) {
+        const next = [...path, node.name.value];
+        if (node.name.value === "CommentAuthor") paths.set(next.join("."), {
+          path: next,
+          sourceKeys: [...(prefix.sourceKeys ?? prefix.path.map((): "response" => "response")), ...next.slice(prefix.path.length).map((): "response" => "response")],
+          userUnion: true,
+        });
+        else if (node.name.value === "ParentComment" || node.name.value === "ChildComments") scan(node.selectionSet, next, seen);
+      } else if (node.kind === Kind.INLINE_FRAGMENT) scan(node.selectionSet, path, seen);
+      else if (!seen.has(node.name.value)) scan(info.fragments[node.name.value]?.selectionSet, path, new Set([...seen, node.name.value]));
+    }
+  }
+  for (const node of info.fieldNodes) {
+    if (!prefix.path.length) scan(node.selectionSet, [], new Set());
+    else for (const source of sourceUserFields(node.selectionSet, info, prefix.path)) scan(source.node.selectionSet, prefix.path, new Set());
+  }
+  return [...paths.values()];
+}
+
+function selectedCommentAuthorIdentity(prefix: UserSourcePath = {path: []}, otherPaths: readonly UserSourcePath[] = []): typeof resolveUsersWithChildIdentity {
+  return (resolve, parent, args, context, info) => {
+    const paths = [...otherPaths, ...selectedCommentAuthorPaths(info, prefix)];
+    return paths.length ? userChildIdentityAtPaths(paths)(resolve, parent, args, context, info) : Promise.resolve(resolve(parent, args, context, info));
+  };
+}
 
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
-    channels: userChildIdentityAtPaths(channelUserSourcePaths),
-    channelsConnection: userChildIdentityAtPaths(channelUserSourcePaths.map(({path, userUnion}): UserSourcePath => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")], ...(userUnion ? {userUnion} : {})}))),
+    channels: selectedCommentAuthorIdentity({path: ["Comments"]}, channelUserLists.map(field => ({path: [field]}))),
+    channelsConnection: selectedCommentAuthorIdentity({path: ["edges", "node", "Comments"], sourceKeys: ["canonical", "canonical", "response"]}, channelUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     serverConfigs: userChildIdentityAtPaths(serverUserLists.map(field => ({path: [field]}))),
     serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     images: userChildIdentityAtPaths([{path: ["Uploader"]}, {path: ["PermanentlyRemovedByUser"]}]),
@@ -222,8 +250,8 @@ export default {
     eventsConnection: userChildIdentityAtPaths(["Poster", "DescriptionLastEditedBy"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     eventSeries: userChildIdentityAtPath(["Poster"]),
     eventSeriesConnection: userChildIdentityAtPath(["edges", "node", "Poster"], ["canonical", "canonical", "response"]),
-    comments: userChildIdentityAtPaths(commentAuthorSourcePaths.map((path): UserSourcePath => ({path, userUnion: true}))),
-    commentsConnection: userChildIdentityAtPaths(commentAuthorSourcePaths.map((path): UserSourcePath => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")], userUnion: true}))),
+    comments: selectedCommentAuthorIdentity(),
+    commentsConnection: selectedCommentAuthorIdentity({path: ["edges", "node"], sourceKeys: ["canonical", "canonical"]}),
     issues: userChildIdentityAtPaths([{path: ["Author"], userUnion: true}, {path: ["TargetUser"]}, {path: ["TargetProfilePictureUser"]}]),
     issuesConnection: userChildIdentityAtPaths([{path: ["edges", "node", "Author"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}, ...["TargetUser", "TargetProfilePictureUser"].map((field): UserSourcePath => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))]),
     collections: userChildIdentityAtPath(["CreatedBy"]),

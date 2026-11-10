@@ -189,3 +189,19 @@ test('generated internal author metadata is scoped, validated and never inferred
     assert.deepEqual(authorSourceType(row),marker===undefined?{found:false}:{found:true,value:marker==='User'||marker==='ModerationProfile'?marker:null});
   }
 });
+test('selected reply discovery follows only requested Comment edges and directive branches',async()=>{
+ const {selectedCommentAuthorPaths}=await import('./userChildIdentityMiddleware.js');
+ const {print}=await import('graphql');
+ const probe=buildSchema('type Query{comments:[Comment]} type Comment{CommentAuthor:User ParentComment:Comment ChildComments:[Comment] unrelated:Other} type Other{CommentAuthor:User} type User{username:String}');
+ for(const show of [true,false]){
+  let paths:unknown;
+  const response=await graphql({schema:probe,source:'query($show:Boolean!=true){comments{up:ParentComment{...Deep} unrelated{CommentAuthor{username}}}} fragment Deep on Comment{children:ChildComments @include(if:$show){ParentComment{CommentAuthor{username}}}}',variableValues:{show},rootValue:{comments:(_args:unknown,_context:unknown,info:GraphQLResolveInfo)=>{
+   const before=print(info.operation);
+   paths=selectedCommentAuthorPaths(info).map(path=>path.path);
+   assert.equal(print(info.operation),before);
+   return [];
+  }}});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+  assert.deepEqual(paths,show?[['ParentComment','ChildComments','ParentComment','CommentAuthor']]:[]);
+ }
+});

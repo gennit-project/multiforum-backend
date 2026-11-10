@@ -1,5 +1,5 @@
 import { defaultFieldResolver, getNamedType, GraphQLObjectType, GraphQLSchema, isObjectType, isUnionType } from 'graphql';
-import { generatedAuthorTypesAtPaths, commentAuthorSourcePaths } from '../../middleware/userChildIdentityMiddleware.js';
+import { generatedAuthorTypesAtPaths, selectedCommentAuthorPaths } from '../../middleware/userChildIdentityMiddleware.js';
 
 /** Projection metadata only: never installs Shield or adds request context. */
 export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema {
@@ -15,13 +15,17 @@ export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema 
     if (!authorField) continue;
     const union = getNamedType(authorField.type);
     if (!isUnionType(union) || union.getTypes().map(member => member.name).sort().join(',') !== 'ModerationProfile,User') continue;
-    const paths = type === "Comment" ? commentAuthorSourcePaths : [[author]];
+    const paths = [[author]];
     if (queryFields?.[root] && getNamedType(queryFields[root].type).name === type) {
-      roots[root] = generatedAuthorTypesAtPaths(paths.map(path => ({path})));
+      roots[root] = type === "Comment"
+        ? (resolve, parent, args, context, info) => generatedAuthorTypesAtPaths(selectedCommentAuthorPaths(info))(resolve, parent, args, context, info)
+        : generatedAuthorTypesAtPaths(paths.map(path => ({path})));
     }
     const connection = root + 'Connection';
     if (queryFields?.[connection] && getNamedType(queryFields[connection].type).name === type + 'sConnection') {
-      roots[connection] = generatedAuthorTypesAtPaths(paths.map(path => ({path:['edges','node',...path],sourceKeys:['canonical','canonical',...path.map((): 'response' => 'response')]})));
+      roots[connection] = type === "Comment"
+        ? (resolve, parent, args, context, info) => generatedAuthorTypesAtPaths(selectedCommentAuthorPaths(info, {path:['edges','node'],sourceKeys:['canonical','canonical']}))(resolve, parent, args, context, info)
+        : generatedAuthorTypesAtPaths(paths.map(path => ({path:['edges','node',...path],sourceKeys:['canonical','canonical',...path.map((): 'response' => 'response')]})));
     }
   }
   const query = schema.getQueryType();

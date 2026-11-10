@@ -95,7 +95,7 @@
         "middleware/userChildIdentityMiddleware.ts",
         "tests/integration/channelCommentAuthorSources.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Explicit public channel roots now preserve private author branch and owner identity for comments and one parent/reply hop, with real selection and permission regressions; other item properties and deeper descendants remain opaque.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Explicit public channel roots now preserve private author branch and owner identity for comments and selected ParentComment/ChildComments chains, with real selection and permission regressions; other item properties and unrelated descendants remain opaque.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
@@ -369,8 +369,8 @@
         "tests/integration/nestedCommentAuthorSources.test.ts",
         "services/persistence/generatedSchemaOperations.test.ts"
       ],
-      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover one parent/child hop. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
-      "decision": "No inventory promotion. Other custom, mutation and deeper nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover selected ParentComment/ChildComments chains, including internal fixed reads; public channel Comments paths use the same bounded field-name traversal. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and unrelated nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
     },
     {
       "field": "Discussion.detailFilesPageInfo",
@@ -528,8 +528,8 @@
         "tests/integration/nestedCommentAuthorSources.test.ts",
         "services/persistence/generatedSchemaOperations.test.ts"
       ],
-      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover one parent/child hop. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
-      "decision": "No inventory promotion. Other custom, mutation and deeper nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover selected ParentComment/ChildComments chains, including internal fixed reads; public channel Comments paths use the same bounded field-name traversal. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and unrelated nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
     },
     {
       "field": "JSON",

@@ -113,3 +113,27 @@ test('nested author dependencies retain the generated default child limit',async
     assert.equal(data.comments[0].two.length,2);
   }finally{await driver.executeQuery("MATCH(c:Comment) WHERE c.id STARTS WITH 'cap-' DETACH DELETE c");}
 });
+for(const connection of [false,true])test(`selected deeper reply ${connection?'connection':'list'} author keeps moderator type`,async()=>{
+ const body='up:ParentComment{replies:ChildComments(where:{id:{eq:"c-mod"}}){who:CommentAuthor{__typename ... on ModerationProfile{createdAt}}}}';
+ const source=connection?`{page:commentsConnection(where:{id:{eq:"a-own"}}){links:edges{entry:node{${body}}}}}`:`{page:comments(where:{id:{eq:"a-own"}}){${body}}}`;
+ const response=await graphql({schema,source,contextValue:context('alice')});
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ const item={up:{replies:[{who:{__typename:'ModerationProfile',createdAt:'2026-01-01T00:00:00.000Z'}}]}};
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry:item}]}}:{page:[item]});
+});
+for(const connection of [false,true])for(const viewer of ['alice','bob',null])test(`deeper reply ${connection?'connection':'list'} fragments retain owner checks for ${viewer??'anonymous'}`,async()=>{
+ const body='up:ParentComment{...Deep}';
+ const source=connection?`query($show:Boolean!=true){page:commentsConnection(where:{id:{eq:"a-own"}}){links:edges{entry:node{${body}}}}}`:`query($show:Boolean!=true){page:comments(where:{id:{eq:"a-own"}}){${body}}}`;
+ const response=await graphql({schema,source:source+' fragment Deep on Comment{replies:ChildComments(where:{id:{eq:"a-own"}}){who:CommentAuthor{... on User{username:bio mail:Email @include(if:$show){address}}}}}',contextValue:context(viewer)});
+ const item={up:{replies:[{who:{username:'alias',mail:viewer==='alice'?{address:'alice@nested.test'}:null}}]}};
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry:item}]}}:{page:[item]});
+ if(viewer==='alice')assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ else assert.deepEqual(response.errors?.map(error=>error.path),[connection?['page','links',0,'entry','up','replies',0,'who','mail']:['page',0,'up','replies',0,'who','mail']],JSON.stringify(response));
+});
+for(const connection of [false,true])test(`internal deeper reply ${connection?'connection':'list'} keeps original selection and moderator type`,async()=>{
+ const body='up:ParentComment{replies:ChildComments(where:{id:{eq:"c-mod"}}){who:CommentAuthor{__typename ... on ModerationProfile{createdAt}}}}';
+ const source=connection?`{page:commentsConnection(where:{id:{eq:"a-own"}}){links:edges{entry:node{${body}}}}}`:`{page:comments(where:{id:{eq:"a-own"}}){${body}}}`;
+ const response=await executeGeneratedOperation(driver,source,{});
+ const item={up:{replies:[{who:{__typename:'ModerationProfile',createdAt:'2026-01-01T00:00:00.000Z'}}]}};
+ assert.deepEqual(JSON.parse(JSON.stringify(response)),connection?{page:{links:[{entry:item}]}}:{page:[item]});
+});

@@ -96,3 +96,11 @@ test('channel comment author dependency preserves the generated default list cap
   assert.deepEqual(data.channels[0].two,[{id:'a-own',CommentAuthor:{__typename:'User'}},{id:'b-other',CommentAuthor:{__typename:'User'}}]);
  }finally{await driver.executeQuery("MATCH(c:Comment) WHERE c.id STARTS WITH 'extra-' DETACH DELETE c");}
 });
+for(const connection of [false,true])test(`channel deeper reply ${connection?'connection':'list'} preserves aliases and moderator anonymity`,async()=>{
+ const body='posts:Comments(where:{id:{eq:"a-own"}}){up:ParentComment{replies:ChildComments(where:{id:{eq:"c-mod"}}){who:CommentAuthor{__typename ... on ModerationProfile{createdAt hidden:User{username}}}}}}';
+ const source=connection?`{page:channelsConnection(where:{uniqueName:{eq:"forum"}}){links:edges{entry:node{${body}}}}}`:`{page:channels(where:{uniqueName:{eq:"forum"}}){${body}}}`;
+ const response=await graphql({schema,source,contextValue:context('alice')});
+ const item={posts:[{up:{replies:[{who:{__typename:'ModerationProfile',createdAt:'2026-01-01T00:00:00.000Z',hidden:null}}]}}]};
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry:item}]}}:{page:[item]});
+ assert.deepEqual(response.errors?.map(error=>error.path),[connection?['page','links',0,'entry','posts',0,'up','replies',0,'who','hidden']:['page',0,'posts',0,'up','replies',0,'who','hidden']],JSON.stringify(response));
+});

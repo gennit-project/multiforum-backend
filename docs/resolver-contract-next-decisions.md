@@ -282,11 +282,26 @@ is introduced, and accounting remains 176 selected / 33 deferred.
 ### Channel comment author sources
 
 The explicit public channel-list and channel-connection paths now cover
-`Comments.CommentAuthor` and one parent/reply hop under those comments. Before the
+`Comments.CommentAuthor` and selected parent/reply chains under those comments. Before the
 adapter, real requests without author names returned a moderator as a User and
 denied an owner's selected Email. The regression suite covers aliases, fragments,
 variable directives, owner/other/anonymous permissions, human moderator anonymity,
 filtered pages, missing/null values, age filtering, default limits and local
-scalar errors. This is not arbitrary recursive author or whole-comment typing;
+scalar errors. This is not arbitrary descendant or whole-comment typing;
 `Channel.Comments` remains a deferred opaque item boundary and the inventory stays
 176 selected / 33 deferred.
+
+### Selected reply chains
+
+The next regression reproduced moderator-as-User completion beyond the original
+one-hop registrations. Comment-author path discovery now walks only the finite
+selected `ParentComment`/`ChildComments` tree under registered comment roots and
+channel Comments sources. It respects aliases, fragments and directive variables,
+deduplicates canonical paths, and leaves the original document untouched. Internal
+fixed reads use the same discovered paths with generated provenance, without
+inserting public identity dependencies. Real graph tests cover deeper moderator
+branches, protected owner children for owner/other/anonymous callers, root
+connections and moderator anonymity through channel lists. Unit coverage proves
+unrelated fields and skipped branches are not traversed. Other source families
+and arbitrary mutation payloads remain outside this guarantee; no inventory entry
+is promoted and no product policy is changed.
