@@ -47,8 +47,8 @@ const source = `mutation {
     voters:superUpvotedByUsers { username }
   }
 }`;
-const execute = (username: string | null = "alice") => graphql({
-  schema, source,
+const execute = (username: string | null = "alice", document = source) => graphql({
+  schema, source:document,
   contextValue: { driver, req: { headers: username ? {
     authorization: `Bearer ${jwt.sign({ username, email: `${username}@example.test`, email_verified: true }, "test-only-key")}`,
   } : {}, body: {}, isMutation: true } },
@@ -210,4 +210,18 @@ test("separate super-vote targets retain separate permissions within one mutatio
   const row=(await driver.executeQuery("RETURN COUNT {(:ScratchpadEntry)} AS entries,COUNT {(:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment{id:'blocked-comment'})} AS blockedVotes")).records[0];
   assert.equal(Number(row.get("entries")),1);
   assert.equal(Number(row.get("blockedVotes")),0);
+});
+
+test('discussion scratchpad voter response preserves its selected username under fragments and aliases',async()=>{
+  await driver.executeQuery(`MATCH(a:User{username:'alice'}),(b:User{username:'bob'}),(dc:DiscussionChannel{id:'post'}),(r:ChannelRole)
+    SET r.canUpvoteDiscussion=true
+    CREATE(d:Discussion{id:'discussion',title:'Discussion',createdAt:datetime()})
+    CREATE(dc)-[:POSTED_IN_CHANNEL]->(d),(b)-[:POSTED_DISCUSSION]->(d),(a)-[:UPVOTED_DISCUSSION]->(dc)`);
+  const result=await execute('alice',`mutation {result:createScratchpadEntry(recipientUsername:"bob",text:"Thanks!",sourceType:"discussion",sourceId:"post") {
+    sourceId ...Voters skipped:superUpvotedByUsers @skip(if:true) {username}
+  }} fragment Voters on ScratchpadEntry {people:superUpvotedByUsers {name:username}}`);
+  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)).result,{sourceId:'post',people:[{name:'alice'}]});
+  const row=(await driver.executeQuery('RETURN COUNT {(:ScratchpadEntry)} AS entries, COUNT {(:User)-[:SUPER_UPVOTED_DISCUSSION]->()} AS votes')).records[0];
+  assert.equal(Number(row.get('entries')),1);assert.equal(Number(row.get('votes')),1);
 });

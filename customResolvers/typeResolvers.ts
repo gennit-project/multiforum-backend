@@ -1,8 +1,10 @@
+import { scratchpadSuperVoters } from "./fields/scratchpadSuperVoters.js";
+import type { ScratchpadSuperVoterSource } from "./contracts/scratchpadSuperVoters.js";
 import { discussionListFlairs } from "./fields/discussionListFlairs.js";
 import type { DiscussionListFlairSource } from "./contracts/discussionListFlairs.js";
 import { discussionListViewerVotes } from "./fields/discussionListViewerVotes.js";
 import { authorSourceType } from "../services/authorSourceType.js";
-import type { DiscussionChannelResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
+import type { DiscussionChannelResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers } from "../src/generated/graphql.js";
 import type { OpaqueListSource } from "./contracts/deferredSources.js";
 import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
@@ -142,8 +144,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<CommentResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,
     },
     ScratchpadEntry: {
-      superUpvotedByUsers: ((parent: { superUpvotedByUsers?: unknown[] | null }) =>
-        parent.superUpvotedByUsers || []) satisfies OpaqueListSource<ScratchpadEntryResolvers<GraphQLContext>["superUpvotedByUsers"]>,
+      superUpvotedByUsers: scratchpadSuperVoters satisfies ScratchpadSuperVoterSource,
     },
     Album: {
       Images: emptyArrayFallback('Images') satisfies OpaqueListSource<AlbumResolvers<GraphQLContext>["Images"]>,

@@ -561,7 +561,7 @@
       "field": "ScratchpadEntry.superUpvotedByUsers",
       "selectedPaths": [],
       "residualPaths": [
-        "every returned list item and nested item field"
+        "Raw username scalar completion and unselected User child relationships"
       ],
       "evidence": [
         "customResolvers/typeResolvers.ts",
@@ -573,10 +573,17 @@
         "build_scripts/deferredSourceContracts.test.ts",
         "customResolvers/contracts/scratchpadProjections.ts",
         "tests/contracts/scratchpadProjections.typecheck.ts",
-        "tests/integration/scratchpadProjectionContracts.test.ts"
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/scratchpadSuperVoters.ts",
+        "customResolvers/fields/scratchpadSuperVoters.ts",
+        "services/persistence/scratchpadSuperVoters.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/scratchpadSuperVoterSources.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Upstream recipient/source/ownership reads now have exact generated projections and executable document guards. The separate transaction-local super-upvoter read still contains unknown persisted username leaves, so this field is not promoted.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "The actual registration checks the generated raw User.username item source. Both actual Cypher branches retain exact map-key coverage and read through the existing write transaction. Stored usernames remain unknown until requested GraphQL completion.",
+      "decision": "Source/container obligations are checked; retain deferred generated scalar-value status. Preserve list reference and missing/nullable fallback, read-before-commit behavior, and all permissions and side effects."
     },
     {
       "field": "SiteWideDiscussionListItem.DownloadableFiles",

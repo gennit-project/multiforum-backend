@@ -1,3 +1,4 @@
+import { readScratchpadSuperVoters } from "../../services/persistence/scratchpadSuperVoters.js";
 import type { Driver } from 'neo4j-driver';
 import type { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../../types/context.js';
@@ -225,15 +226,7 @@ const createScratchpadEntryResolver = (input: Input) => {
       //    on a fresh OGM session can lag behind the write on a clustered
       //    database, returning a stale list that omits the actor — which left the
       //    frontend super-upvote button looking inactive (and un-undoable).
-      const readSuperUpvotersQuery =
-        sourceType === 'comment'
-          ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
-             RETURN collect({ username: u.username }) AS users`
-          : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
-             RETURN collect({ username: u.username }) AS users`;
-      const superUpvotersResult = await tx.run<{users: {username: unknown}[]}>(readSuperUpvotersQuery, { sourceId });
-      const superUpvotedByUsers =
-        superUpvotersResult.records[0]?.get('users') || [];
+      const superUpvotedByUsers = await readScratchpadSuperVoters(tx, sourceType, sourceId);
 
       await tx.commit();
 

@@ -429,3 +429,21 @@ errors at their selected aliases. The field stays deferred for generated scalar
 response guarantees; the fixed source/container obligation is now checked. Twenty
 other opaque lists still require their own upstream item-source work. No blanket
 Partial, full-entity cast, eager scalar validation or count promotion is used.
+
+### Scratchpad voter item source contract
+
+The scratchpad voter field now has the same explicit generated raw-selection
+boundary for `User.username`. Its actual Cypher read is a typed helper that uses
+the existing write transaction, at the same point before commit. It still returns
+stored values unchanged and preserves the nullable/empty fallback; it does not
+claim arbitrary stored names are validated strings or substitute the current
+actor for other voters.
+
+Both comment and discussion query branches have real-database key-drift tests,
+including nullable names, missing targets, visibility of an uncommitted vote and
+rollback. Real GraphQL tests preserve the discussion response under aliases,
+fragments and skipped fields, alongside existing permission, notification, karma
+and repeat-operation cases. The field's source shape is checked; scalar response
+completion remains GraphQL-owned, so the inventory stays 178 selected / 31 deferred.
+Nineteen shared opaque list registrations remain, plus the two now-explicit raw
+item sources. These categories are tracked separately from completed responses.

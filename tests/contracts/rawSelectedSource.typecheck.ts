@@ -25,3 +25,12 @@ const promisedScalar:RawSelectedSource<Promise<{id:string}>,{id:true}>=17;
 // @ts-expect-error selecting a field absent from an object cannot become an empty permissive shape
 const absentSelection:RawSelectedSource<{other:string},{id:true}>={};
 void [promisedScalar,absentSelection];
+
+import type { ScratchpadSuperVoter, ScratchpadSuperVoterSource } from '../../customResolvers/contracts/scratchpadSuperVoters.js';
+const rawVoter:ScratchpadSuperVoter={username:null};
+const voterList:ScratchpadSuperVoterSource=()=>[rawVoter];
+// @ts-expect-error stored usernames have not passed GraphQL String serialization
+const validUsername:string=rawVoter.username;
+// @ts-expect-error actual map projection always includes the key
+const omittedVoterName:ScratchpadSuperVoterSource=()=>[{}];
+void [rawVoter,voterList,validUsername,omittedVoterName];

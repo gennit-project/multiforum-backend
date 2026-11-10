@@ -16,7 +16,7 @@ test("opaque list sources check actual generated registrations without promoting
   for(const field of type.initializer.properties){
    if(!ts.isPropertyAssignment(field))continue;
    const expression=field.initializer;
-   if(expression.getText(src).includes('emptyArrayFallback(')||field.name.getText(src)==='superUpvotedByUsers'){
+   if(expression.getText(src).includes('emptyArrayFallback(')){
     assert.ok(ts.isSatisfiesExpression(expression));
     const typeName=type.name.getText(src),fieldName=field.name.getText(src);
     assert.equal(expression.type.getText(src),`OpaqueListSource<${typeName}Resolvers<GraphQLContext>["${fieldName}"]>`);
@@ -29,7 +29,7 @@ test("opaque list sources check actual generated registrations without promoting
    }
   }
  }
- assert.equal(names.length,20);
+ assert.equal(names.length,19);
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  for(const name of names)assert.equal(inventory.fields.find(r=>r.field===name)?.status,'deferred');
 });
@@ -61,4 +61,18 @@ test('fixed flair source checks the actual generated raw-selection signature wit
  assert.equal(field.initializer.type.getText(src),'DiscussionListFlairSource');
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  assert.equal(inventory.fields.find(row=>row.field==='DiscussionChannelListItem.Flairs')?.status,'deferred');
+});
+
+test('scratchpad raw voter source is checked at registration and read inside the write transaction',()=>{
+ const {src,result}=returned('customResolvers/typeResolvers.ts');
+ const parent=result.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='ScratchpadEntry');
+ assert.ok(parent&&ts.isPropertyAssignment(parent)&&ts.isObjectLiteralExpression(parent.initializer));
+ const field=parent.initializer.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='superUpvotedByUsers');
+ assert.ok(field&&ts.isPropertyAssignment(field)&&ts.isSatisfiesExpression(field.initializer));
+ assert.equal(field.initializer.expression.getText(src),'scratchpadSuperVoters');
+ assert.equal(field.initializer.type.getText(src),'ScratchpadSuperVoterSource');
+ const mutation=readFileSync('customResolvers/mutations/createScratchpadEntry.ts','utf8');
+ const call='await readScratchpadSuperVoters(tx, sourceType, sourceId)';
+ assert.equal(mutation.split(call).length,2);
+ assert.ok(mutation.indexOf(call)<mutation.indexOf('await tx.commit()'));
 });
