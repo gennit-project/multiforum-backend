@@ -189,7 +189,7 @@ export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["us
 // aliases them. Update payloads and ordinary projections use response keys.
 export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], ["canonical", "canonical"]);
 
-const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModInvites"] as const;
+const channelUserPaths = [["Admins"], ["Bots"], ["PendingOwnerInvites"], ["PendingModInvites"], ["Moderators", "BotUser"]] as const;
 
 const albumUserPaths = [["Owner"], ["Images", "Uploader"], ["Images", "PermanentlyRemovedByUser"]] as const;
 
@@ -307,8 +307,8 @@ export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
-    channels: selectedCommentChildIdentity({path: ["Comments"]}, channelUserLists.map(field => ({path: [field]}))),
-    channelsConnection: selectedCommentChildIdentity({path: ["edges", "node", "Comments"], sourceKeys: ["canonical", "canonical", "response"]}, channelUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
+    channels: selectedCommentChildIdentity({path: ["Comments"]}, channelUserPaths.map(path => ({path}))),
+    channelsConnection: selectedCommentChildIdentity({path: ["edges", "node", "Comments"], sourceKeys: ["canonical", "canonical", "response"]}, channelUserPaths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]}))),
     serverConfigs: userChildIdentityAtPaths(serverUserLists.map(field => ({path: [field]}))),
     serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     images: userChildIdentityAtPaths([{path: ["Uploader"]}, {path: ["PermanentlyRemovedByUser"]}]),

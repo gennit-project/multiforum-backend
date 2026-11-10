@@ -671,3 +671,14 @@ omitted usernames, raw coercible identities and sensitive-image filtering.
 The fixed public collection projection has separate source evidence and remains
 covered. This does not certify every other producer of Album or Image; the shared
 `Album.Images` contract remains deferred pending that reconciliation.
+
+### Channel moderator bot-account source
+
+The explicit channel list/connection producer now preserves private raw User
+identity for `Moderators.BotUser`. The generated Cypher still selects only bot
+accounts; the denied human-account edge remains denied, including aliases and
+fragments. Real GraphQL/Shield tests cover owner/unrelated/anonymous callers,
+omitted identity fields, skipped private fields, empty selections and both root
+shapes. This is one checked nested producer of `Channel.Moderators`, not a claim
+that every profile descendant or dynamic source is statically certified. The
+shared-list inventory remains deferred.

@@ -72,3 +72,30 @@ test('bot identity dependency does not eagerly validate unselected fields', asyn
     assert.deepEqual(JSON.parse(JSON.stringify(selected.data)), { moderationProfiles: [{ BotUser: { bad: null, Email: { address: 'bot@identity.test' } } }] });
   } finally { await driver.executeQuery("MATCH(u:User{username:'bot'}) SET u.bio='bot'"); }
 });
+
+async function seedChannelModerators(){
+ await driver.executeQuery("MERGE(c:Channel{uniqueName:'forum'}) WITH c MATCH(p:ModerationProfile) WHERE p.displayName IN ['bot','human'] MERGE(p)-[:MODERATOR_OF_CHANNEL]->(c)");
+ await driver.executeQuery("MERGE(u:User{username:'bot2'}) SET u.isBot=true,u.bio='bot' MERGE(e:Email{address:'bot2@identity.test'}) MERGE(e)-[:HAS_EMAIL]->(u) MERGE(p:ModerationProfile{displayName:'bot2'}) MERGE(u)-[:MODERATION_PROFILE]->(p) WITH p MATCH(c:Channel{uniqueName:'forum'}) MERGE(p)-[:MODERATOR_OF_CHANNEL]->(c)");
+}
+
+for(const connection of [false,true]) for(const viewer of ['bot','human',null]) test(`channel moderator source retains ${connection?'connection':'list'} pseudonymity for ${viewer??'anonymous'}`,async()=>{
+ await seedChannelModerators();
+ const selection='profiles:Moderators(sort:[{displayName:ASC}]){name:displayName account:BotUser{username:bio ...Private} forbidden:User{username}}';
+ const root=connection?`page:channelsConnection(where:{uniqueName:{eq:"forum"}}){links:edges{entry:node{${selection}}}}`:`page:channels(where:{uniqueName:{eq:"forum"}}){${selection}}`;
+ const response=await graphql({schema,source:`query($show:Boolean!){${root}} fragment Private on User{contact:Email @include(if:$show){address}}`,variableValues:{show:true},contextValue:context(viewer)});
+ const profiles=['bot','bot2','human'].map(name=>({name,account:name==='human'?null:{username:'bot',contact:viewer===name?{address:name+'@identity.test'}:null},forbidden:null}));
+ assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry:{profiles}}]}}:{page:[{profiles}]});
+ assert.equal(response.errors?.length,viewer==='bot'?4:5);
+});
+
+for(const connection of [false,true]) test(`channel moderator ${connection?'connection':'list'} preserves omitted identities and skipped private fields`,async()=>{
+ await seedChannelModerators();
+ const selection='profiles:Moderators(where:{displayName:{eq:"bot"}}){account:BotUser{contact:Email @include(if:$show){address}} hidden:User @include(if:$show){username}} empty:Moderators(where:{displayName:{eq:"missing"}}){BotUser{Email{address}}}';
+ const root=connection?`page:channelsConnection(where:{uniqueName:{eq:"forum"}}){links:edges{entry:node{${selection}}}}`:`page:channels(where:{uniqueName:{eq:"forum"}}){${selection}}`;
+ for(const show of [true,false]){
+  const response=await graphql({schema,source:`query($show:Boolean!){${root}}`,variableValues:{show},contextValue:context('bot')});
+  const entry={profiles:[{account:show?{contact:{address:'bot@identity.test'}}:{},...(show?{hidden:null}:{})}],empty:[]};
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry}]}}:{page:[entry]});
+  assert.equal(response.errors?.length,show?1:undefined);
+ }
+});
