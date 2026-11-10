@@ -1,3 +1,4 @@
+import {reconciliationPlanSource} from '../contracts/pluginConfigurationSources.js'
 import type { Driver } from "neo4j-driver";
 import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -160,7 +161,7 @@ const getResolver = (input: Input) => {
         )
       : []
 
-    return buildPluginConfigurationReconciliationPlan({
+    return reconciliationPlanSource(buildPluginConfigurationReconciliationPlan({
       desired,
       live: {
         registries: config.pluginRegistries ?? [],
@@ -195,7 +196,7 @@ const getResolver = (input: Input) => {
         }),
         pipelines: parseStoredPipelines(config.pluginPipelines),
       },
-    })
+    }))
   }
 
 }

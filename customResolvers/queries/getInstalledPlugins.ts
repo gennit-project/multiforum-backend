@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { Driver } from "neo4j-driver";
 import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository, type InstalledPluginEdge } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -71,8 +72,8 @@ const getResolver = (input: Input) => {
           ? compareVersions(latestVersion, installedVersion ?? "") > 0
           : false
 
-        return {
-          plugin: {
+        return rememberCanonicalSource({
+          plugin: rememberCanonicalSource({
             id: pluginData?.id,
             name: pluginData?.name,
             displayName: pluginData?.displayName,
@@ -83,7 +84,7 @@ const getResolver = (input: Input) => {
             license: pluginData?.license,
             tags: pluginData?.tags || [],
             metadata: pluginData?.metadata || null
-          },
+          }),
           version: installedVersion,
           scope: 'SERVER',
           enabled: edgeProps.enabled ?? false,
@@ -107,7 +108,7 @@ const getResolver = (input: Input) => {
           hasUpdate,
           latestVersion,
           availableVersions: availableVersions.sort((a, b) => compareVersions(b, a)) // sorted newest first
-        }
+        })
       })
 
       return installedPlugins

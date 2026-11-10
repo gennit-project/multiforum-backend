@@ -24,3 +24,11 @@ config.serverDescription;
 // @ts-expect-error secret ciphertext is never fetched
 config.InstalledVersionsConnection.edges[0].node.ciphertext;
 void [queries,mutations,valid,wrongNested,wrongStatus,wrongOperation,missingPlan,missingProperties];
+
+import {configurationApplySource,reconciliationPlanSource,pluginConfigStatusSource} from '../../customResolvers/contracts/pluginConfigurationSources.js';
+const ownedApply:ConfigurationApplyResponse=configurationApplySource(valid);
+// @ts-expect-error canonical source metadata does not permit missing plan fields
+reconciliationPlanSource({apiVersion:'v1',inSync:true,warnings:[]});
+// @ts-expect-error field status values must retain their validated Boolean domain
+pluginConfigStatusSource({isFullyConfigured:true,fields:[{key:'key',label:'Key',scope:'server',kind:'SETTING',required:true,isSet:'yes',isValid:true,message:null}]});
+void ownedApply;

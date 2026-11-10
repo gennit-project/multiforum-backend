@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import { createServerPluginEnablementRepository, type ServerPluginEnablementRepository } from '../../services/persistence/serverPluginEnablementRepository.js'
@@ -111,8 +112,8 @@ const getResolver = (input: Input) => {
 
 
 
-      return {
-        plugin: {
+      return rememberCanonicalSource({
+        plugin: rememberCanonicalSource({
           id: plugin.id,
           name: plugin.name,
           displayName: plugin.displayName,
@@ -123,7 +124,7 @@ const getResolver = (input: Input) => {
           license: plugin.license,
           tags: plugin.tags || [],
           metadata: plugin.metadata || null
-        },
+        }),
         version,
         scope: 'SERVER',
         enabled,
@@ -139,7 +140,7 @@ const getResolver = (input: Input) => {
         sourceCommit: pluginVersion.sourceCommit || null,
         minServerVersion: pluginVersion.minServerVersion || null,
         apiVersion: pluginVersion.apiVersion || null
-      }
+      })
 
     } catch (error: unknown) {
       logger.error('Error in enableServerPlugin resolver:', error)

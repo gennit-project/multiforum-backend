@@ -7,7 +7,7 @@ import * as pipelineLeaseRepository from '../services/persistence/pipelineLeaseR
 import * as pipelineRerunRepository from '../services/persistence/pipelineRerunRepository.js';
 import * as pipelineRetryRepository from '../services/persistence/pipelineRetryRepository.js';
 import * as pipelineStartRepository from '../services/persistence/pipelineStartRepository.js';
-function shape(set:SelectionSetNode):Record<string,unknown>{return Object.fromEntries(set.selections.map(field=>{assert.equal(field.kind,Kind.FIELD);if(field.kind!==Kind.FIELD)throw Error('Unexpected fragment');return [field.name.value,field.selectionSet?shape(field.selectionSet):true];}));}
+function shape(set:SelectionSetNode):Record<string,unknown>{return Object.fromEntries(set.selections.map(field=>{assert.equal(field.kind,Kind.FIELD);if(field.kind!==Kind.FIELD)throw Error('Unexpected fragment');assert.equal(field.alias,undefined,'fixed canonical selections cannot contain response-key aliases');return [field.name.value,field.selectionSet?shape(field.selectionSet):true];}));}
 const selections=[
 ['rerunSourceSelection',pipelineRerunRepository.RERUN_SELECTION_0,projections.rerunSourceSelection],
 ['fileVersionSelection',pipelineRerunRepository.RERUN_SELECTION_1,projections.fileVersionSelection],

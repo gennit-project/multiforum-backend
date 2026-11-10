@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { Driver } from "neo4j-driver";
 import { createPluginRegistryRepository, type PluginRegistryRepository } from "../../services/persistence/pluginRegistryRepository.js";
 import type {
@@ -260,16 +261,17 @@ for (const registryPlugin of registryData.plugins) {
           const pluginWithVersions = await repository.findRegistryResult(plugin.id)
           
           if (pluginWithVersions[0]) {
-            pluginsWithVersions.push(pluginWithVersions[0])
+            // This refetch uses the fixed alias-free registry document.
+            pluginsWithVersions.push(rememberCanonicalSource({...pluginWithVersions[0],Versions:pluginWithVersions[0].Versions.map(version=>rememberCanonicalSource({...version}))}))
           }
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : String(error)
           logger.warn(`Could not load versions for plugin ${plugin.id}:`, message)
           // Still include the plugin but with empty versions array
-          pluginsWithVersions.push({
+          pluginsWithVersions.push(rememberCanonicalSource({
             ...plugin,
             Versions: []
-          })
+          }))
         }
       }
       

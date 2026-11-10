@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import { GraphQLError } from 'graphql'
 import type { Driver } from "neo4j-driver"
 import { createPipelineTargetRepository, type PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
@@ -105,7 +106,7 @@ const getResolver = ({
     pipelineConfigured = Boolean(plan.eventPipeline || plan.pluginsToRun.length)
   }
 
-  return {
+  return rememberCanonicalSource({
     targetId: target.targetId,
     targetType: scope === 'CHANNEL' ? 'Discussion' : 'DownloadableFile',
     eventType,
@@ -118,7 +119,7 @@ const getResolver = ({
     required: plan.required,
     reason: plan.reason,
     expectedJobs: plan.pluginsToRun.map(
-      ({ pluginId, edgeData, step, order }) => ({
+      ({ pluginId, edgeData, step, order }) => rememberCanonicalSource({
         pluginId,
         pluginName:
           edgeData.node.Plugin.displayName ||
@@ -130,7 +131,7 @@ const getResolver = ({
         continueOnError: step.continueOnError ?? false,
       })
     ),
-  }
+  })
 }
 
 export default getResolver

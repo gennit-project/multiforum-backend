@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import { createPluginInstallRepository, type PluginInstallRepository } from "../../services/persistence/pluginInstallRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createServerSecretRepository, type ServerSecretRepository } from "../../services/persistence/serverSecretRepository.js"
@@ -280,8 +281,8 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
                   : null)
       }
 
-      return {
-        plugin: {
+      return rememberCanonicalSource({
+        plugin: rememberCanonicalSource({
           id: String(pluginRecord!.id),
           name: String(pluginRecord!.name),
           displayName: pluginUpdatePayload.displayName,
@@ -292,13 +293,13 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
           license: pluginUpdatePayload.license,
           tags: pluginUpdatePayload.tags,
           metadata: pluginUpdatePayload.metadata
-        },
+        }),
         version: String(version),
         scope: 'SERVER',
         enabled: false,
         settingsJson: reconciledSettings,
         carryOverReport
-      }
+      })
 
     } catch (error: unknown) {
       logger.error('Error in installPluginVersion resolver:', error)

@@ -3,6 +3,8 @@ import {before,after,beforeEach,afterEach,test} from 'node:test';
 import crypto from 'node:crypto';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql,type GraphQLSchema} from 'graphql';
+import {applyMiddleware} from 'graphql-middleware';
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import type {Driver} from 'neo4j-driver';
 import typeDefs from '../../typeDefs.js';
 import getResolvers from '../helpers/getTestResolvers.js';
@@ -23,7 +25,7 @@ before(async()=>{
  driver=await startNeo4j();const app=getResolvers(driver);const repository=createPluginRegistryRepository(driver);
  app.resolvers.Mutation.installPluginVersion=install({driver},{fetchRegistry,download:async()=>bytes,readManifest:artifacts});
  app.resolvers.Mutation.refreshPlugins=refresh({driver,pluginRegistryRepository:{...repository,findRegistryResult:async id=>{if(failure==='refetch')throw new Error('injected refetch failure');return repository.findRegistryResult(id);}}},{fetchRegistry,readArtifacts:artifacts});
- schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);guard=denyImageExternalIo();
+ schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:app.resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);schema=applyMiddleware(schema,sourceIdentity);guard=denyImageExternalIo();
 },{timeout:240000});
 afterEach(()=>guard?.assertUnused());
 after(async()=>{guard?.restore();await stopNeo4j();});
@@ -63,4 +65,23 @@ test('enable missing plugin, version and installation retain wrapped failure',as
  assert.match((await exec(source)).errors?.[0].message??'',/Failed to enable plugin: Plugin fixture not found/);
  data(await exec(installSource));await driver.executeQuery('MATCH(:ServerConfig)-[r:INSTALLED]->() DELETE r');assert.match((await exec(source)).errors?.[0].message??'',/not installed/);
  assert.match((await exec(source.replace('1.0.0','missing'))).errors?.[0].message??'',/version missing not found/);
+});
+
+
+test('install result aliases retain owned root and plugin fields',async()=>{
+ const result=data(await exec('mutation{result:installPluginVersion(pluginId:"fixture",version:"1.0.0"){scope:version version:scope plugin{id:name name:id}}}')).result;
+ assert.equal(result.scope,'1.0.0');assert.equal(result.version,'SERVER');assert.equal(result.plugin.id,'fixture');
+ assert.equal(result.plugin.name,(await driver.executeQuery('MATCH(p:Plugin) RETURN p.id AS id')).records[0].get('id'));
+});
+test('enable result aliases retain owned fields after the write',async()=>{
+ data(await exec(installSource));const result=data(await exec('mutation{result:enableServerPlugin(pluginId:"fixture",version:"1.0.0",enabled:true){scope:version version:scope plugin{id:name name:id}}}')).result;
+ assert.equal(result.scope,'1.0.0');assert.equal(result.version,'SERVER');assert.equal(result.plugin.id,'fixture');
+ assert.equal((await driver.executeQuery('MATCH()-[r:INSTALLED]->() RETURN r.enabled AS enabled')).records[0].get('enabled'),true);
+});
+test('refresh aliases preserve fixed plugin/version maps and refetch fallback',async()=>{
+ const source='mutation{result:refreshPlugins{name:id id:name Versions{version:id id:version}}}';
+ const first=data(await exec(source)).result[0];assert.equal(first.id,'fixture');assert.equal(first.Versions[0].id,'1.0.0');
+ const row=(await driver.executeQuery('MATCH(p:Plugin)-[:HAS_VERSION]->(v) RETURN p.id AS pluginId,v.id AS versionId')).records[0];
+ assert.equal(first.name,row.get('pluginId'));assert.equal(first.Versions[0].version,row.get('versionId'));
+ failure='refetch';assert.deepEqual(data(await exec(source)).result,[{name:first.name,id:'fixture',Versions:[]}]);
 });

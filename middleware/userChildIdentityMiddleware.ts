@@ -326,6 +326,18 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 export default {
   // Explicitly marked owned projection maps retain canonical source keys.
   // Unmarked generated objects pass through with their response aliases intact.
+  Plugin: resolveCanonicalSourceField,
+  PluginVersion: resolveCanonicalSourceField,
+  InstalledPlugin: resolveCanonicalSourceField,
+  PluginSecretStatus: resolveCanonicalSourceField,
+  PluginConfigStatus: resolveCanonicalSourceField,
+  PluginConfigFieldStatus: resolveCanonicalSourceField,
+  ApplicablePluginPipeline: resolveCanonicalSourceField,
+  PublicExpectedPluginJob: resolveCanonicalSourceField,
+  PluginConfigurationReconciliationPlan: resolveCanonicalSourceField,
+  PluginConfigurationChange: resolveCanonicalSourceField,
+  PluginConfigurationApplyResult: resolveCanonicalSourceField,
+  PluginConfigurationOperationResult: resolveCanonicalSourceField,
   PluginRun: resolveCanonicalSourceField,
   PluginPipelineRun: resolveCanonicalSourceField,
   InternalPluginPipelineRunDetail: resolveCanonicalSourceField,

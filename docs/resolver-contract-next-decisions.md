@@ -1244,3 +1244,27 @@ fixed-source scope. Remaining implementable producer checks are the installed
 plugin/configuration/secret/applicability responses and the remaining account/
 configuration response maps. The diagnostic JSON raw-item limitation stays
 explicit; no boundary count is inflated by these source repairs (180/29).
+
+### Plugin configuration and installation sources
+
+Twelve initial probes reproduced alias failures across installed-plugin, secret
+status, configuration status, applicability, reconciliation preview/apply and
+install/enable/refresh responses, including their owned child maps. Canonical
+provenance now follows those explicit maps only. Reconciliation current/desired
+JSON, settings and manifest values remain scalar-owned, without new validation or
+coercion. Refreshed registry/version maps come from fixed alias-free documents;
+installation/execution projection guards now reject aliases in those documents,
+and deliberately adding a registry selection alias proves that rejection.
+
+Sixteen new regressions cover the repaired sources, a real configuration write,
+refetch fallback, fragments/skips, nullable fields, existing malformed-manifest
+errors and visibility. Permission tests preserve the existing distinction between
+public metadata and protected configuration operations; no authorization rule was
+changed. Installation fixtures block all external IO while exercising real
+persistence. Secret ciphertext is never part of the status projection or output.
+
+Accounting remains 180 selected / 29 deferred. The next implementable census group
+is the remaining account/configuration maps: safety environment, self age profile,
+self email, ranking settings, instance setup status and download review queue,
+including shared mutation producers where they return the same maps. The raw,
+dynamic-selection and product-policy limits remain separate from this work.
