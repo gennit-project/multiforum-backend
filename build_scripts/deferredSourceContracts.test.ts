@@ -29,7 +29,7 @@ test("opaque list sources check actual generated registrations without promoting
    }
   }
  }
- assert.equal(names.length,21);
+ assert.equal(names.length,20);
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  for(const name of names)assert.equal(inventory.fields.find(r=>r.field===name)?.status,'deferred');
 });
@@ -49,4 +49,16 @@ test('activity payload delegates through the generated query-argument boundary',
  walk(src);
  assert.equal(calls.filter(call=>call.expression.getText(src)==='delegateQueryField').length,1);
  assert.equal(calls.filter(call=>call.expression.getText(src)==='delegateToSchema').length,0);
+});
+
+test('fixed flair source checks the actual generated raw-selection signature without claiming scalar values',()=>{
+ const {src,result}=returned('customResolvers/typeResolvers.ts');
+ const parent=result.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='DiscussionChannelListItem');
+ assert.ok(parent&&ts.isPropertyAssignment(parent)&&ts.isObjectLiteralExpression(parent.initializer));
+ const field=parent.initializer.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='Flairs');
+ assert.ok(field&&ts.isPropertyAssignment(field)&&ts.isSatisfiesExpression(field.initializer));
+ assert.equal(field.initializer.expression.getText(src),'discussionListFlairs');
+ assert.equal(field.initializer.type.getText(src),'DiscussionListFlairSource');
+ const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
+ assert.equal(inventory.fields.find(row=>row.field==='DiscussionChannelListItem.Flairs')?.status,'deferred');
 });

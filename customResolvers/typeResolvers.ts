@@ -1,6 +1,8 @@
+import { discussionListFlairs } from "./fields/discussionListFlairs.js";
+import type { DiscussionListFlairSource } from "./contracts/discussionListFlairs.js";
 import { discussionListViewerVotes } from "./fields/discussionListViewerVotes.js";
 import { authorSourceType } from "../services/authorSourceType.js";
-import type { DiscussionChannelResolvers, DiscussionChannelListItemResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
+import type { DiscussionChannelResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
 import type { OpaqueListSource } from "./contracts/deferredSources.js";
 import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
@@ -130,7 +132,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       ...checkedDiscussionChannel,
     },
     DiscussionChannelListItem: {
-      Flairs: emptyArrayFallback('Flairs') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["Flairs"]>,
+      Flairs: discussionListFlairs satisfies DiscussionListFlairSource,
       ...checkedDiscussionListVotes,
     },
     SiteWideDiscussionListItem: {

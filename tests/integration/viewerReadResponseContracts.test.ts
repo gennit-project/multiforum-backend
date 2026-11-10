@@ -1,3 +1,4 @@
+import { discussionListFlairSelection } from "../../customResolvers/contracts/discussionListFlairs.js";
 import { getDiscussionChannelsQuery } from "../../customResolvers/cypher/cypherQueries.js";
 import type { DiscussionListViewerChannel } from "../../customResolvers/contracts/viewerReadProjections.js";
 import assert from "node:assert/strict";
@@ -227,7 +228,7 @@ test('actual discussion hydration document retains its exact declared map projec
   assert.equal(d.Album.Images.length,1);assertKeys(d.Album.Images[0]!,{id:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
   assert.equal(d.Tags.length,1);assertKeys(d.Tags[0]!,{text:true});
   assert.equal(d.DownloadableFiles.length,1);assertKeys(d.DownloadableFiles[0]!,{id:true,scanStatus:true});
-  assert.equal(row.Flairs.length,1);assertKeys(row.Flairs[0]!,{id:true,channelUniqueName:true,displayName:true,color:true,order:true,archived:true});
+  assert.equal(row.Flairs.length,1);assertKeys(row.Flairs[0]!,discussionListFlairSelection);
 });
 test('discussion list nested canonical maps preserve aliases and directive variables',async()=>{
   await seedListChildren();
@@ -252,4 +253,25 @@ test('discussion list raw leaves still fail only when selected and retain aliase
   const result=await execute(`{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {Discussion {Author {bad:displayName}}}}}`,'actor',true);
   assert.match(result.errors?.[0].message??'',/String cannot represent/);
   assert.deepEqual(result.errors?.[0].path,['result','discussionChannels',0,'Discussion','Author','bad']);
+});
+
+test('fixed flair source preserves lazy malformed scalar errors and nullable values',async()=>{
+  await seedListChildren();
+  await driver.executeQuery("MATCH(f:DiscussionFlair) SET f.color=null, f.displayName=['invalid','name']");
+  const prefix='{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {';
+  const safe=data(await execute(`${prefix} Flairs {id color} }}}`,'actor',true));
+  assert.deepEqual(safe.result.discussionChannels,[{Flairs:[{id:'flair',color:null}]}]);
+  const malformed=await execute(`${prefix} labels:Flairs {bad:displayName} }}}`,'actor',true);
+  assert.match(malformed.errors?.[0].message??'',/String cannot represent/);
+  assert.deepEqual(malformed.errors?.[0].path,['result','discussionChannels',0,'labels',0,'bad']);
+});
+test('fixed flair source retains archived assignments and a missing owner error only on selection',async()=>{
+  await seedListChildren();
+  await driver.executeQuery("MATCH(f:DiscussionFlair) SET f.archived=true WITH f MATCH(:Channel)-[r:HAS_DISCUSSION_FLAIR]->(f) DELETE r");
+  const prefix='{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {';
+  const safe=data(await execute(`${prefix} Flairs {id archived} }}}`,null,true));
+  assert.deepEqual(safe.result.discussionChannels,[{Flairs:[{id:'flair',archived:true}]}]);
+  const malformed=await execute(`${prefix} Flairs {owner:channelUniqueName} }}}`,null,true);
+  assert.match(malformed.errors?.[0].message??'',/Cannot return null/);
+  assert.deepEqual(malformed.errors?.[0].path,['result','discussionChannels',0,'Flairs',0,'owner']);
 });

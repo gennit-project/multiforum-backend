@@ -426,7 +426,7 @@
       "field": "DiscussionChannelListItem.Flairs",
       "selectedPaths": [],
       "residualPaths": [
-        "every returned list item and nested item field"
+        "Raw persisted scalar completion and unselected DiscussionFlair child relationships"
       ],
       "evidence": [
         "customResolvers/typeResolvers.ts",
@@ -435,10 +435,15 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/discussionListFlairs.ts",
+        "customResolvers/fields/discussionListFlairs.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "The actual registration checks an explicit generated-schema-derived raw six-field item selection. The sole owned hydration document has exact nested projection drift tests. Persisted scalar values remain unknown until GraphQL completes the requested child fields.",
+      "decision": "Source/container obligations are checked; retain deferred generated response-value status because raw persisted leaves are not validated output. Preserve lazy scalar/null errors and archived assignments without eager decoding."
     },
     {
       "field": "DiscussionChannelListItem.SuperUpvotedByUsers",

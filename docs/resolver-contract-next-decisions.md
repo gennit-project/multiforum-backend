@@ -410,3 +410,22 @@ The separate omitted/null event-channel decision remains a residual behavior pol
 outside these 31 entries; this queue does not choose it. Existing selected entries
 also retain their documented unselected paths rather than implying whole-object
 or end-to-end certification.
+
+### Fixed flair item source contract
+
+The discussion-list flair registration now uses a generated-schema-derived,
+explicit six-field raw source selection instead of an unknown item array. It
+preserves the generated field call signature and list/container shape. The actual
+Cypher declaration additionally requires its explicit nullable color key, and the
+existing real-query key test detects selection drift. Promise-wrapped generated
+items are unwrapped in the source type; negative fixtures ensure they cannot turn
+an invalid primitive into an empty permissive object type.
+
+This is deliberately a source contract, not a string/Boolean/Int response claim.
+Stored leaves remain unknown, nullable parent properties retain their schema
+optionality, and GraphQL still validates only requested fields. Real tests preserve
+archived assignments, nullable colors, malformed-name errors and missing-owner
+errors at their selected aliases. The field stays deferred for generated scalar
+response guarantees; the fixed source/container obligation is now checked. Twenty
+other opaque lists still require their own upstream item-source work. No blanket
+Partial, full-entity cast, eager scalar validation or count promotion is used.

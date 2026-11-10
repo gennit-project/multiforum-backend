@@ -1,3 +1,5 @@
+import type { DiscussionListFlair } from "./discussionListFlairs.js";
+export type { DiscussionListFlair } from "./discussionListFlairs.js";
 import type { Integer } from "neo4j-driver";
 /** Fixed Cypher expression provenance, not full persisted entity contracts.
  * Unknown keys intentionally preserve GraphQL's lazy scalar completion. */
@@ -40,10 +42,6 @@ export type DiscussionListImage = {
   archived: unknown; permanentlyRemoved: unknown;
 };
 export type DiscussionListAlbum = {id: unknown; imageOrder: unknown; Images: DiscussionListImage[]};
-export type DiscussionListFlair = {
-  id: unknown; channelUniqueName: unknown; displayName: unknown; color: unknown;
-  order: unknown; archived: unknown;
-};
 export type DiscussionListDiscussion = {
   id: unknown; title: unknown; body: unknown; createdAt: unknown; updatedAt: unknown;
   hasSensitiveContent: unknown; hasSpoiler: unknown;

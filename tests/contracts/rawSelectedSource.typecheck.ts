@@ -1,0 +1,27 @@
+import type { DiscussionListFlair, DiscussionListFlairSource } from '../../customResolvers/contracts/discussionListFlairs.js';
+import type { RawSelectedListResolver } from '../../customResolvers/contracts/rawSelectedSource.js';
+import type { SelectedResolver } from '../../customResolvers/contracts/selection.js';
+import type { DiscussionChannelListItemResolvers } from '../../src/generated/graphql.js';
+import type { GraphQLContext } from '../../types/context.js';
+const raw:DiscussionListFlair={id:null,channelUniqueName:17,displayName:['malformed'],color:null,order:'raw',archived:null};
+const checked:DiscussionListFlairSource=()=>[raw];
+// @ts-expect-error exact source keys cannot silently disappear
+const absent:DiscussionListFlair={id:'id'};
+// @ts-expect-error source maps are not primitive list items
+const scalar:DiscussionListFlairSource=()=>[17];
+// @ts-expect-error generated list container remains non-null
+const nullList:DiscussionListFlairSource=()=>null;
+// @ts-expect-error unknown stored leaves do not prove a completed scalar response
+const notAResponse:SelectedResolver<DiscussionChannelListItemResolvers<GraphQLContext>['Flairs'],{id:true}>=checked;
+// @ts-expect-error scalar outputs cannot be declared fixed list sources
+const notAList:RawSelectedListResolver<()=>string,true>=()=>[];
+// @ts-expect-error arbitrary JSON/any cannot establish a list source
+const json:RawSelectedListResolver<()=>any,true>=()=>[];
+void [raw,checked,absent,scalar,nullList,notAResponse,notAList,json];
+
+import type { RawSelectedSource } from '../../customResolvers/contracts/rawSelectedSource.js';
+// @ts-expect-error generated promise wrappers cannot make an item an empty object
+const promisedScalar:RawSelectedSource<Promise<{id:string}>,{id:true}>=17;
+// @ts-expect-error selecting a field absent from an object cannot become an empty permissive shape
+const absentSelection:RawSelectedSource<{other:string},{id:true}>={};
+void [promisedScalar,absentSelection];
