@@ -330,6 +330,7 @@ export default {
   Issue: resolveCanonicalSourceField,
   SiteWideIssueListItem: resolveCanonicalSourceField,
   ServerHealthTimeSeriesPoint: resolveCanonicalSourceField,
+  ChannelHealthRow: resolveCanonicalSourceField,
   UploadedDownloadableFileGroup: resolveCanonicalSourceField,
   UploadedDownloadableFileDiscussion: resolveCanonicalSourceField,
   DiscussionChannelListItem: resolveCanonicalSourceField,

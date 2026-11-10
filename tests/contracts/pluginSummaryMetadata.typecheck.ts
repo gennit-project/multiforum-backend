@@ -26,3 +26,11 @@ const {comments:omittedComments,...incompleteTime}=timeRow;
 // @ts-expect-error query projection must include every COUNT
 const missingTime:DashboardTimeSeriesRow=incompleteTime;
 void [invalidTime,omittedComments,missingTime];
+import type {DashboardChannelHealthProjection} from '../../customResolvers/contracts/dashboardChannelHealth.js';
+declare const channelHealthRow: DashboardChannelHealthProjection;
+// @ts-expect-error native displayName is not certified as text
+const completedDisplay: string = channelHealthRow.displayName;
+const {channelIconURL:omittedIcon,...missingIcon}=channelHealthRow;
+// @ts-expect-error nullable raw query key must still be present
+const incompleteChannel:DashboardChannelHealthProjection=missingIcon;
+void [completedDisplay,omittedIcon,incompleteChannel];

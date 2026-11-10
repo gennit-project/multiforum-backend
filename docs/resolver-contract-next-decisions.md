@@ -1044,3 +1044,32 @@ schema-shaped source type. Further ordinary work remains in dashboard channel-he
 normalization, whose existing cast conceals raw channel leaves, and its age-list
 adapter. The census therefore does not yet close the whole dashboard producer.
 Inventory remains 178 checked / 31 deferred.
+
+### Dashboard channel and age-list adapters
+
+The remaining channel-health cast and unknown-array age cast are removed. The
+channel query has an exact map with native channel leaves kept unknown, computed
+counters normalized explicitly and nullable age preserved. The open-issue summary
+has typed aggregate columns and an integer age list. The actual dashboard
+registration checks every fixed channel key without asserting raw scalar success.
+
+A baseline probe reproduced a channel alias collision; only owned channel maps now
+carry canonical metadata. Five additional integration cases cover that defect,
+complete executed query keys, nullable leaves, lazy malformed display values,
+malformed identity sorting and the age-list aggregate. The old sorting expression
+passes the same malformed-identity test: a single unselected invalid name remains
+lazy, while a non-string tie-break still produces the existing wrapped failure.
+The narrowing checks that method receiver at the same tie-break point; it does not
+coerce invalid stored names into successful rows. Twenty-one focused dashboard
+cases pass, and deleting a channel selection or renaming the age-list column makes
+the corresponding executed-query guard fail. Compile fixtures reject missing raw
+keys and treating a native display name as certified text.
+
+The repeated schema-aware census no longer reports opaque fixed issue items or
+time-series points. Remaining findings are native property maps, the previously
+verified native Point adapter, the delegated activity function and the 18 dynamic
+shared-list item boundaries. Its limits (GraphQL unions, runtime selection and
+property validity) remain explicit: no whole-object guarantee or inventory
+promotion follows from this census. All previously enumerated fixed contribution,
+media, moderation and dashboard producer obligations are now addressed; upstream
+selection/native scalar limits and the two policy/dependency entries remain.
