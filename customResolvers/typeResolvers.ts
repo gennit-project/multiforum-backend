@@ -1,10 +1,12 @@
+import { siteWideDownloadableFiles } from "./fields/siteWideDownloadableFiles.js";
+import type { SiteWideDownloadFileSource } from "./contracts/siteWideDownloadFiles.js";
 import { scratchpadSuperVoters } from "./fields/scratchpadSuperVoters.js";
 import type { ScratchpadSuperVoterSource } from "./contracts/scratchpadSuperVoters.js";
 import { discussionListFlairs } from "./fields/discussionListFlairs.js";
 import type { DiscussionListFlairSource } from "./contracts/discussionListFlairs.js";
 import { discussionListViewerVotes } from "./fields/discussionListViewerVotes.js";
 import { authorSourceType } from "../services/authorSourceType.js";
-import type { DiscussionChannelResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers } from "../src/generated/graphql.js";
+import type { DiscussionChannelResolvers, CommentResolvers, AlbumResolvers } from "../src/generated/graphql.js";
 import type { OpaqueListSource } from "./contracts/deferredSources.js";
 import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
 import type { GraphQLContext } from "../types/context.js";
@@ -138,7 +140,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
       ...checkedDiscussionListVotes,
     },
     SiteWideDiscussionListItem: {
-      DownloadableFiles: emptyArrayFallback('DownloadableFiles') satisfies OpaqueListSource<SiteWideDiscussionListItemResolvers<GraphQLContext>["DownloadableFiles"]>,
+      DownloadableFiles: siteWideDownloadableFiles satisfies SiteWideDownloadFileSource,
     },
     Comment: {
       SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<CommentResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,

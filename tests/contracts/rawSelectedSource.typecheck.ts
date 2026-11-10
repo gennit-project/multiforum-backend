@@ -34,3 +34,16 @@ const validUsername:string=rawVoter.username;
 // @ts-expect-error actual map projection always includes the key
 const omittedVoterName:ScratchpadSuperVoterSource=()=>[{}];
 void [rawVoter,voterList,validUsername,omittedVoterName];
+
+import type {SiteWideDownloadFileSource} from '../../customResolvers/contracts/siteWideDownloadFiles.js';
+import type {SiteWideDiscussionSource} from '../../customResolvers/contracts/siteWideDiscussionSources.js';
+// @ts-expect-error fixed file maps cannot be arbitrary scalar entries
+const invalidFile:SiteWideDownloadFileSource=()=>['file'];
+// @ts-expect-error the declared ID key is required even though its stored value is unknown
+const missingFileId:SiteWideDownloadFileSource=()=>[{scanStatus:'CLEAN'}];
+declare const sitewide:SiteWideDiscussionSource;
+// @ts-expect-error arbitrary voter usernames are not validated viewer parameters
+const sitewideVoter:string=sitewide.DiscussionChannels[0]!.UpvotedByUsers[0]!.username;
+// @ts-expect-error hydration maps have no arbitrary catch-all properties
+const unknownSitewideProperty=sitewide.unselected;
+void [invalidFile,missingFileId,sitewideVoter,unknownSitewideProperty];

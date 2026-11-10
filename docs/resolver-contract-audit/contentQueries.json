@@ -260,9 +260,12 @@
         "customResolvers/queries/getSiteWideDiscussionList.ts",
         "customResolvers/contracts/contentQueries.ts",
         "tests/contracts/contentQueries.typecheck.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/siteWideDiscussionSources.d.ts",
+        "services/canonicalSiteWideDiscussion.ts",
+        "tests/integration/discussionConnectionCounts.test.ts"
       ],
-      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields. The hydration read now has exact nested raw maps with executable key-drift coverage; persisted leaves and native counts are not serialized output promises.",
       "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
     },
     {

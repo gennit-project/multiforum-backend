@@ -589,7 +589,7 @@
       "field": "SiteWideDiscussionListItem.DownloadableFiles",
       "selectedPaths": [],
       "residualPaths": [
-        "every returned list item and nested item field"
+        "Raw persisted file ID/scanStatus completion and unselected DownloadableFile children"
       ],
       "evidence": [
         "customResolvers/typeResolvers.ts",
@@ -598,10 +598,17 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/siteWideDownloadFiles.ts",
+        "customResolvers/contracts/siteWideDiscussionSources.d.ts",
+        "customResolvers/fields/siteWideDownloadableFiles.ts",
+        "services/canonicalSiteWideDiscussion.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/discussionConnectionCounts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "Actual registration checks a generated raw ID/scanStatus item selection. The sole owned hydration producer has exact nested raw types and real-query key-drift coverage. Persisted values retain GraphQL selection-time completion.",
+      "decision": "The fixed item source is checked, but retain deferred generated scalar response status. Preserve aliases, filtering, pagination, native counts, lazy enum errors and denied child behavior. Do not fabricate unprojected child relationships."
     },
     {
       "field": "User.Collections",

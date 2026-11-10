@@ -447,3 +447,29 @@ and repeat-operation cases. The field's source shape is checked; scalar response
 completion remains GraphQL-owned, so the inventory stays 178 selected / 31 deferred.
 Nineteen shared opaque list registrations remain, plus the two now-explicit raw
 item sources. These categories are tracked separately from completed responses.
+
+### Site-wide download item source contract
+
+The third fixed child-list cohort now has an explicit generated raw selection for
+file ID and scan status at its actual field registration. Its complete owned
+hydration map replaces the previous untyped driver read, including authors,
+albums/images, channel votes/flairs and native integer connection counts. Real
+query tests compare all nested map keys with the declarations. A schema-producer
+guard prevents silently reusing this custom list type for an unchecked producer.
+
+Two pre-fix graph probes reproduced file-list and author alias collisions. Owned
+maps now carry private canonical provenance; generated response-key sources remain
+untouched. Tests preserve actual frontend connection counts, fragments/directives,
+nullable authors/albums, pagination, visibility, malformed selected file enums,
+and owner/non-owner/anonymous permission behavior. The fixed author projection
+does not hydrate Email: authorized selection still completes null, while denied
+callers retain their field error. No extra relationship read or full User claim
+is introduced.
+
+All three fixed custom list source/container obligations now have explicit raw
+contracts, projection evidence and actual registration checks. Their persisted
+scalar values remain GraphQL-owned, so they are not promoted to completed
+response-value contracts. Accounting is still 178 selected / 31 deferred; within
+the 31, three now have checked fixed item sources, six are intentional JSON
+structural limits, two await campaign transition incorporation, and 20 retain
+engineering gates (18 shared list sources, image usage and delegated activity).

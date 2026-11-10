@@ -1,3 +1,5 @@
+import { canonicalSiteWideDiscussion } from "../../services/canonicalSiteWideDiscussion.js";
+import type { SiteWideDiscussionSource } from "../contracts/siteWideDiscussionSources.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
 import neo4j from "neo4j-driver";
@@ -186,7 +188,7 @@ const getResolver = (input: Input) => {
           return { discussions: [], aggregateDiscussionCount, pageInfo };
         }
 
-        const discussionsResult = await transaction.run(
+        const discussionsResult = await transaction.run<{discussion:SiteWideDiscussionSource}>(
           getSiteWideDiscussionsQuery,
           {
             discussionIds,
@@ -197,7 +199,7 @@ const getResolver = (input: Input) => {
           }
         );
         const discussions = discussionsResult.records.map(
-          (record: Neo4jRecord) => record.get("discussion")
+          (record) => canonicalSiteWideDiscussion(record.get("discussion"))
         );
 
         return { discussions, aggregateDiscussionCount, pageInfo };

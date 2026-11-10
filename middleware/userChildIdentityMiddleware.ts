@@ -264,6 +264,10 @@ export default {
   // Unmarked generated objects pass through with their response aliases intact.
   ImageAlbumUsage: resolveCanonicalSourceField,
   DiscussionChannelListItem: resolveCanonicalSourceField,
+  SiteWideDiscussionListItem: resolveCanonicalSourceField,
+  DiscussionChannelCommentsConnection: resolveCanonicalSourceField,
+  DiscussionChannelCommentCommentsAggregateSelection: resolveCanonicalSourceField,
+  CountConnection: resolveCanonicalSourceField,
   Channel: resolveCanonicalSourceField,
   DiscussionFlair: resolveCanonicalSourceField,
   Image: resolveCanonicalSourceField,

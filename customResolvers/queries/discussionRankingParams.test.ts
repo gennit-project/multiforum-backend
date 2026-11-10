@@ -50,6 +50,9 @@ const createDriver = () => {
           work({
             run: async (query: string, params: Record<string, unknown>) => {
               runCalls.push({ query, params });
+              // A zero-count sitewide page has no rows, not a scalar masquerading
+              // as a hydrated discussion. This fixture only exercises ranking.
+              if (query.includes("RETURN d.id AS discussionId")) return { records: [] };
               return {
                 records: [
                   {

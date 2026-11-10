@@ -29,7 +29,7 @@ test("opaque list sources check actual generated registrations without promoting
    }
   }
  }
- assert.equal(names.length,19);
+ assert.equal(names.length,18);
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  for(const name of names)assert.equal(inventory.fields.find(r=>r.field===name)?.status,'deferred');
 });
@@ -75,4 +75,14 @@ test('scratchpad raw voter source is checked at registration and read inside the
  const call='await readScratchpadSuperVoters(tx, sourceType, sourceId)';
  assert.equal(mutation.split(call).length,2);
  assert.ok(mutation.indexOf(call)<mutation.indexOf('await tx.commit()'));
+});
+
+test('sitewide file registration checks its fixed raw projection',()=>{
+ const {src,result}=returned('customResolvers/typeResolvers.ts');
+ const parent=result.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='SiteWideDiscussionListItem');
+ assert.ok(parent&&ts.isPropertyAssignment(parent)&&ts.isObjectLiteralExpression(parent.initializer));
+ const field=parent.initializer.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='DownloadableFiles');
+ assert.ok(field&&ts.isPropertyAssignment(field)&&ts.isSatisfiesExpression(field.initializer));
+ assert.equal(field.initializer.expression.getText(src),'siteWideDownloadableFiles');
+ assert.equal(field.initializer.type.getText(src),'SiteWideDownloadFileSource');
 });
