@@ -29,9 +29,35 @@ export type DiscussionViewerChannel = Persisted & {
 export type DiscussionViewerDetail = DiscussionViewerCore & {
   DiscussionChannels: DiscussionViewerChannel[]; DownloadableFiles: unknown[];
 };
-export type DiscussionListViewerChannel = Persisted & {
+/** Exact maps emitted by getDiscussionChannelsQuery.cypher. Persisted leaves
+ * deliberately remain unknown; only query-computed values are narrowed. */
+export type DiscussionListAuthor = {
+  username: unknown; displayName: unknown; profilePicURL: unknown;
+  createdAt: unknown; discussionKarma: unknown; commentKarma: unknown;
+};
+export type DiscussionListImage = {
+  id: unknown; url: unknown; alt: unknown; caption: unknown;
+  archived: unknown; permanentlyRemoved: unknown;
+};
+export type DiscussionListAlbum = {id: unknown; imageOrder: unknown; Images: DiscussionListImage[]};
+export type DiscussionListFlair = {
+  id: unknown; channelUniqueName: unknown; displayName: unknown; color: unknown;
+  order: unknown; archived: unknown;
+};
+export type DiscussionListDiscussion = {
+  id: unknown; title: unknown; body: unknown; createdAt: unknown; updatedAt: unknown;
+  hasSensitiveContent: unknown; hasSpoiler: unknown;
+  Author: DiscussionListAuthor | null; Album: DiscussionListAlbum | null;
+  Tags: {text: unknown}[]; DownloadableFiles: {id: unknown; scanStatus: unknown}[];
+  authorIsChannelModerator: boolean;
+};
+export type DiscussionListViewerChannel = {
+  id: unknown; archived: unknown; answered: unknown; locked: unknown;
+  discussionId: unknown; createdAt: unknown; channelUniqueName: unknown;
+  weightedVotesCount: unknown; Flairs: DiscussionListFlair[];
+  CommentsAggregate: {count: Integer}; UpvotedByUsersAggregate: {count: Integer};
   UpvotedByUsers: ViewerIdentity[]; SuperUpvotedByUsers: ViewerIdentity[];
-  isFavorited: boolean | null;
-  Discussion: Persisted & { authorIsChannelModerator: boolean };
+  isFavorited: boolean | null; Discussion: DiscussionListDiscussion;
+  Channel: {uniqueName: unknown};
 };
 export type SortedViewerChannel = Persisted & { isFavorited: boolean | null };

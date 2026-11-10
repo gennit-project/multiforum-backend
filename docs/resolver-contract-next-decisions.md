@@ -364,3 +364,21 @@ prevents treating scalar-coerced text as an authorization identity. Public Issue
 roots now also cover the explicit activity User and Comment author sources. The
 library's dynamic item result is still unknown, not a full Issue assertion; this
 strengthens provenance without promoting the deferred activity boundary.
+
+### Discussion-list canonical hydration maps
+
+Three pre-fix real GraphQL probes reproduced sibling-key alias collisions in the
+viewer vote lists and author scalars. The actual hydration query now has an exact
+nested map declaration, retaining unknown persisted leaves and native driver
+integer counts. Only these owned maps are marked as canonical; generated sources
+continue to use their response keys. Aliases, fragments, skipped fields and local
+scalar error paths keep GraphQL's normal completion behavior. No extra properties
+are added to responses, and viewer filters, pagination and permissions are unchanged.
+
+Executable projection checks read the actual Cypher document and compare every
+root/nested map key with a compile-checked key set. Negative type fixtures prevent
+mistaking raw author identities/titles or driver counts for validated output.
+These guarantees strengthen the existing selected viewer boundary; unrelated lazy
+children and arbitrary persisted values remain unproven. The three list field
+registrations still expose opaque child contracts, so accounting remains
+176 selected / 33 deferred.

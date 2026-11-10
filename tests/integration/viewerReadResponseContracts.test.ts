@@ -1,3 +1,5 @@
+import { getDiscussionChannelsQuery } from "../../customResolvers/cypher/cypherQueries.js";
+import type { DiscussionListViewerChannel } from "../../customResolvers/contracts/viewerReadProjections.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -6,6 +8,7 @@ import { applyMiddleware } from "graphql-middleware";
 import type { Driver } from "neo4j-driver";
 import typeDefs from "../../typeDefs.js";
 import getResolvers from "../helpers/getTestResolvers.js";
+import identityMiddleware from "../../middleware/userChildIdentityMiddleware.js";
 import permissions from "../../permissions.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { startNeo4j, stopNeo4j, resetDatabase } from "./neo4jHarness.js";
@@ -16,7 +19,7 @@ before(async () => {
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
   registerGeneratedSchema(driver, schema);
-  secured = applyMiddleware(schema, permissions);
+  secured = applyMiddleware(schema, identityMiddleware, permissions);
 }, { timeout: 240000 });
 after(async () => stopNeo4j());
 beforeEach(async () => resetDatabase(driver));
@@ -168,4 +171,85 @@ test('comment pagination preserves empty limit and ordered offsets',async()=>{
     const page=data(await execute(queries[kind].replace('limit:2','limit:1,offset:1'))).result;
     assert.equal((kind==='replies'?page.ChildComments:page.Comments)[0].id,kind==='replies'?'r2':'c2');
   }
+});
+
+for (const field of ['UpvotedByUsers', 'SuperUpvotedByUsers']) {
+  test(`discussion list canonical ${field} survives a sibling field alias`, async () => {
+    await seed();
+    const source = `{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {Flairs:${field} {username}}}}`;
+    for (const actor of ['actor', 'other', 'outsider', null]) {
+      assert.deepEqual(data(await execute(source, actor, true)).result.discussionChannels,
+        [{Flairs: actor && actor !== 'outsider' ? [{username:actor}] : []}]);
+    }
+  });
+}
+test('discussion list canonical author scalar aliases retain their own values', async () => {
+  await seed();
+  await driver.executeQuery("MATCH(u:User {username:'actor'}),(d:Discussion) SET u.displayName='Actor display' CREATE(u)-[:POSTED_DISCUSSION]->(d)");
+  const result = data(await execute(`{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {Discussion {Author {displayName:username username:displayName}}}}}`, 'actor', true));
+  assert.deepEqual(result.result.discussionChannels[0].Discussion.Author, {displayName:'actor',username:'Actor display'});
+});
+
+async function seedListChildren() {
+  await seed();
+  await driver.executeQuery(`MATCH(u:User {username:'actor'}),(d:Discussion),(dc:DiscussionChannel),(ch:Channel)
+    SET u.displayName='Actor display',d.title='Title'
+    CREATE(u)-[:POSTED_DISCUSSION]->(d),
+      (d)-[:HAS_ALBUM]->(a:Album {id:'album',imageOrder:['image']}),
+      (a)-[:HAS_IMAGE]->(:Image {id:'image',url:'https://image.invalid',alt:'Alternative',caption:'Caption'}),
+      (d)-[:HAS_TAG]->(:Tag {text:'tag'}),
+      (d)-[:HAS_DOWNLOADABLE_FILE]->(:DownloadableFile {id:'file',scanStatus:'CLEAN'}),
+      (dc)-[:HAS_DISCUSSION_FLAIR]->(f:DiscussionFlair {id:'flair',displayName:'Category',color:'blue',order:1,archived:false}),
+      (ch)-[:HAS_DISCUSSION_FLAIR]->(f)`);
+}
+function assertKeys<T extends object>(value:T, keys:Record<keyof T,true>) {
+  assert.deepEqual(Object.keys(value).sort(),Object.keys(keys).sort());
+}
+test('actual discussion hydration document retains its exact declared map projections',async()=>{
+  await seedListChildren();
+  const session=driver.session();
+  const result=await session.run<{DiscussionChannel:DiscussionListViewerChannel}>(getDiscussionChannelsQuery,
+    {discussionChannelIds:['dc'],loggedInUsername:'actor',mayAccessSensitiveContent:false}).finally(()=>session.close());
+  const row=result.records[0]!.get('DiscussionChannel');
+  assertKeys(row,{id:true,archived:true,answered:true,locked:true,discussionId:true,createdAt:true,
+    channelUniqueName:true,weightedVotesCount:true,Flairs:true,CommentsAggregate:true,UpvotedByUsers:true,
+    UpvotedByUsersAggregate:true,SuperUpvotedByUsers:true,Discussion:true,Channel:true,isFavorited:true});
+  assertKeys(row.CommentsAggregate,{count:true});assertKeys(row.UpvotedByUsersAggregate,{count:true});
+  assertKeys(row.Channel,{uniqueName:true});
+  for(const votes of [row.UpvotedByUsers,row.SuperUpvotedByUsers]) {
+    assert.equal(votes.length,1); assertKeys(votes[0]!,{username:true});assert.equal(votes[0]!.username,'actor');
+  }
+  const d=row.Discussion;
+  assertKeys(d,{id:true,title:true,body:true,createdAt:true,updatedAt:true,hasSensitiveContent:true,hasSpoiler:true,
+    Author:true,Album:true,Tags:true,DownloadableFiles:true,authorIsChannelModerator:true});
+  assert.ok(d.Author);assertKeys(d.Author,{username:true,displayName:true,profilePicURL:true,createdAt:true,discussionKarma:true,commentKarma:true});
+  assert.ok(d.Album);assertKeys(d.Album,{id:true,imageOrder:true,Images:true});
+  assert.equal(d.Album.Images.length,1);assertKeys(d.Album.Images[0]!,{id:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
+  assert.equal(d.Tags.length,1);assertKeys(d.Tags[0]!,{text:true});
+  assert.equal(d.DownloadableFiles.length,1);assertKeys(d.DownloadableFiles[0]!,{id:true,scanStatus:true});
+  assert.equal(row.Flairs.length,1);assertKeys(row.Flairs[0]!,{id:true,channelUniqueName:true,displayName:true,color:true,order:true,archived:true});
+});
+test('discussion list nested canonical maps preserve aliases and directive variables',async()=>{
+  await seedListChildren();
+  const source=`query($skip:Boolean!){result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {
+    discussionChannels {...Parts}}} fragment Parts on DiscussionChannelListItem {
+      Flairs {color:displayName displayName:color}
+      Discussion {Author {displayName:username username:displayName}
+        Album {Images {alt:caption caption:alt}} Tags {id:text} DownloadableFiles {scanStatus:id}}
+      skipped:UpvotedByUsers @skip(if:$skip) {username}
+    }`;
+  const result=await graphql({schema:secured,source,variableValues:{skip:true},contextValue:{driver,req:{headers:{}},mayAccessSensitiveContent:false,user:{username:'actor',email:null,email_verified:true,data:null}}});
+  assert.deepEqual(data(result).result.discussionChannels,[{
+    Flairs:[{color:'Category',displayName:'blue'}],Discussion:{
+      Author:{displayName:'actor',username:'Actor display'},Album:{Images:[{alt:'Caption',caption:'Alternative'}]},
+      Tags:[{id:'tag'}],DownloadableFiles:[{scanStatus:'file'}]}
+  }]);
+});
+test('discussion list raw leaves still fail only when selected and retain aliased error paths',async()=>{
+  await seedListChildren();
+  await driver.executeQuery("MATCH(u:User {username:'actor'}) SET u.displayName=['invalid','name']");
+  data(await execute(queries.list,'actor',true));
+  const result=await execute(`{result:getDiscussionsInChannel(channelUniqueName:"forum",options:{sort:new}) {discussionChannels {Discussion {Author {bad:displayName}}}}}`,'actor',true);
+  assert.match(result.errors?.[0].message??'',/String cannot represent/);
+  assert.deepEqual(result.errors?.[0].path,['result','discussionChannels',0,'Discussion','Author','bad']);
 });

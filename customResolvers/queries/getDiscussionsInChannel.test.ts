@@ -1,3 +1,5 @@
+import type { DiscussionListViewerChannel } from "../contracts/viewerReadProjections.js";
+import { int } from "neo4j-driver";
 import assert from "node:assert/strict";
 import test from "node:test";
 import getDiscussionsInChannelResolver from "./getDiscussionsInChannel.js";
@@ -435,8 +437,14 @@ test("getDiscussionsInChannel returns discussionChannels and aggregateCount", as
   const mockDiscussionChannel = {
     id: "dc-1",
     discussionId: "d-1",
-    channelUniqueName: "test-channel",
-  };
+    channelUniqueName: "test-channel", archived:false, answered:null, locked:null,
+    createdAt:null, weightedVotesCount:0, Flairs:[], CommentsAggregate:{count:int(0)},
+    UpvotedByUsersAggregate:{count:int(0)}, UpvotedByUsers:[], SuperUpvotedByUsers:[],
+    isFavorited:null, Channel:{uniqueName:'test-channel'},
+    Discussion:{id:'d-1',title:null,body:null,createdAt:null,updatedAt:null,
+      hasSensitiveContent:null,hasSpoiler:null,Author:null,Album:null,Tags:[],
+      DownloadableFiles:[],authorIsChannelModerator:false},
+  } satisfies DiscussionListViewerChannel;
   const driver = createMockDriver([
     { DiscussionChannel: mockDiscussionChannel, totalCount: 42 },
   ]);

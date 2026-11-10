@@ -25,3 +25,15 @@ const invalidDiscussion: DiscussionViewerCore = {isFavorited:null};
 // @ts-expect-error raw properties cannot replace the selected reply fields
 const invalidReplies: ViewerReadQueryResolvers["getCommentReplies"] = () => ({ChildComments:[{}],aggregateChildCommentCount:0});
 void [checked,text,invalidFavorite,invalidSubscriber,invalidDiscussion,invalidReplies];
+
+declare const listSource: import('../../customResolvers/contracts/viewerReadProjections.js').DiscussionListViewerChannel;
+const viewerName: string | undefined = listSource.UpvotedByUsers[0]?.username;
+// @ts-expect-error a persisted author's identity is not the validated viewer parameter
+const persistedAuthorName: string = listSource.Discussion.Author!.username;
+// @ts-expect-error raw persisted title is intentionally not a proven GraphQL String
+const persistedTitle: string = listSource.Discussion.title;
+// @ts-expect-error the exact hydration projection has no arbitrary source properties
+const absentProperty = listSource.unselected;
+// @ts-expect-error a count's database source is a Neo4j integer, not serialized GraphQL output
+const serializedCount: number = listSource.CommentsAggregate.count;
+void [viewerName, persistedAuthorName, persistedTitle, absentProperty, serializedCount];

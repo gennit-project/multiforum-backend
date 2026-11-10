@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { DiscussionListViewerChannel } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver, Integer } from "neo4j-driver";
@@ -149,7 +150,25 @@ const getResolver = (input: Input) => {
           }
         );
         const discussionChannels = discussionChannelsResult.records.map(
-          (record) => record.get("DiscussionChannel")
+          (record) => {
+            const channel = record.get("DiscussionChannel");
+            // These are exact owned Cypher maps, never generated response-key
+            // projections. Mark only the explicitly declared nested sources.
+            rememberCanonicalSource(channel);
+            rememberCanonicalSource(channel.Channel);
+            channel.Flairs.forEach(rememberCanonicalSource);
+            channel.UpvotedByUsers.forEach(rememberCanonicalSource);
+            channel.SuperUpvotedByUsers.forEach(rememberCanonicalSource);
+            const discussion = rememberCanonicalSource(channel.Discussion);
+            if (discussion.Author) rememberCanonicalSource(discussion.Author);
+            if (discussion.Album) {
+              rememberCanonicalSource(discussion.Album);
+              discussion.Album.Images.forEach(rememberCanonicalSource);
+            }
+            discussion.Tags.forEach(rememberCanonicalSource);
+            discussion.DownloadableFiles.forEach(rememberCanonicalSource);
+            return channel;
+          }
         );
 
         return {

@@ -169,10 +169,13 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "customResolvers/cypher/getDiscussionChannelsQuery.cypher",
+        "services/canonicalSourceFields.ts",
+        "middleware/canonicalSourceFields.ts"
       ],
       "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
-      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
+      "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors. Exact nested hydration maps now have executable key-drift coverage and private canonical-key provenance for aliases. Persisted leaves and lazy child contracts remain unverified."
     },
     {
       "field": "Query.getEventComments",

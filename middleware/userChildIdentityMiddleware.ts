@@ -260,9 +260,15 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
-  // These owned image-usage projection types retain canonical source keys.
+  // Explicitly marked owned projection maps retain canonical source keys.
   // Unmarked generated objects pass through with their response aliases intact.
   ImageAlbumUsage: resolveCanonicalSourceField,
+  DiscussionChannelListItem: resolveCanonicalSourceField,
+  Channel: resolveCanonicalSourceField,
+  DiscussionFlair: resolveCanonicalSourceField,
+  Image: resolveCanonicalSourceField,
+  Tag: resolveCanonicalSourceField,
+  DownloadableFile: resolveCanonicalSourceField,
   Album: resolveCanonicalSourceField,
   User: resolveCanonicalSourceField,
   Discussion: resolveCanonicalSourceField,
