@@ -59,3 +59,22 @@ const unselectedAdmins=sortedSource.Admins;
 // @ts-expect-error the actual registered root must preserve its tag item source shape
 const invalidSortedResult:ViewerReadQueryResolvers['getSortedChannels']=()=>({aggregateChannelCount:0,channels:[{...sortedSource,Tags:[{}]}]});
 void [missingTag,wrongCount,unvalidatedName,unselectedAdmins,invalidSortedResult];
+
+declare const detailSource:import('../../customResolvers/contracts/discussionDetailSources.js').DetailSource;
+// @ts-expect-error fixed detail images require the explicit nullable uploader key
+const missingDetailUploader:import('../../customResolvers/contracts/discussionDetailSources.js').DetailImage={id:null,createdAt:null,url:null,alt:null,caption:null,copyright:null};
+// @ts-expect-error stored detail filenames have not been proven as response strings
+const detailFileName:string=detailSource.DownloadableFiles[0].fileName;
+// @ts-expect-error fixed detail channels do not claim unprojected moderator lists
+const detailModerators=detailSource.DiscussionChannels[0].Channel.Moderators;
+// @ts-expect-error answer authors require explicit query-computed type provenance
+const detailAuthor:import('../../customResolvers/contracts/customCommentSources.js').CustomChannelAnswer={id:null,text:null,createdAt:null,CommentAuthor:{username:null,displayName:null}};
+void [missingDetailUploader,detailFileName,detailModerators,detailAuthor];
+
+// @ts-expect-error actual detail registration cannot lose required nested image IDs
+const badDetailResult:ViewerReadQueryResolvers['getDiscussionDetail']=()=>[{...detailSource,Album:{id:null,imageOrder:null,Images:[{url:null}]}}];
+// @ts-expect-error actual file page registration rejects scalar items
+const badFilePage:import('../../customResolvers/contracts/contentQueries.js').ContentPageQueryResolvers['getDiscussionDetailFiles']=()=>({files:[17],pageInfo:{hasNextPage:false,endCursor:null}});
+// @ts-expect-error actual image page registration rejects an absent required image ID
+const badImagePage:import('../../customResolvers/contracts/contentQueries.js').ContentPageQueryResolvers['getDiscussionDetailImages']=()=>({images:[{url:null}],pageInfo:{hasNextPage:false,endCursor:null}});
+void [badDetailResult,badFilePage,badImagePage];

@@ -17,14 +17,7 @@ export type EventViewerMetadata = Persisted & {
   SubscribedToNotifications: ViewerIdentity[];
   SubscribedToEventUpdates: ViewerIdentity[];
 };
-export type DiscussionViewerCore = Persisted & { id: string; isFavorited: boolean | null };
-export type DiscussionViewerChannel = Persisted & {
-  discussionId: string; channelUniqueName: string;
-  UpvotedByUsers: ViewerIdentity[]; SuperUpvotedByUsers: ViewerIdentity[];
-};
-export type DiscussionViewerDetail = DiscussionViewerCore & {
-  DiscussionChannels: DiscussionViewerChannel[]; DownloadableFiles: unknown[];
-};
+export type {DetailCore as DiscussionViewerCore,DetailChannel as DiscussionViewerChannel,DetailSource as DiscussionViewerDetail} from './discussionDetailSources.js';
 /** Exact maps emitted by getDiscussionChannelsQuery.cypher. Persisted leaves
  * deliberately remain unknown; only query-computed values are narrowed. */
 export type DiscussionListAuthor = {

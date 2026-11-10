@@ -1,3 +1,4 @@
+import {detailCoreFixture,detailChannelFixture,detailFileFixture} from "../../tests/helpers/discussionDetailSourceFixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
@@ -63,10 +64,10 @@ const context = {
 
 test("getDiscussionDetail combines three bounded reads", async () => {
   const mock = createDriver([
-    { Discussion: { id: "discussion-1", title: "Hello" } },
-    { DiscussionChannel: { id: "entry-1" } },
+    { Discussion: detailCoreFixture() },
+    { DiscussionChannel: detailChannelFixture() },
     {
-      DownloadableFiles: [{ id: "file-1" }],
+      DownloadableFiles: [detailFileFixture()],
       detailFilesHasNextPage: true,
     },
   ]);
@@ -89,10 +90,9 @@ test("getDiscussionDetail combines three bounded reads", async () => {
     },
     {
       result: [{
-        id: "discussion-1",
-        title: "Hello",
-        DiscussionChannels: [{ id: "entry-1" }],
-        DownloadableFiles: [{ id: "file-1" }],
+        ...detailCoreFixture(),
+        DiscussionChannels: [detailChannelFixture()],
+        DownloadableFiles: [detailFileFixture()],
         _detailFilesHasNextPage: true,
       }],
       callCount: 3,
@@ -133,7 +133,7 @@ test("getDiscussionDetail stops after an unknown or hidden discussion", async ()
 
 test("getDiscussionDetail requires membership in the requested channel", async () => {
   const mock = createDriver([
-    { Discussion: { id: "discussion-1", title: "Hello" } },
+    { Discussion: detailCoreFixture() },
     {},
   ]);
   const resolver = getDiscussionDetail({

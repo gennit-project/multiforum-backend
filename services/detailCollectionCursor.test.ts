@@ -50,3 +50,12 @@ test("malformed detail collection cursors are rejected", () => {
   );
 });
 
+
+test('encoding retains raw persisted IDs without pretending the decoder accepts them',()=>{
+ for(const id of [17,{low:17,high:0},['id']]){
+  const after=encodeDetailCollectionCursor({kind:'answer',createdAt:'2026-01-02T03:04:05.000Z',id});
+  assert.deepEqual(JSON.parse(Buffer.from(after,'base64url').toString('utf8')).i,id);
+  assert.throws(()=>decodeDetailCollectionCursor({after,expectedKind:'answer'}),
+   (error:unknown)=>error instanceof GraphQLError && error.extensions.code==='BAD_USER_INPUT');
+ }
+});

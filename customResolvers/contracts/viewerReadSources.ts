@@ -1,3 +1,4 @@
+import type { DetailSourceSelection } from "./discussionDetailSources.js";
 import type { RawSelectedResolver } from "./rawSelectedSource.js";
 import type { QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -16,7 +17,7 @@ export type ViewerReadQueryResolvers = {
   }>;
   getDiscussionDetail: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetail"], {
     id:true;isFavorited:true;DiscussionChannels:{discussionId:true;channelUniqueName:true;UpvotedByUsers:{username:true};SuperUpvotedByUsers:{username:true}};
-  }>;
+  }> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetail"],DetailSourceSelection>;
   getDiscussionsInChannel: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionsInChannel"], {
     discussionChannels:{UpvotedByUsers:{username:true};SuperUpvotedByUsers:{username:true};isFavorited:true;Discussion:{authorIsChannelModerator:true}};
   }>;

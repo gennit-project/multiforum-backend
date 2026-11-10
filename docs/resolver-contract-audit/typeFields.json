@@ -14,9 +14,12 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
@@ -415,9 +418,12 @@
         "build_scripts/deferredSourceContracts.test.ts",
         "customResolvers/contracts/customCommentSources.d.ts",
         "services/customCommentSources.ts",
-        "tests/integration/customCommentAuthorSources.test.ts"
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {

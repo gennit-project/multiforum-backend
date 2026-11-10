@@ -1,5 +1,9 @@
+import {canonicalChannelAnswer} from "../../services/customCommentSources.js";
+import {canonicalDetailFile,canonicalDetailImage} from "../../services/canonicalDiscussionDetail.js";
+import type {CustomChannelAnswer} from "../contracts/customCommentSources.js";
+import type {DetailFile,DetailImage} from "../contracts/discussionDetailSources.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver, ManagedTransaction } from "neo4j-driver";
 
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -27,35 +31,37 @@ type Args = {
   limit?: number | null;
 };
 
-type PageConfig = {
+type PageItem=CustomChannelAnswer|DetailFile|DetailImage;
+type PageRow<T>={item:T;cursorCreatedAt:unknown;cursorId:unknown};
+async function readPage<T>(transaction:ManagedTransaction,query:string,params:Record<string,unknown>,canonical:(source:T)=>T):Promise<PageRow<T>[]> {
+ const result=await transaction.run<PageRow<T>>(query,params);
+ return result.records.map(record=>({item:canonical(record.get("item")),cursorCreatedAt:record.get("cursorCreatedAt"),cursorId:record.get("cursorId")}));
+}
+type PageConfig<T> = {
   kind: DetailCollectionKind;
-  outputKey: "answers" | "files" | "images";
-  query: string;
+  read:(transaction:ManagedTransaction,params:Record<string,unknown>)=>Promise<PageRow<T>[]>;
   defaultLimit: number;
 };
 
 const PAGE_LIMIT_MAX = 50;
 
-const configs: Record<DetailCollectionKind, PageConfig> = {
+const configs = {
   answer: {
-    kind: "answer",
-    outputKey: "answers",
-    query: getDiscussionDetailAnswersPageQuery,
+    kind: "answer" as const,
+    read:(tx,params)=>readPage(tx,getDiscussionDetailAnswersPageQuery,params,canonicalChannelAnswer),
     defaultLimit: 5,
   },
   file: {
-    kind: "file",
-    outputKey: "files",
-    query: getDiscussionDetailFilesPageQuery,
+    kind: "file" as const,
+    read:(tx,params)=>readPage(tx,getDiscussionDetailFilesPageQuery,params,canonicalDetailFile),
     defaultLimit: 12,
   },
   image: {
-    kind: "image",
-    outputKey: "images",
-    query: getDiscussionDetailImagesPageQuery,
+    kind: "image" as const,
+    read:(tx,params)=>readPage(tx,getDiscussionDetailImagesPageQuery,params,canonicalDetailImage<DetailImage>),
     defaultLimit: 12,
   },
-};
+} satisfies Record<DetailCollectionKind,PageConfig<PageItem>>;
 
 const normalizeCursorDate = (value: unknown): string => {
   if (typeof value === "string") return value;
@@ -65,12 +71,8 @@ const normalizeCursorDate = (value: unknown): string => {
   return "";
 };
 
-export const createDiscussionDetailCollectionPageResolver = ({
-  driver,
-  agePolicyRepository,
-  kind,
-}: Input & { kind: DetailCollectionKind }) => {
-  const config = configs[kind];
+const createPageResolver = <T>({driver,agePolicyRepository,config}:Input & {config:PageConfig<T>}) => {
+  const {kind}=config;
 
   return async (_parent: unknown, args: Args, context: GraphQLContext) => {
     const { limit } = normalizePagination({
@@ -91,7 +93,7 @@ export const createDiscussionDetailCollectionPageResolver = ({
 
     try {
       return await session.executeWrite(async (transaction) => {
-        const result = await transaction.run(config.query, {
+        const records = await config.read(transaction, {
           discussionId: args.discussionId,
           channelUniqueName: args.channelUniqueName,
           mayAccessSensitiveContent: canViewSensitiveContent,
@@ -99,15 +101,13 @@ export const createDiscussionDetailCollectionPageResolver = ({
           cursorId: cursor?.id ?? null,
           pageLimit: limit + 1,
         });
-        const hasNextPage = result.records.length > limit;
-        const selectedRecords = result.records.slice(0, limit);
-        const lastRecord = selectedRecords[selectedRecords.length - 1] as
-          | Neo4jRecord
-          | undefined;
+        const hasNextPage = records.length > limit;
+        const selectedRecords = records.slice(0, limit);
+        const lastRecord:PageRow<T>|undefined = selectedRecords[selectedRecords.length - 1];
         const cursorCreatedAt = lastRecord
-          ? normalizeCursorDate(lastRecord.get("cursorCreatedAt"))
+          ? normalizeCursorDate(lastRecord.cursorCreatedAt)
           : "";
-        const cursorId = lastRecord?.get("cursorId") as string | undefined;
+        const cursorId = lastRecord?.cursorId;
         const endCursor =
           cursorCreatedAt && cursorId
             ? encodeDetailCollectionCursor({
@@ -118,7 +118,7 @@ export const createDiscussionDetailCollectionPageResolver = ({
             : null;
 
         return {
-          [config.outputKey]: selectedRecords.map((record) => record.get("item")),
+          items: selectedRecords.map((record) => record.item),
           pageInfo: { endCursor, hasNextPage },
         };
       });
@@ -128,3 +128,23 @@ export const createDiscussionDetailCollectionPageResolver = ({
   };
 };
 
+type PageInfo={endCursor:string|null;hasNextPage:boolean};
+type PageResult<K extends DetailCollectionKind> = K extends 'answer' ? {answers:CustomChannelAnswer[];pageInfo:PageInfo}
+ : K extends 'file' ? {files:DetailFile[];pageInfo:PageInfo} : {images:DetailImage[];pageInfo:PageInfo};
+type PageResolver<K extends DetailCollectionKind> = (_parent:unknown,args:Args,context:GraphQLContext)=>Promise<PageResult<K>>;
+export function createDiscussionDetailCollectionPageResolver<K extends DetailCollectionKind>(input:Input & {kind:K}):PageResolver<K>;
+export function createDiscussionDetailCollectionPageResolver(input:Input & {kind:DetailCollectionKind}):PageResolver<'answer'>|PageResolver<'file'>|PageResolver<'image'> {
+ if(input.kind==='answer'){
+  const read=createPageResolver({...input,config:configs.answer});
+  const resolver:PageResolver<'answer'>=async(...args)=>{const result=await read(...args);return {answers:result.items,pageInfo:result.pageInfo};};
+  return resolver;
+ }
+ if(input.kind==='file'){
+  const read=createPageResolver({...input,config:configs.file});
+  const resolver:PageResolver<'file'>=async(...args)=>{const result=await read(...args);return {files:result.items,pageInfo:result.pageInfo};};
+  return resolver;
+ }
+ const read=createPageResolver({...input,config:configs.image});
+ const resolver:PageResolver<'image'>=async(...args)=>{const result=await read(...args);return {images:result.items,pageInfo:result.pageInfo};};
+ return resolver;
+}

@@ -564,3 +564,31 @@ errors, nullable fields, filtering, search, ordering, pagination and favorites;
 no missing child relationships are fabricated. `Channel.Tags` stays deferred:
 this closes one fixed producer's source gap, not every shared dynamic producer.
 Accounting remains 178 selected / 31 deferred and 18 shared-list engineering gates.
+
+### Discussion detail and continuation-page sources
+
+The initial detail read's core, channel and files, plus all three continuation
+queries, now have exact raw item projections. The actual registrations check
+public source keys against generated raw selections while preserving existing
+selected scalar guarantees. The page factory retains its answer/file/image
+result type through each branch. Database cursor IDs remain raw through encoding;
+the existing decoder still rejects malformed IDs. This removes the old string
+assertion without changing malformed-data behavior or claiming every encoded
+cursor is usable.
+
+Initial and paginated answers reproduced the nullable-moderator-name inference
+bug. Both queries now produce private explicit label provenance; ambiguous labels
+remain selection-time errors, missing authors stay null and the human account
+behind a moderator stays protected. Canonical owned maps also preserve aliases
+through core fields, assets, uploader/author identities, channel counts, labels,
+crossposts and shared collections. Generated projections are not marked.
+
+Compile-negative fixtures and real-query key guards cover all six query documents.
+Real GraphQL/Shield tests cover aliased fragments/directives, lazy scalar failures,
+nullable/ambiguous authors, age filtering, protected User children and raw identity
+comparisons. Existing pagination tests retain first-page limits and continuation
+ordering. No schema, permission, privacy, read transaction or limit change is
+intended. `Album.Images` and `DiscussionChannel.SuperUpvotedByUsers` gain precise
+owned producers, not universal shared-field guarantees. Inventory remains 178
+selected / 31 deferred; the 18 shared-list gates still need final producer
+reconciliation. Event-comment metadata remains a separate fixed source to inspect.

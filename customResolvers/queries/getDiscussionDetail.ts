@@ -1,3 +1,5 @@
+import {canonicalDiscussionDetail} from "../../services/canonicalDiscussionDetail.js";
+import type {DetailFile} from "../contracts/discussionDetailSources.js";
 import type { DiscussionViewerCore, DiscussionViewerChannel, DiscussionViewerDetail } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
@@ -79,7 +81,7 @@ const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
           channelResult.records[0]?.get("DiscussionChannel");
         if (!discussionChannel) return [];
 
-        const filesResult = await transaction.run<{DownloadableFiles: unknown[]; detailFilesHasNextPage: unknown}>(
+        const filesResult = await transaction.run<{DownloadableFiles: DetailFile[]; detailFilesHasNextPage: boolean}>(
           getDiscussionDetailFilesQuery,
           sharedParams
         );
@@ -89,12 +91,12 @@ const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
           filesResult.records[0]?.get("detailFilesHasNextPage") === true;
 
         return [
-          {
+          canonicalDiscussionDetail({
             ...discussion,
             DiscussionChannels: [discussionChannel],
             DownloadableFiles: downloadableFiles,
             _detailFilesHasNextPage: detailFilesHasNextPage,
-          },
+          }),
         ];
       });
     } finally {

@@ -1,3 +1,5 @@
+import type {RawSelectedResolver} from "./rawSelectedSource.js";
+import type {DetailAnswerSelection,DetailFileSelection,DetailImageSelection} from "./discussionDetailSources.js";
 import type { QueryResolvers, DiscussionAnswerPage } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { Selection, SelectedResolver } from "./selection.js";
@@ -13,7 +15,8 @@ export type ContentScalarQueryResolvers = {
 };
 
 // Only these computed pagination fields are certified here. Raw Cypher item
-// maps still need their own projection migration; see the query audit.
+// maps additionally have explicit raw source selections below; persisted scalar
+// values still complete lazily through GraphQL.
 export const contentPageSelection = {
   pageInfo: { endCursor: true, hasNextPage: true },
 } as const satisfies Selection<DiscussionAnswerPage>;
@@ -21,8 +24,8 @@ export const contentPageQueryNames = [
   "getDiscussionDetailAnswers", "getDiscussionDetailFiles", "getDiscussionDetailImages", "getSiteWideDiscussionList",
 ] as const;
 export type ContentPageQueryResolvers = {
-  getDiscussionDetailAnswers: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailAnswers"], typeof contentPageSelection>;
-  getDiscussionDetailFiles: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailFiles"], typeof contentPageSelection>;
-  getDiscussionDetailImages: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailImages"], typeof contentPageSelection>;
+  getDiscussionDetailAnswers: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailAnswers"], typeof contentPageSelection> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailAnswers"],{answers:DetailAnswerSelection}>;
+  getDiscussionDetailFiles: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailFiles"], typeof contentPageSelection> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailFiles"],{files:DetailFileSelection}>;
+  getDiscussionDetailImages: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailImages"], typeof contentPageSelection> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetailImages"],{images:DetailImageSelection}>;
   getSiteWideDiscussionList: SelectedResolver<QueryResolvers<GraphQLContext>["getSiteWideDiscussionList"], typeof contentPageSelection>;
 };

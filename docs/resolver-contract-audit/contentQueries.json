@@ -99,9 +99,12 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
@@ -117,9 +120,12 @@
         "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
         "customResolvers/contracts/contentQueries.ts",
         "tests/contracts/contentQueries.typecheck.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
     },
     {
@@ -135,9 +141,12 @@
         "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
         "customResolvers/contracts/contentQueries.ts",
         "tests/contracts/contentQueries.typecheck.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
     },
     {
@@ -153,9 +162,12 @@
         "customResolvers/queries/getDiscussionDetailCollectionPage.ts",
         "customResolvers/contracts/contentQueries.ts",
         "tests/contracts/contentQueries.typecheck.ts",
-        "tests/integration/contentScalarResponseContracts.test.ts"
+        "tests/integration/contentScalarResponseContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts"
       ],
-      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields.",
+      "reason": "The pageInfo fields are computed string/null and Boolean values. Hydrated item maps and any raw aggregate values are forwarded from record.get without a validating projection boundary. Cursor serialization produces a string but does not certify the internal persisted cursor fields. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
       "decision": "Keep selected pagination boundary; migrate raw item projections only with selection-aware field completion preserving existing scalar coercion, null bubbling and error timing. Eager whole-result validation is not semantics-preserving."
     },
     {

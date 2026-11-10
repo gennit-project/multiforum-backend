@@ -21,6 +21,10 @@ RETURN answer {
   .text,
   .createdAt,
   CommentAuthor: CASE WHEN answerAuthor IS NULL THEN null ELSE answerAuthor {
+      __sourceAuthorType: CASE
+        WHEN answerAuthor:User AND NOT (answerAuthor:ModerationProfile) THEN 'User'
+        WHEN answerAuthor:ModerationProfile AND NOT (answerAuthor:User) THEN 'ModerationProfile'
+        ELSE null END,
     .username,
     .displayName
   } END
