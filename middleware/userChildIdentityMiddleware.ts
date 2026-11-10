@@ -191,13 +191,17 @@ const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "Pendin
 
 // Explicit one-hop paths only; deeper reply trees are not certified here.
 export const commentAuthorSourcePaths = [["CommentAuthor"], ["ParentComment", "CommentAuthor"], ["ChildComments", "CommentAuthor"]] as const;
+const channelUserSourcePaths: readonly UserSourcePath[] = [
+  ...channelUserLists.map(field => ({path: [field]})),
+  ...commentAuthorSourcePaths.map((path): UserSourcePath => ({path: ["Comments", ...path], userUnion: true})),
+];
 
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
-    channels: userChildIdentityAtPaths(channelUserLists.map(field => ({path: [field]}))),
-    channelsConnection: userChildIdentityAtPaths(channelUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
+    channels: userChildIdentityAtPaths(channelUserSourcePaths),
+    channelsConnection: userChildIdentityAtPaths(channelUserSourcePaths.map(({path, userUnion}): UserSourcePath => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")], ...(userUnion ? {userUnion} : {})}))),
     serverConfigs: userChildIdentityAtPaths(serverUserLists.map(field => ({path: [field]}))),
     serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     images: userChildIdentityAtPaths([{path: ["Uploader"]}, {path: ["PermanentlyRemovedByUser"]}]),

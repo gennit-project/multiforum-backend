@@ -91,9 +91,11 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "tests/integration/channelCommentAuthorSources.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Explicit public channel roots now preserve private author branch and owner identity for comments and one parent/reply hop, with real selection and permission regressions; other item properties and deeper descendants remain opaque.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
