@@ -1,3 +1,4 @@
+import { canonicalCommentSectionChannel, canonicalRootComment } from "../../services/customCommentSources.js";
 import type { CommentSectionChannel, RootViewerComment } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -96,8 +97,8 @@ const getResolver = (input: Input) => {
         })
 
         return {
-          DiscussionChannel: discussionChannel,
-          Comments: queryResult.records.map((record) => record.get('comment')),
+          DiscussionChannel: canonicalCommentSectionChannel(discussionChannel),
+          Comments: queryResult.records.map((record) => canonicalRootComment(record.get('comment'))),
         }
       })
     } catch (error: unknown) {

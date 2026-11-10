@@ -44,9 +44,12 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
@@ -69,9 +72,12 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {
@@ -195,9 +201,12 @@
         "customResolvers/contracts/viewerReadSources.ts",
         "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/viewerReadSources.typecheck.ts",
-        "tests/integration/viewerReadResponseContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {

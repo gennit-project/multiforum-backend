@@ -1,3 +1,4 @@
+import type {CustomViewerComment,CustomRootComment,CustomReplyComment,CustomEventComment,CustomCommentSectionChannel} from "./customCommentSources.js";
 import type { DiscussionListFlair } from "./discussionListFlairs.js";
 export type { DiscussionListFlair } from "./discussionListFlairs.js";
 import type { Integer } from "neo4j-driver";
@@ -5,19 +6,12 @@ import type { Integer } from "neo4j-driver";
  * Unknown keys intentionally preserve GraphQL's lazy scalar completion. */
 type Persisted = Record<string, unknown>;
 export type ViewerIdentity = { username: string };
-export type ViewerComment = Persisted & {
-  isFavoritedByUser: boolean;
-  SubscribedToNotifications: ViewerIdentity[];
-};
-export type ReplyViewerComment = ViewerComment & { ParentComment: { id: string } };
-export type RootViewerComment = ViewerComment & { ParentComment: null };
+export type ViewerComment = CustomViewerComment;
+export type ReplyViewerComment = CustomReplyComment;
+export type RootViewerComment = CustomRootComment;
+export type EventViewerComment = CustomEventComment;
 export type CommentRepliesRow = { ChildComments: ReplyViewerComment[]; aggregateChildCommentCount: Integer };
-export type CommentSectionChannel = Persisted & {
-  discussionId: string; channelUniqueName: string;
-  SubscribedToNotifications: ViewerIdentity[];
-  Channel: Persisted & { uniqueName: string };
-  Discussion: Persisted & { id: string };
-};
+export type CommentSectionChannel = CustomCommentSectionChannel;
 export type EventViewerMetadata = Persisted & {
   id: string;
   SubscribedToNotifications: ViewerIdentity[];

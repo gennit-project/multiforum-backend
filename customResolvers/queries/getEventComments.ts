@@ -1,4 +1,5 @@
-import type { EventViewerMetadata, RootViewerComment } from "../contracts/viewerReadProjections.js";
+import { canonicalEventComment } from "../../services/customCommentSources.js";
+import type { EventViewerMetadata, EventViewerComment } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import {
@@ -61,7 +62,7 @@ const getResolver = (input: Input) => {
         const event = eventResult.records[0]?.get("Event");
         if (!event) return { Event: null, Comments: [] };
 
-        const commentsResult = await transaction.run<{comment: RootViewerComment}>(getEventCommentsQuery, {
+        const commentsResult = await transaction.run<{comment: EventViewerComment}>(getEventCommentsQuery, {
           eventId,
           offset,
           limit,
@@ -72,7 +73,7 @@ const getResolver = (input: Input) => {
 
         return {
           Event: event,
-          Comments: commentsResult.records.map((record) => record.get("comment")),
+          Comments: commentsResult.records.map((record) => canonicalEventComment(record.get("comment"))),
         };
       });
     } catch (error: unknown) {

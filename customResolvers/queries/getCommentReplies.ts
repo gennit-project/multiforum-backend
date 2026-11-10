@@ -1,3 +1,4 @@
+import { canonicalReplyComment } from "../../services/customCommentSources.js";
 import type { CommentRepliesRow } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -86,7 +87,7 @@ const getResolver = (input: Input) => {
       const aggregateCount = record.get("aggregateChildCommentCount");
 
       return {
-        ChildComments: record.get("ChildComments") || [],
+        ChildComments: (record.get("ChildComments") || []).map(canonicalReplyComment),
         aggregateChildCommentCount: aggregateCount?.toNumber() || 0,
       };
     } catch (error: unknown) {

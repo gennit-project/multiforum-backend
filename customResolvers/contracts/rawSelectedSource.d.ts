@@ -11,6 +11,7 @@ type RawProperties<T, S> = { [Key in keyof T]: Key extends keyof S ? RawSelected
  * No unselected property is added or represented by a blanket Partial entity.
  */
 export type RawSelectedSource<T, S> = S extends true ? unknown
+  : 0 extends (1 & T) ? never
   : T extends null | undefined ? T
   : T extends PromiseLike<infer Value> ? RawSelectedSource<Value, S>
   : T extends ReadonlyArray<infer Item> ? RawSelectedSource<Item, S>[]

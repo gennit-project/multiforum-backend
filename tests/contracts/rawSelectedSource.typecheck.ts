@@ -61,3 +61,7 @@ const missingAlbumChildren:ImageUsageSourceResolver=()=>({imageId:'id',uploaderU
 // @ts-expect-error arbitrary JSON cannot certify a structured root projection
 const rawJsonRoot:RawSelectedResolver<()=>any,true>=()=>({});
 void [actualImageUsage,missingImageContainers,missingAlbumChildren,rawJsonRoot];
+
+// @ts-expect-error a nested unrestricted JSON value cannot certify an object-shaped selection
+const structuredNestedJson:RawSelectedSource<{payload:any},{payload:{id:true}}>={payload:{id:'x'}};
+void structuredNestedJson;

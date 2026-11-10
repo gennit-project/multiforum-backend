@@ -491,3 +491,28 @@ source/container boundary is now checked, while generated response-value status
 remains deferred. Within the 31 deferred entries, four have explicit fixed raw
 source boundaries, six are JSON structural limits, two await campaign transitions,
 and 19 still have engineering gates (18 shared dynamic lists and delegated activity).
+
+### Shared custom comment and answer producers
+
+Four real GraphQL probes reproduced nameless moderators being inferred as Users in
+custom discussion comments, replies, event comments and channel answers. The four
+actual Cypher documents now compute a private discriminator from explicit,
+unambiguous User/ModerationProfile labels. Source adapters retain it in the shared
+WeakMap and make the database-only marker non-enumerable. Public names, aliases or
+malformed unrequested scalar values no longer choose the author type; ambiguous
+labels retain a lazy abstract-type error rather than guessing an identity.
+
+Exact root/reply/event comment and channel-metadata declarations replace the
+previous catch-all comment projections. They distinguish raw stored voter names
+from matched viewer names and native count values. Canonical provenance covers
+these owned maps, including bot/moderator summaries, versions and counts; generated
+response-key sources are untouched. The actual query documents have nested key
+and discriminator drift checks, with permission, alias/fragment/directive, missing
+relation, malformed scalar, privacy and five-answer-cap regressions. Existing
+ranking, pagination, count, age-filter and event swallowing/error behavior stays
+covered. The human account behind a moderator remains denied.
+
+This closes specific owned-producer gaps for shared Comment/DiscussionChannel and
+Channel child lists. It does not certify every generated or custom producer of
+those shared types or their unprojected relationships. The 18 dynamic list gates
+therefore remain open; response accounting stays 178 selected / 31 deferred.

@@ -73,9 +73,12 @@
         "customResolvers/contracts/botProvisioningProjections.ts",
         "tests/contracts/botProvisioningProjections.typecheck.ts",
         "tests/integration/botProvisioningProjectionContracts.test.ts",
-        "tests/integration/channelBotRepository.test.ts"
+        "tests/integration/channelBotRepository.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Merged #443 preserves aliases/independent filters, fragments, skipped fields, nullable paths and Shield privacy. Items remain opaque despite checked generated arguments and list-container nullability. The exact supported GET_CHANNEL and GET_CHANNEL_PLUGIN_SETTINGS documents now execute against GraphQL/Shield and disposable Neo4j; compatibility CI verifies their original bundle provenance. This adds client-shape execution evidence without claiming static opaque-item validity. Bot provisioning now has precise fixed identity/settings/write snapshots and executable query-drift checks; these upstream fixed reads do not establish a universal dynamic child selection.",
+      "reason": "Merged #443 preserves aliases/independent filters, fragments, skipped fields, nullable paths and Shield privacy. Items remain opaque despite checked generated arguments and list-container nullability. The exact supported GET_CHANNEL and GET_CHANNEL_PLUGIN_SETTINGS documents now execute against GraphQL/Shield and disposable Neo4j; compatibility CI verifies their original bundle provenance. This adds client-shape execution evidence without claiming static opaque-item validity. Bot provisioning now has precise fixed identity/settings/write snapshots and executable query-drift checks; these upstream fixed reads do not establish a universal dynamic child selection. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Retain deferred item contract until upstream selections have precise item types; do not count the OpaqueListSource container check as a generated child response guarantee."
     },
     {
@@ -165,9 +168,12 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
@@ -345,9 +351,12 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
@@ -401,9 +410,12 @@
         "tests/integration/typeFieldResponseContracts.test.ts",
         "customResolvers/contracts/deferredSources.d.ts",
         "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {

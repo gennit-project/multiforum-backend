@@ -19,7 +19,7 @@ const text: string = rawComment.text;
 // @ts-expect-error computed favorites cannot be arbitrary database values
 const invalidFavorite: ViewerReadQueryResolvers["getSortedChannels"] = () => ({channels:[{isFavorited:"yes"}]});
 // @ts-expect-error viewer identity requires a string from the matched request parameter
-const invalidSubscriber: ViewerComment = {isFavoritedByUser:false,SubscribedToNotifications:[{username:null}]};
+const invalidSubscriber: ViewerComment = {...rawComment,SubscribedToNotifications:[{username:null}]};
 // @ts-expect-error parameter-matched discussion identity cannot be omitted
 const invalidDiscussion: DiscussionViewerCore = {isFavorited:null};
 // @ts-expect-error raw properties cannot replace the selected reply fields
@@ -37,3 +37,12 @@ const absentProperty = listSource.unselected;
 // @ts-expect-error a count's database source is a Neo4j integer, not serialized GraphQL output
 const serializedCount: number = listSource.CommentsAggregate.count;
 void [viewerName, persistedAuthorName, persistedTitle, absentProperty, serializedCount];
+
+declare const commentSource: import('../../customResolvers/contracts/customCommentSources.js').CustomRootComment;
+// @ts-expect-error fixed comment sources do not allow undeclared persisted fields
+const arbitraryCommentProperty=commentSource.unselected;
+// @ts-expect-error computed union provenance is restricted to the two actual schema members
+const invalidSourceAuthor: import('../../customResolvers/contracts/customCommentSources.js').CustomCommentAuthorIdentity={username:null,displayName:null,__sourceAuthorType:'Channel'};
+// @ts-expect-error arbitrary stored voter names are not validated viewer identities
+const arbitraryVoter:string=commentSource.SuperUpvotedByUsers[0]!.username;
+void [arbitraryCommentProperty,invalidSourceAuthor,arbitraryVoter];
