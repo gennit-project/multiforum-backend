@@ -305,3 +305,23 @@ connections and moderator anonymity through channel lists. Unit coverage proves
 unrelated fields and skipped branches are not traversed. Other source families
 and arbitrary mutation payloads remain outside this guarantee; no inventory entry
 is promoted and no product policy is changed.
+
+### Comment update payload authors
+
+The generated `updateComments` response now uses the same selected reply-chain
+identity adapter under its `comments` payload. Real GraphQL/Shield/Neo4j probes
+first reproduced successful edits followed by missing-identity completion errors
+for both User and moderator authors. Regression coverage preserves owner access,
+non-owner/anonymous denial before writes, moderator anonymity, aliases, directive
+defaults, missing targets and local child serialization errors after committed
+writes. This does not move GraphQL completion inside the transaction.
+
+The tests also reproduced a pinned Neo4j 7.6.4 update response-assembly defect:
+its resolver finds the payload collection only among direct selections in the
+first root field node, so a collection selected solely by a fragment was omitted
+after the write. The comment-update adapter supplies a view with active payload
+fragments expanded, preserving the original caller document and invoking the
+write once. Unit coverage checks the unchanged original AST and skipped payloads.
+This is bounded to this mutation's concrete response; other generated mutations
+and multiple distinct collection aliases are not certified by this slice. The
+inventory remains 176 selected / 33 deferred.

@@ -224,6 +224,25 @@ function selectedCommentAuthorIdentity(prefix: UserSourcePath = {path: []}, othe
   };
 }
 
+/** Neo4j 7.6's update response assembler examines only direct selections in
+ * fieldNodes[0]. Expand the concrete payload's active fragments for that view;
+ * GraphQL still completes the caller's original document and error paths.
+ */
+export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChildIdentity = (resolve, parent, args, context, info) => {
+  function fields(selection: SelectionSetNode | undefined, seen: ReadonlySet<string>): FieldNode[] {
+    return (selection?.selections ?? []).flatMap(node => {
+      if (!isIncluded(node.directives, info)) return [];
+      if (node.kind === Kind.FIELD) return [node];
+      if (node.kind === Kind.INLINE_FRAGMENT) return fields(node.selectionSet, seen);
+      if (seen.has(node.name.value)) return [];
+      return fields(info.fragments[node.name.value]?.selectionSet, new Set([...seen, node.name.value]));
+    });
+  }
+  const first = info.fieldNodes[0];
+  const fieldNodes: GraphQLResolveInfo["fieldNodes"] = first ? [{...first, selectionSet: {kind: Kind.SELECTION_SET, selections: info.fieldNodes.flatMap(node => fields(node.selectionSet, new Set()))}}] : info.fieldNodes;
+  return selectedCommentAuthorIdentity({path: ["comments"]})(resolve, parent, args, context, {...info, fieldNodes});
+};
+
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
@@ -257,7 +276,10 @@ export default {
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },
-  Mutation: { updateUsers: resolveUpdatedUsersWithChildIdentity },
+  Mutation: {
+    updateUsers: resolveUpdatedUsersWithChildIdentity,
+    updateComments: resolveUpdatedCommentsWithChildIdentity,
+  },
 };
 
 /**

@@ -205,3 +205,24 @@ test('selected reply discovery follows only requested Comment edges and directiv
   assert.deepEqual(paths,show?[['ParentComment','ChildComments','ParentComment','CommentAuthor']]:[]);
  }
 });
+test('comment update fragment view preserves the caller document and invokes the write once',async()=>{
+ const {resolveUpdatedCommentsWithChildIdentity}=await import('./userChildIdentityMiddleware.js');
+ const {print}=await import('graphql');
+ const probe=buildSchema('type Query{unused:Int} type Mutation{updateComments:UpdateCommentsMutationResponse!} type UpdateCommentsMutationResponse{comments:[Comment!]! info:Int} type Comment{id:ID!}');
+ for(const show of [true,false]){
+  let calls=0;
+  const response=await graphql({schema:probe,source:'mutation($show:Boolean!=true){updateComments{...Payload @include(if:$show) info}} fragment Payload on UpdateCommentsMutationResponse{rows:comments{id}}',variableValues:{show},rootValue:{updateComments:(args:Record<string,unknown>,ctx:unknown,info:GraphQLResolveInfo)=>{
+   const before=print(info.operation)+Object.values(info.fragments).map(print).join('');
+   return resolveUpdatedCommentsWithChildIdentity((_parent,_args,_ctx,view)=>{
+    calls++;
+    assert.equal(print(info.operation)+Object.values(info.fragments).map(print).join(''),before);
+    const names=view.fieldNodes[0].selectionSet!.selections.map(node=>node.kind===Kind.FIELD?node.name.value:'unexpected fragment');
+    assert.deepEqual(names,show?['comments','info']:['info']);
+    return {comments:[{id:'c'}],info:1};
+   },null,args,ctx,info);
+  }}});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+  assert.equal(calls,1);
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{updateComments:show?{rows:[{id:'c'}],info:1}:{info:1}});
+ }
+});
