@@ -1,3 +1,4 @@
+import { rankingSettingsSource } from "../contracts/accountConfigurationSources.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -84,11 +85,11 @@ export const setRankingSettings = ({
           next: updatedSettings,
         });
 
-        return {
+        return rankingSettingsSource({
           ...updatedSettings,
           updatedAt,
           updatedBy,
-        };
+        });
       });
       invalidateRankingSettingsCache(serverName);
       return result;

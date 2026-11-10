@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import { denyImageExternalIo } from "../denyImageExternalIo.js";
 import createSignedStorageURL from "../../customResolvers/mutations/createSignedStorageURL.js";
 import assert from "node:assert/strict";
@@ -38,7 +39,8 @@ before(async () => {
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
   registerGeneratedSchema(driver, schema);
-  secured = applyMiddleware(schema, permissions);
+  secured = applyMiddleware(schema, permissions, sourceIdentity);
+  schema = applyMiddleware(schema, sourceIdentity);
   ioGuard = denyImageExternalIo();
 }, { timeout: 240000 });
 afterEach(() => ioGuard?.assertUnused());
@@ -176,4 +178,39 @@ test("upload authentication and channel image policy are checked before signing"
   await driver.executeQuery("CREATE(:Channel {uniqueName:'no-images',imageUploadsEnabled:false})");
   const disabled=await exec('mutation{result:createSignedStorageURL(filename:"image.png",contentType:"image/png",channelConnections:["no-images"]){url}}');
   assert.match(disabled.errors?.[0].message??"",/Image uploads are disabled/);assert.equal(signCalls.length,0);
+});
+
+test("own age profile aliases and fragments retain nullable eligibility and caller identity", async () => {
+  const query='{result:getMyAgeProfile{date:birthday ...Eligibility}} fragment Eligibility on OwnAgeProfile {mayAccessSensitiveContent:meetsAccountMinimumAge meetsAccountMinimumAge:mayAccessSensitiveContent}';
+  assert.deepEqual(data(await exec(query,'actor')).result,{date:null,mayAccessSensitiveContent:null,meetsAccountMinimumAge:false});
+  assert.deepEqual(data(await exec(query,'adult')).result,{date:adult,mayAccessSensitiveContent:true,meetsAccountMinimumAge:true});
+  assert.equal(data(await exec(query,null)).result,null);
+});
+test("birthday write aliases return persisted eligibility and retain repeat/conflict behavior", async () => {
+  const query=`mutation{result:setMyBirthday(birthday:"${adult}"){date:birthday permitted:mayAccessSensitiveContent minimum:meetsAccountMinimumAge}}`;
+  const expected={date:adult,permitted:true,minimum:true};
+  assert.deepEqual(data(await exec(query)).result,expected);
+  assert.deepEqual(data(await exec(query)).result,expected);
+  assert.ok((await exec(`mutation{setMyBirthday(birthday:"${minor}"){date:birthday}}`)).errors);
+});
+
+test("age policy and gate aliases retain distinct thresholds and every viewer state", async () => {
+  const policy=data(await exec('{result:getAgePolicy{minimumAccountAge:minimumSensitiveContentAge minimumSensitiveContentAge:minimumAccountAge enabled:accountAgeGateEnabled}}',null)).result;
+  assert.deepEqual(policy,{minimumAccountAge:18,minimumSensitiveContentAge:13,enabled:true});
+  for(const [username,status] of [[null,'SIGN_IN_REQUIRED'],['actor','BIRTHDAY_REQUIRED'],['minor','UNDER_MINIMUM_AGE'],['adult','ALLOWED']] as const) {
+    const result=data(await exec('{result:getDiscussionAgeGateCheck(discussionId:"sensitive"){value:status needed:requiresAgeCheck age:minimumAge}}',username)).result;
+    assert.deepEqual(result,{value:status,needed:status!=='ALLOWED',age:status==='ALLOWED'?null:18});
+  }
+  assert.deepEqual(data(await exec('{result:getDiscussionAgeGateCheck(discussionId:"missing"){value:status age:minimumAge}}',null)).result,{value:'ALLOWED',age:null});
+});
+
+test("safety environment aliases preserve optional values using only a fixture URI", async () => {
+  const previous=process.env.NEO4J_URI;
+  const query='{result:safetyCheck{value:environment{database:currentDatabase local:isTestEnvironment}}}';
+  try {
+    process.env.NEO4J_URI='bolt://localhost:1234';
+    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{database:'bolt://localhost:1234',local:true}}});
+    delete process.env.NEO4J_URI;
+    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{database:null,local:null}}});
+  } finally {if(previous===undefined)delete process.env.NEO4J_URI;else process.env.NEO4J_URI=previous;}
 });

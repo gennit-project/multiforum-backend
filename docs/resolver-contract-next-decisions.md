@@ -1268,3 +1268,24 @@ is the remaining account/configuration maps: safety environment, self age profil
 self email, ranking settings, instance setup status and download review queue,
 including shared mutation producers where they return the same maps. The raw,
 dynamic-selection and product-policy limits remain separate from this work.
+
+
+### Account, policy and review response sources
+
+Eight new real-schema regressions cover own-email onboarding/self scope, age
+profile reads and birthday writes, age policy/gate thresholds and viewer states,
+ranking reads/writes, instance setup capabilities, optional safety environment
+values and moderator review rows. Seven initially failed on canonical response
+aliases; the safety-environment probe already passed and required no runtime
+change. The fixed maps now preserve canonical provenance at their actual
+producers, including shared mutation paths and nested ranking/capability maps.
+The existing policy normalization, nullable values, error timing, eligibility,
+moderator permissions, review ordering and limits remain unchanged. No environment
+credentials are inspected by these tests; safety/setup probes use fixture values.
+
+This closes the named account/configuration group, without changing the 180/29
+boundary accounting. The final producer census still needs to verify fixed
+content-creation snapshots and their wrappers, rather than assume a typed internal
+GraphQL read proves outer alias semantics. Dynamic caller-selected maps and raw
+JSON/scalar values remain distinct limitations; neither pending product policy is
+changed. These remaining engineering checks are not justified exceptions yet.

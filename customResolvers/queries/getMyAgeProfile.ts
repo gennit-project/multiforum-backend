@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -33,10 +34,10 @@ const getMyAgeProfile = ({ driver, agePolicyRepository }: Input) => async (
     const birthday = result.records[0]?.get("birthday") ?? null;
     const policy = await loadAgePolicy(agePolicyRepository);
 
-    return {
+    return rememberCanonicalSource({
       birthday,
       ...getAgeEligibility({ birthday, policy }),
-    };
+    });
   } finally {
     await session.close();
   }

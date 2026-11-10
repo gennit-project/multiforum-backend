@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { InstancePolicyRepository } from "../../services/persistence/instancePolicyRepository.js";
 import {
   getAuthenticationProvider,
@@ -52,7 +53,7 @@ const capability = ({
   requiredEnvVarsMissing,
   setupUrl,
   docsPath,
-}: InstanceCapabilityStatus): InstanceCapabilityStatus => ({
+}: InstanceCapabilityStatus): InstanceCapabilityStatus => rememberCanonicalSource({
   configured,
   enabled,
   requiredEnvVarsMissing,
@@ -112,7 +113,7 @@ export const buildInstanceSetupStatus = ({
   const eventsConfigured = serverConfig !== null;
   const pluginsConfigured = serverConfig !== null && pluginsMissing.length === 0;
 
-  return {
+  return rememberCanonicalSource({
     auth: capability({
       configured: authConfigured,
       enabled: authConfigured,
@@ -169,14 +170,14 @@ export const buildInstanceSetupStatus = ({
       setupUrl: "/admin/setup#plugins",
       docsPath: "/roles/admins/plugin-pipelines",
     }),
-  };
+  });
 };
 
 const getInstanceSetupStatus = ({ instancePolicyRepository, env = process.env }: Input) => {
   return async () => {
     const serverName = env.SERVER_CONFIG_NAME?.trim();
     const serverConfigs = await instancePolicyRepository.findSetupConfigs(serverName || undefined);
-    const serverConfig = (serverConfigs[0] as ServerFeatureConfig | undefined) ?? null;
+    const serverConfig = serverConfigs[0] ?? null;
 
     return buildInstanceSetupStatus({ env, serverConfig });
   };

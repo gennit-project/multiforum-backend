@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import { denyImageExternalIo } from "../denyImageExternalIo.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, afterEach, test } from "node:test";
@@ -40,7 +41,8 @@ before(async () => {
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: app.resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
   registerGeneratedSchema(driver, schema);
-  secured = applyMiddleware(schema, permissions);
+  secured = applyMiddleware(schema, permissions, sourceIdentity);
+  schema = applyMiddleware(schema, sourceIdentity);
   ioGuard = denyImageExternalIo();
 }, { timeout: 240000 });
 afterEach(() => ioGuard?.assertUnused());
@@ -229,4 +231,27 @@ test("scratchpad visibility preserves selected author/recipient projections, nul
  await driver.executeQuery("MATCH(:User)-[r:HAS_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry {id:'entry'}) DELETE r SET e.isPublic=false");
  const rejected=await exec(source);assert.ok(rejected.errors?.some(error=>/Only the recipient/.test(error.message)));
  assert.equal((await driver.executeQuery("MATCH(e:ScratchpadEntry {id:'entry'}) RETURN e.isPublic AS visible")).records[0].get('visible'),false);
+});
+
+test("own email aliases preserve verified self scope and onboarding nulls", async () => {
+  const query = '{result:getOwnEmail{username:address address:username ...Fields}} fragment Fields on OwnEmail {name:modProfileName picture:profilePicURL count:unreadNotificationCount}';
+  assert.deepEqual(data(await exec(query,{secure:true,email:true})).result, {username:'actor@example.test',address:'actor',name:'Actor Mod',picture:null,count:0});
+  assert.equal(data(await exec(query,{secure:true,authenticated:false})).result,null);
+  await driver.executeQuery('MATCH(e:Email) DETACH DELETE e');
+  assert.deepEqual(data(await exec(query,{secure:true,email:true})).result, {username:'actor@example.test',address:null,name:null,picture:null,count:null});
+});
+test("ranking root and nested aliases retain distinct normalized values and nullable metadata", async () => {
+  const fields='v:version commentHot:discussionHot{gravity:ageOffsetMonths ageOffsetMonths:gravity} discussionHot:commentHot{g:gravity} by:updatedBy at:updatedAt';
+  const initial=data(await exec(`{result:getRankingSettings(serverName:"forum"){${fields}}}`)).result;
+  assert.deepEqual(initial,{v:1,commentHot:{gravity:2,ageOffsetMonths:1.8},discussionHot:{g:1.8},by:null,at:null});
+  const changed=data(await exec(`mutation{result:setRankingSettings(serverName:"forum",input:{discussionHot:{gravity:1.5}}){${fields}}}`)).result;
+  assert.equal(changed.commentHot.ageOffsetMonths,1.5); assert.equal(changed.by,'actor');
+  assert.deepEqual(data(await exec(`{result:getRankingSettings(serverName:"forum"){${fields}}}`)).result,changed);
+  assert.ok((await exec('mutation{setRankingSettings(serverName:"forum",input:{discussionHot:{gravity:1.5}}){v:version}}',{secure:true,authenticated:false})).errors);
+});
+test("instance setup aliases preserve capability differences, nested fragments and skips", async () => {
+  const result=data(await exec(`{result:getInstanceSetupStatus{auth:events{...Capability} events:auth{...Capability} mail @skip(if:true){configured}}} fragment Capability on InstanceCapabilityStatus{enabled:configured configured:enabled url:setupUrl missing:requiredEnvVarsMissing}`,{secure:false}));
+  assert.equal(result.result.auth.enabled,true); assert.equal(result.result.auth.configured,false);
+  assert.equal(result.result.events.enabled,false); assert.equal(result.result.events.url,"/admin/setup#authentication");
+  assert.equal(result.result.mail,undefined);
 });

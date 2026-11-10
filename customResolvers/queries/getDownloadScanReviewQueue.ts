@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { DownloadReviewRow } from "../contracts/downloadReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
@@ -48,7 +49,7 @@ const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
         `,
         { limit, mayAccessSensitiveContent: canViewSensitiveContent }
       );
-      return result.records.map((record) => record.get("review"));
+      return result.records.map((record) => rememberCanonicalSource(record.get("review")));
     } finally {
       await session.close();
     }

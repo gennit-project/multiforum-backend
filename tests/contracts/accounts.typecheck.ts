@@ -80,3 +80,9 @@ const badUser: AccountObjectMutationResolvers["createEmailAndUser"] = () => ({ u
 // @ts-expect-error generated context cannot be replaced with unrelated required data
 const badContext: AccountQueryResolvers["getOwnEmail"] = (_p: unknown, _a: unknown, context: GraphQLContext & { secret: string }) => null;
 void [collectionQueries, scalars, objects, queries, badScalar, incompleteRanking, badUser, badContext];
+
+import { rankingSettingsSource } from "../../customResolvers/contracts/accountConfigurationSources.js";
+// @ts-expect-error normalized nested ranking values require both numeric properties
+rankingSettingsSource({version:1,discussionHot:{gravity:2},commentHot:{gravity:2,ageOffsetMonths:1},updatedAt:null,updatedBy:null});
+// @ts-expect-error response provenance cannot turn raw stored strings into normalized numbers
+rankingSettingsSource({version:1,discussionHot:{gravity:"2",ageOffsetMonths:1},commentHot:{gravity:2,ageOffsetMonths:1},updatedAt:null,updatedBy:null});

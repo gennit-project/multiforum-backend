@@ -324,6 +324,15 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
+  DownloadScanReviewItem: resolveCanonicalSourceField,
+  AgePolicy: resolveCanonicalSourceField,
+  AgeGateCheck: resolveCanonicalSourceField,
+  InstanceSetupStatus: resolveCanonicalSourceField,
+  InstanceCapabilityStatus: resolveCanonicalSourceField,
+  OwnEmail: resolveCanonicalSourceField,
+  OwnAgeProfile: resolveCanonicalSourceField,
+  RankingSettings: resolveCanonicalSourceField,
+  HotRankingSettings: resolveCanonicalSourceField,
   // Explicitly marked owned projection maps retain canonical source keys.
   // Unmarked generated objects pass through with their response aliases intact.
   Plugin: resolveCanonicalSourceField,

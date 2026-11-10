@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -26,11 +27,11 @@ export type AgeGateCheck = {
   minimumAge: number | null;
 };
 
-const NOT_REQUIRED: AgeGateCheck = {
+const NOT_REQUIRED: AgeGateCheck = rememberCanonicalSource({
   requiresAgeCheck: false,
   status: "ALLOWED",
   minimumAge: null,
-};
+});
 
 // The sensitive property is intentionally unknown: its existing truthiness,
 // rather than a new Boolean coercion policy, controls this check.
@@ -88,17 +89,17 @@ const getDiscussionAgeGateCheck =
     context.user = await setUserDataOnContext({ context });
     const username = context.user?.username;
     if (!username) {
-      return { requiresAgeCheck: true, status: "SIGN_IN_REQUIRED", minimumAge };
+      return rememberCanonicalSource({ requiresAgeCheck: true, status: "SIGN_IN_REQUIRED", minimumAge });
     }
 
     const birthday = await readBirthday(driver, username);
     if (!birthday) {
-      return { requiresAgeCheck: true, status: "BIRTHDAY_REQUIRED", minimumAge };
+      return rememberCanonicalSource({ requiresAgeCheck: true, status: "BIRTHDAY_REQUIRED", minimumAge });
     }
 
     return getAgeEligibility({ birthday, policy }).mayAccessSensitiveContent
       ? NOT_REQUIRED
-      : { requiresAgeCheck: true, status: "UNDER_MINIMUM_AGE", minimumAge };
+      : rememberCanonicalSource({ requiresAgeCheck: true, status: "UNDER_MINIMUM_AGE", minimumAge });
   };
 
 export default getDiscussionAgeGateCheck;

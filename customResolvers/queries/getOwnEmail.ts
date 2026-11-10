@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -52,13 +53,13 @@ const getResolver = (input: Input) => {
       // Authenticated, but no account/Email node exists yet (pre-onboarding).
       // Return a non-null object with username: null so the frontend can tell
       // "logged in but needs to pick a username" apart from "logged out".
-      return {
+      return rememberCanonicalSource({
         address: row?.address ?? email,
         username: user?.username ?? null,
         profilePicURL: user?.profilePicURL ?? null,
         modProfileName: user?.ModerationProfile?.displayName ?? null,
         unreadNotificationCount: user?.NotificationsConnection?.aggregate?.count?.nodes ?? null,
-      };
+      });
     } catch (error) {
       logger.error("Error in getOwnEmail resolver:", error);
       throw new Error(
