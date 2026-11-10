@@ -1,3 +1,4 @@
+import {captureFixedCollectionUsers} from "../fixedCollectionUserSources.js";
 import {sourceMetadataRecorder} from '../delegatedSourceMetadata.js';
 import { defaultFieldResolver, getNamedType, GraphQLObjectType, GraphQLSchema, isObjectType, isUnionType } from 'graphql';
 import { generatedAuthorTypesAtPaths, selectedCommentAuthorPaths, issueSourceIdentity } from '../../middleware/userChildIdentityMiddleware.js';
@@ -30,6 +31,14 @@ export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema 
         ? (resolve, parent, args, context, info) => generatedAuthorTypesAtPaths(selectedCommentAuthorPaths(info, {path:['edges','node'],sourceKeys:['canonical','canonical']}))(resolve, parent, args, context, info)
         : generatedAuthorTypesAtPaths(paths.map(path => ({path:['edges','node',...path],sourceKeys:['canonical','canonical',...path.map((): 'response' => 'response')]})));
     }
+  }
+  if(queryFields?.collections && getNamedType(queryFields.collections.type).name==='Collection') {
+    roots.collections=async(resolve,parent,args,context,info)=>{
+      const capture=sourceMetadataRecorder(context,info);
+      const result:unknown=await resolve(parent,args,context,info);
+      if(capture)captureFixedCollectionUsers(result,capture);
+      return result;
+    };
   }
   const query = schema.getQueryType();
   if (!query || !Object.keys(roots).length) return schema;

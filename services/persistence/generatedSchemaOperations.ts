@@ -1,3 +1,4 @@
+import {withDelegatedSourceMetadata} from "../delegatedSourceMetadata.js";
 import { graphql, type GraphQLSchema } from "graphql";
 import type { Driver, ManagedTransaction, Transaction } from "neo4j-driver";
 
@@ -39,25 +40,26 @@ export async function executeGeneratedOperation<T>(
   source: string,
   variableValues: Record<string, unknown>,
   executionContext?: ManagedTransaction | Transaction,
-  jwt?: Record<string, unknown>
+  jwt?: Record<string, unknown>,
+  sourceRoot?: "collections"
 ): Promise<T> {
   const registered = registeredSchemas.get(driver);
   if (!registered) {
     throw new Error("Generated schema operations are not initialized for this driver");
   }
-  const result = await graphql({
-    schema: registered.internalSchema,
-    source,
-    rootValue: null,
-    variableValues,
-    contextValue: {
-      sessionConfig: { database: registered.database },
-      ...(executionContext ? { executionContext } : {}),
-      ...(jwt ? { jwt } : {}),
-    },
-  });
-  if (result.errors?.length) throw new Error(result.errors[0].message);
-  return result.data as T;
+  const contextValue={
+    sessionConfig:{database:registered.database},
+    ...(executionContext ? {executionContext}:{}),
+    ...(jwt ? {jwt}:{}),
+  };
+  const execute=async()=>{
+    const result=await graphql({schema:registered.internalSchema,source,rootValue:null,variableValues,contextValue});
+    if(result.errors?.length)throw new Error(result.errors[0].message);
+    return result.data as T;
+  };
+  // Only explicitly owned fixed collection reads transfer provenance across
+  // completion. Ordinary internal calls keep their existing query/context view.
+  return sourceRoot ? withDelegatedSourceMetadata(contextValue,sourceRoot,execute,sourceRoot) : execute();
 }
 
 /** Public mutation adapters reuse the same unwrapped read schema. */

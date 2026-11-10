@@ -615,3 +615,30 @@ The next finite gate is a producer-by-producer reconciliation of the 18 shared
 child lists: fixed query maps now have explicit sources, while generated dynamic
 projections need their own documented selection-aware upstream guarantees. Do not
 promote them merely because this viewer family no longer has catch-all types.
+
+### Fixed collection projection reuse
+
+The shared Album.Images audit identified another owned producer: the public
+collection snapshot. Its existing generated selection and executed-document guard
+already describe the fixed image/author maps, but inner GraphQL completion creates
+new objects that are later reused by outer field resolvers. Profile and public
+collection maps now retain canonical source-key provenance, including selected
+nested images, counts and author maps.
+
+Only the explicitly opted-in fixed public collection read transfers private User
+identity from its two declared source paths through completion. It uses the same
+owned context, document, JWT and database read; no hidden selection, request
+identity inheritance or eager decoder is introduced. The generic scope helper can
+preserve a typed execution envelope without asserting its nested result type.
+Other internal operations keep their existing execution path. The generic
+`executeGeneratedOperation<T>` trust boundary is not promoted to whole-result proof.
+
+Real GraphQL regressions cover both alias failures and source-identity preservation,
+including owner/outsider/anonymous access, parallel aliases, skipped private fields
+and nullable creators. The malformed-identity baseline uses a native floating
+number that String completion accepts; a native Neo4j integer instead fails in the
+fixed internal document, which is a different existing error boundary. Fixed
+internal reads still validate their own selections even when the outer caller
+omits those fields. This closes another owned-producer gap without changing that
+behavior, inflating the inventory or declaring all dynamic Album.Images sources
+complete. Existing profile visibility/filter regressions remain required.

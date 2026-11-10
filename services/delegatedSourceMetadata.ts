@@ -12,13 +12,14 @@ function object(value:unknown):value is Record<string,unknown>{return value!==nu
 /** A fresh, application-owned delegation context scopes the private transfer.
  * No context property, response field, extra read or serialized identity is added.
  */
-export async function withDelegatedSourceMetadata(context:Record<string,unknown>,fieldName:string,run:()=>unknown):Promise<unknown>{
+export async function withDelegatedSourceMetadata<T>(context:Record<string,unknown>,fieldName:string,run:()=>T|Promise<T>,resultRoot?:string):Promise<T>{
  if(scopes.has(context))throw new Error('Delegated source metadata requires a fresh context');
  const scope:Scope={fieldName,values:new Map()};scopes.set(context,scope);
  try{
-  const result:unknown=await run();
+  const result=await run();
   for(const {path,identity,author} of scope.values.values()){
    let value:unknown=result;
+   if(resultRoot!==undefined)value=object(value)?value[resultRoot]:undefined;
    for(const key of path){
     if(typeof key==='number'&&Array.isArray(value)){const items:readonly unknown[]=value;value=items[key];}
     else if(typeof key==='string'&&object(value))value=value[key];

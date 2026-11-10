@@ -1,3 +1,4 @@
+import {canonicalProfileCollection,canonicalPublicCollection} from "../../services/canonicalCollectionSources.js";
 import type { ProfileCollectionProjection, PublicCollectionProjection, CollectionShareProjection, CollectionShareChannelProjection } from "../../customResolvers/contracts/accountProjections.js";
 import type { Driver } from "neo4j-driver";
 import type { CollectionSort, CollectionWhere } from "../../src/generated/graphql.js";
@@ -144,7 +145,7 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
     async findProfileCollections(where, options, viewerUsername) {
       const result = await executeGeneratedOperation<{collections: ProfileCollectionProjection[]}>(driver,
         PROFILE_COLLECTIONS, { where, ...options }, undefined, viewerUsername ? { sub: viewerUsername } : undefined);
-      return result.collections;
+      return result.collections.map(canonicalProfileCollection);
     },
     async findPublicContaining(where, canViewSensitiveContent) {
       // The caller has already resolved age-gate eligibility; convey it as the
@@ -152,8 +153,8 @@ export function createCollectionReadRepository(driver: Driver): CollectionReadRe
       // agree (otherwise an eligible viewer's sensitive rows are excluded).
       const result = await executeGeneratedOperation<{collections: PublicCollectionProjection[]}>(driver,
         PUBLIC_COLLECTIONS[canViewSensitiveContent ? 1 : 0], { where }, undefined,
-        { mayAccessSensitiveContent: canViewSensitiveContent });
-      return result.collections;
+        { mayAccessSensitiveContent: canViewSensitiveContent }, "collections");
+      return result.collections.map(canonicalPublicCollection);
     },
     async findOwnedShareTarget(id, username) {
       const result = await executeGeneratedOperation<{collections: CollectionShareSnapshot[]}>(driver,

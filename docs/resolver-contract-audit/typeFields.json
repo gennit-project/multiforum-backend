@@ -17,9 +17,12 @@
         "build_scripts/deferredSourceContracts.test.ts",
         "customResolvers/contracts/discussionDetailSources.d.ts",
         "services/canonicalDiscussionDetail.ts",
-        "tests/integration/discussionDetailSourceContracts.test.ts"
+        "tests/integration/discussionDetailSourceContracts.test.ts",
+        "services/canonicalCollectionSources.ts",
+        "services/fixedCollectionUserSources.ts",
+        "tests/integration/fixedCollectionSourceContracts.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed. Fixed internal collection projections now preserve canonical response keys and privately transfer their explicit User source identities across inner GraphQL completion. Existing generated selection declarations and executed-document guards remain authoritative; other dynamic producers are not certified by this change.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
     },
     {
@@ -662,9 +665,11 @@
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
         "tests/integration/typeFieldResponseContracts.test.ts",
-        "tests/integration/collectionProfilePrivacy.test.ts"
+        "tests/integration/collectionProfilePrivacy.test.ts",
+        "services/canonicalCollectionSources.ts",
+        "tests/integration/fixedCollectionSourceContracts.test.ts"
       ],
-      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered. The fixed profile collection result now retains canonical aliases across its declared child maps while keeping its visibility and caller-filter enforcement unchanged.",
       "decision": "Caller filters intersect profile authorization; generated collection reads enforce public-or-owner visibility. Generated pagination arguments are forwarded. Response projection accounting remains selected-only."
     },
     {

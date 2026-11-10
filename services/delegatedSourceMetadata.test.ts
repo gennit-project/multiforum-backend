@@ -72,3 +72,12 @@ test('nested GraphQL operations cannot replace the outer source capture',async()
  });
  assert.ok(Array.isArray(result));assert.deepEqual(accountChildIdentity(result[0].who),{found:true,value:'outer'});
 });
+
+test('fixed execution envelopes retain their declared shape while transferring nested raw identity',async()=>{
+ const context={};
+ const result=await withDelegatedSourceMetadata(context,'issues',async()=>({collection:(await read(context,17)).data?.issues,marker:'unchanged'}),'collection');
+ assert.equal(result.marker,'unchanged');assert.ok(Array.isArray(result.collection));
+ assert.deepEqual(accountChildIdentity(result.collection[0].who),{found:true,value:17});
+ assert.deepEqual(authorSourceType(result.collection[0].who),{found:true,value:'ModerationProfile'});
+ assert.deepEqual(JSON.parse(JSON.stringify(result)),{collection:[{id:'issue',who:{id:'actor'}},null],marker:'unchanged'});
+});
