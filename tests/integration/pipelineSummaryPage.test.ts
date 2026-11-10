@@ -173,3 +173,17 @@ test('an exact attempt ID takes precedence over a matching legacy pipeline ident
   assert.equal(result?.run.id, 'pipeline-2');
   assert.equal(result?.run.pipelineId, 'exact-id-precedence');
 });
+
+test('cursor branches preserve missing-key exclusion and filtered tie ordering', async()=>{
+  await seed(6,1);
+  await driver.executeQuery("MATCH(a:PluginPipelineRun) WHERE a.id IN ['attempt-1','attempt-2'] SET a.createdAt=datetime('2025-12-31T00:00:00Z')");
+  await driver.executeQuery("MATCH(a:PluginPipelineRun{id:'attempt-3'}) SET a.eventType='other'");
+  await driver.executeQuery(`CREATE(:PluginPipelineRun{targetId:'file',targetType:'DownloadableFile',id:'missing-date',scope:'SERVER',eventType:'downloadableFile.created'})
+    CREATE(:PluginPipelineRun{targetId:'file',targetType:'DownloadableFile',createdAt:datetime('2025-12-30T00:00:00Z'),scope:'SERVER',eventType:'downloadableFile.created'})
+    CREATE(:PluginPipelineRun{targetId:'file',targetType:'DownloadableFile',createdAt:datetime('2026-01-01T00:00:00Z'),scope:'SERVER',eventType:'downloadableFile.created'})`);
+  const first=await summary(null,{...args,eventType:'downloadableFile.created',first:1,jobsFirst:1});
+  assert.deepEqual(first.attempts.map(row=>row.run.id),['attempt-6']);
+  const next=await summary(null,{...args,eventType:'downloadableFile.created',first:10,jobsFirst:1,after:first.pageInfo.endCursor});
+  assert.deepEqual(next.attempts.map(row=>row.run.id),['attempt-5','attempt-4','attempt-2','attempt-1']);
+  assert.equal(next.pageInfo.hasNextPage,false);
+});

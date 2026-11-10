@@ -20,9 +20,16 @@ export const summaryPageQueries = {
 /** Split the lexicographic cursor into two index ranges, each bounded before UNION. */
 export function summaryAttemptsPageQuery(after: PagePosition | null): string {
   if (!after) return summaryPageQueries.attempts;
-  const tied = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+  // On Neo4j 5.26.33, redundant presence predicates can win over the cursor
+  // equality/range predicate and scan the entire target index prefix. Equality
+  // and range comparisons already exclude null dates (and tied-branch ids).
+  const tied = summaryPageQueries.attempts
+    .replace('AND a.createdAt IS NOT NULL AND a.id IS NOT NULL', '')
+    .replace('// CURSOR_FILTER',
     'AND a.createdAt = datetime($afterCreatedAt) AND a.id < $afterId');
-  const older = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+  const older = summaryPageQueries.attempts
+    .replace('AND a.createdAt IS NOT NULL AND a.id IS NOT NULL', 'AND a.id IS NOT NULL')
+    .replace('// CURSOR_FILTER',
     'AND a.createdAt < datetime($afterCreatedAt)');
   return `CALL { ${tied} UNION ALL ${older} }
     RETURN attempt ORDER BY attempt.createdAt DESC, attempt.id DESC LIMIT $limit`;

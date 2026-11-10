@@ -710,3 +710,24 @@ manifest drives the real GraphQL suite, so the guard protects executed coverage
 rather than a disconnected checklist. Per-field audit evidence records these
 checks while retaining each unresolved item/provenance obligation and the unchanged
 178 selected / 31 deferred accounting.
+
+### Cursor performance regression investigated on Neo4j 5.26.33
+
+The unchanged pipeline cursor query failed the existing 70-intermediate-row budget
+on CI heads ffa8abe and 5dac456. Local Neo4j 5.26.32 initially stayed at 11 rows.
+After refreshing the disposable 5-community image to 5.26.33, the original query
+reproduced CI's 100 rows / 324 db hits: the tied-date branch used the composite
+index's broad non-null prefix and filtered the date afterward. Resampling retained
+that plan; forced replanning could instead choose the bounded seek, explaining why
+passing runs alone did not establish a fix.
+
+Cursor branches now omit only redundant date-presence predicates (and redundant
+id presence in the equality-plus-id-range branch). Their comparisons already
+exclude those null values. The older-date branch retains explicit non-null ids;
+first-page queries, filters, ordering, limits and budgets are unchanged. The
+candidate stayed at 11 rows / 224 db hits under both observed local versions and
+all exercised replanning modes. The real pagination regression also covers missing
+date/id properties, timestamp ties and event filtering before page limits. Full CI
+must pass on the final head; earlier failing heads remain failures. Failing plans
+are retained in the existing always-uploaded performance artifact for future
+investigation.
