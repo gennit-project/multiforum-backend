@@ -473,3 +473,21 @@ response-value contracts. Accounting is still 178 selected / 31 deferred; within
 the 31, three now have checked fixed item sources, six are intentional JSON
 structural limits, two await campaign transition incorporation, and 20 retain
 engineering gates (18 shared list sources, image usage and delegated activity).
+
+### Image-usage full raw root selection
+
+The actual image-usage registration now checks all four root properties and the
+entire explicit nested album/owner/discussion/channel selection against generated
+schema fields. A reusable asynchronous raw-source signature preserves generated
+arguments, context and info. It rejects missing selected containers, malformed
+item shapes and unrestricted JSON masquerading as a structured source. The real
+owned query is exercised directly for exact key drift in both ownership groups;
+GraphQL tests retain root aliases, string-coerced input IDs, sensitive filtering,
+nullable relationships and field-level permissions/errors.
+
+This does not promote the root solely for its parameter-bound image ID. Existing
+raw persisted leaves remain unvalidated until requested GraphQL completion. Its
+source/container boundary is now checked, while generated response-value status
+remains deferred. Within the 31 deferred entries, four have explicit fixed raw
+source boundaries, six are JSON structural limits, two await campaign transitions,
+and 19 still have engineering gates (18 shared dynamic lists and delegated activity).

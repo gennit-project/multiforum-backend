@@ -1,3 +1,5 @@
+import getImageAlbumUsage from "../../customResolvers/queries/getImageAlbumUsage.js";
+import {imageUsageSourceSelection} from "../../customResolvers/contracts/imageUsageSource.js";
 import assert from "node:assert/strict";
 import {before,after,beforeEach,test} from "node:test";
 import {Neo4jGraphQL} from "@neo4j/graphql";
@@ -69,4 +71,44 @@ test('canonical source scalar aliases retain lazy validation and schema null bub
  const result=await execute('query{getImageAlbumUsage(imageId:"image"){uploaderOwnedAlbums{Discussions{...Fields}}}} fragment Fields on Discussion{id:title title:id}',true);
  assert.deepEqual(result.errors?.map(error=>error.path),[['getImageAlbumUsage','uploaderOwnedAlbums',0,'Discussions',0,'id']],JSON.stringify(result));
  assert.equal(result.data,null); // Discussion.title and its ancestor lists are non-null.
+});
+
+function exactSourceKeys<T extends object>(value:T,selection:Record<keyof T,unknown>){
+ assert.deepEqual(Object.keys(value).sort(),Object.keys(selection).sort());
+}
+test('actual image-usage source retains all declared nested map keys in both owner groups',async()=>{
+ await driver.executeQuery(`MATCH(img:Image{id:'image'})
+  CREATE(u:User{username:'other'}),(a:Album{id:'other-album'}),
+   (d:Discussion{id:'other-discussion',title:'Other',createdAt:datetime()}),
+   (dc:DiscussionChannel{id:'other-post',channelUniqueName:'other-forum'})
+  CREATE(u)-[:HAS_ALBUM]->(a),(a)-[:HAS_IMAGE]->(img),(d)-[:HAS_ALBUM]->(a),
+   (u)-[:POSTED_DISCUSSION]->(d),(dc)-[:POSTED_IN_CHANNEL]->(d)`);
+ const usage=await getImageAlbumUsage({driver})(null,{imageId:'image'},{driver,mayAccessSensitiveContent:false});
+ exactSourceKeys(usage,imageUsageSourceSelection);
+ assert.equal(usage.imageId,'image');assert.equal(usage.uploaderOwnedAlbums.length,1);assert.equal(usage.otherAlbums.length,1);
+ for(const [albums,selection] of [[usage.uploaderOwnedAlbums,imageUsageSourceSelection.uploaderOwnedAlbums],[usage.otherAlbums,imageUsageSourceSelection.otherAlbums]] as const){
+  for(const album of albums){
+   exactSourceKeys(album,selection);assert.ok(album.Owner);exactSourceKeys(album.Owner,selection.Owner);
+   assert.equal(album.Discussions.length,1);
+   for(const discussion of album.Discussions){
+    exactSourceKeys(discussion,selection.Discussions);assert.ok(discussion.Author);
+    exactSourceKeys(discussion.Author,selection.Discussions.Author);
+    assert.equal(typeof discussion.createdAt,'string');assert.equal(discussion.DiscussionChannels.length,1);
+    for(const channel of discussion.DiscussionChannels)exactSourceKeys(channel,selection.Discussions.DiscussionChannels);
+   }
+  }
+ }
+});
+test('image-usage scalar aliases retain canonical root meaning',async()=>{
+ const result=await execute('{usage:getImageAlbumUsage(imageId:"image"){uploaderUsername:imageId imageId:uploaderUsername}}',true);
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{usage:{uploaderUsername:'image',imageId:'alice'}});
+});
+test('image-usage ID is bound to the coerced string argument, not arbitrary numeric storage',async()=>{
+ await driver.executeQuery("CREATE(:Image{id:'17'}),(:Image{id:17})");
+ const query='{usage:getImageAlbumUsage(imageId:17){imageId}}';
+ const matched=await execute(query,true);assert.equal(matched.errors,undefined,JSON.stringify(matched.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(matched.data)),{usage:{imageId:'17'}});
+ await driver.executeQuery("MATCH(i:Image{id:'17'}) DELETE i");
+ assert.match((await execute(query,true)).errors?.[0].message??'',/Image not found/);
 });

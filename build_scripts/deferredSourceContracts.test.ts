@@ -86,3 +86,12 @@ test('sitewide file registration checks its fixed raw projection',()=>{
  assert.equal(field.initializer.expression.getText(src),'siteWideDownloadableFiles');
  assert.equal(field.initializer.type.getText(src),'SiteWideDownloadFileSource');
 });
+
+test('image usage root checks its entire explicit raw projection at registration',()=>{
+ const {src,result}=returned('customResolvers/queryResolvers.ts');
+ const field=result.properties.find(p=>ts.isPropertyAssignment(p)&&p.name.getText(src)==='getImageAlbumUsage');
+ assert.ok(field&&ts.isPropertyAssignment(field)&&ts.isSatisfiesExpression(field.initializer));
+ assert.equal(field.initializer.type.getText(src),'ImageUsageSourceResolver');
+ const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
+ assert.equal(inventory.fields.find(row=>row.field==='Query.getImageAlbumUsage')?.status,'deferred');
+});

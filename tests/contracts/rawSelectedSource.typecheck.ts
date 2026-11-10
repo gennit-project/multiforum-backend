@@ -47,3 +47,17 @@ const sitewideVoter:string=sitewide.DiscussionChannels[0]!.UpvotedByUsers[0]!.us
 // @ts-expect-error hydration maps have no arbitrary catch-all properties
 const unknownSitewideProperty=sitewide.unselected;
 void [invalidFile,missingFileId,sitewideVoter,unknownSitewideProperty];
+
+import type {RawSelectedResolver} from '../../customResolvers/contracts/rawSelectedSource.js';
+import type {ImageUsageSourceResolver} from '../../customResolvers/contracts/imageUsageSource.js';
+import imageUsage from '../../customResolvers/queries/getImageAlbumUsage.js';
+import type {Driver} from 'neo4j-driver';
+declare const driver:Driver;
+const actualImageUsage=imageUsage({driver}) satisfies ImageUsageSourceResolver;
+// @ts-expect-error a fixed root projection must include the selected containers
+const missingImageContainers:ImageUsageSourceResolver=()=>({imageId:'id'});
+// @ts-expect-error nested map declarations cannot omit their selected discussion collection
+const missingAlbumChildren:ImageUsageSourceResolver=()=>({imageId:'id',uploaderUsername:null,uploaderOwnedAlbums:[{id:'album'}],otherAlbums:[]});
+// @ts-expect-error arbitrary JSON cannot certify a structured root projection
+const rawJsonRoot:RawSelectedResolver<()=>any,true>=()=>({});
+void [actualImageUsage,missingImageContainers,missingAlbumChildren,rawJsonRoot];

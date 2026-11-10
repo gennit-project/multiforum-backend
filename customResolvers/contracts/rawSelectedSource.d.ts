@@ -21,3 +21,8 @@ type ListSource<T, S> = 0 extends (1 & T) ? never
   : T extends readonly unknown[] ? RawSelectedSource<T, S> : never;
 export type RawSelectedListResolver<R, S extends Selection<Output<R>>> =
   (...args: Parameters<Callable<R>>) => ListSource<Output<R>, S>;
+
+type RawResult<R, S> = 0 extends (1 & Output<R>) ? never : RawSelectedSource<Output<R>, S>;
+/** Fixed root sources may execute asynchronously. Leaves remain GraphQL-owned. */
+export type RawSelectedResolver<R, S extends Selection<Output<R>>> =
+  (...args: Parameters<Callable<R>>) => RawResult<R, S> | Promise<RawResult<R, S>>;

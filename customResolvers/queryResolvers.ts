@@ -1,3 +1,4 @@
+import type { ImageUsageSourceResolver } from "./contracts/imageUsageSource.js";
 import type { DownloadReadSourceQueryResolvers } from "./contracts/downloadReadSources.js";
 import type { WikiCountSourceQueryResolvers } from "./contracts/wikiCountSource.js";
 import type { ContributionReadQueryResolvers } from "./contracts/contributionReadSources.js";
@@ -275,6 +276,6 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getImageAlbumUsage: getImageAlbumUsage({
       driver,
       agePolicyRepository: instancePolicyRepository
-    }),
+    }) satisfies ImageUsageSourceResolver,
   };
 }
