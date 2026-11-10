@@ -41,3 +41,10 @@ const missingPage: ContentPageQueryResolvers["getDiscussionDetailFiles"] = () =>
 // @ts-expect-error cursor is a string, not a raw Neo4j value
 const badCursor: ContentPageQueryResolvers["getDiscussionDetailImages"] = () => ({ pageInfo: { hasNextPage: false, endCursor: 12 } });
 void [pageFactories, badPage, missingPage, badCursor];
+
+import siteWide from '../../customResolvers/queries/getSiteWideDiscussionList.js';
+type SiteWideCount = Awaited<ReturnType<ReturnType<typeof siteWide>>>['aggregateDiscussionCount'];
+const countIsNotAny:IsAny<SiteWideCount>=false;
+// @ts-expect-error a raw count source cannot become arbitrary text
+const badSiteWideCount:SiteWideCount='3';
+void [countIsNotAny,badSiteWideCount];

@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   decodeDiscussionListCursor,
   encodeDiscussionListCursor,
+  encodeRawDiscussionListCursor,
 } from "./discussionListCursor.js";
 
 const hotCursor = {
@@ -65,3 +66,9 @@ test("discussion cursor rejects malformed input", () => {
   );
 });
 
+
+test('raw source encoding retains malformed stored identity without certifying a decoded cursor',()=>{
+ const encoded=encodeRawDiscussionListCursor({...hotCursor,discussionId:17});
+ assert.equal(JSON.parse(Buffer.from(encoded,'base64url').toString('utf8')).i,17);
+ assert.throws(()=>decodeDiscussionListCursor({after:encoded,expectedSort:'hot'}),/valid cursor/);
+});

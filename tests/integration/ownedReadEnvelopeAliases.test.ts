@@ -44,3 +44,19 @@ test('owned envelopes retain fragment and directive variable semantics',async()=
  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{getSiteWideDiscussionList:{discussions:1,...(show?{aggregateDiscussionCount:[{id:'d'}]}:{})}});
  }
 });
+
+test('omitted site-wide archive option matches the supported explicit-null filter',async()=>{
+ const run=(args:string)=>graphql({schema,source:`{getSiteWideDiscussionList${args}{aggregateDiscussionCount discussions{id}}}`,contextValue:{driver,mayAccessSensitiveContent:false,req:{headers:{}},user:{username:'viewer',email:null,email_verified:true,data:null}}});
+ const omitted=await run('');const explicit=await run('(showArchived:null)');assert.equal(omitted.errors,undefined);assert.equal(explicit.errors,undefined);
+ assert.deepEqual(JSON.parse(JSON.stringify(omitted.data)),JSON.parse(JSON.stringify(explicit.data)));
+});
+test('actual site-wide count and page variants retain their declared columns',async()=>{
+ const {buildSiteWideDiscussionPageQueries}=await import('../../customResolvers/cypher/buildSiteWideDiscussionPageQueries.js');
+ for(const sortOption of ['new','top','hot'] as const){
+ const {countQuery,pageQuery}=buildSiteWideDiscussionPageQueries({hasDownload:null,hasSearch:false,hasSelectedChannels:false,hasSelectedTags:false,showArchived:false,sortOption});
+ const params={mayAccessSensitiveContent:false,startOfTimeFrame:'2025-01-01',pageLimit:2,hotAgeOffsetMonths:1,hotGravity:1,rankingAnchor:'2026-02-01'};
+ const count=await driver.executeQuery(countQuery,params);assert.deepEqual(count.records[0].keys,['totalCount']);assert.equal(Number(count.records[0].get('totalCount')),1);
+ const page=await driver.executeQuery(pageQuery,params);assert.equal(page.records.length,1);assert.deepEqual(page.records[0].keys,['discussionId','cursorCreatedAt','cursorScore']);
+ assert.equal(page.records[0].get('discussionId'),'d');assert.ok(page.records[0].get('cursorCreatedAt'));
+ }
+});

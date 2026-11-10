@@ -37,7 +37,7 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, agePolicyRepository, serverName } = input
   return async (_parent: unknown, args: Args, context: GraphQLContext, _info: GraphQLResolveInfo) => {
-    const { channelUniqueName, discussionId, modName, sort } =
+    const { channelUniqueName, discussionId, modName = null, sort } =
       args
     const { offset, limit } = normalizePagination(args)
     context.user = await setUserDataOnContext({

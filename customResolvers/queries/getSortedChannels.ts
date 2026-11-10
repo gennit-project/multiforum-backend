@@ -33,7 +33,7 @@ const getSortedChannelsResolver = (input: Input) => {
     });
     const tags = args.tags || [];
     const searchInput = args.searchInput || "";
-    const countDownloads = args.countDownloads;
+    const countDownloads = args.countDownloads ?? null;
     if (context) {
       context.user = await setUserDataOnContext({ context });
     }

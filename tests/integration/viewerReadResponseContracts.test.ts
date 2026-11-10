@@ -142,14 +142,16 @@ test('discussion list moderator badge remains a computed membership Boolean',asy
   await driver.executeQuery("MATCH(u:User {username:'other'}),(d:Discussion),(ch:Channel) CREATE(u)-[:POSTED_DISCUSSION]->(d),(u)-[:ADMIN_OF_CHANNEL]->(ch)");
   assert.equal(data(await execute(queries.list)).result.discussionChannels[0].Discussion.authorIsChannelModerator,true);
 });
-test('missing optional Cypher parameters retain existing wrapped errors',async()=>{
+test('omitted optional Cypher parameters match explicit-null reads',async()=>{
   await seed();
   for(const kind of ['replies','section'] as const) {
-    const result=await execute(queries[kind].replace('modName:"",',''));
-    assert.match(result.errors?.[0].message??'',/Expected parameter\(s\): modName/);
+    const omitted=await execute(queries[kind].replace('modName:"",',''));
+    const explicit=await execute(queries[kind].replace('modName:"",','modName:null,'));
+    assert.deepEqual(data(omitted),data(explicit));
   }
-  const result=await execute(queries.channels.replace('countDownloads:false,',''));
-  assert.equal(result.errors?.[0].message,'Failed to fetch sorted channels');
+  const omitted=await execute(queries.channels.replace('countDownloads:false,',''));
+  const explicit=await execute(queries.channels.replace('countDownloads:false,','countDownloads:null,'));
+  assert.deepEqual(data(omitted),data(explicit));
 });
 test('comment hydration failures retain event swallowing versus wrapped discussion errors',async()=>{
   await seed();await driver.executeQuery("MATCH(c:Comment) SET c.createdAt='not-a-temporal-value'");

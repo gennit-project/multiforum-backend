@@ -36,7 +36,7 @@ const getResolver = (input: Input) => {
     context: GraphQLContext,
     _info: GraphQLResolveInfo
   ) => {
-    const { commentId, modName, sort } = args;
+    const { commentId, modName = null, sort } = args;
     const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
       context,

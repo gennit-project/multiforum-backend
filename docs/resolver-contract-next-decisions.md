@@ -1100,3 +1100,26 @@ the site-wide discussion count still comes from an untyped driver result. These
 are separate from alias completion and must not be relabeled as intentional
 native-scalar limits. Additional plugin/configuration envelopes require the same
 owned-versus-generated source audit before claiming campaign-wide alias coverage.
+
+### Optional read parameters and site-wide page/count sources
+
+The four affected read paths now bind omitted optional parameters as null, matching
+existing explicit-null behavior: site-wide `showArchived`, sorted-channel
+`countDownloads`, and `modName` in comment sections/replies. Previous failure
+witnesses are replaced by real-schema equivalence regressions. Existing explicit
+true/false filters, non-null moderator names, authorization and age gating remain
+unchanged; this does not alter event-channel omitted/null policy or unrelated
+explicit-null search handling.
+
+Site-wide count and page driver results now declare their actual columns. Count
+inference can no longer become `any`; identity, date and ranking source leaves
+remain raw. The resolver no longer asserts native discussion ids are strings.
+Raw cursor serialization is explicitly separate from the validated decoder contract,
+retaining the old encoding and decoder rejection of malformed stored ids. Absent
+dates still fail at the old conversion stage. These source types do not claim a
+malformed legacy record yields a usable pagination cursor.
+
+All 92 focused unit/integration cases pass, including all three executed query
+variants and the prior cursor/filter/pagination regressions. Removing the count
+column or page identity column makes the executed-query guard fail; negative types
+reject an `any` count or a text count. The inventory stays 178 / 31.
