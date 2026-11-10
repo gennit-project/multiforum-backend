@@ -1,3 +1,4 @@
+import {forumMembershipChannel} from "../../tests/helpers/forumMembershipSource.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
@@ -13,9 +14,9 @@ const build=(overrides:Partial<ForumOwnerRepository>={})=>{
  const repository:ForumOwnerRepository={
   findPendingInvites:async name=>{calls.push(`pending:${name}`);return [{PendingOwnerInvites:[{username:"alice"}]}];},
   findAdmins:async name=>{calls.push(`admins:${name}`);return [{Admins:[]}];},
-  connectOwner:async(name,user)=>{calls.push(`connect:${name}:${user}`);return {channels:[{}]};},
-  disconnectOwner:async(name,user)=>{calls.push(`remove:${name}:${user}`);return {channels:[{}]};},
-  disconnectInvite:async(name,user)=>{calls.push(`cancel:${name}:${user}`);return {channels:[{}]};},...overrides,
+  connectOwner:async(name,user)=>{calls.push(`connect:${name}:${user}`);return {channels:[forumMembershipChannel()]};},
+  disconnectOwner:async(name,user)=>{calls.push(`remove:${name}:${user}`);return {channels:[forumMembershipChannel()]};},
+  disconnectInvite:async(name,user)=>{calls.push(`cancel:${name}:${user}`);return {channels:[forumMembershipChannel()]};},...overrides,
  };
  const context={user:{username:"alice"},forumOwnerRepository:repository,ogm:{model:()=>{throw new Error("Unexpected OGM");}},channelPermissionRepository:{findAuthorizationSnapshot:async()=>{calls.push("zero-admins");return {Admins:[]};}}} as unknown as GraphQLContext;
  return {context,calls,repository};

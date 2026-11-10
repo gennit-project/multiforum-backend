@@ -760,3 +760,23 @@ without failing the guard. #446 remains open and unmerged at the verified head
 207f9118989ad42cad4d01adacf4ebb657cb9268; no transition or worker-pause behavior was
 changed. This finite accounting records unfinished work rather than declaring the
 campaign complete because a CI run passes.
+
+### Fixed forum membership write items
+
+The eight owner, moderator and invitation write methods now preserve the exact
+32-field completed Channel projection instead of returning `unknown[]`. Every
+selected nullable key remains present; DateTime values are completed strings,
+and public JSON scalar contents remain unknown. Compile-negative fixtures reject
+missing selections, malformed completed values and invented relationship fields.
+
+A real disposable-database suite intercepts the actual generated mutation
+resolver and compares every executed selection to the declared source contract,
+then checks completed items and missing-target lists. Existing repository tests
+retain repeated-write, permission wiring, generated limits, coercion, notification
+and committed-write projection-failure evidence. No selection, write ordering or
+error policy changes. These fixed scalar-only items do not close any of the 18
+dynamic shared-list source obligations; accounting remains 178 / 31.
+The guard was exercised by temporarily removing `displayName` from the real
+mutation selection: the executed-selection regression failed, and the document
+was restored. Nine new integration cases and all 32 existing membership repository
+cases pass; the public response types and fixed documents remain unchanged.

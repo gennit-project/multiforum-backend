@@ -3,7 +3,7 @@ import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { CHANNEL_MEMBERSHIP_SELECTION } from "./forumMembershipSelections.js";
 
 type Users = Array<{username: string}>;
-type UpdatedChannels = { channels: unknown[] };
+import type {ForumMembershipWriteResult as UpdatedChannels} from "../../customResolvers/contracts/forumMembershipSource.js";
 export interface ForumOwnerRepository {
  findPendingInvites(channelUniqueName: string): Promise<Array<{PendingOwnerInvites: Users}>>;
  findAdmins(channelUniqueName: string): Promise<Array<{Admins: Users}>>;
