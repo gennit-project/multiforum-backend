@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import { staticResponsePaths, declaredResponsePaths } from "../helpers/staticResponsePaths.js";
 import { crosspostIdentitySelection, createdDiscussionSelection } from "../../customResolvers/contracts/contentProjections.js";
 import assert from 'node:assert/strict';
@@ -54,13 +55,14 @@ before(async()=>{
     return result;
   };
   const title=(raw.getType('Discussion') as GraphQLObjectType).getFields().title;
+  const resolveTitle=title.resolve ?? defaultFieldResolver;
   title.resolve=(source,args,context,info)=>{
     if(fault==='projection' && info.operation.name?.value==='CrosspostResult' && reads===failOn)throw new Error('Fixture crosspost projection failure');
     if(outerFailure && !info.operation.name)throw new Error('Fixture outer completion failure');
-    return defaultFieldResolver(source,args,context,info);
+    return resolveTitle(source,args,context,info);
   };
   registerGeneratedSchema(driver,raw);
-  schema=applyMiddleware(raw,permissions);
+  schema=applyMiddleware(raw,permissions,sourceIdentity);
 },{timeout:240_000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
@@ -156,4 +158,26 @@ test('actual ID-only CreateCrosspost and shared CrosspostResult documents match 
     {operation:'CrosspostResult',paths:declaredResponsePaths(createdDiscussionSelection)},
   ]);
   assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+});
+
+test('crosspost response aliases preserve the completed fixed projection and nested author/channel keys',async()=>{
+ const source=`mutation($input:[DiscussionCreateInputWithChannels!]!){result:createDiscussionWithChannelConnections(input:$input){key:id id:title ...Fields Author{name:username} links:DiscussionChannels{forum:channelUniqueName Discussion{key:id} Channel{name:uniqueName}}}} fragment Fields on Discussion {label:title text:body}`;
+ const result=await graphql({schema,source,variableValues:{input:[item()]},contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const response=JSON.parse(JSON.stringify(result.data)).result[0];
+ assert.equal(response.id,'Crosspost'); assert.equal(response.label,'Crosspost'); assert.equal(response.text,null); assert.equal(response.Author.name,'alice');
+ assert.deepEqual(response.links.map((link:{forum:string})=>link.forum).sort(),['forum','second']);
+ assert.ok(response.links.every((link:{Discussion:{key:string};Channel:{name:string};forum:string})=>link.Discussion.key===response.key&&link.Channel.name===link.forum));
+ assert.deepEqual(dispatched,[{id:response.key,links:2}]);
+});
+
+test('ordinary discussion creation preserves colliding aliases and selected fixed children',async()=>{
+ const {crosspostedDiscussionId:_crosspost,...ordinary}=item('Ordinary');
+ const source=`mutation($input:[DiscussionCreateInputWithChannels!]!,$skip:Boolean!){result:createDiscussionWithChannelConnections(input:$input){title:id id:title Author{name:username} links:DiscussionChannels{forum:channelUniqueName} body @skip(if:$skip)}}`;
+ const result=await graphql({schema,source,variableValues:{input:[ordinary],skip:true},contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const response=JSON.parse(JSON.stringify(result.data)).result[0];
+ assert.equal(response.id,'Ordinary');assert.equal(response.Author.name,'alice');assert.equal(response.body,undefined);
+ assert.deepEqual(response.links.map((link:{forum:string})=>link.forum).sort(),['forum','second']);
+ assert.equal((await driver.executeQuery('MATCH(d:Discussion {id:$id}) RETURN d.title AS title',{id:response.title})).records[0].get('title'),'Ordinary');
 });

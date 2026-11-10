@@ -1,3 +1,4 @@
+import { executeCanonicalFixedOperation } from "./canonicalFixedOperation.js";
 import type { CreatedEventProjection, EventUpdateSnapshot, UpdatedEventProjection } from "../../customResolvers/contracts/contentProjections.js";
 import type { Driver, ManagedTransaction } from "neo4j-driver";
 import type { EventCreateInput, EventWhere, EventUpdateInput } from "../../src/generated/graphql.js";
@@ -129,14 +130,14 @@ export interface EventWriteRepository {
 export function createEventWriteRepository(driver: Driver): EventWriteRepository {
   return {
     async createWithinTransaction(input, tx) {
-      const result = await executeGeneratedOperation<{createEvents: {events: CreatedEventProjection[]}}>(driver,
+      const result = await executeCanonicalFixedOperation<{createEvents: {events: CreatedEventProjection[]}}>(driver,
         `mutation CreateEventInTransaction($input: [EventCreateInput!]!) {
           createEvents(input: $input) { events ${CREATED_EVENT_SELECTION} }
         }`, {input: [input]}, tx);
       return result.createEvents.events;
     },
     async findCreatedEvent(id, tx) {
-      const result = await executeGeneratedOperation<{events: CreatedEventProjection[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{events: CreatedEventProjection[]}>(driver,
         `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}}, tx);
       return result.events;
     },

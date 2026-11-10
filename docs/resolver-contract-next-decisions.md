@@ -1289,3 +1289,25 @@ content-creation snapshots and their wrappers, rather than assume a typed intern
 GraphQL read proves outer alias semantics. Dynamic caller-selected maps and raw
 JSON/scalar values remain distinct limitations; neither pending product policy is
 changed. These remaining engineering checks are not justified exceptions yet.
+
+
+### Fixed creation response census checkpoint
+
+Non-colliding aliases initially passed, but stronger field-name collision probes
+reproduced incorrect ordinary-discussion, crosspost and event results: `id:title`
+could read the stored ID. Healthy fault-injection title paths now delegate to the
+actual generated resolver, avoiding a replacement default resolver in this test.
+
+Five fixed creation/read documents now opt into a reusable provenance adapter.
+Before execution it checks their actual schema/document for concrete, alias-free,
+unconditional object selections. After successful GraphQL completion it records
+canonical object keys along exactly those paths, including lists and nulls;
+scalar/JSON payloads are never traversed or certified. Duplicate selections retain
+GraphQL merging semantics. Caller-selected documents, fragments, directives and
+abstract child selections remain outside this narrow adapter. It does not add
+request identity, change authorization/transactions or validate arbitrary values.
+
+The existing executed-document and rollback tests remain required, alongside
+outer response collisions and collection-share wrapper coverage. These checks
+establish selected-source provenance, not whole-operation correctness. Inventory
+remains 180 selected / 29 deferred.

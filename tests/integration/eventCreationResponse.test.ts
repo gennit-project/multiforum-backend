@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from 'node:assert/strict';
 import { before, beforeEach, after, test } from 'node:test';
 import { Neo4jGraphQL } from '@neo4j/graphql';
@@ -40,12 +41,13 @@ before(async () => {
   }});
   const raw = await new Neo4jGraphQL({ driver, typeDefs, resolvers, features:{filters:{String:{MATCHES:true}}} }).getSchema();
   const title = (raw.getType('Event') as GraphQLObjectType).getFields().title;
+  const resolveTitle=title.resolve ?? defaultFieldResolver;
   title.resolve = (source, args, context, info) => {
     if (outerFailure && !info.operation.name) throw new Error('Fixture outer completion failure');
-    return defaultFieldResolver(source,args,context,info);
+    return resolveTitle(source,args,context,info);
   };
   registerGeneratedSchema(driver,raw);
-  schema = applyMiddleware(raw,permissions);
+  schema = applyMiddleware(raw,permissions,sourceIdentity);
 }, {timeout:240_000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
@@ -110,4 +112,14 @@ test('outer GraphQL completion remains post-commit and outside the response-read
   outerFailure=true;
   assert.match(JSON.stringify((await execute([item()])).errors),/Fixture outer completion failure/);
   assert.deepEqual(await persistedTitles(),['Created']);
+});
+
+test('event creation aliases preserve fixed response scalars, nested links and subscribers',async()=>{
+ const source=`mutation($input:[EventCreateInputWithChannels!]!){result:createEventWithChannelConnections(input:$input){key:id id:title label:title Tags{label:text} links:EventChannels{forum:channelUniqueName Event{key:id} Channel{name:uniqueName}} subscribers:SubscribedToNotifications{name:username}}}`;
+ const result=await graphql({schema,source,variableValues:{input:[item()]},contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null}}});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const response=JSON.parse(JSON.stringify(result.data)).result[0];
+ assert.equal(response.id,'Created');assert.equal(response.label,'Created');assert.deepEqual(response.Tags,[{label:'Created'}]);assert.deepEqual(response.subscribers,[{name:'alice'}]);
+ assert.deepEqual(response.links.map((link:{forum:string})=>link.forum).sort(),['forum','second']);
+ assert.ok(response.links.every((link:{Event:{key:string};Channel:{name:string};forum:string})=>link.Event.key===response.key&&link.Channel.name===link.forum));
 });
