@@ -407,6 +407,8 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
   } satisfies AccountSafetyMutationResolvers;
 
   const pluginCampaignResolvers = {
+    pausePluginPipelineCampaign: pausePluginPipelineCampaign({driver}),
+    resumePluginPipelineCampaign: resumePluginPipelineCampaign({driver}),
     createPluginPipelineCampaign: createPluginPipelineCampaign({}),
   } satisfies PluginCampaignMutationResolvers;
 
@@ -589,12 +591,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     ...pluginInstallationResolvers,
     ...pluginExecutionResolvers,
     ...pluginCampaignResolvers,
-    pausePluginPipelineCampaign: pausePluginPipelineCampaign({
-      driver,
-    }),
-    resumePluginPipelineCampaign: resumePluginPipelineCampaign({
-      driver,
-    }),
     ...pluginResolvers,
     ...downloadActionResolvers,
     ...pluginPolicyDomainResolvers,

@@ -41,7 +41,6 @@ test("campaign audit accounts for every remaining field and does not promote une
 test('every deferred boundary has a finite disposition tied to its current contract',()=>{
  const sourceFields=new Set(sharedListSources.map(row=>`${row.parent}.${row.field}`));
  const rawFields=new Set(['DiscussionChannelListItem.Flairs','ScratchpadEntry.superUpvotedByUsers','SiteWideDiscussionListItem.DownloadableFiles','Query.getImageAlbumUsage']);
- const pendingFields=new Set(['Mutation.pausePluginPipelineCampaign','Mutation.resumePluginPipelineCampaign']);
  const named=(type:TypeNode):string=>type.kind===Kind.NAMED_TYPE?type.name.value:named(type.type);
  function isJsonBoundary(field:string):boolean{
   if(field==='JSON')return typeDefs.definitions.some(node=>node.kind===Kind.SCALAR_TYPE_DEFINITION&&node.name.value==='JSON');
@@ -56,11 +55,11 @@ test('every deferred boundary has a finite disposition tied to its current contr
   const audit=JSON.parse(readFileSync(`docs/resolver-contract-audit/${file}`,'utf8')) as {fields?:Audit[];entries?:Audit[]};
   for(const row of audit.fields??audit.entries??[]){
    if(checkedResolverFields.includes(row.field)){assert.equal(row.disposition,undefined,row.field);continue;}
-   const expected=isJsonBoundary(row.field)?'schema-limit':sourceFields.has(row.field)?'source-migration':rawFields.has(row.field)?'raw-scalar-limit':pendingFields.has(row.field)?'pending-policy-or-dependency':row.field==='Mutation.addIssueActivityFeedItem'?'upstream-runtime-limit':undefined;
+   const expected=isJsonBoundary(row.field)?'schema-limit':sourceFields.has(row.field)?'source-migration':rawFields.has(row.field)?'raw-scalar-limit':row.field==='Mutation.addIssueActivityFeedItem'?'upstream-runtime-limit':undefined;
    assert.ok(expected,`${row.field}: no justified disposition; add a concrete work gate`);
    assert.equal(row.disposition,expected,`${row.field}: do not hide unfinished source work as a schema limit`);
    counts[expected]=(counts[expected]??0)+1;
   }
  }
- assert.deepEqual(counts,{'schema-limit':6,'source-migration':18,'raw-scalar-limit':4,'pending-policy-or-dependency':2,'upstream-runtime-limit':1});
+ assert.deepEqual(counts,{'schema-limit':6,'source-migration':18,'raw-scalar-limit':4,'upstream-runtime-limit':1});
 });

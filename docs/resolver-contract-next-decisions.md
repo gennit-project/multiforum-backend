@@ -1,10 +1,15 @@
 # Remaining response-contract decisions after #450
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
-has 178 selected response/source boundaries and 31 deferred entries. The three
+has 180 selected response/source boundaries and 29 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
+
+Current transition status: the final “Incorporated control-transition dependency”
+section supersedes earlier #446 waiting/stale-status checkpoints below. Its
+control-write fix is now integrated; only the distinct worker-after-pause product
+choice remains unanswered. Earlier numerical checkpoints are historical.
 
 ## Fixed download graph reads
 
@@ -1123,3 +1128,30 @@ All 92 focused unit/integration cases pass, including all three executed query
 variants and the prior cursor/filter/pagination regressions. Removing the count
 column or page identity column makes the executed-query guard fail; negative types
 reject an `any` count or a text count. The inventory stays 178 / 31.
+
+
+## Incorporated control-transition dependency (#446)
+
+The #446 control-write fix was incorporated with its original commit attribution
+(207f9118989ad42cad4d01adacf4ebb657cb9268), without merging that PR. Its
+locked identity/status/version comparisons now underpin both actual pause/resume
+resolver registrations. Success returns the fixed generated campaign projection;
+missing, invalid and competing transitions retain NOT_FOUND, BAD_USER_INPUT and
+CONFLICT respectively. Raw lock status stays unknown until comparison, while
+computed identity/version columns have precise types. No full stored node cast
+is used. Generated timestamp scalar internals remain an explicit limitation.
+
+Database-controlled concurrency tests preserve deletion/recreation, competing
+updates, write errors, post-write projection errors and authorization. The
+fixed-result key guard checks the actual transition document, including nullable
+keys; compile-negative cases reject absent successful responses and invalid
+enums. The existing worker-batch test deliberately preserves its ability to
+continue after pause: that separate product policy remains unanswered.
+
+This closes the two control-transition dependency entries: 180 selected boundaries
+and 29 deferred. The remaining finite inventory consists of 18 shared-list item
+categories, four raw-scalar boundaries, six JSON/schema limits and one upstream
+activity-delegation boundary. This is not whole-object certification. The ongoing
+producer/alias census still needs to establish remaining owned plugin/configuration
+response maps and distinguish dynamic generated selections from canonical maps.
+The event omitted/null input policy is also unchanged.

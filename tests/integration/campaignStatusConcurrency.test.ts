@@ -7,6 +7,7 @@ import { applyMiddleware } from "graphql-middleware";
 import type { Driver } from "neo4j-driver";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
+import {campaignSelection} from "../../customResolvers/contracts/pluginCampaigns.js";
 import getResolvers from "../helpers/getTestResolvers.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { createCampaignControlRepository } from "../../services/persistence/campaignControlRepository.js";
@@ -233,5 +234,21 @@ test("draft and terminal states retain BAD_USER_INPUT without modifying the camp
     const before=await state();
     for (const action of ["pause","resume"] as const) errorCode(await execute(action),"BAD_USER_INPUT");
     assert.deepEqual(await state(),before);
+  }
+});
+
+test("transition result retains every fixed campaign selection including nullable keys", async () => {
+  const repository=createCampaignControlRepository(driver);
+  for (const target of [Status.Paused,Status.Running] as const) {
+    const result=await repository.transitionStatus("campaign",target);
+    assert.equal(result.kind,"updated");
+    if(result.kind!=="updated")assert.fail("successful fixture transition expected");
+    assert.deepEqual(Object.keys(result.campaign).sort(),Object.keys(campaignSelection).sort());
+    assert.equal(result.campaign.status,target);
+    assert.equal(result.campaign.channelId,null);
+    assert.equal(result.campaign.finishedAt,null);
+    assert.equal(typeof result.campaign.createdAt,"string");
+    assert.equal(typeof result.campaign.updatedAt,"string");
+    assert.equal(result.campaign.completedCount,0);
   }
 });

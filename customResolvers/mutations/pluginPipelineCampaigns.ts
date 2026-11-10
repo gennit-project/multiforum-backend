@@ -80,7 +80,7 @@ const changeCampaignStatus = (
   models: Pick<Models, "driver" | "controlRepository">,
   status: PluginPipelineCampaignStatus.Paused | PluginPipelineCampaignStatus.Running
 ) =>
-  async (_parent: unknown, { campaignId }: { campaignId: string }): Promise<CampaignRow | undefined> => {
+  async (_parent: unknown, { campaignId }: { campaignId: string }): Promise<CampaignRow> => {
     const repository = models.controlRepository ?? createCampaignControlRepository(models.driver!);
     const result = await repository.transitionStatus(campaignId, status);
     if (result.kind === "missing") {

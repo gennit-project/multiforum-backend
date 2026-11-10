@@ -9,7 +9,7 @@ export type CampaignTransitionTarget = PluginPipelineCampaignStatus.Paused | Plu
 export type CampaignTransitionResult =
  | {kind:"missing"}
  | {kind:"invalid"}
- | {kind:"conflict"; status:string|null}
+ | {kind:"conflict"; status:unknown}
  | {kind:"updated"; campaign:CampaignRow};
 export interface CampaignControlRepository {
  transitionStatus(id:string,status:CampaignTransitionTarget):Promise<CampaignTransitionResult>;
@@ -22,7 +22,7 @@ export function createCampaignControlRepository(driver:Driver):CampaignControlRe
  async transitionStatus(id,status){
   const session=driver.session();
   try {
-   const snapshot=await session.run(`MATCH (campaign:PluginPipelineCampaign {id:$id}) RETURN campaign.status AS status,toString(campaign.updatedAt) AS version,elementId(campaign) AS identity`,{id});
+   const snapshot=await session.run<{status:unknown;version:string|null;identity:string}>(`MATCH (campaign:PluginPipelineCampaign {id:$id}) RETURN campaign.status AS status,toString(campaign.updatedAt) AS version,elementId(campaign) AS identity`,{id});
    const before=snapshot.records[0];
    if(!before)return {kind:"missing"};
    const expected=status===PluginPipelineCampaignStatus.Paused

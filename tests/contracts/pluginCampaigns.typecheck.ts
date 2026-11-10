@@ -6,7 +6,7 @@ import type {CampaignRow,CampaignFileRow} from '../../services/persistence/campa
 import type {CampaignStatusRow} from '../../services/persistence/campaignControlRepository.js';
 import type {CampaignDestinationRow} from '../../services/persistence/campaignQueryRepository.js';
 declare const driver:Driver;
-const mutations={createPluginPipelineCampaign:createPluginPipelineCampaign({driver})} satisfies PluginCampaignMutationResolvers;
+const mutations={pausePluginPipelineCampaign:pausePluginPipelineCampaign({driver}),resumePluginPipelineCampaign:resumePluginPipelineCampaign({driver}),createPluginPipelineCampaign:createPluginPipelineCampaign({driver})} satisfies PluginCampaignMutationResolvers;
 const queries={getPluginPipelineCampaigns:getPluginPipelineCampaigns({driver}),getPluginPipelineCampaignFailures:getPluginPipelineCampaignFailures({driver}),previewPluginPipelineCampaign:previewPluginPipelineCampaign({driver})} satisfies PluginCampaignQueryResolvers;
 declare const row:CampaignRow;
 // @ts-expect-error unknown status is not a generated enum
@@ -25,12 +25,16 @@ narrow.runningCount;
 const destination:CampaignDestinationRow={id:'file',Discussion:{id:'discussion',DiscussionChannels:[{archived:false}]}};
 void [mutations,queries,status,missing,count,destination];
 
-import type {MutationResolvers} from '../../src/generated/graphql.js';
-import type {GraphQLContext} from '../../types/context.js';
-import type {SelectedResolver} from '../../customResolvers/contracts/selection.js';
-import type {campaignSelection} from '../../customResolvers/contracts/pluginCampaigns.js';
-// @ts-expect-error concurrent deletion can leave no row for a non-null root
-const pause:SelectedResolver<MutationResolvers<GraphQLContext>['pausePluginPipelineCampaign'],typeof campaignSelection>=pausePluginPipelineCampaign({driver});
-// @ts-expect-error concurrent deletion can leave no row for a non-null root
-const resume:SelectedResolver<MutationResolvers<GraphQLContext>['resumePluginPipelineCampaign'],typeof campaignSelection>=resumePluginPipelineCampaign({driver});
-void [pause,resume];
+// @ts-expect-error a successful transition cannot omit the non-null response
+const absent:PluginCampaignMutationResolvers['pausePluginPipelineCampaign']=async()=>undefined;
+// @ts-expect-error the generated status enum is still enforced
+const invalidTransition:PluginCampaignMutationResolvers['resumePluginPipelineCampaign']=async()=>({...row,status:'UNKNOWN'});
+void [absent,invalidTransition];
+
+import type {lockCampaignStatus} from '../../services/persistence/campaignStatusLock.js';
+declare const locked:NonNullable<Awaited<ReturnType<typeof lockCampaignStatus>>>;
+// @ts-expect-error raw stored status has not passed generated enum completion
+const rawStatus:string=locked.status;
+const lockIdentity:string=locked.identity;
+const lockVersion:string|null=locked.version;
+void [rawStatus,lockIdentity,lockVersion];

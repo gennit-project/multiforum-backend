@@ -277,23 +277,46 @@
     },
     {
       "field": "Mutation.pausePluginPipelineCampaign",
-      "status": "exception",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
       "residualPaths": [
-        "*"
+        "Generated DateTime scalar internals; this response contract does not change worker behavior after pause."
       ],
       "evidence": [
         "customResolvers/contracts/pluginCampaigns.ts",
         "tests/contracts/pluginCampaigns.typecheck.ts",
-        "tests/integration/pluginCampaignResponseContracts.test.ts",
         "services/persistence/campaignControlRepository.ts",
-        "services/persistence/campaignQueryRepository.ts",
-        "services/persistence/campaignServiceRepository.ts",
-        "customResolvers/mutations/pluginPipelineCampaigns.ts"
+        "services/persistence/campaignStatusLock.ts",
+        "tests/integration/campaignStatusConcurrency.test.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts"
       ],
-      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
-      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered.",
-      "disposition": "pending-policy-or-dependency"
+      "reason": "Actual resolver registration checks the fixed generated campaign projection. The incorporated #446 transition returns a complete successful row or throws; database-controlled races cover identity, version, status, deletion and failure behavior.",
+      "decision": "Selected response checked. Preserve locked transitions and existing worker-after-pause behavior; its separate product policy remains undecided."
     },
     {
       "field": "Mutation.permanentlyDeleteDownloadableFile",
@@ -510,23 +533,46 @@
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
-      "status": "exception",
-      "selectedPaths": [],
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
       "residualPaths": [
-        "*"
+        "Generated DateTime scalar internals; this response contract does not change worker behavior after pause."
       ],
       "evidence": [
         "customResolvers/contracts/pluginCampaigns.ts",
         "tests/contracts/pluginCampaigns.typecheck.ts",
-        "tests/integration/pluginCampaignResponseContracts.test.ts",
         "services/persistence/campaignControlRepository.ts",
-        "services/persistence/campaignQueryRepository.ts",
-        "services/persistence/campaignServiceRepository.ts",
-        "customResolvers/mutations/pluginPipelineCampaigns.ts"
+        "services/persistence/campaignStatusLock.ts",
+        "tests/integration/campaignStatusConcurrency.test.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts"
       ],
-      "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
-      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered.",
-      "disposition": "pending-policy-or-dependency"
+      "reason": "Actual resolver registration checks the fixed generated campaign projection. The incorporated #446 transition returns a complete successful row or throws; database-controlled races cover identity, version, status, deletion and failure behavior.",
+      "decision": "Selected response checked. Preserve locked transitions and existing worker-after-pause behavior; its separate product policy remains undecided."
     },
     {
       "field": "Mutation.retryDownloadableFileScan",

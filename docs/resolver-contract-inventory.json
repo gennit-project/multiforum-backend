@@ -311,7 +311,7 @@
     },
     {
       "field": "Mutation.pausePluginPipelineCampaign",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.permanentlyDeleteChannelBanner",
@@ -419,7 +419,7 @@
     },
     {
       "field": "Mutation.resumePluginPipelineCampaign",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "Mutation.retryDownloadableFileScan",
