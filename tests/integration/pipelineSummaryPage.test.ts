@@ -4,6 +4,7 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql} from 'graphql';
 import {applyMiddleware} from 'graphql-middleware';
 import permissions from '../../permissions.js';
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import neo4j, {type Driver} from 'neo4j-driver';
 import typeDefs from '../../typeDefs.js';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
@@ -186,4 +187,62 @@ test('cursor branches preserve missing-key exclusion and filtered tie ordering',
   const next=await summary(null,{...args,eventType:'downloadableFile.created',first:10,jobsFirst:1,after:first.pageInfo.endCursor});
   assert.deepEqual(next.attempts.map(row=>row.run.id),['attempt-5','attempt-4','attempt-2','attempt-1']);
   assert.equal(next.pageInfo.hasNextPage,false);
+});
+
+const aliasCases=[
+ ['getPipelineSummary(targetId:"file",targetType:"DownloadableFile")','targetId','', 'targetType',''],
+ ['getPipelineSummaryPage(targetId:"file",targetType:"DownloadableFile",first:1,jobsFirst:1)','pageInfo','{endCursor hasNextPage}','attempts','{run{id}}'],
+ ['getPipelineRunPage(pipelineRunId:"attempt-1",first:1)','run','{id}','jobsPageInfo','{endCursor hasNextPage}'],
+ ['getPublicPipelineRun(pipelineRunId:"attempt-1")','id','','status',''],
+] as const;
+for(const [operation,left,leftSelection,right,rightSelection] of aliasCases)test(`${operation}: owned response aliases preserve independent fields`,async()=>{
+ await seed(2,2);const secured=applyMiddleware(schema,sourceIdentity,permissions);
+ const run=(fields:string)=>graphql({schema:secured,source:`{result:${operation}{${fields}}}`,contextValue:{driver,req:{headers:{}}}});
+ const canonical=await run(`${left}${leftSelection} ${right}${rightSelection}`);assert.equal(canonical.errors,undefined,JSON.stringify(canonical.errors));
+ const aliased=await run(`${right}:${left}${leftSelection} ${left}:${right}${rightSelection}`);assert.equal(aliased.errors,undefined,JSON.stringify(aliased.errors));
+ const row=JSON.parse(JSON.stringify(canonical.data)).result;
+ assert.deepEqual(JSON.parse(JSON.stringify(aliased.data)),{result:{[right]:row[left],[left]:row[right]}});
+});
+test('public pipeline jobs and page-info aliases preserve nested source values',async()=>{
+ await seed(1,2);const secured=applyMiddleware(schema,sourceIdentity,permissions);
+ const source='{result:getPipelineRunPage(pipelineRunId:"attempt-1",first:1){run{jobs{pluginId:id id:pluginId}} jobsPageInfo{endCursor:hasNextPage hasNextPage:endCursor}}}';
+ const result=await graphql({schema:secured,source,contextValue:{driver,req:{headers:{}}}});assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const row=JSON.parse(JSON.stringify(result.data)).result;
+ assert.deepEqual(row.run.jobs,[{pluginId:'attempt-1-job-1',id:'scanner'}]);assert.equal(row.jobsPageInfo.endCursor,true);assert.equal(typeof row.jobsPageInfo.hasNextPage,'string');
+});
+
+test('public diagnostic aliases and fragments retain scalar fields and JSON details',async()=>{
+ await seed(1,1);await driver.executeQuery('MATCH(j:PluginRun) SET j.publicDiagnostics=$value',{value:JSON.stringify([{level:'INFO',code:'EXAMPLE_CODE',message:'Visible message',details:{example:1},helpUrl:null}])});
+ const source='query{result:getPublicPipelineRun(pipelineRunId:"attempt-1"){jobs{diagnostics{message:code code:message ...Details}}}} fragment Details on PublicPluginDiagnostic{details helpUrl}';
+ const result=await graphql({schema:applyMiddleware(schema,sourceIdentity,permissions),source,contextValue:{driver,req:{headers:{}}}});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(JSON.parse(JSON.stringify(result.data)).result.jobs[0].diagnostics,[{message:'EXAMPLE_CODE',code:'Visible message',details:{example:1},helpUrl:null}]);
+ assert.doesNotMatch(JSON.stringify(result.data),/private payload|private config|private message/);
+});
+test('raw diagnostic leaves complete only when selected and keep alias error paths',async()=>{
+ await seed(1,1);await driver.executeQuery('MATCH(j:PluginRun) SET j.publicDiagnostics=$value',{value:JSON.stringify([{level:'INFO',code:'EXAMPLE_CODE',message:{invalid:true},details:null,helpUrl:null}])});
+ const secured=applyMiddleware(schema,sourceIdentity,permissions);
+ const source='query($skip:Boolean!){result:getPublicPipelineRun(pipelineRunId:"attempt-1"){jobs{diagnostics{code text:message @skip(if:$skip)}}}}';
+ const run=(skip:boolean)=>graphql({schema:secured,source,variableValues:{skip},contextValue:{driver,req:{headers:{}}}});
+ const skipped=await run(true);assert.equal(skipped.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(skipped.data)).result.jobs[0].diagnostics,[{code:'EXAMPLE_CODE'}]);
+ const selected=await run(false);assert.match(selected.errors?.[0].message??'',/String cannot represent value/);assert.deepEqual(selected.errors?.[0].path,['result','jobs',0,'diagnostics',0,'text']);
+});
+test('raw diagnostic container handling preserves malformed and non-object item behavior',async()=>{
+ await seed(1,1);const secured=applyMiddleware(schema,sourceIdentity,permissions);
+ const run=(fields:string)=>graphql({schema:secured,source:`{result:getPublicPipelineRun(pipelineRunId:"attempt-1"){jobs{${fields}}}}`,contextValue:{driver,req:{headers:{}}}});
+ for(const value of ['{','{}','null']){
+  await driver.executeQuery('MATCH(j:PluginRun) SET j.publicDiagnostics=$value',{value});
+  const result=await run('diagnostics{code}');assert.equal(result.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(result.data)).result.jobs[0].diagnostics,[]);
+ }
+ await driver.executeQuery('MATCH(j:PluginRun) SET j.publicDiagnostics=$value',{value:'[null]'});
+ assert.equal((await run('id')).errors,undefined);const selected=await run('diagnostics{code}');assert.ok(selected.errors?.length);assert.deepEqual(selected.errors[0].path,['result','jobs',0,'diagnostics',0]);
+});
+
+test('aliased public pipeline roots preserve hidden-target errors and nullable missing runs',async()=>{
+ await seed(1,1);const secured=applyMiddleware(schema,sourceIdentity,permissions);
+ const run=(operation:string,fields:string)=>graphql({schema:secured,source:`{result:${operation}{${fields}}}`,contextValue:{driver,req:{headers:{}}}});
+ for(const operation of ['getPipelineRunPage(pipelineRunId:"missing")','getPublicPipelineRun(pipelineRunId:"missing")']){
+  const result=await run(operation,'__typename');assert.equal(result.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{result:null});
+ }
+ await driver.executeQuery('MATCH(d:Discussion) SET d.deleted=true');
+ for(const [operation] of aliasCases){const result=await run(operation,'__typename');assert.ok(result.errors?.length,operation);assert.deepEqual(result.errors[0].path,['result']);}
 });

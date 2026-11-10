@@ -44,3 +44,16 @@ void [queries,mutations,wrongBoolean,missingId,wrongFilename];
 // @ts-expect-error arbitrary strings are not SecretValidationStatus values
 const wrongSecretStatus: PluginQueryResolvers["getServerPluginSecrets"] = () => [{key:"key",status:"OTHER",lastValidatedAt:null,validationError:null}];
 void wrongSecretStatus;
+
+import {parsePublicDiagnostics,type PublicDiagnostic} from '../../services/plugin/publicDiagnostics.js';
+import {toPublicPluginJob,type PluginJobRecord} from '../../services/plugin/publicPipeline.js';
+const parsedDiagnostics:unknown[]=parsePublicDiagnostics('[{"code":1}]');
+// @ts-expect-error persisted JSON has not established diagnostic item fields
+const certifiedDiagnostics:PublicDiagnostic[]=parsePublicDiagnostics('[]');
+declare const rawJob:PluginJobRecord;
+const projectedJob=toPublicPluginJob(rawJob);
+// @ts-expect-error public diagnostic response containers are arrays
+const invalidDiagnosticContainer:typeof projectedJob={...projectedJob,diagnostics:{}};
+// @ts-expect-error raw diagnostic values cannot be used as known strings
+const diagnosticText:string=projectedJob.diagnostics[0];
+void [parsedDiagnostics,certifiedDiagnostics,invalidDiagnosticContainer,diagnosticText];

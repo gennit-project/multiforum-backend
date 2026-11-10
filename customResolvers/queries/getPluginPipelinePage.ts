@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import type { Driver } from 'neo4j-driver';
 import { createPipelineTargetRepository, type PipelineTargetRepository } from '../../services/persistence/pipelineTargetRepository.js';
 import { createPipelineSummaryPageRepository, type PipelineSummaryPageRepository, type SummaryFilter, type JobsPage } from '../../services/persistence/pipelineSummaryPageRepository.js';
@@ -12,15 +13,15 @@ function publicPage(attempt: PipelineAttemptRecord, page: JobsPage, first: numbe
   const jobs = page.jobs.slice(0, first);
   const last = jobs[jobs.length - 1];
   const displayStatus = pipelineDisplayStatus(attempt.status, page.statuses);
-  return {
+  return rememberCanonicalSource({
     run: toPublicPipelineRun({attempt, jobs}),
     displayStatus,
     hasActiveWork: displayStatus === 'PENDING' || displayStatus === 'RUNNING',
-    jobsPageInfo: {
+    jobsPageInfo: rememberCanonicalSource({
       hasNextPage: page.jobs.length > first,
       endCursor: last ? encodePipelineCursor(jobBinding(attempt.id), {id: last.id, createdAt: last.createdAt, order: last.executionOrder ?? 0}) : null,
-    },
-  };
+    }),
+  });
 }
 export const createPipelineSummaryPage = ({driver, pipelineTargetRepository = createPipelineTargetRepository(driver), repository = createPipelineSummaryPageRepository(driver)}: Dependencies) =>
   async (_parent: unknown, args: SummaryPageArgs) => {
@@ -37,11 +38,11 @@ export const createPipelineSummaryPage = ({driver, pipelineTargetRepository = cr
     const flags = await repository.findFlags(filter);
     const jobs = await repository.findJobs(attempts, jobsFirst + 1, null);
     const last = attempts[attempts.length - 1];
-    return {
+    return rememberCanonicalSource({
       targetId: args.targetId, targetType: args.targetType, ...flags,
-      pageInfo: {hasNextPage: rows.length > first, endCursor: last ? encodePipelineCursor(binding, {id: last.id, createdAt: last.createdAt, order: 0}) : null},
+      pageInfo: rememberCanonicalSource({hasNextPage: rows.length > first, endCursor: last ? encodePipelineCursor(binding, {id: last.id, createdAt: last.createdAt, order: 0}) : null}),
       attempts: attempts.map(attempt => publicPage(attempt, jobs.get(attempt.id) ?? {jobs: [], statuses: []}, jobsFirst)),
-    };
+    });
   };
 export const createPipelineRunPage = ({driver, pipelineTargetRepository = createPipelineTargetRepository(driver), repository = createPipelineSummaryPageRepository(driver)}: Dependencies) =>
   async (_parent: unknown, {pipelineRunId, first: input, after: cursor}: {pipelineRunId: string; first?: number | null; after?: string | null}) => {

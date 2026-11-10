@@ -17,7 +17,7 @@ export const downloadHistorySelection = {
 export const publicJobSelection = {
   id:true,pluginId:true,pluginName:true,version:true,scope:true,channelId:true,eventType:true,
   durationMs:true,executionOrder:true,skippedReason:true,message:true,
-  diagnostics:{code:true,level:true,message:true,details:true,helpUrl:true},
+  // Parsed diagnostic JSON proves a list container, not item scalar values.
   queuedAt:true,startedAt:true,heartbeatAt:true,timeoutAt:true,finishedAt:true,createdAt:true,updatedAt:true,
 } as const;
 // Existing normalization passes status/applicability strings through. Their enum

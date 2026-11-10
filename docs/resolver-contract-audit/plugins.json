@@ -1160,27 +1160,25 @@
         "attempts.jobs.timeoutAt",
         "attempts.jobs.finishedAt",
         "attempts.jobs.createdAt",
-        "attempts.jobs.updatedAt",
-        "attempts.jobs.diagnostics.code",
-        "attempts.jobs.diagnostics.level",
-        "attempts.jobs.diagnostics.message",
-        "attempts.jobs.diagnostics.details",
-        "attempts.jobs.diagnostics.helpUrl"
+        "attempts.jobs.updatedAt"
       ],
       "residualPaths": [
         "attempts.status",
         "attempts.trigger",
         "attempts.applicability",
         "attempts.jobs.status",
-        "diagnostic details JSON and DateTime scalar internals"
+        "diagnostic details JSON and DateTime scalar internals",
+        "Stored publicDiagnostics JSON items remain unknown; only the array container is established. Requested child values complete through GraphQL without eager validation."
       ],
       "evidence": [
         "customResolvers/contracts/plugins.ts",
         "tests/contracts/plugins.typecheck.ts",
         "tests/integration/pluginResponseContracts.test.ts",
-        "services/persistence/pipelineHistoryRepository.ts"
+        "services/persistence/pipelineHistoryRepository.ts",
+        "services/plugin/publicDiagnostics.ts",
+        "tests/integration/pipelineSummaryPage.test.ts"
       ],
-      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL.",
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL. Diagnostic item certification was removed after finding the parser only checked the array container; source tests preserve lazy errors and alias semantics.",
       "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
     },
     {
@@ -1382,27 +1380,25 @@
         "jobs.timeoutAt",
         "jobs.finishedAt",
         "jobs.createdAt",
-        "jobs.updatedAt",
-        "jobs.diagnostics.code",
-        "jobs.diagnostics.level",
-        "jobs.diagnostics.message",
-        "jobs.diagnostics.details",
-        "jobs.diagnostics.helpUrl"
+        "jobs.updatedAt"
       ],
       "residualPaths": [
         "status",
         "trigger",
         "applicability",
         "jobs.status",
-        "diagnostic details JSON and DateTime scalar internals"
+        "diagnostic details JSON and DateTime scalar internals",
+        "Stored publicDiagnostics JSON items remain unknown; only the array container is established. Requested child values complete through GraphQL without eager validation."
       ],
       "evidence": [
         "customResolvers/contracts/plugins.ts",
         "tests/contracts/plugins.typecheck.ts",
         "tests/integration/pluginResponseContracts.test.ts",
-        "services/persistence/pipelineDetailRepository.ts"
+        "services/persistence/pipelineDetailRepository.ts",
+        "services/plugin/publicDiagnostics.ts",
+        "tests/integration/pipelineSummaryPage.test.ts"
       ],
-      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL.",
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL. Diagnostic item certification was removed after finding the parser only checked the array container; source tests preserve lazy errors and alias semantics.",
       "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
     },
     {

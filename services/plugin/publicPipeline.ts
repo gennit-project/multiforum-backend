@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../canonicalSourceFields.js'
 import { parsePublicDiagnostics } from './publicDiagnostics.js'
 
 export type PipelineAttemptRecord = {
@@ -66,8 +67,11 @@ const publicJobMessage = ({
 }
 
 export const toPublicPluginJob = (job: PluginJobRecord) => {
-  const diagnostics = parsePublicDiagnostics(job.publicDiagnostics)
-  return {
+  const diagnostics = parsePublicDiagnostics(job.publicDiagnostics).map(value =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+      ? rememberCanonicalSource({...value}) : value
+  )
+  return rememberCanonicalSource({
     id: job.id,
     pluginId: job.pluginId,
     pluginName: job.pluginName || job.pluginId,
@@ -93,7 +97,7 @@ export const toPublicPluginJob = (job: PluginJobRecord) => {
     finishedAt: job.finishedAt || null,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
-  }
+  })
 }
 
 export const toPublicPipelineRun = ({
@@ -102,7 +106,7 @@ export const toPublicPipelineRun = ({
 }: {
   attempt: PipelineAttemptRecord
   jobs: PluginJobRecord[]
-}) => ({
+}) => rememberCanonicalSource({
   id: attempt.id,
   pipelineId: attempt.pipelineId,
   targetId: attempt.targetId,

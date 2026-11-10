@@ -1171,3 +1171,31 @@ The history and transition key guards inspect actual repository results, includi
 nullable selected keys, so an outer nullable completion cannot hide selection
 loss. This fixes response selection, not worker scheduling or storage semantics.
 The inventory remains 180 selected / 29 deferred.
+
+### Public pipeline envelopes and stored diagnostic JSON
+
+Five new real-schema/Shield probes reproduced alias collisions in public summary,
+summary-page, run-page, run and nested job/page-info maps. These explicit owned
+maps now retain canonical provenance, including public diagnostic objects. No
+raw telemetry is added; visibility checks, filtering, pagination and limits are
+unchanged. Tests include fragments, directive variables, missing/hidden targets,
+nullable cursors and malformed diagnostic values at their aliased error paths.
+
+The audit also found an unsupported guarantee: `parsePublicDiagnostics` cast any
+parsed array to `PublicDiagnostic[]`. It now establishes only `unknown[]`, and
+the two selected-response audit entries no longer certify stored diagnostic item
+fields. The collector's validated domain type is separate from persisted JSON.
+Malformed JSON/non-array values still become an empty list; raw item fields remain
+lazy GraphQL values, with explicit container and compile-negative coverage. This
+is an honest raw-source limit, not a claim that unvalidated JSON is safe or typed.
+
+Inventory remains 180 selected / 29 deferred. Implementable work still includes
+the internal pipeline detail/history sources and execution mutation results,
+followed by installed-plugin/configuration/secret/applicability maps and the
+remaining account/configuration response maps identified by the producer census.
+Each requires source provenance and real selected-field/authorization evidence;
+none is closed merely because a root signature already compiles. The fixed
+contribution, image/upload, native Issue, issue-list, dashboard, read-envelope and
+campaign producer batches above are complete at their documented selected scope.
+Dynamic generated selections, native raw leaves, spatial values, JSON internals
+and the unchanged product questions remain separately documented limits.
