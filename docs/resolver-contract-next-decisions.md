@@ -516,3 +516,33 @@ This closes specific owned-producer gaps for shared Comment/DiscussionChannel an
 Channel child lists. It does not certify every generated or custom producer of
 those shared types or their unprojected relationships. The 18 dynamic list gates
 therefore remain open; response accounting stays 178 selected / 31 deferred.
+
+### Activity delegation: explicit upstream runtime boundary
+
+The remaining activity-result gate is now characterized by executable tests of
+its actual query-only adapter against real GraphQL schemas. With the pinned
+`@graphql-tools/delegate` 12.3.0, the target executor completes requested scalar
+values, rejects malformed list containers, bubbles selected non-null failures,
+resolves abstract types and preserves located errors/extensions. Nullable roots
+and items remain nullable. Fragments, variables, aliases and skipped fields do
+not trigger eager validation of unrequested values. The helper now forwards only
+its declared options; a regression fails against the earlier spread because an
+undeclared transform could reach the delegate library.
+
+The result still cannot honestly be called a complete `Issue[]`: its keys and
+shape depend on the caller's selection, and inner errors may be represented for
+later outer completion. Aliases also require response-key-aware consuming
+resolvers; the isolated adapter fixture uses the library's merged resolver, while
+production tests exercise the actual Neo4j resolvers and outer Shield. Existing
+real-database activity regressions retain one committed write, skipped-read
+behavior, post-commit read failures, raw private identity and moderator anonymity.
+No decoder, authorization shortcut, extra read or full-object assertion is added.
+
+This closes the **upstream execution characterization** gate, not the static
+response guarantee: activity is an explicit dynamic upstream trust boundary and
+stays deferred in the two-status inventory. Accounting remains **178 selected /
+31 deferred**: four checked fixed raw sources with scalar-response limits, six
+intentional JSON structural limits, one now-characterized delegated runtime
+boundary, two campaign-transition dependencies, and **18 shared child-list
+engineering gates**. The shared lists still need producer-specific source work;
+these tests do not discharge those obligations or certify whole operations.
