@@ -1,3 +1,4 @@
+import { canonicalUserContributionDay } from '../../services/canonicalContributionSources.js';
 import type { UserContributionRow } from "../contracts/contributionReadProjections.js";
 import {
   createContributionTargetRepository,
@@ -71,11 +72,11 @@ const getUserContributionsResolver = (input: Input) => {
             return null;
           }
           const count = record.get('count');
-          return {
+          return canonicalUserContributionDay({
             date,
             count: typeof count === 'number' ? count : count.toNumber(),
             activities: record.get('activities'),
-          };
+          });
         })
         .filter((contribution) => contribution !== null);
 

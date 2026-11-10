@@ -1,3 +1,4 @@
+import { canonicalChannelContribution } from '../../services/canonicalContributionSources.js';
 import type { ChannelContributionRow, ContributionDay } from "../contracts/contributionReadProjections.js";
 import {
   createContributionTargetRepository,
@@ -73,13 +74,13 @@ const getChannelContributionsResolver = (input: Input) => {
           : [];
 
         const count = record.get('totalContributions');
-        return {
+        return canonicalChannelContribution({
           username: record.get('username'),
           displayName: record.get('displayName'),
           profilePicURL: record.get('profilePicURL'),
           totalContributions: typeof count === 'number' ? count : count.toNumber(),
           dayData: validDayData,
-        };
+        });
       });
 
       return contributions;

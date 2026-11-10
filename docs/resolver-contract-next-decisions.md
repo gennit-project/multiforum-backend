@@ -851,3 +851,61 @@ completion, nullable authors, skipped malformed values, owner/outsider/anonymous
 checks, featured duplicates/order and ordinary filtering/pagination. Existing
 count/search behavior is retained. This closes this fixed producer's structural
 gap; persisted values remain lazy and no shared-list inventory entry is promoted.
+
+### User and channel contribution item producers
+
+`getUserContributions.activities` and
+`getChannelContributions.dayData.activities` now retain the exact nested maps
+emitted by their owned Cypher documents. Root registrations check those raw
+selections alongside existing computed date/count guarantees. Persisted scalar
+values remain unknown; nullable selected keys are required and no unselected
+User properties are invented. The channel query still gathers discussions and
+comments only (including its existing treatment of download discussions); its
+other three schema-required activity lists are explicitly empty.
+
+Five tests against the published baseline reproduced canonical/response-alias
+collisions and missing non-null channel activity lists. Private canonical-map
+metadata now preserves aliases throughout these owned maps and raw author
+identity for field authorization. Generated maps are not marked. Thirteen new
+real GraphQL/Shield/Neo4j cases cover all five user activity kinds, aliases,
+fragments, directive variables, nullable relations, skipped malformed leaves,
+owner/outsider/anonymous requests and a coercible raw identity that must not
+become an owner identity. Actual-query key guards reject removal of the selected
+nullable profilePicURL field from either query. Existing date/count, age-gating,
+limit, target lookup and failure behavior tests remain applicable. Inventory
+stays 178 checked / 31 deferred: these are producer obligations, not certification
+of arbitrary shared entities.
+
+This batch was reconstructed in a separate checkout from d7190d7 after executor
+replacement. No claim is made that the unavailable workspace's unpublished edits
+or its two stashes were recovered.
+
+### Finite producer follow-up after the contribution batch
+
+The root-producer census is a discovery aid, not a completeness proof. Its next
+concrete obligations are:
+
+- `getModContributions.activities`: exact action/feedback nested maps, actual-query
+  drift checks, negative type fixtures, real selection/permission tests, and no
+  human-account attribution through moderator activity.
+- `getUploadedDownloadableFiles.files`, `permanentlyDeleteDownloadableFile`,
+  `createImageWithUploader`, `permanentlyDeleteImage`: distinguish native-property
+  leaves from owned relationship maps; certify the latter against executed queries
+  without pretending native properties are completed scalar values.
+- The shared Issue producers: `suspendUser`, `unsuspendUser`, `suspendMod`,
+  `unsuspendMod`, `lockIssue`, `unlockIssue`, `archiveImage`, `unarchiveImage`,
+  `archiveComment`, `archiveDiscussion`, `archiveEvent`, `unarchiveComment`,
+  `unarchiveDiscussion`, `unarchiveEvent`, `reportComment`, `reportDiscussion`,
+  `reportEvent`, `reportWikiEdit`, `reportChannel`, `reportImage`,
+  `reportProfilePicture`, `reportChannelImage`, `permanentlyRemoveImage`. Audit
+  their shared moderation-write/issue-lock implementations, fixed relationship
+  overrides and selected completion paths; retain explicit native-property limits.
+- Extend the census beyond root registrations to custom field producers (including
+  collection/profile sources). Any additional fixed-map obligation must receive
+  the same executed-query and selection/authorization evidence before closure.
+
+Already closed fixed producers include the eight forum-membership writes, six
+server-membership writes, both remaining-super-voter transaction reads, and both
+ordinary/featured wiki-list paths. Unrestricted scalar/JSON, upstream activity
+execution, dynamic selection and the pending product policies remain separate
+from this implementable work. None closes the 18 shared-list gates automatically.
