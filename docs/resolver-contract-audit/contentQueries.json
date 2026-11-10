@@ -251,7 +251,8 @@
       ],
       "reason": "Merged #444 corrects canonical discussion-channel traversal. Exact nested raw projections retain unknown uploader/album/owner/discussion leaves. Real GraphQL/Shield regressions cover ownership, multiple/duplicate/missing relationships, aliases/fragments, sensitive filters and private nested fields. Private canonical-source provenance prevents scalar/list alias collisions from reading a different raw field; mixed generated/owned projections and owner/other/anonymous child checks have real-schema regressions. No eager scalar validation or whole-object promise is added. The actual root registration now checks the entire explicit generated raw selection, with real-query nested key-drift evidence for both ownership groups.",
       "decision": "Fixed raw source/container obligations are checked; keep persisted scalar response guarantees deferred. Do not promote solely for the parameter-bound image ID or claim full Album/Discussion/User objects.",
-      "status": "deferred"
+      "status": "deferred",
+      "disposition": "raw-scalar-limit"
     },
     {
       "field": "Query.getModContributions",

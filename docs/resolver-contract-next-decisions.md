@@ -747,3 +747,16 @@ fixtures fail; restoring the generic signatures passes. TypeScript transpilation
 of both changed runtime files produces identical executable JavaScript. This is a
 source-type preservation improvement, not a new claim about unchecked producers
 or a promotion of any shared-list inventory entry.
+
+### Machine-checked completion cohorts
+
+Every deferred audit entry now has an explicit disposition, checked by CI against
+its actual JSON output type or named source/registration gate. The unchanged 31
+entries comprise **18 source migrations still requiring work**, **four fixed raw
+sources whose scalar responses remain GraphQL-owned**, **six public JSON schema
+limits**, **one pinned delegation runtime boundary**, and **two pending transition
+policy/dependency entries**. Source migrations cannot be relabeled as schema limits
+without failing the guard. #446 remains open and unmerged at the verified head
+207f9118989ad42cad4d01adacf4ebb657cb9268; no transition or worker-pause behavior was
+changed. This finite accounting records unfinished work rather than declaring the
+campaign complete because a CI run passes.

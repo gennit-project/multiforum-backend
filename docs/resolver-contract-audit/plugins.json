@@ -292,7 +292,8 @@
         "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
       "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
-      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered."
+      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered.",
+      "disposition": "pending-policy-or-dependency"
     },
     {
       "field": "Mutation.permanentlyDeleteDownloadableFile",
@@ -524,7 +525,8 @@
         "customResolvers/mutations/pluginPipelineCampaigns.ts"
       ],
       "reason": "Real-driver test deletes the campaign after successful findStatus before updateStatus. Update returns an empty array; resolver returns undefined and outer GraphQL raises its existing non-null completion error at this mutation root. Return type now accurately includes undefined and compile-negative coverage prevents claiming a non-null checked root. A deterministic interleaving also commits COMPLETED plus finishedAt after findStatus: the ID-only update overwrites it with PAUSED/RUNNING while retaining finishedAt. The real GraphQL response and persisted status both demonstrate the stale-transition defect; this witness does not endorse that behavior.",
-      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered."
+      "decision": "Preserve current behavior pending incorporation of existing open PR #446 (verified head 207f9118989ad42cad4d01adacf4ebb657cb9268), which already implements locked transitions with CONFLICT/NOT_FOUND and initially-invalid BAD_USER_INPUT. Do not duplicate that fix. Carry accurate CampaignRow into its result union and replace these witnesses once incorporated. The separate worker batch-after-pause product choice remains unanswered.",
+      "disposition": "pending-policy-or-dependency"
     },
     {
       "field": "Mutation.retryDownloadableFileScan",
@@ -736,7 +738,8 @@
         "customResolvers/mutations/updateChannelPluginPipelines.ts"
       ],
       "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
-      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign."
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign.",
+      "disposition": "schema-limit"
     },
     {
       "field": "Mutation.updateDownloadLabels",
@@ -834,7 +837,8 @@
         "customResolvers/mutations/updatePluginPipelines.ts"
       ],
       "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
-      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign."
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign.",
+      "disposition": "schema-limit"
     },
     {
       "field": "Query.getApplicablePluginPipeline",
