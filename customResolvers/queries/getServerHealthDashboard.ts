@@ -1,3 +1,5 @@
+import type {DashboardTimeSeriesRow} from '../contracts/dashboardTimeSeries.js';
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { DateTime } from "luxon";
 import neo4j, { type Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
@@ -477,7 +479,7 @@ const channelHealthQuery = `
   RETURN collect(row) AS allChannelHealth
 `;
 
-const timeSeriesQuery = `
+export const timeSeriesQuery = `
   WITH date($startDate) AS startDate,
        date($endDate) AS endDate,
        $channelUniqueNames AS channelUniqueNames
@@ -672,14 +674,14 @@ const repeatedPluginFailuresQuery = `
   RETURN count(*) AS repeatedPluginFailureCount24h
 `;
 
-const runDashboardQuery = async (
+const runDashboardQuery = async <Row extends Record<string, unknown> = Record<string, unknown>>(
   session: Session,
   name: string,
   query: string,
   params: Record<string, unknown>
-): Promise<QueryResult> => {
+): Promise<QueryResult<Row>> => {
   try {
-    return await session.run(query, params);
+    return await session.run<Row>(query, params);
   } catch (error) {
     logger.error(`Error fetching server health dashboard subquery: ${name}`, error);
     throw error;
@@ -713,7 +715,7 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         limit,
       };
       const channelResult = await runDashboardQuery(session, "channelHealth", channelHealthQuery, params);
-      const timeSeriesResult = await runDashboardQuery(session, "timeSeries", timeSeriesQuery, params);
+      const timeSeriesResult = await runDashboardQuery<{timeSeries:DashboardTimeSeriesRow[]}>(session, "timeSeries", timeSeriesQuery, params);
       const issueSummaryResult = await runDashboardQuery(session, "issueSummary", issueSummaryQuery, params);
       const openIssueSummaryResult = await runDashboardQuery(session, "openIssueSummary", openIssueSummaryQuery, params);
       const moderationActionTotalResult = await runDashboardQuery(session, "moderationActionTotal", moderationActionTotalQuery, params);
@@ -759,7 +761,15 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       const channelHealth = normalizedChannelHealth
         .sort((a, b) => compareChannelRows(a, b, sortBy, sortDirection))
         .slice(0, limit);
-      const timeSeries = sanitize(timeSeriesResult.records[0]?.get("timeSeries") || []);
+      const timeSeries = (timeSeriesResult.records[0]?.get("timeSeries") || []).map(row => rememberCanonicalSource({
+        date:row.date,
+        discussions:neo4j.isInt(row.discussions) ? row.discussions.toNumber() : row.discussions,
+        comments:neo4j.isInt(row.comments) ? row.comments.toNumber() : row.comments,
+        events:neo4j.isInt(row.events) ? row.events.toNumber() : row.events,
+        downloads:neo4j.isInt(row.downloads) ? row.downloads.toNumber() : row.downloads,
+        issuesOpened:neo4j.isInt(row.issuesOpened) ? row.issuesOpened.toNumber() : row.issuesOpened,
+        moderationActions:neo4j.isInt(row.moderationActions) ? row.moderationActions.toNumber() : row.moderationActions,
+      }));
       const issueSummary = issueSummaryResult.records[0];
       const openIssueSummary = openIssueSummaryResult.records[0];
       const totalModerationActionCount = toNumber(

@@ -329,6 +329,7 @@ export default {
   ImageAlbumUsage: resolveCanonicalSourceField,
   Issue: resolveCanonicalSourceField,
   SiteWideIssueListItem: resolveCanonicalSourceField,
+  ServerHealthTimeSeriesPoint: resolveCanonicalSourceField,
   UploadedDownloadableFileGroup: resolveCanonicalSourceField,
   UploadedDownloadableFileDiscussion: resolveCanonicalSourceField,
   DiscussionChannelListItem: resolveCanonicalSourceField,

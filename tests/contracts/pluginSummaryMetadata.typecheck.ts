@@ -16,3 +16,13 @@ const missing=()=>({summary:{discussionCount:0},issueAging:[]});
 // @ts-expect-error all selected summary counts are required
 const missingCounts:PluginSummaryMetadataQueryResolvers['getServerHealthDashboard']=missing;
 void [actual,flags,unknownStatus,wrongPage,missingCounts];
+
+import type {DashboardTimeSeriesRow} from '../../customResolvers/contracts/dashboardTimeSeries.js';
+declare const returned: Awaited<ReturnType<ReturnType<typeof dashboard>>>;
+// @ts-expect-error selected normalized time-series count cannot be text
+const invalidTime: PluginSummaryMetadataQueryResolvers['getServerHealthDashboard'] = () => ({...returned,timeSeries:[{date:'2026-01-01',discussions:'1',comments:0,events:0,downloads:0,issuesOpened:0,moderationActions:0}]});
+declare const timeRow: DashboardTimeSeriesRow;
+const {comments:omittedComments,...incompleteTime}=timeRow;
+// @ts-expect-error query projection must include every COUNT
+const missingTime:DashboardTimeSeriesRow=incompleteTime;
+void [invalidTime,omittedComments,missingTime];

@@ -1023,3 +1023,24 @@ issue resolver unit cases. These cover fragments, skipped malformed values and
 aliased error paths, absent nullable values, owner/non-owner/anonymous callers,
 identity filters, exhausted pagination and sensitive-target exclusion. The count
 remains 178 / 31; native raw scalar completion remains GraphQL's responsibility.
+
+### Dashboard time series and spatial census reconciliation
+
+The time-series query now has its exact date/six-count projection, explicit driver
+integer normalization, and a generated completed-value selection at the actual
+registration. Its owned points carry canonical-key metadata: a baseline GraphQL
+probe reproduced `comments: discussions` returning the comment count instead.
+Five new response cases cover that regression, zero counts/dates, fragments and
+conditional aliases, query keys and anonymous denial. The executed query guard
+rejects removal of a COUNT selection, and compile-negative fixtures reject a
+missing count or normalized text count. All 27 focused dashboard, summary and event
+metadata cases pass. No query, authorization, sorting, limit or date-range behavior
+is changed.
+
+The spatial census finding was already explicitly covered: Event metadata retains
+native Point as unknown and the upstream resolver converts it under an alias.
+That real-database regression passed again. It must not be replaced with a fabricated
+schema-shaped source type. Further ordinary work remains in dashboard channel-health
+normalization, whose existing cast conceals raw channel leaves, and its age-list
+adapter. The census therefore does not yet close the whole dashboard producer.
+Inventory remains 178 checked / 31 deferred.
