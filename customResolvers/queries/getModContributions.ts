@@ -1,3 +1,4 @@
+import { canonicalModContributionDay } from '../../services/canonicalContributionSources.js';
 import type { ModContributionRow } from "../contracts/contributionReadProjections.js";
 import {
   createContributionTargetRepository,
@@ -66,11 +67,11 @@ const getModContributionsResolver = (input: Input) => {
             return null;
           }
           const count = record.get('count');
-          return {
+          return canonicalModContributionDay({
             date,
             count: typeof count === 'number' ? count : count.toNumber(),
             activities: record.get('activities'),
-          };
+          });
         })
         .filter((contribution) => contribution !== null);
 

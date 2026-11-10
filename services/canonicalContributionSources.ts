@@ -1,3 +1,4 @@
+import type { ModContributionDay, ModContributionEvent } from '../customResolvers/contracts/modContributionItems.js';
 import type {
   ContributionActor, ContributionComment, ContributionDiscussion,
   UserContributionActivity, UserContributionDay, ChannelContributionDay,
@@ -51,5 +52,26 @@ function channelDay(value: ChannelContributionDay) {
 }
 export function canonicalChannelContribution<T extends ChannelContributionRow>(value: T): T {
   mark(value); each(value.dayData, channelDay);
+  return value;
+}
+
+function modEvent(value: ModContributionEvent | null) {
+  mark(value); if (value) each(value.EventChannels, mark);
+}
+/** Moderation projections intentionally contain no human account identity. */
+export function canonicalModContributionDay<T extends ModContributionDay>(value: T): T {
+  mark(value);
+  each(value.activities, activity => {
+    mark(activity); if (!activity) return;
+    mark(activity.Comment); mark(activity.Issue);
+    mark(activity.RelatedDiscussion);
+    if (activity.RelatedDiscussion) each(activity.RelatedDiscussion.DiscussionChannels, mark);
+    modEvent(activity.RelatedEvent);
+    mark(activity.RelatedComment);
+    if (activity.RelatedComment) {
+      mark(activity.RelatedComment.DiscussionChannel);
+      modEvent(activity.RelatedComment.Event);
+    }
+  });
   return value;
 }

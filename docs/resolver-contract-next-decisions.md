@@ -909,3 +909,23 @@ server-membership writes, both remaining-super-voter transaction reads, and both
 ordinary/featured wiki-list paths. Unrestricted scalar/JSON, upstream activity
 execution, dynamic selection and the pending product policies remain separate
 from this implementable work. None closes the 18 shared-list gates automatically.
+
+### Moderation contribution item producer
+
+`getModContributions.activities` now retains explicit action/feedback maps for
+Issue, Comment, RelatedDiscussion, RelatedEvent and RelatedComment, including
+nested channel and event maps. The actual registration checks that raw selection
+alongside existing date/count guarantees. Compile fixtures reject missing nullable
+keys, incomplete nested items and completed-number claims about stored issue
+numbers. No author identity is projected or fetched.
+
+Two baseline probes reproduced day/action and nested-item alias collisions. Only
+owned moderation maps receive canonical metadata. Seven new real-schema cases
+cover both branches' actual keys, aliases/fragments/directive variables, lazy
+malformed scalars with original error paths, missing targets/empty connections,
+legacy scalar target references and absence of human attribution for anonymous,
+unrelated and backing-account viewers. Together with existing contribution suites,
+33 integration cases pass. Removing a selected nullable key from each real query
+branch makes the executed-key guard fail. Permissions, date/age filters, counts,
+query shape and error ordering are unchanged. This closes the fixed moderation
+activity producer obligation; inventory remains 178 checked / 31 deferred.
