@@ -1,5 +1,6 @@
 import { Kind, valueFromASTUntyped, visit } from "graphql";
 import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode, FieldNode, SelectionNode } from "graphql";
+import { resolveCanonicalSourceField } from "./canonicalSourceFields.js";
 import { rememberAuthorSourceType } from "../services/authorSourceType.js";
 import { rememberAccountChildIdentity } from "../services/accountChildIdentity.js";
 
@@ -244,6 +245,13 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
+  // These owned image-usage projection types retain canonical source keys.
+  // Unmarked generated objects pass through with their response aliases intact.
+  ImageAlbumUsage: resolveCanonicalSourceField,
+  Album: resolveCanonicalSourceField,
+  User: resolveCanonicalSourceField,
+  Discussion: resolveCanonicalSourceField,
+  DiscussionChannel: resolveCanonicalSourceField,
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,

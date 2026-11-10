@@ -212,9 +212,13 @@
         "customResolvers/contracts/imageUsageProjections.d.ts",
         "tests/contracts/imageUsageProjections.typecheck.ts",
         "tests/integration/imageUsageSourceContracts.test.ts",
-        "tests/integration/imageAlbumUsageTraversal.test.ts"
+        "tests/integration/imageAlbumUsageTraversal.test.ts",
+        "services/canonicalSourceFields.ts",
+        "middleware/canonicalSourceFields.ts",
+        "middleware/canonicalSourceFields.test.ts",
+        "customResolvers/fields/emptyArrayFallback.ts"
       ],
-      "reason": "Merged #444 corrects canonical discussion-channel traversal. Exact nested raw projections retain unknown uploader/album/owner/discussion leaves. Real GraphQL/Shield regressions cover ownership, multiple/duplicate/missing relationships, aliases/fragments, sensitive filters and private nested fields.",
+      "reason": "Merged #444 corrects canonical discussion-channel traversal. Exact nested raw projections retain unknown uploader/album/owner/discussion leaves. Real GraphQL/Shield regressions cover ownership, multiple/duplicate/missing relationships, aliases/fragments, sensitive filters and private nested fields. Private canonical-source provenance prevents scalar/list alias collisions from reading a different raw field; mixed generated/owned projections and owner/other/anonymous child checks have real-schema regressions. No eager scalar validation or whole-object promise is added.",
       "decision": "Keep raw child contracts explicit; fixing traversal does not certify arbitrary persisted leaves. Do not promote solely for the parameter-bound image ID.",
       "status": "deferred"
     },

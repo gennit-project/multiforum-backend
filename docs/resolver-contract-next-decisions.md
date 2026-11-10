@@ -325,3 +325,21 @@ write once. Unit coverage checks the unchanged original AST and skipped payloads
 This is bounded to this mutation's concrete response; other generated mutations
 and multiple distinct collection aliases are not certified by this slice. The
 inventory remains 176 selected / 33 deferred.
+
+### Canonical image-usage source keys
+
+Two real-graph probes reproduced alias collisions in application-owned usage
+maps: User scalar aliases could read another canonical property, and an Images
+alias matching the prepopulated Discussions key could return discussion entries.
+The usage query now privately marks only the explicit canonical objects it builds.
+For those objects, the relevant field middleware removes aliases from the
+resolver's field-node view, while preserving the parent, arguments, selection
+sets, context and error path. The shared list fallback likewise uses canonical
+keys for marked sources. Unmarked generated response-key projections keep their
+existing alias lookup. There is no eager scalar normalization or public marker.
+
+Tests cover scalar and relationship collisions, mixed owned/generated sources,
+owner/non-owner/anonymous private-field behavior, fragments and lazy local errors.
+Precise raw leaves remain unknown and unselected relationships are not fabricated;
+`getImageAlbumUsage` remains deferred. Other application-owned maps are not marked
+without separate source evidence. Inventory stays 176 selected / 33 deferred.

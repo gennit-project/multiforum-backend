@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { ImageUsageRow } from "../contracts/imageUsageProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
@@ -102,6 +103,18 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
         throw new GraphQLError("Image not found.");
       }
 
+      // Owned Cypher maps use canonical keys, unlike generated response-key
+      // projections. Mark only the explicit objects this query constructs.
+      rememberCanonicalSource(usage);
+      for (const album of [...usage.uploaderOwnedAlbums, ...usage.otherAlbums]) {
+        rememberCanonicalSource(album);
+        if (album.Owner) rememberCanonicalSource(album.Owner);
+        for (const discussion of album.Discussions) {
+          rememberCanonicalSource(discussion);
+          if (discussion.Author) rememberCanonicalSource(discussion.Author);
+          for (const channel of discussion.DiscussionChannels) rememberCanonicalSource(channel);
+        }
+      }
       return usage;
     } finally {
       await session.close();

@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import getImageAlbumUsage from "./getImageAlbumUsage.js";
+import type { ImageUsageRow } from "../contracts/imageUsageProjections.js";
+import { hasCanonicalSourceFields } from "../../services/canonicalSourceFields.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 const context = { mayAccessSensitiveContent: true } as GraphQLContext;
@@ -47,16 +49,23 @@ test("getImageAlbumUsage returns grouped uploader and non-uploader albums", asyn
         id: "album-2",
         imageOrder: ["image-1"],
         Owner: { username: "bob", displayName: "Bob" },
-        Discussions: [{ id: "discussion-1", title: "Bob's remix" }],
+        Discussions: [{ id: "discussion-1", title: "Bob's remix", createdAt: null, Author: {username:"bob",displayName:"Bob"}, DiscussionChannels:[{id:"post",channelUniqueName:"forum"}] }],
       },
     ],
-  };
+  } satisfies ImageUsageRow["usage"];
+  const original = structuredClone(usage);
   const { driver, runCalls, isClosed } = createDriver([record(usage)]);
   const resolver = getImageAlbumUsage({ driver: driver as never });
 
   const result = await resolver(null, { imageId: "image-1" }, context);
 
-  assert.deepEqual(result, usage);
+  assert.equal(result, usage);
+  assert.deepEqual(result, original);
+  assert.equal(hasCanonicalSourceFields(usage),true);
+  assert.equal(hasCanonicalSourceFields(usage.otherAlbums[0].Discussions[0]),true);
+  assert.equal(hasCanonicalSourceFields(usage.otherAlbums[0].Discussions[0].Author),true);
+  assert.equal(hasCanonicalSourceFields(usage.otherAlbums[0].Discussions[0].DiscussionChannels[0]),true);
+  assert.equal(hasCanonicalSourceFields(usage.otherAlbums),false);
   assert.deepEqual(runCalls[0].params, { imageId: "image-1", mayAccessSensitiveContent: true });
   assert.equal(isClosed(), true);
 });
