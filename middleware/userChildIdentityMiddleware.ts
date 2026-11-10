@@ -1,6 +1,5 @@
 import { Kind, valueFromASTUntyped, visit } from "graphql";
 import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode, FieldNode, SelectionNode } from "graphql";
-import type { GraphQLContext } from "../types/context.js";
 import { rememberAuthorSourceType } from "../services/authorSourceType.js";
 import { rememberAccountChildIdentity } from "../services/accountChildIdentity.js";
 
@@ -85,11 +84,11 @@ function rememberRows(result: unknown, alias: string): void {
   }
 }
 
-export async function resolveUsersWithChildIdentity(
-  resolve: (parent: unknown, args: Record<string, unknown>, context: GraphQLContext, info: GraphQLResolveInfo) => unknown,
+export async function resolveUsersWithChildIdentity<Context>(
+  resolve: (parent: unknown, args: Record<string, unknown>, context: Context, info: GraphQLResolveInfo) => unknown,
   parent: unknown,
   args: Record<string, unknown>,
-  context: GraphQLContext,
+  context: Context,
   info: GraphQLResolveInfo
 ): Promise<unknown> {
   const selected = prepareIdentitySelection(info.fieldNodes, info);
