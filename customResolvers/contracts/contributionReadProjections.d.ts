@@ -1,3 +1,4 @@
+import type { SiteWideIssueProjection } from './siteWideIssueProjection.js';
 import type { ModContributionDay } from './modContributionItems.js';
 import type { ChannelContributionActivity, ChannelContributionDay, UserContributionDay } from './contributionItemSources.js';
 import type { Integer } from "neo4j-driver";
@@ -12,4 +13,4 @@ export type ChannelContributionRow = {
   username: unknown; displayName: unknown; profilePicURL: unknown;
   totalContributions: ContributionCount; dayData: ContributionDay[];
 };
-export type IssueCountRow = { totalCount: ContributionCount; issue: unknown };
+export type IssueCountRow = { totalCount: ContributionCount; issue: SiteWideIssueProjection };

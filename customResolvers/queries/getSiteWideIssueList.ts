@@ -1,3 +1,5 @@
+import type { SiteWideIssueProjection } from '../contracts/siteWideIssueProjection.js';
+import { rememberCanonicalSource } from '../../services/canonicalSourceFields.js';
 import type { IssueCountRow, ContributionCount } from "../contracts/contributionReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
 import neo4j, { type Driver } from "neo4j-driver";
@@ -48,6 +50,30 @@ function sanitize(value: unknown): unknown {
   }
   return value;
 };
+
+const normalizeIssue = (issue: SiteWideIssueProjection) => rememberCanonicalSource({
+  id: sanitize(issue.id),
+  issueNumber: sanitize(issue.issueNumber),
+  title: sanitize(issue.title),
+  body: sanitize(issue.body),
+  isOpen: sanitize(issue.isOpen),
+  createdAt: sanitize(issue.createdAt),
+  updatedAt: sanitize(issue.updatedAt),
+  relatedCommentId: sanitize(issue.relatedCommentId),
+  relatedDiscussionId: sanitize(issue.relatedDiscussionId),
+  relatedEventId: sanitize(issue.relatedEventId),
+  relatedImageId: sanitize(issue.relatedImageId),
+  relatedWikiPageId: sanitize(issue.relatedWikiPageId),
+  relatedWikiRevisionId: sanitize(issue.relatedWikiRevisionId),
+  relatedUsername: sanitize(issue.relatedUsername),
+  flaggedServerRuleViolation: sanitize(issue.flaggedServerRuleViolation),
+  locked: sanitize(issue.locked),
+  lockReason: sanitize(issue.lockReason),
+  channelUniqueName: sanitize(issue.channelUniqueName),
+  channelIconURL: sanitize(issue.channelIconURL),
+  authorName: sanitize(issue.authorName),
+  reportCount: sanitize(issue.reportCount),
+});
 
 const normalizeDateStart = (value: string | null | undefined) => {
   if (!value) return null;
@@ -145,7 +171,7 @@ const getResolver = (input: Input) => {
         ? sanitize(firstRecord.get("totalCount"))
         : 0;
       const issues = issueResult.records.map((record) =>
-        sanitize(record.get("issue"))
+        normalizeIssue(record.get("issue"))
       );
 
       return {

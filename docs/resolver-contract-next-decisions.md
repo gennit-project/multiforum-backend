@@ -1006,3 +1006,20 @@ and normalization contracts audited. The last needs verification of the native
 spatial representation and upstream Point completion rather than an invented
 schema-shaped map. This research census does not prove all dynamic selections or
 native scalar properties. These obligations remain open pending executable evidence.
+
+### Site-wide issue item projection
+
+`getSiteWideIssueList` now retains the exact 21-field query map through explicit
+scalar normalization and a generated fixed-source contract at its registration.
+The two date expressions and computed report count are distinguished from raw
+stored leaves. A compile-negative fixture rejects an omitted nullable key; the
+executed-query guard fails if the actual `updatedAt` selection is removed.
+
+A real GraphQL baseline reproduced `title: id` returning the stored title. Owned
+item metadata now preserves canonical field meaning, without changing the query,
+filter/count/pagination rules or exposing a moderator's backing account. Eight new
+integration cases pass, along with 15 existing contribution response cases and 17
+issue resolver unit cases. These cover fragments, skipped malformed values and
+aliased error paths, absent nullable values, owner/non-owner/anonymous callers,
+identity filters, exhausted pagination and sensitive-target exclusion. The count
+remains 178 / 31; native raw scalar completion remains GraphQL's responsibility.

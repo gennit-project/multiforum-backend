@@ -20,3 +20,12 @@ declare const modRow:ModContributionRow;
 // @ts-expect-error moderation action description is persisted and not certified
 const description:string=modRow.activities[0].actionDescription;
 void [checked,badCount,badDate,username,nestedCount,description];
+
+import type { SiteWideIssueProjection } from '../../customResolvers/contracts/siteWideIssueProjection.js';
+declare const issueItem: SiteWideIssueProjection;
+const { updatedAt: omittedDate, ...incompleteIssue } = issueItem;
+// @ts-expect-error even a nullable selected key must be present
+const missingIssueKey: ContributionReadQueryResolvers['getSiteWideIssueList'] = () => ({aggregateIssueCount:0,issues:[incompleteIssue]});
+// @ts-expect-error persisted title remains raw, not a completed String
+const completedTitle: string = issueItem.title;
+void [omittedDate,missingIssueKey,completedTitle];
