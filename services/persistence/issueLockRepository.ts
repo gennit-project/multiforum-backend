@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from '../canonicalSourceFields.js';
 import neo4j, { type EagerResult, type Driver, type Node, type Record as Neo4jRecord } from "neo4j-driver";
 import type { Issue } from "../../ogm_types.js";
 import {
@@ -60,7 +61,7 @@ const toIssueRow = (properties: WrittenIssueProperties): IssueLockResult => {
     else if (key === "lockReason") out.lockReason = properties.lockReason;
     else out[key] = convertNeo4jValue(value);
   }
-  return out;
+  return rememberCanonicalSource(out);
 };
 
 const LOCK_SCALARS = `

@@ -1,3 +1,4 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -29,6 +30,7 @@ before(async () => {
       } }),
     },
   } }).getSchema();
+  schema = applyMiddleware(schema, sourceIdentity);
   secured = applyMiddleware(schema, permissions);
 }, { timeout: 240000 });
 after(async () => stopImageModEnv());
@@ -81,4 +83,9 @@ for (const selectBody of [false, true]) test(`image removal leaves raw body seri
   else { assert.equal(result.errors, undefined); assert.equal((result.data?.permanentlyRemoveImage as {id:string}).id, "existing"); }
   assert.equal(await removed(), true);
   assert.deepEqual(await run("MATCH(i:Issue) RETURN i.isOpen AS isOpen"), [{isOpen:false}]);
+});
+
+test('permanent removal retains native Issue field meaning under aliases',async()=>{
+ const result=await execute('id title:id');assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const row=JSON.parse(JSON.stringify(result.data)).permanentlyRemoveImage;assert.equal(row.title,row.id);
 });

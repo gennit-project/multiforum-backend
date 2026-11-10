@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from '../canonicalSourceFields.js';
 import neo4j, { type Driver, type ManagedTransaction, type Node, type EagerResult } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { issueTargetDefinitions } from "../issueTargetIdentity.js";
@@ -133,7 +134,7 @@ const convertNeo4jValue = (value: unknown): unknown => {
 const toIssueRow = (properties: IssueProperties): ModerationIssueRow => {
   const out: ModerationIssueRow = {id:properties.id};
   for (const [key, value] of Object.entries(properties)) out[key] = convertNeo4jValue(value);
-  return out;
+  return rememberCanonicalSource(out);
 };
 
 const definitionsByField = new Map(issueTargetDefinitions.map((d) => [d.scalarField, d]));
@@ -215,7 +216,7 @@ export async function createModerationIssue(
   if (!row) throw new Error("Error creating moderation issue");
   // SET writes both flags unconditionally. Copy the typed parameters only after
   // the same full property conversion; no additional validation or eager reads.
-  return {...toIssueRow(row.get("issue").properties),isOpen:true,flaggedServerRuleViolation};
+  return rememberCanonicalSource({...toIssueRow(row.get("issue").properties),isOpen:true,flaggedServerRuleViolation});
 }
 
 const buildAppendActionCypher = (action: ModerationActionParams): string => {
@@ -297,8 +298,8 @@ export async function appendModerationActions(
         // A non-null argument selects the parameter arm of CASE in the write.
         // Omitted/null flags retain unknown persisted values, not a claimed bool.
         if(typeof isOpen === "boolean") {
-          if(typeof flaggedServerRuleViolation === "boolean") return {...issue,isOpen,flaggedServerRuleViolation};
-          return {...issue,isOpen};
+          if(typeof flaggedServerRuleViolation === "boolean") return rememberCanonicalSource({...issue,isOpen,flaggedServerRuleViolation});
+          return rememberCanonicalSource({...issue,isOpen});
         }
         return issue;
       });

@@ -1,3 +1,4 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -29,7 +30,7 @@ before(async()=>{
  schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Mutation:{...app.resolvers.Mutation,
  lockChannel:lockChannel({driver,channelModerationRepository:channelRepository}),unlockChannel:unlockChannel({driver,channelModerationRepository:channelRepository}),
  lockIssue:lockIssue({issueLockRepository:issues,notifySubscribers}),unlockIssue:unlockIssue({issueLockRepository:issues,notifySubscribers})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();
- registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
+ registerGeneratedSchema(driver,schema);schema=applyMiddleware(schema,sourceIdentity);secured=applyMiddleware(schema,permissions);
 },{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
@@ -81,4 +82,11 @@ test('channel action failure stays swallowed before lock-state write; state fail
 });
 test('issue notification failure retains committed lock and resolver error wrapper',async()=>{
  failure='notify';const result=await execute(`lockIssue(issueId:"i",reason:"r"){${issueFields}}`);assert.match(result.errors?.[0].message??'',/^Error locking issue$/);assert.equal(await locked('Issue'),true);assert.deepEqual(calls,['notify']);
+});
+
+test('issue lock and unlock preserve canonical native property names',async()=>{
+ for(const source of ['lockIssue(issueId:"i",reason:"r"){id title:id}','unlockIssue(issueId:"i"){id title:id}']){
+  const result=await execute(source);assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const row=plain(result.data)[Object.keys(plain(result.data))[0]];assert.equal(row.title,row.id);
+ }
 });

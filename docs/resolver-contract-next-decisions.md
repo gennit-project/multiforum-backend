@@ -981,3 +981,28 @@ remain under audit. The custom-field census found the typed `User.Collections`
 producer plus the previously listed fallback/JSON/scalar fields; it did not reveal
 another open fixed-map activity producer. This census alone is not permission to
 promote the shared-list entries or claim their upstream dynamic items complete.
+
+### Shared native Issue source audit
+
+The 23 moderation/report/archive/suspension/lock/image-removal registrations
+return owned Issue property maps with already checked write assignments. Their
+remaining native scalar properties stay unknown; no relationship projection or
+whole-Issue guarantee is added. These owned maps now carry canonical-key metadata,
+including copies made after flag assignments. Generated operation results remain
+unmarked. This fixes colliding response aliases without changing persistence,
+permissions, scalar conversion or transaction ordering.
+
+Eighteen baseline cases reproduced the alias mismatch across these registrations.
+The five affected response suites now pass 86 cases, including a new fragment,
+skipped malformed field and late scalar-error regression. Archive failure injection
+continues to target the original generated schema before the test middleware clone,
+so the existing pre-commit failure assertions remain effective. Inventory remains
+178 checked and 31 deferred.
+
+A broader schema-aware producer census identifies three further obligations:
+`getServerHealthDashboard.timeSeries`, `getSiteWideIssueList.issues`, and
+`getEventComments.Event.location`. The first two need their fixed nested projection
+and normalization contracts audited. The last needs verification of the native
+spatial representation and upstream Point completion rather than an invented
+schema-shaped map. This research census does not prove all dynamic selections or
+native scalar properties. These obligations remain open pending executable evidence.

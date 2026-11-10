@@ -1,3 +1,4 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import assert from 'node:assert/strict';
 import {after,before,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -10,9 +11,9 @@ import permissions from '../../permissions.js';
 import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
 import {denyExternalHttp} from '../denyExternalHttp.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
-let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema,guard:ReturnType<typeof denyExternalHttp>;
+let driver:Driver,schema:GraphQLSchema,generatedSchema:GraphQLSchema,secured:GraphQLSchema,guard:ReturnType<typeof denyExternalHttp>;
 let notifications:unknown[]=[];
-before(async()=>{driver=await startNeo4j();schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);guard=denyExternalHttp();},{timeout:240000});
+before(async()=>{driver=await startNeo4j();schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);generatedSchema=schema;schema=applyMiddleware(schema,sourceIdentity);secured=applyMiddleware(schema,permissions);guard=denyExternalHttp();},{timeout:240000});
 after(async()=>{guard?.assertUnused();guard?.restore();await stopNeo4j();});
 beforeEach(async()=>{
  await resetDatabase(driver);notifications=[];
@@ -51,7 +52,7 @@ for(const kind of kinds){
   const result=await execute(unarchive(kind,'id isOpen body'));assert.match(result.errors?.[0].message??'',/String cannot represent/);assert.deepEqual(result.errors?.[0].path,[`unarchive${kind.name}`,'body']);assert.deepEqual(await state(kind),{archived:false,open:false});
  });
  test(`${kind.name} content projection failure preserves committed close/archive and earlier effects`,async()=>{
-  const field=(schema.getType(kind.label) as GraphQLObjectType).getFields()[kind.failureField],original=field.resolve;
+  const field=(generatedSchema.getType(kind.label) as GraphQLObjectType).getFields()[kind.failureField],original=field.resolve;
   field.resolve=()=>{throw Error('injected content projection failure');};
   try{const result=await execute(archive(kind));assert.ok(result.errors);assert.deepEqual(await state(kind),{archived:true,open:false});assert.equal(notifications.length,0);}finally{field.resolve=original;}
  });
@@ -69,4 +70,12 @@ test('server-scoped image archive preserves nullable scope and closed state',asy
 test('event moderator permission denial leaves issue and event state unchanged',async()=>{
  await driver.executeQuery("MATCH(r:ModChannelRole) SET r.canHideEvent=false");
  const result=await execute(archive(kinds[2]));assert.ok(result.errors);assert.deepEqual(await state(kinds[2]),{archived:false,open:true});assert.equal(notifications.length,0);
+});
+
+for(const kind of kinds)test(`${kind.name} archive and unarchive preserve Issue aliases`,async()=>{
+ await driver.executeQuery("MATCH(i:Issue) SET i.title='Stored issue title'");
+ for(const source of [archive(kind,'id title:id'),unarchive(kind,'id title:id')]){
+  const result=await execute(source);assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  const row=plain(result.data)[Object.keys(plain(result.data))[0]];assert.equal(row.title,row.id);
+ }
 });

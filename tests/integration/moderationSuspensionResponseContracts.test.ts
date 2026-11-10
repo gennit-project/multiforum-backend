@@ -1,3 +1,4 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -12,7 +13,7 @@ import {createSuspensionWriteRepository,type SuspensionWriteRepository} from '..
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema;
 let failure:''|'close'|'notify'|'scope'|'empty'='';
-before(async()=>{process.env.SERVER_CONFIG_NAME='server';driver=await startNeo4j();schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);},{timeout:240000});after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);failure='';});
+before(async()=>{process.env.SERVER_CONFIG_NAME='server';driver=await startNeo4j();schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);schema=applyMiddleware(schema,sourceIdentity);secured=applyMiddleware(schema,permissions);},{timeout:240000});after(async()=>stopNeo4j());beforeEach(async()=>{await resetDatabase(driver);failure='';});
 const names=['suspendUser','suspendMod','unsuspendUser','unsuspendMod'] as const;
 type Name=typeof names[number];
 async function seed(scope:'channel'|'server'='channel',entity:'user'|'mod'='user'){await driver.executeQuery(`CREATE(ch:Channel{uniqueName:'forum',createdAt:datetime()}),(:ServerConfig{serverName:'server'}),(:ModerationProfile{displayName:'Actor'}),(u:User{username:'target',createdAt:datetime()})-[:MODERATION_PROFILE]->(:ModerationProfile{displayName:'TargetMod'}),(i:Issue{id:'issue',issueNumber:1,channelUniqueName:$channel,relatedUsername:$username,relatedModProfileName:$mod,authorName:'Actor',title:'Report',createdAt:datetime(),isOpen:true,body:[123]}) FOREACH(_ IN CASE WHEN $scope='channel' THEN [1] ELSE [] END | CREATE(ch)-[:HAS_ISSUE]->(i))`,{scope,channel:scope==='channel'?'forum':'',username:entity==='user'?'target':null,mod:entity==='mod'?'TargetMod':null});}
@@ -24,3 +25,8 @@ for(const name of names)test(`${name} accepts explicit null optional inputs at u
 test('anonymous middleware denial precedes writes for all four roots',async()=>{await seed();for(const name of names)assert.ok((await execute(name,'id','',true,false)).errors);assert.equal((await state()).actions,0);});
 for(const mode of ['close','notify','scope','empty'] as const)test(`suspend ${mode} failure preserves earlier committed steps and wrapper`,async()=>{await seed();failure=mode;const result=await execute('suspendUser');assert.equal(result.data?.suspendUser,null);assert.match(result.errors?.[0].message??'',mode==='notify'?/notification fixture/:mode==='scope'?/Error updating channel/:mode==='empty'?/Unable to update Issue/:/Error updating issue/);const stored=await state();assert.equal(stored.actions,mode==='close'||mode==='empty'?1:2);assert.equal(stored.suspensions,0);});
 test('missing issue retains target-resolution error before any owned writes',async()=>{const result=await execute('suspendUser');assert.ok(result.errors);assert.equal(result.data?.suspendUser,null);assert.equal(Number((await driver.executeQuery('MATCH(n:ModerationAction) RETURN count(n) AS count')).records[0].get('count')),0);});
+
+for(const name of names)test(`${name} preserves native Issue aliases`,async()=>{
+ await seed('channel',name.endsWith('Mod')?'mod':'user');
+ const row=data(await execute(name,'id title:id'))[name];assert.equal(row.title,row.id);
+});

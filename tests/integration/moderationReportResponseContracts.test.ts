@@ -1,3 +1,4 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
 import assert from 'node:assert/strict';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -15,7 +16,7 @@ import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
 let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema;
 let failAppend=false,deleteBeforeAppend=false;
 before(async()=>{driver=await startNeo4j();const app=getResolvers(driver).resolvers;const base=createCommentReportRepository(driver);const repository={...base,appendReport:async(params:Parameters<typeof base.appendReport>[0])=>{if(failAppend)throw Error('write fixture failure');if(deleteBeforeAppend)await driver.executeQuery('MATCH(i:Issue{id:$id}) DETACH DELETE i',{id:params.issueId});return base.appendReport(params);}};
- schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app,Mutation:{...app.Mutation,reportComment:reportComment({driver,commentReportRepository:repository})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
+ schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app,Mutation:{...app.Mutation,reportComment:reportComment({driver,commentReportRepository:repository})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);schema=applyMiddleware(schema,sourceIdentity);secured=applyMiddleware(schema,permissions);
 },{timeout:240000});after(async()=>{await stopNeo4j();});
 beforeEach(async()=>{await resetDatabase(driver);failAppend=false;deleteBeforeAppend=false;await driver.executeQuery(`CREATE(u:User{username:'actor',profilePicURL:'https://invalid.test/pic',createdAt:datetime()}),(m:ModerationProfile{displayName:'Moderator',createdAt:datetime()}),(ch:Channel{uniqueName:'forum',displayName:'Forum',channelIconURL:'https://invalid.test/icon',createdAt:datetime()}),(c:Comment{id:'comment',text:'Comment',createdAt:datetime()}),(d:Discussion{id:'discussion',title:'Discussion',createdAt:datetime()}),(e:Event{id:'event',title:'Event',createdAt:datetime()}),(im:Image{id:'image',url:'https://invalid.test/image'}),(w:WikiPage{id:'wiki',title:'Wiki',body:'Body',slug:'wiki',channelUniqueName:'forum',createdAt:datetime()}),(:ServerConfig{serverName:'server'}) CREATE(u)-[:MODERATION_PROFILE]->(m),(u)-[:ADMIN_OF_CHANNEL]->(ch),(u)-[:AUTHORED_COMMENT]->(c),(u)-[:AUTHORED_DISCUSSION]->(d),(u)-[:UPLOADED_IMAGE]->(im),(ch)-[:OWNS_WIKI_PAGE]->(w)`);});
 const calls={
@@ -45,3 +46,15 @@ test('shared append leaves unspecified persisted flags unknown and preserves ori
  const closed=(await appendModerationActions(driver,{issueId:'raw',actions:[],isOpen:false})).issues[0];assert.equal(closed.isOpen,false);assert.equal(closed.flaggedServerRuleViolation,17);assert.deepEqual((await appendModerationActions(driver,{issueId:'missing',actions:[],isOpen:true,flaggedServerRuleViolation:true})).issues,[]);
 });
 test('authenticated channel owner can report through permission middleware',async()=>{const row=data(await execute('reportComment','id isOpen flaggedServerRuleViolation',true)).reportComment;assert.equal(row.isOpen,true);assert.equal(row.flaggedServerRuleViolation,true);});
+
+for(const name of Object.keys(calls) as (keyof typeof calls)[])test(`${name} retains native Issue field meaning under colliding aliases`,async()=>{
+ const row=data(await execute(name,'id title:id'))[name];assert.equal(row.title,row.id);
+});
+test('native Issue source preserves fragment aliases, skips and late scalar errors',async()=>{
+ const first=data(await execute('reportComment')).reportComment;
+ await driver.executeQuery('MATCH(i:Issue{id:$id}) SET i.body=[123]',{id:first.id});
+ const skipped=data(await execute('reportComment','... on Issue{id title:id malformed:body @skip(if:true)}')).reportComment;
+ assert.deepEqual(skipped,{id:first.id,title:first.id});
+ const selected=await execute('reportComment','... on Issue{id malformed:body @include(if:true)}');
+ assert.deepEqual(selected.errors?.[0].path,['reportComment','malformed']);
+});
