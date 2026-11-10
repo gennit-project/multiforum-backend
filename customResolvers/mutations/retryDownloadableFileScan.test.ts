@@ -1,3 +1,5 @@
+import type {ReturnedJob} from '../contracts/pluginExecutionProjections.js';
+import {PluginRunStatus} from '../../src/generated/graphql.js';
 import {pipelineRetryRepositoryStub} from "../../tests/fixtures/pipelineRetryRepositoryStub.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -47,6 +49,8 @@ const baseInput = ({
   ServerSecret: modelStub<"ServerSecret">(),
 });
 
+const returnedJob=(id:string):ReturnedJob=>({id,pluginId:'plugin',pluginName:null,version:'1',scope:'SERVER',channelId:null,eventType:'downloadableFile.updated',status:PluginRunStatus.Skipped,message:null,durationMs:null,targetId:null,targetType:null,payload:null,pipelineId:null,executionOrder:0,skippedReason:null,createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z'});
+
 const contextFor = (username: string) => ({
   user: { username },
 }) as GraphQLContext;
@@ -55,7 +59,7 @@ test("lets the uploader retry a held scan", async () => {
   const calls: Parameters<TriggerRuns>[0][] = [];
   const triggerRuns: TriggerRuns = async args => {
     calls.push(args);
-    return [{ id: "run-1" }] as Awaited<ReturnType<TriggerRuns>>;
+    return [returnedJob("run-1")];
   };
   const resolver = createRetryDownloadableFileScanResolver(
     baseInput({
@@ -75,7 +79,7 @@ test("lets the uploader retry a held scan", async () => {
     downloadableFileId: calls[0].downloadableFileId,
     event: calls[0].event,
   } }, {
-    result: [{ id: "run-1" }],
+    result: [returnedJob("run-1")],
     call: {
       downloadableFileId: "file-1",
       event: PLUGIN_EVENTS.DOWNLOADABLE_FILE_UPDATED,
@@ -149,7 +153,7 @@ test("routes a modern failed scan through whole-pipeline retry", async () => {
         createdAt: "2026-07-30T00:00:00.000Z",
       },
     ],
-    jobs: [{ id: "new-job" }],
+    jobs: [returnedJob("new-job")],
   });
   let sourceId: string | undefined;
   const triggerRuns: TriggerRuns = async () => [];
@@ -177,7 +181,7 @@ test("routes a modern failed scan through whole-pipeline retry", async () => {
     { sourceId, result },
     {
       sourceId: "failed-pipeline",
-      result: [{ id: "new-job" }],
+      result: [returnedJob("new-job")],
     }
   );
 });
@@ -199,7 +203,7 @@ test("retries the latest failed channel scan for an optional channel policy", as
           }]
         : [];
     },
-    jobs: [{ id: "new-channel-job" }],
+    jobs: [returnedJob("new-channel-job")],
   });
   let sourceId = "";
   const createRerunResolver: RerunResolverFactory =
@@ -225,7 +229,7 @@ test("retries the latest failed channel scan for an optional channel policy", as
   assert.deepEqual({ seenTargets, sourceId, result }, {
     seenTargets: ["DownloadableFile", "Discussion"],
     sourceId: "failed-channel-pipeline",
-    result: [{ id: "new-channel-job" }],
+    result: [returnedJob("new-channel-job")],
   });
 });
 

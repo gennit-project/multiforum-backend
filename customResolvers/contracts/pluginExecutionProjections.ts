@@ -88,6 +88,7 @@ export const activeAttemptSelection = {
 export type ActiveAttempt = Projection<PluginPipelineRun, typeof activeAttemptSelection>;
 
 export const startedAttemptSelection = {
+  "id": true,
   "pipelineId": true,
   "targetId": true,
   "targetType": true,

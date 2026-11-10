@@ -1,3 +1,4 @@
+import {returnedJobSource} from '../contracts/pluginExecutionSources.js';
 import {createPipelineRetryRepository, type PipelineRetryRepository} from "../../services/persistence/pipelineRetryRepository.js";
 import { PluginPipelineRunStatus } from "../../ogm_types.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -102,14 +103,14 @@ export const createRetryDownloadableFileScanResolver = (
         { pipelineRunId: sourceAttempt.pipelineId },
         context
       );
-      return repository.findRetryJobs(newAttempt.pipelineId);
+      return (await repository.findRetryJobs(newAttempt.pipelineId)).map(returnedJobSource);
     }
 
-    return triggerRuns({
+    return (await triggerRuns({
       driver: context.driver,
       downloadableFileId,
       event: "downloadableFile.updated",
-    });
+    })).map(returnedJobSource);
   };
 };
 

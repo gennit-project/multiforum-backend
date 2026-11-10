@@ -1,3 +1,4 @@
+import {startedAttemptSource} from '../contracts/pluginExecutionSources.js';
 import {createPipelineStartRepository, type PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { createContentRevisionHash } from "../../services/plugin/moderationJobIdentity.js";
 import { GraphQLError } from "graphql";
@@ -244,7 +245,7 @@ export const createStartPluginPipelineResolver = (
     if (!attempts[0]) {
       throw new Error("Pipeline runner did not create an attempt");
     }
-    return attempts[0];
+    return startedAttemptSource(attempts[0]);
   };
 };
 

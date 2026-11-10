@@ -57,7 +57,7 @@ export const START_SELECTION_3 = `{
       }`;
 export const START_SELECTION_4 = `{ pipelineId }`;
 export const START_SELECTION_5 = `{
-        pipelineId targetId targetType targetVersion eventType scope channelId status trigger
+        id pipelineId targetId targetType targetVersion eventType scope channelId status trigger
         initiatedByUsername retryOfPipelineRunId attemptNumber
         configurationSnapshot applicability policyEffectiveAt policyId campaignId
         queuedAt startedAt heartbeatAt timeoutAt finishedAt createdAt updatedAt

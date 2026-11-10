@@ -480,6 +480,7 @@
       "field": "Mutation.rerunPluginPipeline",
       "status": "selected-response",
       "selectedPaths": [
+        "id",
         "pipelineId",
         "targetId",
         "targetType",
@@ -648,6 +649,7 @@
       "field": "Mutation.startPluginPipeline",
       "status": "selected-response",
       "selectedPaths": [
+        "id",
         "pipelineId",
         "targetId",
         "targetType",

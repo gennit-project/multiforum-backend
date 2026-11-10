@@ -1218,3 +1218,29 @@ inputs. Native JSON and generated timestamp scalar internals are not certified.
 This closes these three producer obligations without changing the 180/29 boundary
 accounting. The next finite pipeline group is start/rerun/retry/trigger mutation
 results; installation/configuration and account/configuration maps remain after it.
+
+### Pipeline execution result sources and stored attempt identity
+
+Real GraphQL probes reproduced five response failures: start/rerun omitted the
+stored attempt ID, and start/rerun/retry mishandled field-name aliases. Both ID
+probes confirmed the attempt already existed before response completion failed.
+The fixed started-attempt document and checked projection now include its actual
+stored `id`, without substituting the pipeline ID or changing creation behavior.
+Explicit source adapters cover start/rerun and both retry branches, plus the
+internal trigger's returned jobs. Query-drift and negative type checks reject
+removing the stored identity; the repository snapshot adds exactly that field.
+
+Tests preserve owner/outsider/anonymous checks, repeated-operation guards,
+fragments, skipped fields, missing attempts and provider failures. The actual
+trigger test uses a conditionally skipped persisted job and a trusted URL fixture;
+it never loads a plugin or contacts a provider. Its public root remains denied,
+which is distinct from checking its internal executable response contract.
+Legacy retry fixtures now provide the real selected job shape rather than casting
+ID-only objects to full results. No policy, permission, persistence ordering or
+schema changes are intended beyond returning the missing promised ID.
+
+The public and internal pipeline producer groups are now covered at their stated
+fixed-source scope. Remaining implementable producer checks are the installed
+plugin/configuration/secret/applicability responses and the remaining account/
+configuration response maps. The diagnostic JSON raw-item limitation stays
+explicit; no boundary count is inflated by these source repairs (180/29).

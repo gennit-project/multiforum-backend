@@ -1,3 +1,4 @@
+import {returnedJobSource} from '../contracts/pluginExecutionSources.js'
 import { triggerPluginRunsForDownloadableFile, isSupportedEvent } from '../../services/pluginRunner.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { GraphQLContext } from '../../types/context.js'
@@ -28,7 +29,7 @@ const getResolver = (_input: Input = {}) => {
       event,
     })
 
-    return runs
+    return runs.map(returnedJobSource)
   }
 }
 

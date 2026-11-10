@@ -36,3 +36,8 @@ const singular = startDiscussion.DownloadableFile;
 // @ts-expect-error reread does not select author or arbitrary full Discussion fields
 const unselectedAuthor = rerunDiscussion.Author;
 void [discussionTitle,attachmentVersion,singular,unselectedAuthor];
+
+const {id:storedAttemptId,...attemptWithoutId}=attempt;
+// @ts-expect-error a successful started attempt must retain its stored identity
+const missingStoredIdentity:StartedAttempt=attemptWithoutId;
+void [storedAttemptId,missingStoredIdentity];
