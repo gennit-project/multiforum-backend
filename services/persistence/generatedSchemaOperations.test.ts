@@ -70,7 +70,7 @@ test("explicit caller-owned transaction is forwarded without inheriting request 
 test('internal author projections retain context and documents without changing the raw schema accessor', async () => {
   const {getGeneratedSchema} = await import('./generatedSchemaOperations.js');
   const {authorSourceType} = await import('../authorSourceType.js');
-  const {print} = await import('graphql');
+  const {print, isObjectType} = await import('graphql');
   const instance = driver();
   let observed: unknown;
   let selection = '';
@@ -89,4 +89,10 @@ test('internal author projections retain context and documents without changing 
   assert.equal(raw.getQueryType()!.getFields().comments.resolve, originalComments);
   assert.deepEqual(observed, {sessionConfig:{database:'isolated'}});
   assert.equal(selection, 'comments {\n  CommentAuthor {\n    __typename\n  }\n}');
+  const author = raw.getType('ModerationProfile');
+  assert.ok(isObjectType(author));
+  author.getFields().displayName.resolve = () => {throw new Error('child failure after registration');};
+  await assert.rejects(executeGeneratedOperation(instance, '{comments{CommentAuthor{... on ModerationProfile{displayName}}}}', {}), /child failure after registration/);
+  raw.getQueryType()!.getFields().comments.resolve = () => {throw new Error('root failure after registration');};
+  await assert.rejects(executeGeneratedOperation(instance, '{comments{CommentAuthor{__typename}}}', {}), /root failure after registration/);
 });
