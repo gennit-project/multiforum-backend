@@ -29,7 +29,7 @@ test("opaque list sources check actual generated registrations without promoting
    }
   }
  }
- assert.equal(names.length,23);
+ assert.equal(names.length,21);
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  for(const name of names)assert.equal(inventory.fields.find(r=>r.field===name)?.status,'deferred');
 });

@@ -99,11 +99,11 @@
     },
     {
       "field": "DiscussionChannelListItem.SuperUpvotedByUsers",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "DiscussionChannelListItem.UpvotedByUsers",
-      "status": "deferred"
+      "status": "selected-response"
     },
     {
       "field": "DownloadableFile.url",

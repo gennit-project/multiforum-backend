@@ -1,5 +1,5 @@
 import type {
-  AlbumResolvers, DiscussionResolvers, DiscussionChannelResolvers,
+  AlbumResolvers, DiscussionResolvers, DiscussionChannelResolvers, DiscussionChannelListItemResolvers,
   CommentAuthorResolvers, IssueAuthorResolvers, DownloadableFileResolvers, UserResolvers,
 } from "../../src/generated/graphql.js";
 import type { SelectedResolver } from "./selection.js";
@@ -15,13 +15,19 @@ export type CheckedAuthorFields = CommentAuthorResolvers<GraphQLContext>;
 export type CheckedIssueAuthorFields = IssueAuthorResolvers<GraphQLContext>;
 export type CheckedDownloadableFileFields = Required<Pick<DownloadableFileResolvers<GraphQLContext>, "url">>;
 export type CheckedUserFields = { Collections: SelectedResolver<UserResolvers<GraphQLContext>["Collections"], typeof profileCollectionSelection> };
+export type CheckedDiscussionListVotes = {
+  UpvotedByUsers: SelectedResolver<DiscussionChannelListItemResolvers<GraphQLContext>['UpvotedByUsers'], {username:true}>;
+  SuperUpvotedByUsers: SelectedResolver<DiscussionChannelListItemResolvers<GraphQLContext>['SuperUpvotedByUsers'], {username:true}>;
+};
 export const checkedTypeFieldGroups = [
+  ["DiscussionChannelListItem", "checkedDiscussionListVotes"],
   ["User", "checkedUser"], ["Album", "checkedAlbum"], ["Discussion", "checkedDiscussion"],
   ["DiscussionChannel", "checkedDiscussionChannel"],
   ["CommentAuthor", "checkedCommentAuthor"], ["IssueAuthor", "checkedIssueAuthor"],
   ["DownloadableFile", "checkedDownloadableFile"],
 ] as const;
 export const checkedTypeFieldNames = [
+  "DiscussionChannelListItem.UpvotedByUsers", "DiscussionChannelListItem.SuperUpvotedByUsers",
   "User.Collections", "Album.detailImagesPageInfo", "Discussion.detailFilesPageInfo", "DiscussionChannel.detailAnswersPageInfo",
   "CommentAuthor.__resolveType", "IssueAuthor.__resolveType", "DownloadableFile.url",
 ] as const;

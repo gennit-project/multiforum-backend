@@ -442,39 +442,45 @@
     },
     {
       "field": "DiscussionChannelListItem.SuperUpvotedByUsers",
-      "selectedPaths": [],
+      "selectedPaths": [
+        "username"
+      ],
       "residualPaths": [
-        "every returned list item and nested item field"
+        "Unselected User fields and lazy child relationships"
       ],
       "evidence": [
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
+        "customResolvers/fields/discussionListViewerVotes.ts",
+        "customResolvers/cypher/getDiscussionChannelsQuery.cypher",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts",
-        "customResolvers/contracts/deferredSources.d.ts",
-        "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "build_scripts/resolverContractInventory.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "The sole producer copies the typed viewer username into fixed Cypher maps. Exact projection tests and the actual generated selected field signature check the username response without asserting full Users.",
+      "decision": "Preserve canonical aliases, empty/null fallback, viewer isolation and lazy children. No arbitrary stored username is narrowed by this boundary."
     },
     {
       "field": "DiscussionChannelListItem.UpvotedByUsers",
-      "selectedPaths": [],
+      "selectedPaths": [
+        "username"
+      ],
       "residualPaths": [
-        "every returned list item and nested item field"
+        "Unselected User fields and lazy child relationships"
       ],
       "evidence": [
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
+        "customResolvers/fields/discussionListViewerVotes.ts",
+        "customResolvers/cypher/getDiscussionChannelsQuery.cypher",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts",
-        "customResolvers/contracts/deferredSources.d.ts",
-        "tests/contracts/deferredSources.typecheck.ts",
-        "build_scripts/deferredSourceContracts.test.ts"
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "build_scripts/resolverContractInventory.test.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion.",
-      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion."
+      "reason": "The sole producer copies the typed viewer username into fixed Cypher maps. Exact projection tests and the actual generated selected field signature check the username response without asserting full Users.",
+      "decision": "Preserve canonical aliases, empty/null fallback, viewer isolation and lazy children. No arbitrary stored username is narrowed by this boundary."
     },
     {
       "field": "DownloadableFile.url",

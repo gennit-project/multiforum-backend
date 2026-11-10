@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 176 entries have a checked selected response boundary and 33 remain
+checkpoint, 178 entries have a checked selected response boundary and 31 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.

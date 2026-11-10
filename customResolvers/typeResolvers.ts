@@ -1,3 +1,4 @@
+import { discussionListViewerVotes } from "./fields/discussionListViewerVotes.js";
 import { authorSourceType } from "../services/authorSourceType.js";
 import type { DiscussionChannelResolvers, DiscussionChannelListItemResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
 import type { OpaqueListSource } from "./contracts/deferredSources.js";
@@ -7,7 +8,7 @@ import type { VariantUrlsDomainResolver } from "./contracts/variantUrlsDomain.js
 // Type/interface and object-field resolvers (union __resolveType discriminators,
 // the JSON scalar, and empty-array fallbacks). Extracted from customResolvers.ts.
 import GraphQLJSON from "graphql-type-json";
-import type { CheckedAlbumFields, CheckedDiscussionFields, CheckedDiscussionChannelFields, CheckedAuthorFields, CheckedIssueAuthorFields, CheckedDownloadableFileFields, CheckedUserFields } from "./contracts/typeFields.js";
+import type { CheckedDiscussionListVotes, CheckedAlbumFields, CheckedDiscussionFields, CheckedDiscussionChannelFields, CheckedAuthorFields, CheckedIssueAuthorFields, CheckedDownloadableFileFields, CheckedUserFields } from "./contracts/typeFields.js";
 import type { ResolverDeps } from "./resolverDeps.js";
 import userCollections from "./fields/userCollections.js";
 import createDownloadableFileUrlResolver from "./fields/downloadableFileUrl.js";
@@ -101,6 +102,10 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
   const checkedDiscussionChannel = {
     detailAnswersPageInfo: detailCollectionPageInfo({ collectionKey: "Answers", hasNextPageKey: "_detailAnswersHasNextPage", kind: "answer" }),
   } satisfies CheckedDiscussionChannelFields;
+  const checkedDiscussionListVotes = {
+    UpvotedByUsers: discussionListViewerVotes('UpvotedByUsers'),
+    SuperUpvotedByUsers: discussionListViewerVotes('SuperUpvotedByUsers'),
+  } satisfies CheckedDiscussionListVotes;
   const checkedUser = { Collections: userCollections({ driver }) } satisfies CheckedUserFields;
   const checkedDownloadableFile = {
     url: createDownloadableFileUrlResolver(),
@@ -126,8 +131,7 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
     },
     DiscussionChannelListItem: {
       Flairs: emptyArrayFallback('Flairs') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["Flairs"]>,
-      SuperUpvotedByUsers: emptyArrayFallback('SuperUpvotedByUsers') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["SuperUpvotedByUsers"]>,
-      UpvotedByUsers: emptyArrayFallback('UpvotedByUsers') satisfies OpaqueListSource<DiscussionChannelListItemResolvers<GraphQLContext>["UpvotedByUsers"]>,
+      ...checkedDiscussionListVotes,
     },
     SiteWideDiscussionListItem: {
       DownloadableFiles: emptyArrayFallback('DownloadableFiles') satisfies OpaqueListSource<SiteWideDiscussionListItemResolvers<GraphQLContext>["DownloadableFiles"]>,

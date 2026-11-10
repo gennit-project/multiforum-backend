@@ -1,7 +1,7 @@
 # Remaining response-contract decisions after #450
 
 This is an investigation checkpoint, not approval to change behavior. The campaign
-has 176 selected response/source boundaries and 33 deferred entries. The three
+has 178 selected response/source boundaries and 31 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
@@ -382,3 +382,31 @@ These guarantees strengthen the existing selected viewer boundary; unrelated laz
 children and arbitrary persisted values remain unproven. The three list field
 registrations still expose opaque child contracts, so accounting remains
 176 selected / 33 deferred.
+
+## Finite remaining gates after discussion-list vote contracts
+
+The two `DiscussionChannelListItem` vote fields now have actual generated selected
+username signatures. Their only schema producer is guarded against drift, their
+owned Cypher projection is checked against real database maps, and their usernames
+come from the typed viewer parameter. This promotes precisely two entries:
+**178 selected / 31 deferred**. It does not certify entire User objects.
+
+The earlier 33 deferred entries divide as follows; this is the completion queue,
+not a claim that coverage alone discharges a contract:
+
+| Cohort | Entries | Remaining gate / disposition |
+| --- | ---: | --- |
+| Discussion-list viewer votes | 2 | Completed by the selected username registration, single-producer guard and exact hydration projection evidence above. |
+| Shared generated and custom child lists | 18 | `Album.Images`, `Comment.SuperUpvotedByUsers`, `DiscussionChannel.SuperUpvotedByUsers`, and all 15 deferred Channel lists. Establish source provenance for every producer and selection-aware item contracts for generated versus owned maps, including aliases, selected null/scalar completion and authorization. Existing container/identity tests are supporting evidence, not completion. Engineering work remains; no new product policy is required. |
+| Fixed custom child lists | 3 | `DiscussionChannelListItem.Flairs`, `ScratchpadEntry.superUpvotedByUsers`, `SiteWideDiscussionListItem.DownloadableFiles`. Exact owned projections and executable drift guards first; raw persisted leaves must stay lazy. In particular, scratchpad super-voters read arbitrary stored usernames in the write transaction, unlike the validated viewer-parameter lists; do not copy the new string assumption there. |
+| Image-usage root | 1 | `Query.getImageAlbumUsage`: exact nested raw maps and canonical aliases exist. Still needs a generated selection-aware response boundary without eagerly validating unrequested persisted fields. No race or product-policy decision blocks its engineering work. |
+| Activity payload | 1 | `Mutation.addIssueActivityFeedItem`: scoped metadata, query arguments and payload method are checked, but the delegation library returns unknown dynamic items. Complete a selection-aware delegated result boundary or document the exact pinned upstream execution trust boundary with enforceable selection/error tests. Do not cast that result to full Issues. |
+| Intentionally unrestricted JSON | 6 | `JSON`, the three `variantUrls` fields, and two pipeline-update mutations. The public schema intentionally cannot promise object structure. Existing domain-specific contracts (variant string map/null and normalized pipeline inputs) remain enforced; changing these into structured GraphQL output would require a separate schema change. These are explicit structural limits, not ordinary unfinished list migrations. |
+| Campaign transitions | 2 | `pausePluginPipelineCampaign` and `resumePluginPipelineCampaign`: #446 remains open and unmerged as verified in this checkpoint. Incorporate its tested transition result/error contract only when authorized/merged; do not duplicate its implementation or choose the unanswered in-flight worker pause policy. |
+
+Completion requires closing the implementable source gates above, recording any
+irreducible upstream/schema trust explicitly, and green full CI at the final head.
+The separate omitted/null event-channel decision remains a residual behavior policy
+outside these 31 entries; this queue does not choose it. Existing selected entries
+also retain their documented unselected paths rather than implying whole-object
+or end-to-end certification.
