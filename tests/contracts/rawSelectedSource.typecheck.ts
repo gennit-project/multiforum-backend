@@ -65,3 +65,16 @@ void [actualImageUsage,missingImageContainers,missingAlbumChildren,rawJsonRoot];
 // @ts-expect-error a nested unrestricted JSON value cannot certify an object-shaped selection
 const structuredNestedJson:RawSelectedSource<{payload:any},{payload:{id:true}}>={payload:{id:'x'}};
 void structuredNestedJson;
+
+// Fixed root projections must include selected nullable keys, not only non-null ones.
+// @ts-expect-error a nullable selected key cannot vanish from an owned fixed projection
+const missingNullableRoot:RawSelectedResolver<()=>{id:string;title?:string|null},{id:true;title:true}>=()=>({id:'id'});
+// @ts-expect-error fixed nested selections also retain their nullable keys
+const missingNullableChild:RawSelectedResolver<()=>{child:{id:string;title?:string|null}},{child:{id:true;title:true}}>=()=>({child:{id:'id'}});
+const explicitRawNull:RawSelectedResolver<()=>{title?:string|null},{title:true}>=()=>({title:null});
+const explicitRawUndefined:RawSelectedResolver<()=>{title?:string|null},{title:true}>=()=>({title:undefined});
+void [missingNullableRoot,missingNullableChild,explicitRawNull,explicitRawUndefined];
+// @ts-expect-error fixed list items cannot omit a selected nullable property
+const missingNullableListItem:RawSelectedResolver<()=>{items:{title?:string|null}[]},{items:{title:true}}>=()=>({items:[{}]});
+const nullableFixedRoot:RawSelectedResolver<()=>{title?:string|null}|null,{title:true}>=()=>null;
+void [missingNullableListItem,nullableFixedRoot];

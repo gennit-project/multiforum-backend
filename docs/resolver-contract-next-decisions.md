@@ -808,3 +808,15 @@ GraphQL and disposable Neo4j, alongside the existing relationship/event/failure
 regressions. No query, return/error behavior or inventory status changes.
 All 35 focused integration cases pass. Temporarily removing serverDescription from
 the actual executed document makes the selection guard fail; restoring it passes.
+
+### Required keys at owned fixed root boundaries
+
+Fixed root raw selections now require every declared selected key recursively,
+including nullable properties and list items. Earlier fixtures showed that
+omitting a nullable root or child property still compiled; those cases now fail.
+All actual registered fixed root sources satisfy the stricter boundary. Explicit
+null/undefined raw leaf values remain allowed and GraphQL still owns scalar
+completion. Generated field-parent arguments keep their existing optionality, so
+the change does not pretend arbitrary upstream parents emitted a fixed projection.
+This strengthens existing owned-source obligations without runtime changes or
+claiming a full response-value guarantee; inventory counts remain unchanged.

@@ -23,7 +23,19 @@ type ListSource<T, S> = 0 extends (1 & T) ? never
 export type RawSelectedListResolver<R, S extends Selection<Output<R>>> =
   (...args: Parameters<Callable<R>>) => ListSource<Output<R>, S>;
 
-type RawResult<R, S> = 0 extends (1 & Output<R>) ? never : RawSelectedSource<Output<R>, S>;
+/** Owned fixed projections always emit their selected keys, even when a stored
+ * nullable value is absent. Keep the looser parent-source type above for field
+ * resolvers that also accept generated parents; do not narrow their arguments.
+ * Raw leaves still do not prove scalar completion or non-null stored values.
+ */
+export type FixedRawSelectedSource<T, S> = S extends true ? unknown
+  : 0 extends (1 & T) ? never
+  : T extends null | undefined ? T
+  : T extends PromiseLike<infer Value> ? FixedRawSelectedSource<Value, S>
+  : T extends ReadonlyArray<infer Item> ? FixedRawSelectedSource<Item, S>[]
+  : { [Key in keyof S]-?: Key extends keyof T ? FixedRawSelectedSource<T[Key], S[Key]> : never };
+
+type RawResult<R, S> = 0 extends (1 & Output<R>) ? never : FixedRawSelectedSource<Output<R>, S>;
 /** Fixed root sources may execute asynchronously. Leaves remain GraphQL-owned. */
 export type RawSelectedResolver<R, S extends Selection<Output<R>>> =
   (...args: Parameters<Callable<R>>) => RawResult<R, S> | Promise<RawResult<R, S>>;
