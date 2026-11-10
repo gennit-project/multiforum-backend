@@ -32,3 +32,10 @@ const missingId:ModerationArchiveMutationResolvers['archiveComment']=async()=>({
 // @ts-expect-error generated open state must remain Boolean
 const invalidOpen:ModerationArchiveMutationResolvers['unarchiveEvent']=async()=>({id:'i',isOpen:'false'});
 void [checked,issueNumber,body,locked,width,missingId,invalidOpen];
+
+if (comment.CommentAuthor?.__typename === 'ModerationProfile') {
+  const displayName: string | null = comment.CommentAuthor.displayName;
+  // @ts-expect-error moderator display names remain nullable
+  const requiredDisplayName: string = comment.CommentAuthor.displayName;
+  void [displayName, requiredDisplayName];
+}

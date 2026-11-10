@@ -30,6 +30,7 @@ export const ARCHIVE_TARGET_SELECTION = `{
                 username
               }
               ... on ModerationProfile {
+                displayName
                 User {
                   username
                 }

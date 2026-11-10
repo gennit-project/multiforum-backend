@@ -263,3 +263,18 @@ replace the identity used by the child permission rule. This is an explicit
 source-path guarantee, not arbitrary descendant or whole-User certification;
 accounting stays 176 selected / 33 deferred. Internal fixed projections and both
 pending product policies are unchanged by this slice.
+
+### Internal moderator archive projection
+
+The internal author discriminator also makes the existing moderator-authored
+archive read executable. Its old failure witness has been replaced with a
+passing graph regression. That regression additionally exposed a missing
+`displayName` selection: the archive resolver already derives the related
+moderator-profile target from that field, but the fixed read only selected the
+profile's notification User. The read and precise projection now include nullable
+`displayName`; type coverage prevents assuming it is non-null. Real graph tests
+verify archive/rearchive/unarchive effects, the moderator-profile target rather
+than a human-account target, existing notification recipients, and a nullable-name
+read without writes. Public moderator User denial remains covered separately by
+the author-source GraphQL/Shield tests. No new target fallback for unnamed profiles
+is introduced, and accounting remains 176 selected / 33 deferred.

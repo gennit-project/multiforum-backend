@@ -2,7 +2,7 @@ import type {Comment,Image,DiscussionChannel,EventChannel} from "../../ogm_types
 export type ArchiveIssueSnapshot={id:string;issueNumber:number;flaggedServerRuleViolation:boolean|null};
 type ArchiveContext={Channel:{uniqueName:string}|null;DiscussionChannel:{discussionId:string;channelUniqueName:string}|null;Event:{id:string;EventChannels:Array<{channelUniqueName:string}>}|null};
 type UnarchiveContext={Channel:{uniqueName:string}|null;DiscussionChannel:{channelUniqueName:string}|null;Event:{EventChannels:Array<{channelUniqueName:string}>}|null};
-export type ArchiveCommentSnapshot=ArchiveContext & {id:string;text:string|null;CommentAuthor:{__typename:'User';username:string}|{__typename:'ModerationProfile';User:{username:string}|null}|null;ParentComment:ArchiveContext|null};
+export type ArchiveCommentSnapshot=ArchiveContext & {id:string;text:string|null;CommentAuthor:{__typename:'User';username:string}|{__typename:'ModerationProfile';displayName:string|null;User:{username:string}|null}|null;ParentComment:ArchiveContext|null};
 export type UnarchiveCommentSnapshot=UnarchiveContext & {id:string;text:string|null;ParentComment:UnarchiveContext|null};
 export type ArchiveImageSnapshot={id:string;url:string|null;archived:boolean|null;Uploader:{username:string}|null};
 export type UnarchiveImageSnapshot={id:string;archived:boolean|null};
