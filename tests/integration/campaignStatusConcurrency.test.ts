@@ -7,9 +7,11 @@ import { applyMiddleware } from "graphql-middleware";
 import type { Driver } from "neo4j-driver";
 import typeDefs from "../../typeDefs.js";
 import permissions from "../../permissions.js";
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import {campaignSelection} from "../../customResolvers/contracts/pluginCampaigns.js";
 import getResolvers from "../helpers/getTestResolvers.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
+import {createCampaignQueryRepository} from "../../services/persistence/campaignQueryRepository.js";
 import { createCampaignControlRepository } from "../../services/persistence/campaignControlRepository.js";
 import { runPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
 import { createCampaignServiceRepository } from "../../services/persistence/campaignServiceRepository.js";
@@ -25,7 +27,7 @@ before(async () => {
   process.env.SERVER_CONFIG_NAME = "campaign-concurrency-fixture";
   raw = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers }).getSchema();
   registerGeneratedSchema(driver, raw);
-  schema = applyMiddleware(raw, permissions);
+  schema = applyMiddleware(raw, sourceIdentity, permissions);
 }, { timeout: 240000 });
 after(async () => {
   await stopNeo4j();
@@ -239,6 +241,8 @@ test("draft and terminal states retain BAD_USER_INPUT without modifying the camp
 
 test("transition result retains every fixed campaign selection including nullable keys", async () => {
   const repository=createCampaignControlRepository(driver);
+  const history=(await createCampaignQueryRepository(driver).findCampaigns())[0];
+  assert.deepEqual(Object.keys(history).sort(),Object.keys(campaignSelection).sort());
   for (const target of [Status.Paused,Status.Running] as const) {
     const result=await repository.transitionStatus("campaign",target);
     assert.equal(result.kind,"updated");
@@ -251,4 +255,51 @@ test("transition result retains every fixed campaign selection including nullabl
     assert.equal(typeof result.campaign.updatedAt,"string");
     assert.equal(result.campaign.completedCount,0);
   }
+});
+
+for(const action of ['pause','resume'] as const)test(`${action}: campaign aliases and fragments retain canonical values`,async()=>{
+  if(action==='resume')success(await execute('pause'));
+  const source=`mutation($skip:Boolean!){result:${action}PluginPipelineCampaign(campaignId:"campaign"){status:id id:status ...Times pausedAt:finishedAt @skip(if:$skip)}} fragment Times on PluginPipelineCampaign {finishedAt:pausedAt}`;
+  const result=await graphql({schema,source,variableValues:{skip:true},contextValue:{driver,req:{headers:{},body:{query:source}},user:{username:'admin',email:null,email_verified:true,data:{}}}});
+  const row=success(result);
+  assert.equal(row.status,'campaign');assert.equal(row.id,action==='pause'?'PAUSED':'RUNNING');
+  assert.equal('pausedAt' in row,false);
+  if(action==='pause')assert.equal(typeof row.finishedAt,'string');else assert.equal(row.finishedAt,null);
+});
+test('campaign history aliases retain independent id and status fields',async()=>{
+ const source='{result:getPluginPipelineCampaigns{status:id id:status}}';
+ const result=await graphql({schema,source,contextValue:{driver,req:{headers:{},body:{query:source}},user:{username:'admin',email:null,email_verified:true,data:{}}}});
+ assert.deepEqual(success(result),[{status:'campaign',id:'RUNNING'}]);
+});
+
+async function selected(source:string){return graphql({schema,source,contextValue:{driver,req:{headers:{},body:{query:source}},user:{username:'admin',email:null,email_verified:true,data:{}}}});}
+async function eligiblePolicy(){await driver.executeQuery('MATCH(s:ServerConfig) SET s.pluginPipelines=$policies',{policies:JSON.stringify([{policyId:'policy',event:'downloadableFile.created',effectiveAt:'2026-01-01T00:00:00Z',applicability:'ALL_FILES_GRADUAL',steps:[{pluginId:'fixture'}]}])});}
+test('created campaign aliases preserve authenticated attribution and status',async()=>{
+ await driver.executeQuery('MATCH(c:PluginPipelineCampaign) DELETE c');await eligiblePolicy();
+ const row=success(await selected('mutation{result:createPluginPipelineCampaign(policyId:"policy",concurrency:1,rateLimitPerMinute:5){status:createdByUsername createdByUsername:status}}'));
+ assert.deepEqual(row,{status:'admin',createdByUsername:'RUNNING'});
+});
+test('preview aliases retain ordinary custom response semantics',async()=>{
+ await eligiblePolicy();assert.deepEqual(success(await selected('{result:previewPluginPipelineCampaign(policyId:"policy"){affectedFileCount:policyId policyId:affectedFileCount}}')),{affectedFileCount:'policy',policyId:0});
+});
+test('failure aliases retain ordinary custom response and destination semantics',async()=>{
+ await driver.executeQuery("CREATE(f:DownloadableFile{id:'file'}),(d:Discussion{id:'discussion'}),(dc:DiscussionChannel{channelUniqueName:'forum',archived:false}) CREATE(d)-[:HAS_DOWNLOADABLE_FILE]->(f),(dc)-[:POSTED_IN_CHANNEL]->(d) CREATE(:PluginPipelineRun{id:'run',pipelineId:'pipeline',campaignId:'campaign',targetId:'file',status:'FAILED',attemptNumber:1})");
+ assert.deepEqual(success(await selected('{result:getPluginPipelineCampaignFailures(campaignId:"campaign"){status:pipelineId pipelineId:status channelId:discussionId discussionId:channelId}}')),[{status:'pipeline',pipelineId:'FAILED',channelId:'discussion',discussionId:'forum'}]);
+});
+
+test('internal generated selections retain response keys while the public raw query stays denied',async()=>{
+ const source='{result:pluginPipelineCampaigns{status:id id:status}}';
+ const contextValue={driver,req:{headers:{},body:{query:source}},user:{username:'admin',email:null,email_verified:true,data:{}}};
+ const denied=await graphql({schema,source,contextValue});assert.ok(denied.errors?.length);
+ // Isolate the source middleware on the internal executable schema; do not grant
+ // public access to this intentionally denied generated root.
+ const result=await graphql({schema:applyMiddleware(raw,sourceIdentity),source,contextValue});
+ assert.deepEqual(success(result),[{status:'campaign',id:'RUNNING'}]);
+});
+test('aliased transition remains denied to anonymous and ordinary callers without a write',async()=>{
+ const source='mutation{result:pausePluginPipelineCampaign(campaignId:"campaign"){status:id id:status}}';
+ for(const username of [null,'ordinary']){
+  const result=await graphql({schema,source,contextValue:{driver,req:{headers:{},body:{query:source}},user:username?{username,email:null,email_verified:true,data:{}}:undefined}});
+  assert.ok(result.errors?.length);assert.equal(result.data,null);assert.deepEqual(result.errors[0].path,['result']);assert.equal((await state())?.status,'RUNNING');
+ }
 });

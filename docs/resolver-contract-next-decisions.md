@@ -1155,3 +1155,19 @@ activity-delegation boundary. This is not whole-object certification. The ongoin
 producer/alias census still needs to establish remaining owned plugin/configuration
 response maps and distinguish dynamic generated selections from canonical maps.
 The event omitted/null input policy is also unchanged.
+
+### Campaign owned sources and alias regression
+
+Six real-schema/Shield probes reproduced field-name alias collisions in campaign
+creation, history, pause, resume, preview and failure responses. Their fixed
+sources now carry private canonical-map provenance: the campaign entity uses an
+explicit 24-field adapter tied to the fixed inner document, while computed
+preview/failure maps retain their own exact fields. Dynamic generated selections
+are not marked. Regression tests exercise aliases, fragments, skipped fields,
+nullable times, ordinary generated queries and denied mutation callers. Existing
+inner-projection errors still happen after the committed transition as before.
+
+The history and transition key guards inspect actual repository results, including
+nullable selected keys, so an outer nullable completion cannot hide selection
+loss. This fixes response selection, not worker scheduling or storage semantics.
+The inventory remains 180 selected / 29 deferred.

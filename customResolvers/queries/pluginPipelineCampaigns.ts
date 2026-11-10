@@ -1,3 +1,5 @@
+import {campaignSource} from '../contracts/campaignSources.js';
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import {createCampaignQueryRepository,type CampaignQueryRepository} from "../../services/persistence/campaignQueryRepository.js";
 import type {Driver} from "neo4j-driver";
 import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
@@ -11,7 +13,7 @@ export const previewPluginPipelineCampaign = ({
   campaignRepository?: CampaignServiceRepository;
 }) =>
   async (_parent: unknown, { policyId }: { policyId: string }) =>
-    previewPipelineCampaign({ driver, campaignRepository, policyId });
+    rememberCanonicalSource(await previewPipelineCampaign({ driver, campaignRepository, policyId }));
 
 export const getPluginPipelineCampaigns = ({
   driver,
@@ -21,7 +23,7 @@ export const getPluginPipelineCampaigns = ({
   queryRepository?: CampaignQueryRepository;
 }) =>
   async () =>
-    (queryRepository ?? createCampaignQueryRepository(driver!)).findCampaigns();
+    (await (queryRepository ?? createCampaignQueryRepository(driver!)).findCampaigns()).map(campaignSource);
 
 export const getPluginPipelineCampaignFailures = ({
   driver,
@@ -41,14 +43,14 @@ export const getPluginPipelineCampaignFailures = ({
         item => item.archived !== true
       )?.channelUniqueName;
       if (!discussion?.id || !channel) continue;
-      failures.push({
+      failures.push(rememberCanonicalSource({
         pipelineId: attempt.pipelineId,
         targetId: attempt.targetId,
         discussionId: discussion.id,
         channelId: channel,
         status: attempt.status,
         attemptNumber: attempt.attemptNumber,
-      });
+      }));
     }
     return failures;
   };

@@ -1,3 +1,4 @@
+import {campaignSource} from '../contracts/campaignSources.js';
 import type {Driver} from "neo4j-driver";
 import {createCampaignControlRepository,type CampaignControlRepository} from "../../services/persistence/campaignControlRepository.js";
 import type {CampaignServiceRepository, CampaignRow} from "../../services/persistence/campaignServiceRepository.js";
@@ -73,7 +74,8 @@ export const createPluginPipelineCampaign = (models: Models) =>
         startedAt: timestamp,
         updatedAt: timestamp,
       }]);
-    return result.pluginPipelineCampaigns[0];
+    const campaign=result.pluginPipelineCampaigns[0];
+    return campaign ? campaignSource(campaign) : campaign;
   };
 
 const changeCampaignStatus = (
@@ -98,7 +100,7 @@ const changeCampaignStatus = (
         extensions: { code: "CONFLICT" },
       });
     }
-    return result.campaign;
+    return campaignSource(result.campaign);
   };
 
 export const pausePluginPipelineCampaign = (models: Models) =>
