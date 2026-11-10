@@ -1017,3 +1017,27 @@ fragments, directives, owner/anonymous permissions, null attribution, missing
 records, local scalar errors and sensitive-discussion filtering. Event-channel
 omission/null behavior is untouched. These source guarantees do not certify all
 content children; accounting remains 176 selected / 33 deferred.
+
+### Explicit comment and issue author union sources
+
+Public `comments` / `issues` lists and their root connections now select private,
+collision-free fields in the User and ModerationProfile branches. Presence of one
+branch establishes the discriminator in a WeakMap; public aliases, nullable names
+and malformed unrequested names cannot select the type. User identity remains raw
+until the ownership rule validates it. Missing or ambiguous branch markers produce
+a GraphQL type error rather than falling back to a caller-controlled property.
+
+An isolated checkout before this change fails all four initial probes: two owner
+Email requests without username and two moderator authors without displayName.
+The 21 real graph/Shield regressions now cover both root representations, mixed
+authors, aliases/fragments/directives, owner/other/anonymous callers, nullable
+authors/names, selected scalar failures, age filtering and the always-denied
+human moderator User edge. Two unit regressions cover malformed/ambiguous markers,
+alias reservation and skipped unions; compile-negative fixtures reject arbitrary
+union registrations and discriminator names.
+
+These guarantees apply only to the four registered public roots. Unregistered
+internal/generated repository calls and custom/nested author sources retain their
+legacy behavior, including the separate scratchpad-source limitation documented
+above. No public schema, write behavior, event-channel policy or worker-pause
+policy changes. Accounting remains **176 selected / 33 deferred**.

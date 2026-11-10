@@ -120,3 +120,52 @@ test('multiple source dependencies execute once and leave public-only paths unto
  assert.deepEqual(accountChildIdentity(bot),{found:false});
  assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{channels:[{Admins:[{Email:'private'}],Bots:[{username:'bob'}]}]});
 });
+
+test('author union branch markers ignore caller aliases and retain unknown identity values', async () => {
+  const { authorSourceType } = await import('../services/authorSourceType.js');
+  const { isUnionType } = await import('graphql');
+  const unionSchema = buildSchema('type Query{items:[Item]} type Item{author:Actor} union Actor=User|ModerationProfile type User{username:String bio:String Email:String} type ModerationProfile{displayName:String}');
+  const union = unionSchema.getType('Actor');
+  assert.ok(isUnionType(union));
+  union.resolveType = row => { const type = authorSourceType(row); return type.found ? type.value ?? undefined : undefined; };
+  const adapter = userChildIdentityAtPaths([{path:['author'],userUnion:true}]);
+  for (const branch of ['User','ModerationProfile','missing','ambiguous']) {
+    const row: Record<string, unknown> = {username:'forged',displayName:'forged'};
+    const response = await graphql({schema:unionSchema,source:'{items{author{__typename ... on User{_accountIdentity:bio _moderatorIdentity:bio Email}}}}',contextValue:context,rootValue:{
+      items:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{
+        const author=selected.fieldNodes[0].selectionSet!.selections[0];
+        assert.equal(author.kind,Kind.FIELD);
+        if(author.kind!==Kind.FIELD)throw new Error('expected author');
+        for(const fragment of author.selectionSet!.selections.slice(-2)) {
+          assert.equal(fragment.kind,Kind.INLINE_FRAGMENT);
+          if(fragment.kind!==Kind.INLINE_FRAGMENT)throw new Error('expected branch');
+          const dependency=fragment.selectionSet.selections[0];
+          assert.equal(dependency.kind,Kind.FIELD);
+          if(dependency.kind!==Kind.FIELD)throw new Error('expected dependency');
+          assert.ok(!['_accountIdentity','_moderatorIdentity'].includes(dependency.alias!.value));
+          if(branch===fragment.typeCondition!.name.value||branch==='ambiguous')row[dependency.alias!.value]=null;
+        }
+        return [{author:row}];
+      },null,args,ctx,info),
+    }});
+    const expected=branch==='User'||branch==='ModerationProfile'?branch:null;
+    assert.deepEqual(authorSourceType(row),{found:true,value:expected});
+    assert.deepEqual(accountChildIdentity(row),branch==='User'?{found:true,value:null}:{found:false});
+    if(expected)assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+    else assert.deepEqual(response.errors?.map(error=>error.path),[['items',0,'author']]);
+  }
+});
+
+test('skipped author unions do not inject branch markers or inspect a source', async () => {
+  const { authorSourceType } = await import('../services/authorSourceType.js');
+  const unionSchema=buildSchema('type Query{items:[Item]} type Item{id:ID author:Actor} union Actor=User|ModerationProfile type User{username:String} type ModerationProfile{displayName:String}');
+  const row={username:'alice'};
+  const adapter=userChildIdentityAtPaths([{path:['author'],userUnion:true}]);
+  const response=await graphql({schema:unionSchema,source:'query($hide:Boolean=true){items{id author @skip(if:$hide){__typename}}}',contextValue:context,rootValue:{
+    items:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{
+      assert.equal(selected,info);return [{id:'one',author:row}];
+    },null,args,ctx,info),
+  }});
+  assert.equal(response.errors,undefined);
+  assert.deepEqual(authorSourceType(row),{found:false});
+});

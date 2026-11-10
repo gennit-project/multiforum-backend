@@ -1,3 +1,4 @@
+import { authorSourceType } from "../services/authorSourceType.js";
 import type { DiscussionChannelResolvers, DiscussionChannelListItemResolvers, SiteWideDiscussionListItemResolvers, CommentResolvers, AlbumResolvers, ScratchpadEntryResolvers } from "../src/generated/graphql.js";
 import type { OpaqueListSource } from "./contracts/deferredSources.js";
 import type { UserResolvers, ImageResolvers, ChannelResolvers } from "../src/generated/graphql.js";
@@ -75,6 +76,8 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
 
   const checkedCommentAuthor = {
     __resolveType(obj: { username?: unknown; displayName?: unknown }) {
+      const source = authorSourceType(obj);
+      if (source.found) return source.value;
       if (obj.username) return "User";
       if (obj.displayName) return "ModerationProfile";
       return "User";
@@ -82,6 +85,8 @@ export default function buildTypeResolvers(deps: ResolverDeps) {
   } satisfies CheckedAuthorFields;
   const checkedIssueAuthor = {
     __resolveType(obj: { username?: unknown; displayName?: unknown }) {
+      const source = authorSourceType(obj);
+      if (source.found) return source.value;
       if (obj.username) return "User";
       if (obj.displayName) return "ModerationProfile";
       return "User";

@@ -239,3 +239,13 @@ action unchanged. Replays, authorization, other response fields and write/error
 ordering remain unchanged. There is no additional read or post-commit validator.
 This resolves the bot API result mismatch without claiming that persisted source
 leaves or arbitrary JSON responses are fully certified.
+
+### Public author union source continuation
+
+The public comments/issues lists and root connections now carry private explicit
+User/moderator branch discriminators, with real graph and Shield regression tests.
+Their type no longer depends on requested username/displayName fields or aliases.
+The internal scratchpad repository call described above remains outside these
+root registrations, as do other custom/nested author sources. Preserve that
+limitation rather than treating this bounded fix as global union certification.
+Inventory remains 176 selected / 33 deferred; neither pending policy is changed.

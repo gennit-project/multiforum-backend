@@ -1,6 +1,7 @@
 import { Kind, valueFromASTUntyped, visit } from "graphql";
-import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode } from "graphql";
+import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode, FieldNode, SelectionNode } from "graphql";
 import type { GraphQLContext } from "../types/context.js";
+import { rememberAuthorSourceType } from "../services/authorSourceType.js";
 import { rememberAccountChildIdentity } from "../services/accountChildIdentity.js";
 
 // Only the explicit generated sources registered below are covered. Other
@@ -40,8 +41,8 @@ function isObjectSource(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function prepareIdentitySelection(nodes: GraphQLResolveInfo["fieldNodes"], info: GraphQLResolveInfo) {
-  if (!nodes.some(node => needsIdentity(node.selectionSet, info))) return undefined;
+function prepareIdentitySelection(nodes: GraphQLResolveInfo["fieldNodes"], info: GraphQLResolveInfo, unionNodes: ReadonlySet<FieldNode> = new Set()) {
+  if (!unionNodes.size && !nodes.some(node => needsIdentity(node.selectionSet, info))) return undefined;
   // Reserve an alias absent from the entire caller document, including fragments.
   // A caller's `username: bio` must never become the authorization identity.
   const names = new Set<string>();
@@ -50,14 +51,30 @@ function prepareIdentitySelection(nodes: GraphQLResolveInfo["fieldNodes"], info:
   for (const fragment of Object.values(info.fragments)) visit(fragment, collect);
   let alias = "_accountIdentity";
   while (names.has(alias)) alias += "_";
+  names.add(alias);
+  let moderatorAlias = "_moderatorIdentity";
+  while (names.has(moderatorAlias)) moderatorAlias += "_";
+  const identityField: FieldNode = {
+    kind: Kind.FIELD, name: { kind: Kind.NAME, value: "username" },
+    alias: { kind: Kind.NAME, value: alias },
+  };
+  const unionSelections: readonly SelectionNode[] = [{
+      kind: Kind.INLINE_FRAGMENT,
+      typeCondition: { kind: Kind.NAMED_TYPE, name: { kind: Kind.NAME, value: "User" } },
+      selectionSet: { kind: Kind.SELECTION_SET, selections: [identityField] },
+    }, {
+      kind: Kind.INLINE_FRAGMENT,
+      typeCondition: { kind: Kind.NAMED_TYPE, name: { kind: Kind.NAME, value: "ModerationProfile" } },
+      selectionSet: { kind: Kind.SELECTION_SET, selections: [{
+        kind: Kind.FIELD, name: { kind: Kind.NAME, value: "displayName" },
+        alias: { kind: Kind.NAME, value: moderatorAlias },
+      }] },
+    }];
   const fieldNodes = nodes.map(node => ({ ...node, selectionSet: {
     kind: Kind.SELECTION_SET,
-    selections: [...(node.selectionSet?.selections ?? []), {
-      kind: Kind.FIELD, name: { kind: Kind.NAME, value: "username" },
-      alias: { kind: Kind.NAME, value: alias },
-    }],
+    selections: [...(node.selectionSet?.selections ?? []), ...(unionNodes.has(node) ? unionSelections : [identityField])],
   } })) satisfies GraphQLResolveInfo["fieldNodes"];
-  return { fieldNodes, alias };
+  return { fieldNodes, alias, moderatorAlias };
 }
 function rememberRows(result: unknown, alias: string): void {
   if (Array.isArray(result)) {
@@ -110,43 +127,52 @@ function sourceUserFields(
   });
 }
 
-function rememberPath(value: unknown, path: readonly string[], alias: string): void {
+function rememberPath(value: unknown, path: readonly string[], alias: string, moderatorAlias?: string): void {
   if (Array.isArray(value)) {
     const values: readonly unknown[] = value;
-    for (const item of values) rememberPath(item, path, alias);
+    for (const item of values) rememberPath(item, path, alias, moderatorAlias);
   } else if (isObjectSource(value)) {
-    if (path.length) rememberPath(value[path[0]], path.slice(1), alias);
-    else rememberAccountChildIdentity(value, alias in value ? value[alias] : undefined);
+    if (path.length) rememberPath(value[path[0]], path.slice(1), alias, moderatorAlias);
+    else if (moderatorAlias) {
+      // Presence of a private branch selection determines type, never the
+      // truthiness of public names or the caller's response aliases.
+      const userBranch = Object.prototype.hasOwnProperty.call(value, alias);
+      const moderatorBranch = Object.prototype.hasOwnProperty.call(value, moderatorAlias);
+      rememberAuthorSourceType(value, userBranch === moderatorBranch ? null : userBranch ? "User" : "ModerationProfile");
+      if (userBranch && !moderatorBranch) rememberAccountChildIdentity(value, value[alias]);
+    } else rememberAccountChildIdentity(value, alias in value ? value[alias] : undefined);
   }
 }
 
 type UserSourcePath = {
   path: readonly string[];
   sourceKeys?: readonly ("response" | "canonical")[];
+  /** Only explicit User | ModerationProfile author union sources. */
+  userUnion?: true;
 };
 
 /** Each registration names verified source paths, never arbitrary descendants. */
 export function userChildIdentityAtPaths(paths: readonly UserSourcePath[]): typeof resolveUsersWithChildIdentity {
   if (!paths.length) throw new Error("At least one User source path is required");
-  const registrations = paths.map(({path, sourceKeys = path.map(() => "response")}) => {
+  const registrations = paths.map(({path, sourceKeys = path.map(() => "response"), userUnion}) => {
     if (!path.length) throw new Error("A nested User source path is required");
     if (sourceKeys.length !== path.length) throw new Error("Each source path segment needs a key convention");
-    return { path: [...path], sourceKeys: [...sourceKeys] };
+    return { path: [...path], sourceKeys: [...sourceKeys], userUnion };
   });
   return async (resolve, parent, args, context, info) => {
-    const sources = registrations.flatMap(({path, sourceKeys}) =>
+    const sources = registrations.flatMap(({path, sourceKeys, userUnion}) =>
       info.fieldNodes.flatMap(node => sourceUserFields(node.selectionSet, info, path))
-        .filter(source => needsIdentity(source.node.selectionSet, info))
-        .map(source => ({...source, sourcePath: path.map((field, index) => sourceKeys[index] === "canonical" ? field : source.responsePath[index])}))
+        .filter(source => userUnion || needsIdentity(source.node.selectionSet, info))
+        .map(source => ({...source, userUnion, sourcePath: path.map((field, index) => sourceKeys[index] === "canonical" ? field : source.responsePath[index])}))
     );
-    const selected = prepareIdentitySelection(sources.map(source => source.node), info);
+    const selected = prepareIdentitySelection(sources.map(source => source.node), info, new Set(sources.filter(source => source.userUnion).map(source => source.node)));
     if (!selected) return resolve(parent, args, context, info);
     const replacements = new Map(sources.map((source, index) => [source.node, selected.fieldNodes[index]]));
     const visitor = { Field(node: import("graphql").FieldNode) { return replacements.get(node); } };
     const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
     const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
     const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
-    for (const source of sources) rememberPath(result, source.sourcePath, selected.alias);
+    for (const source of sources) rememberPath(result, source.sourcePath, selected.alias, source.userUnion ? selected.moderatorAlias : undefined);
     return result;
   };
 }
@@ -190,6 +216,10 @@ export default {
     eventsConnection: userChildIdentityAtPaths(["Poster", "DescriptionLastEditedBy"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     eventSeries: userChildIdentityAtPath(["Poster"]),
     eventSeriesConnection: userChildIdentityAtPath(["edges", "node", "Poster"], ["canonical", "canonical", "response"]),
+    comments: userChildIdentityAtPaths([{path: ["CommentAuthor"], userUnion: true}]),
+    commentsConnection: userChildIdentityAtPaths([{path: ["edges", "node", "CommentAuthor"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}]),
+    issues: userChildIdentityAtPaths([{path: ["Author"], userUnion: true}]),
+    issuesConnection: userChildIdentityAtPaths([{path: ["edges", "node", "Author"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}]),
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },

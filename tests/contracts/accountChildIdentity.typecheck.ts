@@ -5,3 +5,10 @@ if (identity.found) {
   const username: string = identity.value;
   void username;
 }
+
+import { userChildIdentityAtPaths } from '../../middleware/userChildIdentityMiddleware.js';
+import { rememberAuthorSourceType } from '../../services/authorSourceType.js';
+// @ts-expect-error Only the explicitly supported author union may be registered.
+userChildIdentityAtPaths([{path: ['Author'], userUnion: 'ArbitraryUnion'}]);
+// @ts-expect-error Source discriminators cannot be arbitrary strings.
+rememberAuthorSourceType({}, 'Admin');

@@ -358,10 +358,14 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "services/authorSourceType.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "middleware/userChildIdentityMiddleware.test.ts",
+        "tests/integration/unionAuthorIdentitySources.test.ts"
       ],
-      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
-      "decision": "Selected response checked; retain documented residual scope."
+      "reason": "Generated checked resolver signatures retain the existing allowed type names. Explicit public comment/issue list and connection sources now carry a private branch-presence discriminator and User identity, independent of aliases or nullable/malformed names; real schema/Shield/database regressions prove correct completion and anonymity.",
+      "decision": "No inventory promotion. Unregistered internal/custom sources retain legacy discrimination; this is not full certification of arbitrary author objects or nested paths. Missing or ambiguous markers on registered sources yield GraphQL type errors rather than guessing."
     },
     {
       "field": "Discussion.detailFilesPageInfo",
@@ -510,10 +514,14 @@
         "customResolvers/typeResolvers.ts",
         "customResolvers/contracts/typeFields.ts",
         "tests/contracts/typeFields.typecheck.ts",
-        "tests/integration/typeFieldResponseContracts.test.ts"
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "services/authorSourceType.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "middleware/userChildIdentityMiddleware.test.ts",
+        "tests/integration/unionAuthorIdentitySources.test.ts"
       ],
-      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
-      "decision": "Selected response checked; retain documented residual scope."
+      "reason": "Generated checked resolver signatures retain the existing allowed type names. Explicit public comment/issue list and connection sources now carry a private branch-presence discriminator and User identity, independent of aliases or nullable/malformed names; real schema/Shield/database regressions prove correct completion and anonymity.",
+      "decision": "No inventory promotion. Unregistered internal/custom sources retain legacy discrimination; this is not full certification of arbitrary author objects or nested paths. Missing or ambiguous markers on registered sources yield GraphQL type errors rather than guessing."
     },
     {
       "field": "JSON",
