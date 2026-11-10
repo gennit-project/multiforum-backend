@@ -1,4 +1,4 @@
-import type { ContributionCount } from './contributionReadProjections.js';
+import type { Integer } from 'neo4j-driver';
 /** Exact Cypher map; stored scalars are deliberately untrusted. */
 export type SiteWideIssueProjection = {
   id: unknown;
@@ -21,5 +21,5 @@ export type SiteWideIssueProjection = {
   channelUniqueName: unknown;
   channelIconURL: unknown;
   authorName: unknown;
-  reportCount: ContributionCount;
+  reportCount: Integer | number;
 };
