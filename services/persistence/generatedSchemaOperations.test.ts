@@ -81,10 +81,12 @@ test('internal author projections retain context and documents without changing 
       Author:{__resolveType:(obj:object)=>{const type=authorSourceType(obj);return type.found?type.value:null;}},
     },
   });
+  const originalComments = raw.getQueryType()!.getFields().comments.resolve;
   registerGeneratedSchema(instance, raw, 'isolated');
   const result = await executeGeneratedOperation(instance, '{comments{CommentAuthor{__typename}}}', {user:{username:'not-request-context'}});
   assert.deepEqual(JSON.parse(JSON.stringify(result)), {comments:[{CommentAuthor:{__typename:'ModerationProfile'}}]});
   assert.equal(getGeneratedSchema(instance), raw);
+  assert.equal(raw.getQueryType()!.getFields().comments.resolve, originalComments);
   assert.deepEqual(observed, {sessionConfig:{database:'isolated'}});
   assert.equal(selection, 'comments {\n  CommentAuthor {\n    __typename\n  }\n}');
 });

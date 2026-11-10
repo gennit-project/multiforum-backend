@@ -1063,3 +1063,20 @@ unchanged documents and the untouched raw-schema accessor. The metadata adapter 
 limited to the pinned Neo4j to-one author projection: it does not certify arbitrary
 custom parent properties, relationship connections or other nested paths. Existing
 schema-owned nullable names remain nullable; inventory stays 176 selected / 33 deferred.
+
+### One-hop reply author sources
+
+The explicit comment author path set now also includes `ParentComment.CommentAuthor`
+and `ChildComments.CommentAuthor`, for public and fixed internal comment lists and
+root connections. The two pre-fix probes reproduced a wrongly typed parent moderator
+and an owner Email denial on a child author. Sixteen graph/Shield regressions cover
+both representations, mixed authors, aliases/fragments/directives, owner/other/
+anonymous access, the forbidden moderator User edge, filtering/pagination, empty
+or absent relationships, age filtering, local scalar errors and the unchanged
+25-child default limit. Internal reads retain generated type metadata and exact
+selections; the original raw schema and its root resolver remain unchanged.
+
+This is one explicit parent/child hop, not recursive certification. Deeper reply
+trees, mutation responses and unrelated custom/nested sources remain outside the
+path set. Inventory remains **176 selected / 33 deferred**; both pending product
+policies and the public schema are unchanged.

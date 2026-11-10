@@ -362,10 +362,13 @@
         "services/authorSourceType.ts",
         "middleware/userChildIdentityMiddleware.ts",
         "middleware/userChildIdentityMiddleware.test.ts",
-        "tests/integration/unionAuthorIdentitySources.test.ts"
+        "tests/integration/unionAuthorIdentitySources.test.ts",
+        "services/persistence/internalAuthorSources.ts",
+        "tests/integration/nestedCommentAuthorSources.test.ts",
+        "services/persistence/generatedSchemaOperations.test.ts"
       ],
-      "reason": "Generated checked resolver signatures retain the existing allowed type names. Explicit public comment/issue list and connection sources now carry a private branch-presence discriminator and User identity, independent of aliases or nullable/malformed names; real schema/Shield/database regressions prove correct completion and anonymity.",
-      "decision": "No inventory promotion. Unregistered internal/custom sources retain legacy discrimination; this is not full certification of arbitrary author objects or nested paths. Missing or ambiguous markers on registered sources yield GraphQL type errors rather than guessing."
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover one parent/child hop. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and deeper nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
     },
     {
       "field": "Discussion.detailFilesPageInfo",
@@ -518,10 +521,13 @@
         "services/authorSourceType.ts",
         "middleware/userChildIdentityMiddleware.ts",
         "middleware/userChildIdentityMiddleware.test.ts",
-        "tests/integration/unionAuthorIdentitySources.test.ts"
+        "tests/integration/unionAuthorIdentitySources.test.ts",
+        "services/persistence/internalAuthorSources.ts",
+        "tests/integration/nestedCommentAuthorSources.test.ts",
+        "services/persistence/generatedSchemaOperations.test.ts"
       ],
-      "reason": "Generated checked resolver signatures retain the existing allowed type names. Explicit public comment/issue list and connection sources now carry a private branch-presence discriminator and User identity, independent of aliases or nullable/malformed names; real schema/Shield/database regressions prove correct completion and anonymity.",
-      "decision": "No inventory promotion. Unregistered internal/custom sources retain legacy discrimination; this is not full certification of arbitrary author objects or nested paths. Missing or ambiguous markers on registered sources yield GraphQL type errors rather than guessing."
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover one parent/child hop. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and deeper nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
     },
     {
       "field": "JSON",

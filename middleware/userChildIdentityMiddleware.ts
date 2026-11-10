@@ -190,6 +190,9 @@ const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModIn
 
 const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "PendingModInvites"] as const;
 
+// Explicit one-hop paths only; deeper reply trees are not certified here.
+export const commentAuthorSourcePaths = [["CommentAuthor"], ["ParentComment", "CommentAuthor"], ["ChildComments", "CommentAuthor"]] as const;
+
 export default {
   Query: {
     users: resolveUsersWithChildIdentity,
@@ -216,8 +219,8 @@ export default {
     eventsConnection: userChildIdentityAtPaths(["Poster", "DescriptionLastEditedBy"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     eventSeries: userChildIdentityAtPath(["Poster"]),
     eventSeriesConnection: userChildIdentityAtPath(["edges", "node", "Poster"], ["canonical", "canonical", "response"]),
-    comments: userChildIdentityAtPaths([{path: ["CommentAuthor"], userUnion: true}]),
-    commentsConnection: userChildIdentityAtPaths([{path: ["edges", "node", "CommentAuthor"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}]),
+    comments: userChildIdentityAtPaths(commentAuthorSourcePaths.map((path): UserSourcePath => ({path, userUnion: true}))),
+    commentsConnection: userChildIdentityAtPaths(commentAuthorSourcePaths.map((path): UserSourcePath => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")], userUnion: true}))),
     issues: userChildIdentityAtPaths([{path: ["Author"], userUnion: true}]),
     issuesConnection: userChildIdentityAtPaths([{path: ["edges", "node", "Author"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}]),
     collections: userChildIdentityAtPath(["CreatedBy"]),
