@@ -780,3 +780,18 @@ The guard was exercised by temporarily removing `displayName` from the real
 mutation selection: the executed-selection regression failed, and the document
 was restored. Nine new integration cases and all 32 existing membership repository
 cases pass; the public response types and fixed documents remain unchanged.
+
+### Related-channel selected item sources
+
+Related Channel items now retain the same declared child-source metadata as the
+root Channel, recursively through requested RelatedChannels edges. The edge and
+terminal User paths are checked against generated schema types; recursion follows
+the finite validated selection and skips inactive branches. Canonical connection
+wrappers remain distinct from response-key child projections. Existing comment
+and moderator source handling is retained at each selected Channel.
+
+Real GraphQL/Shield regressions cover root and connection paths, nested aliases,
+fragments/directive variables, empty selections, omitted public identities and
+raw identity comparisons. The owner-access regression fails before this fix.
+This closes a concrete selected-source gap, not the whole RelatedChannels item
+contract. The 178 / 31 inventory and 18 unfinished shared-list gates are unchanged.

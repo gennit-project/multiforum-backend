@@ -320,9 +320,11 @@
         "build_scripts/deferredSourceContracts.test.ts",
         "tests/helpers/sharedListSources.ts",
         "tests/contracts/sharedListSources.typecheck.ts",
-        "tests/integration/generatedSharedListSources.test.ts"
+        "tests/integration/generatedSharedListSources.test.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "tests/contracts/userSourcePaths.typecheck.ts"
       ],
-      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers. Selected related-channel recursion now retains declared child-source identities with executable nested alias, fragment, directive, connection and nullable permission regressions. This does not certify every dynamic item field or other producer.",
       "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
       "disposition": "source-migration"
     },

@@ -98,3 +98,33 @@ for(const field of ['UpvotedByUsers','SuperUpvotedByUsers'] as const)test(`Comme
  const result=await graphql({schema,source:`{comments(where:{id:{eq:"parent"}}){replies:ChildComments{actors:${field}(sort:[{username:ASC}]){username:bio contact:Email{address}}}}}`,contextValue:context('first')});
  assert.equal(result.errors?.length,1);assert.deepEqual(plain(result.data),{comments:[{replies:[{actors:[{username:'first',contact:{address:'first@source.test'}},{username:'first',contact:null}]}]}]});
 });
+
+test('related channel items retain owner identity through selected nested aliases',async()=>{
+ const source=sources.find(source=>source.field==='RelatedChannels');assert.ok(source);
+ await seed(source);
+ await driver.executeQuery("MATCH(c:Channel {uniqueName:'first'}) CREATE(c)<-[:ADMIN_OF_CHANNEL]-(u:User {username:'owner',bio:'outsider',createdAt:datetime()}) CREATE(:Email {address:'owner@source.test'})-[:HAS_EMAIL]->(u)");
+ const query=`query($show:Boolean!){channels(where:{uniqueName:{eq:"root"}}){related:RelatedChannels(where:{uniqueName:{eq:"first"}}){...Members}}} fragment Members on Channel{members:Admins{username:bio contact:Email @include(if:$show){address}}}`;
+ for(const actor of ['owner','outsider',null]){
+  const result=await graphql({schema,source:query,variableValues:{show:true},contextValue:context(actor)});
+  assert.deepEqual(plain(result.data),{channels:[{related:[{members:[{username:'outsider',contact:actor==='owner'?{address:'owner@source.test'}:null}]}]}]});
+  assert.equal(result.errors?.length??0,actor==='owner'?0:1);
+ }
+ const skipped=await graphql({schema,source:query,variableValues:{show:false},contextValue:context(null)});
+ assert.equal(skipped.errors,undefined);
+});
+
+test('related channel recursion preserves independent connection aliases and omitted identities',async()=>{
+ const source=sources.find(source=>source.field==='RelatedChannels');assert.ok(source);
+ await seed(source);
+ await driver.executeQuery("MATCH(first:Channel {uniqueName:'first'}),(second:Channel {uniqueName:'second'}) CREATE(first)-[:RELATED_CHANNEL]->(second) CREATE(second)<-[:ADMIN_OF_CHANNEL]-(u:User {username:'owner',createdAt:datetime()}) CREATE(:Email {address:'owner@source.test'})-[:HAS_EMAIL]->(u)");
+ const query=`query($show:Boolean!){records:channelsConnection(where:{uniqueName:{eq:"root"}}){links:edges{item:node{a:RelatedChannels(where:{uniqueName:{eq:"first"}}){...Nested} empty:RelatedChannels(where:{uniqueName:{eq:"absent"}}){...Nested}}}}} fragment Nested on Channel{next:RelatedChannels{members:Admins{contact:Email @include(if:$show){address}}}}`;
+ const owner=await graphql({schema,source:query,variableValues:{show:true},contextValue:context('owner')});
+ assert.equal(owner.errors,undefined,JSON.stringify(owner.errors));
+ assert.deepEqual(plain(owner.data),{records:{links:[{item:{a:[{next:[{members:[{contact:{address:'owner@source.test'}}]}]}],empty:[]}}]}});
+ await driver.executeQuery("MATCH(u:User {username:'owner'}) SET u.username=17.5");
+ const malformed=await graphql({schema,source:query,variableValues:{show:true},contextValue:context('17.5')});
+ assert.equal(malformed.errors?.length,1);
+ assert.deepEqual(malformed.errors?.[0].path,['records','links',0,'item','a',0,'next',0,'members',0,'contact']);
+ const skipped=await graphql({schema,source:query,variableValues:{show:false},contextValue:context(null)});
+ assert.equal(skipped.errors,undefined);
+});

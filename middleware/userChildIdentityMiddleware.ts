@@ -192,6 +192,9 @@ export const resolveUpdatedUsersWithChildIdentity = userChildIdentityAtPath(["us
 export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["edges", "node"], ["canonical", "canonical"]);
 
 const channelUserPaths = userSourcePaths<Channel>()([["Admins"], ["Bots"], ["PendingOwnerInvites"], ["PendingModInvites"], ["Moderators", "BotUser"]]);
+// Schema-checked recursive edge: every traversed hop remains a Channel source.
+const relatedChannelUserPaths = userSourcePaths<Channel>()(channelUserPaths.map(path => ["RelatedChannels", ...path] as const));
+
 
 const albumUserPaths = userSourcePaths<Album>()([["Owner"], ["Images", "Uploader"], ["Images", "PermanentlyRemovedByUser"]]);
 
@@ -252,6 +255,39 @@ export function selectedCommentAuthorPaths(info: GraphQLResolveInfo, prefix: Use
 function selectedCommentChildIdentity(prefix: UserSourcePath = {path: []}, otherPaths: readonly UserSourcePath[] = []): typeof resolveUsersWithChildIdentity {
   return (resolve, parent, args, context, info) => {
     const paths = [...otherPaths, ...selectedCommentAuthorPaths(info, prefix), ...selectedCommentPaths(info, prefix, "voter")];
+    return paths.length ? userChildIdentityAtPaths(paths)(resolve, parent, args, context, info) : Promise.resolve(resolve(parent, args, context, info));
+  };
+}
+
+/** Expand only active RelatedChannels edges, not arbitrary child objects.
+ * The validated request bounds recursion; canonical paths deduplicate aliases.
+ */
+function selectedChannelChildIdentity(prefix: UserSourcePath = {path: []}): typeof resolveUsersWithChildIdentity {
+  return (resolve, parent, args, context, info) => {
+    const channels = new Map<string, readonly string[]>();
+    const relatedEdge = relatedChannelUserPaths[0][0];
+    function scan(selection: SelectionSetNode | undefined, path: readonly string[], seen: ReadonlySet<string>): void {
+      channels.set(path.join("."), path);
+      for (const node of selection?.selections ?? []) {
+        if (!isIncluded(node.directives, info)) continue;
+        if (node.kind === Kind.FIELD) {
+          if (node.name.value === relatedEdge) scan(node.selectionSet, [...path, relatedEdge], seen);
+        } else if (node.kind === Kind.INLINE_FRAGMENT) scan(node.selectionSet, path, seen);
+        else if (!seen.has(node.name.value)) scan(info.fragments[node.name.value]?.selectionSet, path, new Set([...seen, node.name.value]));
+      }
+    }
+    for (const node of info.fieldNodes) {
+      if (!prefix.path.length) scan(node.selectionSet, [], new Set());
+      else for (const source of sourceUserFields(node.selectionSet, info, prefix.path)) scan(source.node.selectionSet, prefix.path, new Set());
+    }
+    const paths: UserSourcePath[] = [];
+    const prefixKeys = prefix.sourceKeys ?? prefix.path.map((): "response" => "response");
+    for (const path of channels.values()) {
+      const keys = [...prefixKeys, ...path.slice(prefix.path.length).map((): "response" => "response")];
+      paths.push(...channelUserPaths.map(child => ({path: [...path, ...child], sourceKeys: [...keys, ...child.map((): "response" => "response")]})));
+      const comments = {path: [...path, "Comments"], sourceKeys: [...keys, "response" as const]};
+      paths.push(...selectedCommentAuthorPaths(info, comments), ...selectedCommentPaths(info, comments, "voter"));
+    }
     return paths.length ? userChildIdentityAtPaths(paths)(resolve, parent, args, context, info) : Promise.resolve(resolve(parent, args, context, info));
   };
 }
@@ -329,8 +365,8 @@ export default {
   Query: {
     users: resolveUsersWithChildIdentity,
     usersConnection: resolveUserConnectionWithChildIdentity,
-    channels: selectedCommentChildIdentity({path: ["Comments"]}, channelUserPaths.map(path => ({path}))),
-    channelsConnection: selectedCommentChildIdentity({path: ["edges", "node", "Comments"], sourceKeys: ["canonical", "canonical", "response"]}, channelUserPaths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]}))),
+    channels: selectedChannelChildIdentity(),
+    channelsConnection: selectedChannelChildIdentity({path: ["edges", "node"], sourceKeys: ["canonical", "canonical"]}),
     serverConfigs: rootUserPaths(serverUserPaths),
     serverConfigsConnection: connectionUserPaths(serverUserPaths),
     images: rootUserPaths(imageUserPaths),

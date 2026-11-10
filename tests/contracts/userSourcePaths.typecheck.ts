@@ -23,3 +23,8 @@ void [channel,album,voters];
 userSourcePaths<{source:{__typename:never}}>()([['source']]);
 // @ts-expect-error mixed branches need the author-union discriminator adapter
 userSourcePaths<{source:{__typename:'User'|'ModerationProfile'}}>()([['source']]);
+userSourcePaths<Channel>()([['RelatedChannels','RelatedChannels','Admins']]);
+// @ts-expect-error nested channels do not turn moderator profiles into Users
+userSourcePaths<Channel>()([['RelatedChannels','Moderators']]);
+// @ts-expect-error recursive traversal must use the declared Channel edge
+userSourcePaths<Channel>()([['RelatedChannel','Admins']]);
