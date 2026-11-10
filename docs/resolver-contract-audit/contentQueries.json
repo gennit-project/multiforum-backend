@@ -216,9 +216,12 @@
         "tests/integration/viewerReadResponseContracts.test.ts",
         "customResolvers/contracts/customCommentSources.d.ts",
         "services/customCommentSources.ts",
-        "tests/integration/customCommentAuthorSources.test.ts"
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "customResolvers/contracts/eventMetadataSource.d.ts",
+        "services/canonicalEventMetadata.ts",
+        "tests/integration/eventMetadataSourceContracts.test.ts"
       ],
-      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields.",
+      "reason": "Fixed Cypher MATCH against typed request parameters proves selected identities; CASE/EXISTS and viewer-filtered collections prove selected Boolean and viewer identity fields. Raw persisted properties remain unknown. Reply aggregate count is already converted with toNumber; other raw driver integer counts remain outside this selected boundary. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. Event metadata now has an exact fixed source, a generated raw-selection boundary at the actual root, and a real-query key guard. Canonical nested poster/channel/subscription maps preserve independent aliases. Stored scalars and native Point conversion remain lazy; nullable channels/posters and raw protected-child identity retain existing behavior.",
       "decision": "Preserve queries, parameter omissions/nulls, pagination, visibility, and catch behavior. Do not infer that selected viewer fields certify full returned entities. Real-schema tests cover viewer isolation, anonymous contexts, missing/sensitive/archived targets, page limits/order, and lazy malformed persisted scalar errors."
     },
     {

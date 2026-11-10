@@ -1,3 +1,4 @@
+import type {EventMetadataSource} from "../contracts/eventMetadataSource.js";
 import {int} from "neo4j-driver";
 import type {CustomCommentSectionChannel} from "../contracts/customCommentSources.js";
 import assert from "node:assert/strict";
@@ -59,9 +60,11 @@ const createDriver = () => {
             return { records: [{ get: () => channel }] };
           }
           if (query.includes("AS Event")) {
-            return {
-              records: [{ get: () => ({ id: "event-1" }) }],
-            };
+            const event={id:"event-1",title:null,description:null,startTime:null,endTime:null,locationName:null,address:null,
+              virtualEventUrl:null,startTimeDayOfWeek:null,startTimeHourOfDay:null,canceled:null,isHostedByOP:null,isAllDay:null,
+              coverImageURL:null,createdAt:null,updatedAt:null,isInPrivateResidence:null,location:null,cost:null,
+              Tags:[],EventChannels:[],SubscribedToNotifications:[],SubscribedToEventUpdates:[],Poster:null} satisfies EventMetadataSource;
+            return {records:[{get:()=>event}]};
           }
           return { records: [] };
         };

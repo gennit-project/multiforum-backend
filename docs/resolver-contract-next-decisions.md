@@ -592,3 +592,26 @@ intended. `Album.Images` and `DiscussionChannel.SuperUpvotedByUsers` gain precis
 owned producers, not universal shared-field guarantees. Inventory remains 178
 selected / 31 deferred; the 18 shared-list gates still need final producer
 reconciliation. Event-comment metadata remains a separate fixed source to inspect.
+
+### Event-comment metadata source
+
+The viewer-read family's final catch-all persisted map is replaced by the exact
+metadata query result: event fields, tags, nullable poster/channel maps and
+predicate-matched viewer subscriptions. Its actual registration now checks the
+public raw selection against generated schema keys. Native Point conversion stays
+with Neo4j's existing field resolver and is explicitly outside the structural
+selection; a real point alias test covers that behavior.
+
+Three failing baseline probes reproduced swapped scalar values, crossed
+subscription aliases and nested poster/channel alias errors. Canonical source
+provenance fixes only the owned maps. Tests preserve anonymous/unrelated viewer
+state, protected poster children without public username selection, raw identity
+comparisons, nullable posters/channels, fragments/directives and selection-time
+scalar errors. An initial test incorrectly expected a missing channel to error;
+the schema permits null, so the final regression preserves null. No event-input
+omitted/null policy is changed. Counts remain 178 selected / 31 deferred.
+
+The next finite gate is a producer-by-producer reconciliation of the 18 shared
+child lists: fixed query maps now have explicit sources, while generated dynamic
+projections need their own documented selection-aware upstream guarantees. Do not
+promote them merely because this viewer family no longer has catch-all types.

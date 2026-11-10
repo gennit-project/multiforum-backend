@@ -78,3 +78,14 @@ const badFilePage:import('../../customResolvers/contracts/contentQueries.js').Co
 // @ts-expect-error actual image page registration rejects an absent required image ID
 const badImagePage:import('../../customResolvers/contracts/contentQueries.js').ContentPageQueryResolvers['getDiscussionDetailImages']=()=>({images:[{url:null}],pageInfo:{hasNextPage:false,endCursor:null}});
 void [badDetailResult,badFilePage,badImagePage];
+
+declare const eventMetadata:import('../../customResolvers/contracts/eventMetadataSource.js').EventMetadataSource;
+// @ts-expect-error the fixed poster projection does not hydrate arbitrary private children
+const metadataEmail=eventMetadata.Poster!.Email;
+// @ts-expect-error stored poster names are not validated viewer parameters
+const metadataPosterName:string=eventMetadata.Poster!.username;
+// @ts-expect-error the exact channel projection includes its nullable Channel key
+const metadataMissingChannel:typeof eventMetadata={...eventMetadata,EventChannels:[{id:null,eventId:null,channelUniqueName:null}]};
+// @ts-expect-error actual event registration cannot replace tag items with primitives
+const metadataWrongTag:ViewerReadQueryResolvers['getEventComments']=()=>({Event:{...eventMetadata,Tags:[17]},Comments:[]});
+void [metadataEmail,metadataPosterName,metadataMissingChannel,metadataWrongTag];

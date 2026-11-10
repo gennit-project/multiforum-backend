@@ -1,3 +1,4 @@
+import type {EventMetadataSelection} from "./eventMetadataSource.js";
 import type { DetailSourceSelection } from "./discussionDetailSources.js";
 import type { RawSelectedResolver } from "./rawSelectedSource.js";
 import type { QueryResolvers } from "../../src/generated/graphql.js";
@@ -14,7 +15,7 @@ export type ViewerReadQueryResolvers = {
   getEventComments: SelectedResolver<QueryResolvers<GraphQLContext>["getEventComments"], {
     Event:{id:true;SubscribedToNotifications:{username:true};SubscribedToEventUpdates:{username:true}};
     Comments:typeof viewerCommentSelection;
-  }>;
+  }> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getEventComments"],{Event:EventMetadataSelection}>;
   getDiscussionDetail: SelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetail"], {
     id:true;isFavorited:true;DiscussionChannels:{discussionId:true;channelUniqueName:true;UpvotedByUsers:{username:true};SuperUpvotedByUsers:{username:true}};
   }> & RawSelectedResolver<QueryResolvers<GraphQLContext>["getDiscussionDetail"],DetailSourceSelection>;

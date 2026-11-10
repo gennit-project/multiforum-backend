@@ -1,3 +1,4 @@
+import {canonicalEventMetadata} from "../../services/canonicalEventMetadata.js";
 import { canonicalEventComment } from "../../services/customCommentSources.js";
 import type { EventViewerMetadata, EventViewerComment } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -72,7 +73,7 @@ const getResolver = (input: Input) => {
         });
 
         return {
-          Event: event,
+          Event: canonicalEventMetadata(event),
           Comments: commentsResult.records.map((record) => canonicalEventComment(record.get("comment"))),
         };
       });

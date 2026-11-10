@@ -3,8 +3,7 @@ import type { DiscussionListFlair } from "./discussionListFlairs.js";
 export type { DiscussionListFlair } from "./discussionListFlairs.js";
 import type { Integer } from "neo4j-driver";
 /** Fixed Cypher expression provenance, not full persisted entity contracts.
- * Unknown keys intentionally preserve GraphQL's lazy scalar completion. */
-type Persisted = Record<string, unknown>;
+ * Unknown persisted leaves preserve GraphQL's lazy scalar completion. */
 export type ViewerIdentity = { username: string };
 export type ViewerComment = CustomViewerComment;
 export type ReplyViewerComment = CustomReplyComment;
@@ -12,11 +11,7 @@ export type RootViewerComment = CustomRootComment;
 export type EventViewerComment = CustomEventComment;
 export type CommentRepliesRow = { ChildComments: ReplyViewerComment[]; aggregateChildCommentCount: Integer };
 export type CommentSectionChannel = CustomCommentSectionChannel;
-export type EventViewerMetadata = Persisted & {
-  id: string;
-  SubscribedToNotifications: ViewerIdentity[];
-  SubscribedToEventUpdates: ViewerIdentity[];
-};
+export type {EventMetadataSource as EventViewerMetadata} from './eventMetadataSource.js';
 export type {DetailCore as DiscussionViewerCore,DetailChannel as DiscussionViewerChannel,DetailSource as DiscussionViewerDetail} from './discussionDetailSources.js';
 /** Exact maps emitted by getDiscussionChannelsQuery.cypher. Persisted leaves
  * deliberately remain unknown; only query-computed values are narrowed. */

@@ -268,6 +268,7 @@ export default {
   Comment: resolveCanonicalSourceField,
   ModerationProfile: resolveCanonicalSourceField,
   Event: resolveCanonicalSourceField,
+  EventChannel: resolveCanonicalSourceField,
   TextVersion: resolveCanonicalSourceField,
   CommentChildCommentsConnection: resolveCanonicalSourceField,
   CommentCommentChildCommentsAggregateSelection: resolveCanonicalSourceField,
