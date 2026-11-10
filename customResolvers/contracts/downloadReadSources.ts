@@ -1,3 +1,4 @@
+import type { UploadedItemSource } from './storedUploadSources.js';
 import type { QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { SelectedResolver } from "./selection.js";
@@ -5,6 +6,6 @@ import type { SelectedResolver } from "./selection.js";
 // Nested discussion/file properties remain unknown and are completed lazily.
 export const downloadReadSourceQueryNames = ["getUploadedDownloadableFiles", "getDownloadScanReviewQueue"] as const;
 export type DownloadReadSourceQueryResolvers = {
-  getUploadedDownloadableFiles: SelectedResolver<QueryResolvers<GraphQLContext>["getUploadedDownloadableFiles"], { files: { uploadedByUsername: true } }>;
+  getUploadedDownloadableFiles: SelectedResolver<QueryResolvers<GraphQLContext>["getUploadedDownloadableFiles"], { files: { uploadedByUsername: true } }> & UploadedItemSource;
   getDownloadScanReviewQueue: SelectedResolver<QueryResolvers<GraphQLContext>["getDownloadScanReviewQueue"], { scanStatus: true }>;
 };

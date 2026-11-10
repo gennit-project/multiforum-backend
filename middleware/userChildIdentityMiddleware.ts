@@ -327,6 +327,8 @@ export default {
   // Explicitly marked owned projection maps retain canonical source keys.
   // Unmarked generated objects pass through with their response aliases intact.
   ImageAlbumUsage: resolveCanonicalSourceField,
+  UploadedDownloadableFileGroup: resolveCanonicalSourceField,
+  UploadedDownloadableFileDiscussion: resolveCanonicalSourceField,
   DiscussionChannelListItem: resolveCanonicalSourceField,
   SiteWideDiscussionListItem: resolveCanonicalSourceField,
   Comment: resolveCanonicalSourceField,

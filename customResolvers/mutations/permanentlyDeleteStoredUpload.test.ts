@@ -16,6 +16,7 @@ type TargetRecord = {
 
 const buildRecord = (values: Record<string, unknown>) => ({
   keys: Object.keys(values),
+  toObject: () => ({...values}),
   get: (key: string) => values[key],
 });
 

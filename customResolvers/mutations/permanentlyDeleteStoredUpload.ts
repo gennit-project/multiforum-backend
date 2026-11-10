@@ -1,3 +1,5 @@
+import type { RemovedUploadColumns } from '../contracts/storedUploadSources.js';
+import { rememberCanonicalSource } from '../../services/canonicalSourceFields.js';
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -30,16 +32,7 @@ type StoredUploadTarget = StoredObjectMetadata & {
   discussionAuthorUsernames: string[];
 };
 
-// Only MATCH/SET-derived columns have known value types. Other returned node
-// properties retain their actual raw values and lazy GraphQL completion behavior.
-export type RemovedUploadColumns = {
-  [column: string]: unknown;
-  id: string;
-  permanentlyRemoved: true;
-  permanentlyRemovedAt: string;
-  permanentlyRemovedByUsername: string;
-  permanentlyRemovedByModName: string | null;
-};
+export type { RemovedUploadColumns } from '../contracts/storedUploadSources.js';
 
 type Args = {
   imageId?: string;
@@ -274,16 +267,9 @@ const markStoredUploadRemoved = async ({
         throw new GraphQLError("Upload not found");
       }
 
-      return {
-        ...Object.fromEntries(record.keys.map((key) => [key, record.get(key)])),
-        // Re-expose the proven columns after fromEntries erases their types.
-        // Read the actual returned values rather than substituting constants.
-        id: record.get("id"),
-        permanentlyRemoved: record.get("permanentlyRemoved"),
-        permanentlyRemovedAt: record.get("permanentlyRemovedAt"),
-        permanentlyRemovedByUsername: record.get("permanentlyRemovedByUsername"),
-        permanentlyRemovedByModName: record.get("permanentlyRemovedByModName"),
-      };
+      // Neo4j's typed record preserves every actual selected column, including
+      // null values; do not erase the projection through Object.fromEntries.
+      return record.toObject();
   });
 };
 
@@ -339,10 +325,10 @@ const getResolver = ({
       modProfileName,
     });
 
-    return {
+    return rememberCanonicalSource({
       ...removed,
       storageDeletion,
-    };
+    });
   };
 };
 

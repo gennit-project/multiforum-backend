@@ -1,3 +1,4 @@
+import type { StoredUploadMutationSources } from './storedUploadSources.js';
 import type { MutationResolvers, QueryResolvers } from "../../src/generated/graphql.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { SelectedResolver } from "./selection.js";
@@ -8,7 +9,7 @@ export const accountWriteSourceMutationNames = ["permanentlyRemoveImage","perman
 export const accountWriteSourceQueryNames = ["getChannelDiscussionFlairConfig"] as const;
 export type AccountWriteSourceMutationResolvers = {
  permanentlyRemoveImage: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyRemoveImage"],{id:true;isOpen:true}>;
- permanentlyDeleteImage: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyDeleteImage"],typeof removedDownloadSelection>;
+ permanentlyDeleteImage: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyDeleteImage"],typeof removedDownloadSelection> & StoredUploadMutationSources["permanentlyDeleteImage"];
  permanentlyDeleteProfileImage: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyDeleteProfileImage"],{username:true;profilePicURL:true}>;
  permanentlyDeleteChannelIcon: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyDeleteChannelIcon"],{uniqueName:true;channelIconURL:true}>;
  permanentlyDeleteChannelBanner: SelectedResolver<MutationResolvers<GraphQLContext>["permanentlyDeleteChannelBanner"],{uniqueName:true;channelBannerURL:true}>;

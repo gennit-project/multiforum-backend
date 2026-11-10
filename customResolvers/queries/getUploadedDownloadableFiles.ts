@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from '../../services/canonicalSourceFields.js';
 import type { UploadedGroupRow } from "../contracts/downloadReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
@@ -76,7 +77,13 @@ const getUploadedDownloadableFiles = ({
         { username: args.username, mayAccessSensitiveContent: canViewSensitiveContent }
       );
 
-      return result.records.map((record) => record.get("group"));
+      return result.records.map((record) => {
+        const group = record.get("group");
+        rememberCanonicalSource(group);
+        rememberCanonicalSource(group.discussion);
+        group.files.forEach(rememberCanonicalSource);
+        return group;
+      });
     } finally {
       await session.close();
     }

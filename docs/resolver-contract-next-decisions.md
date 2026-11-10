@@ -948,3 +948,36 @@ missing targets and lazy malformed storage data. Actual write-result guards fail
 when either uploader or album return expression is removed from the executed
 query. No storage, permission, relationship, transaction or schema change is made;
 this closes this fixed-child producer obligation without changing inventory counts.
+
+### Stored-upload listing and deletion producers
+
+The audit corrected an earlier classification: permanent image/file deletion does
+not return arbitrary native node properties. Its queries return nine image columns
+or 35 file columns. Those explicit raw projections now replace the open index
+signature, with the existing proven removal assignments retained. The shared
+factory honestly returns their union; it does not claim file-only columns on an
+image result. Both registrations require the common selected keys. Typed Neo4j
+`toObject()` preserves the actual columns without the type-erasing fromEntries
+adapter. Source fixtures reject omitted nullable columns and invented relationships.
+
+`getUploadedDownloadableFiles` now checks its fixed discussion map and four file
+property/date guarantees at the actual root registration. Its `file { .* }`
+portion remains a native-property scalar boundary, not a complete DownloadableFile
+entity. No nested user/relationship objects are fetched or promised.
+
+Three baseline GraphQL probes reproduced source/response-alias collisions in the
+listing and both deletion results. Only these owned maps receive canonical-key
+metadata. Ten new integration cases cover complete columns, aliases/fragments,
+skipped malformed leaves, owner/outsider/anonymous access and persisted deletion;
+28 existing download integration cases and 11 deletion unit cases also pass.
+Removing a selected column from either deletion branch, a discussion key or a
+file-date override makes its executed-query guard fail. Storage IO still uses only
+local seams in tests, and deletion ordering, rollback/failure semantics, scalar
+completion and public schema are unchanged. Inventory remains 178 / 31.
+
+At this checkpoint the fixed contribution, created-image child and stored-upload
+producer obligations above are closed. The 23 shared Issue-producing registrations
+remain under audit. The custom-field census found the typed `User.Collections`
+producer plus the previously listed fallback/JSON/scalar fields; it did not reveal
+another open fixed-map activity producer. This census alone is not permission to
+promote the shared-list entries or claim their upstream dynamic items complete.
