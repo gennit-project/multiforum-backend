@@ -57,3 +57,13 @@ const invalidDiagnosticContainer:typeof projectedJob={...projectedJob,diagnostic
 // @ts-expect-error raw diagnostic values cannot be used as known strings
 const diagnosticText:string=projectedJob.diagnostics[0];
 void [parsedDiagnostics,certifiedDiagnostics,invalidDiagnosticContainer,diagnosticText];
+
+import {internalAttemptSource,internalJobSource,pipelineHistorySource,downloadHistorySource} from '../../customResolvers/contracts/internalPipelineSources.js';
+// @ts-expect-error fixed internal attempt projections require selected nullable keys too
+internalAttemptSource({id:'attempt'});
+// @ts-expect-error fixed internal job projections require selected private fields too
+internalJobSource({id:'job'});
+// @ts-expect-error history sources are selected projections rather than arbitrary maps
+pipelineHistorySource({id:'job'});
+// @ts-expect-error download history projections cannot omit nullable field keys
+downloadHistorySource({id:'job'});

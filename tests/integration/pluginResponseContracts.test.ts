@@ -1,3 +1,6 @@
+import {createPipelineHistoryRepository} from '../../services/persistence/pipelineHistoryRepository.js';
+import {createPipelineDetailRepository} from '../../services/persistence/pipelineDetailRepository.js';
+import {pipelineHistorySelection,downloadHistorySelection,internalAttemptSelection,internalJobSelection} from '../../customResolvers/contracts/plugins.js';
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -7,6 +10,7 @@ import type { Driver } from "neo4j-driver";
 import typeDefs from "../../typeDefs.js";
 import getResolvers from "../helpers/getTestResolvers.js";
 import permissions from "../../permissions.js";
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { startNeo4j, stopNeo4j, resetDatabase } from "./neo4jHarness.js";
 
@@ -16,7 +20,7 @@ before(async () => {
   schema = await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,
     features:{filters:{String:{MATCHES:true}}}}).getSchema();
   registerGeneratedSchema(driver,schema);
-  secured=applyMiddleware(schema,permissions);
+  secured=applyMiddleware(schema,sourceIdentity,permissions);
 },{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>resetDatabase(driver));
@@ -125,4 +129,45 @@ test('trackDownload and support settings return actual Boolean results and prese
   assert.equal(Number(row.get('total')),2);assert.equal(Number(row.get('unique')),1);assert.equal(row.get('attribution'),'Author');
   assert.ok((await execute('mutation {trackDownload(downloadableFileId:"missing",discussionId:"discussion")}')).errors);
   assert.ok((await execute('mutation {updateDownloadableFileSupportSettings(downloadableFileId:"missing",discussionId:"discussion",input:{})}')).errors);
+});
+
+async function pluginManager(t:import('node:test').TestContext){
+ const previous=process.env.SERVER_CONFIG_NAME;process.env.SERVER_CONFIG_NAME='pipeline-source-fixture';
+ t.after(()=>{if(previous===undefined)delete process.env.SERVER_CONFIG_NAME;else process.env.SERVER_CONFIG_NAME=previous;});
+ await driver.executeQuery("MATCH(u:User{username:'actor'}) CREATE(s:ServerConfig{serverName:'pipeline-source-fixture'}),(s)-[:HAS_DEFAULT_SERVER_ROLE]->(:ServerRole{canManagePlugins:false}),(s)-[:HAS_DEFAULT_ADMIN_ROLE]->(:ServerRole{canManagePlugins:true}),(u)-[:ADMIN_OF_SERVER]->(s)");
+}
+for(const operation of histories)test(`${operation}: authorized aliases preserve job identity and deny anonymous reads`,async(t)=>{
+ await seed();await pluginManager(t);const source=`{result:${operation}{status:id id:status message:payload payload:message}}`;
+ assert.deepEqual(plain(await execute(source,true)).result,[{status:'job',id:'SUCCEEDED',message:'private payload',payload:'private message'}]);
+ assert.ok((await execute(source,true,false)).errors?.length);
+ await driver.executeQuery('MATCH(:User)-[r:ADMIN_OF_SERVER]->() DELETE r');assert.ok((await execute(source,true)).errors?.length);
+});
+test('internal pipeline detail aliases retain owned envelope and fixed child identities',async(t)=>{
+ await seed();await pluginManager(t);
+ const source='{result:getInternalPluginPipelineRun(pipelineRunId:"attempt"){jobs:attempt{status:id id:status} attempt:jobs{status:id id:status}}}';
+ assert.deepEqual(plain(await execute(source,true)).result,{jobs:{status:'attempt',id:'SUCCEEDED'},attempt:[{status:'job',id:'SUCCEEDED'}]});
+ assert.ok((await execute(source,true,false)).errors?.length);
+ await driver.executeQuery('MATCH(:User)-[r:ADMIN_OF_SERVER]->() DELETE r');assert.ok((await execute(source,true)).errors?.length);
+});
+
+test('fixed pipeline history and internal detail documents retain all selected keys',async()=>{
+ await seed();const history=createPipelineHistoryRepository(driver),detail=createPipelineDetailRepository(driver);
+ for(const [rows,selection] of [
+  [await history.findPipelineHistory('file','DownloadableFile'),pipelineHistorySelection],
+  [await history.findDownloadHistory('file'),downloadHistorySelection],
+  [await detail.findInternalAttempt('attempt'),internalAttemptSelection],
+  [await detail.findInternalJobs('pipeline'),internalJobSelection],
+ ] as const){assert.equal(rows.length,1);assert.deepEqual(Object.keys(rows[0]).sort(),Object.keys(selection).sort());}
+});
+
+test('internal detail fragments and skipped fields retain nullable selected values',async(t)=>{
+ await seed();await pluginManager(t);
+ const source='query($skip:Boolean!){result:getInternalPluginPipelineRun(pipelineRunId:"attempt"){...Attempt skipped:jobs @skip(if:$skip){id}}} fragment Attempt on InternalPluginPipelineRunDetail {jobs:attempt{status:id id:status ended:finishedAt}}';
+ const result=await graphql({schema:secured,source,variableValues:{skip:true},contextValue:{driver,req:{headers:{}},user}});
+ assert.deepEqual(plain(result).result,{jobs:{status:'attempt',id:'SUCCEEDED',ended:null}});
+});
+test('internal generated pipeline-node selections retain their own response keys',async()=>{
+ await seed();const source='{jobs:pluginRuns{status:id id:status} attempts:pluginPipelineRuns{status:id id:status}}';
+ const result=await graphql({schema:applyMiddleware(schema,sourceIdentity),source,contextValue:{driver}});
+ assert.deepEqual(plain(result),{jobs:[{status:'job',id:'SUCCEEDED'}],attempts:[{status:'attempt',id:'SUCCEEDED'}]});
 });

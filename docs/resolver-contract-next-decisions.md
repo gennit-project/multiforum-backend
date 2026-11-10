@@ -1199,3 +1199,22 @@ contribution, image/upload, native Issue, issue-list, dashboard, read-envelope a
 campaign producer batches above are complete at their documented selected scope.
 Dynamic generated selections, native raw leaves, spatial values, JSON internals
 and the unchanged product questions remain separately documented limits.
+
+### Internal pipeline detail and history sources
+
+Three real-schema/Shield probes reproduced alias collisions in authorized
+`getPipelineRuns`, `getPluginRunsForDownloadableFile` and
+`getInternalPluginPipelineRun` results. Explicit adapters now copy only their
+fixed selected fields into owned canonical maps; the internal envelope is marked
+separately. This does not grant public access to telemetry. Tests retain admin
+success, anonymous/ordinary-user denial, fragments/skips, nullable values and
+unmarked dynamic generated selections. Existing upstream projection failures and
+repository order/filter/snapshot tests remain intact.
+
+An executed-result key guard covers all four history/internal documents, including
+nullable keys; deliberately removing configurationSnapshot or durationMs from the
+actual documents fails it. Negative type fixtures reject incomplete fixed-source
+inputs. Native JSON and generated timestamp scalar internals are not certified.
+This closes these three producer obligations without changing the 180/29 boundary
+accounting. The next finite pipeline group is start/rerun/retry/trigger mutation
+results; installation/configuration and account/configuration maps remain after it.
