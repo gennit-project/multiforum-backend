@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import {sharedListSources} from "../tests/helpers/sharedListSources.js";
 import {readFileSync} from "node:fs";
 import test from "node:test";
 import ts from "typescript";
@@ -30,6 +31,7 @@ test("opaque list sources check actual generated registrations without promoting
   }
  }
  assert.equal(names.length,18);
+ assert.deepEqual(sharedListSources.map(source=>`${source.parent}.${source.field}`).sort(),names.sort(),"Every opaque registration needs its generated-source probe; stale or missing probes are not coverage");
  const inventory=JSON.parse(readFileSync('docs/resolver-contract-inventory.json','utf8')) as {fields:{field:string;status:string}[]};
  for(const name of names)assert.equal(inventory.fields.find(r=>r.field===name)?.status,'deferred');
 });

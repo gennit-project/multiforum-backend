@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {sharedListSources as sources,type GeneratedListSource} from '../helpers/sharedListSources.js';
 import {before,after,beforeEach,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql,getNamedType,isObjectType,valueFromASTUntyped,type GraphQLSchema} from 'graphql';
@@ -13,13 +14,7 @@ let driver:Driver,schema:GraphQLSchema;
 before(async()=>{driver=await startNeo4j();const raw=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers}).getSchema();schema=applyMiddleware(raw,middleware,permissions);},{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>resetDatabase(driver));
-const sources=[
- ...['Admins','Bots','Comments','DiscussionChannels','EventChannels','InCollections','Moderators','PendingModInvites','PendingOwnerInvites','PinnedDiscussionChannels','PinnedWikiPages','RelatedChannels','SuspendedMods','SuspendedUsers','Tags'].map(field=>({parent:'Channel',root:'channels',key:'uniqueName',field})),
- {parent:'Album',root:'albums',key:'id',field:'Images'},
- {parent:'Comment',root:'comments',key:'id',field:'SuperUpvotedByUsers'},
- {parent:'DiscussionChannel',root:'discussionChannels',key:'id',field:'SuperUpvotedByUsers'},
-];
-function definition(source:typeof sources[number]){
+function definition(source:GeneratedListSource){
  const type=schema.getType(source.parent);assert.ok(isObjectType(type));
  const target=getNamedType(type.getFields()[source.field].type);assert.ok(isObjectType(target));
  const key=target.name==='User'?'username':target.name==='ModerationProfile'?'displayName':target.name==='Channel'?'uniqueName':target.name==='Tag'?'text':'id';
@@ -31,7 +26,7 @@ function definition(source:typeof sources[number]){
  assert.equal(typeof relationType,'string');assert.ok(direction==='IN'||direction==='OUT');
  return {target:target.name,key,relationType,direction};
 }
-async function seed(source:typeof sources[number]){
+async function seed(source:GeneratedListSource){
  const d=definition(source);
  await driver.executeQuery(`CREATE(root:${source.parent}{${source.key}:'root',createdAt:datetime()})
  WITH root UNWIND ['first','second'] AS value
@@ -62,7 +57,7 @@ for(const source of sources){
   const selected=await graphql({schema,source:query,variableValues:{show:true},contextValue:context(null)});assert.ok(selected.errors?.some(error=>error.path?.includes('bad')));
  });
 }
-const userSources=[...sources.filter(s=>['Admins','Bots','PendingModInvites','PendingOwnerInvites','SuperUpvotedByUsers'].includes(s.field)),{parent:'Comment',root:'comments',key:'id',field:'UpvotedByUsers'},{parent:'DiscussionChannel',root:'discussionChannels',key:'id',field:'UpvotedByUsers'}];
+const userSources=[...sources.filter(s=>['Admins','Bots','PendingModInvites','PendingOwnerInvites','SuperUpvotedByUsers'].includes(s.field)),{parent:'Comment',root:'comments',key:'id',field:'UpvotedByUsers'},{parent:'DiscussionChannel',root:'discussionChannels',key:'id',field:'UpvotedByUsers'}] satisfies GeneratedListSource[];
 for(const source of userSources)test(`${source.parent}.${source.field}: generated User source retains protected-child identity`,async()=>{
  await seed(source);
  const result=await graphql({schema,source:`{${source.root}(where:{${source.key}:{eq:"root"}}){${source.field}(sort:[{username:ASC}]){username:bio contact:Email{address}}}}`,contextValue:context('first')});
@@ -94,7 +89,7 @@ for(const source of voterSources){
   assert.equal(malformed.errors?.length,2);assert.deepEqual(plain(malformed.data),{[source.root]:[{[source.field]:[{contact:null},{contact:null}]}]});
  });
 }
-for(const field of ['UpvotedByUsers','SuperUpvotedByUsers'])test(`Comment.${field}: selected reply chain retains voter identity`,async()=>{
+for(const field of ['UpvotedByUsers','SuperUpvotedByUsers'] as const)test(`Comment.${field}: selected reply chain retains voter identity`,async()=>{
  await seed({parent:'Comment',root:'comments',key:'id',field});
  await driver.executeQuery("CREATE(:Comment{id:'parent',createdAt:datetime()})");
  // Use the schema's actual reply relationship to avoid relying on naming conventions.

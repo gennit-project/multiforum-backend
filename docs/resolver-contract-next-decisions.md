@@ -698,3 +698,15 @@ coverage, not persistence values, authorization, completeness of the registratio
 catalog or arbitrary generated result shapes. Author-union paths keep their
 separate discriminator machinery. Existing real query source tests remain the
 behavioral evidence; no inventory entry is promoted by this declaration check.
+
+### Shared-list probe manifest and registration drift
+
+All 18 generated-root probes now come from one manifest checked against generated
+schema list keys, matching parent/root identities and the actual
+`emptyArrayFallback` registrations. CI rejects missing, stale or duplicate probes;
+removing one manifest entry was verified to fail the real registration guard.
+Compile-negative fixtures reject scalar/JSON fields and mismatched roots. The same
+manifest drives the real GraphQL suite, so the guard protects executed coverage
+rather than a disconnected checklist. Per-field audit evidence records these
+checks while retaining each unresolved item/provenance obligation and the unchanged
+178 selected / 31 deferred accounting.
