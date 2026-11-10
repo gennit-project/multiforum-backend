@@ -249,3 +249,17 @@ The subsequent internal-source metadata slice covers the fixed scratchpad read
 and other explicit internal comments/issues roots. Other custom/nested sources
 remain outside these registrations; this is not global union certification.
 Inventory remains 176 selected / 33 deferred; neither pending policy is changed.
+
+### Issue target-user selected child identity
+
+The two direct `Issue.TargetUser` and `Issue.TargetProfilePictureUser` sources now
+carry private identity dependencies on public `issues` and `issuesConnection`
+reads when a protected User child is selected. Real GraphQL/Shield/database probes
+first reproduced permitted owner Email reads failing when username was omitted.
+`issueTargetUserSources.test.ts` covers both target relations, list/connection
+aliases, fragments, directive defaults, owner/non-owner/anonymous access, null and
+missing targets, pagination and local scalar failures. Public aliases cannot
+replace the identity used by the child permission rule. This is an explicit
+source-path guarantee, not arbitrary descendant or whole-User certification;
+accounting stays 176 selected / 33 deferred. Internal fixed projections and both
+pending product policies are unchanged by this slice.
