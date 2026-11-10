@@ -642,3 +642,21 @@ internal reads still validate their own selections even when the outer caller
 omits those fields. This closes another owned-producer gap without changing that
 behavior, inflating the inventory or declaring all dynamic Album.Images sources
 complete. Existing profile visibility/filter regressions remain required.
+
+### Generated shared-list source matrix
+
+The 18 remaining shared lists now have executable generated-source probes through
+Neo4j, GraphQL and Shield: independent aliases and filters, ordering/pagination,
+empty lists, fragments/directives, and selected versus unrequested malformed
+persisted fields. This characterizes generated execution rather than asserting
+that arbitrary dynamic results have complete static object types.
+
+The voter-source checks also require selection-aware private identity on regular
+and super-voter lists from comment and discussion-channel query roots, including
+connections. Comment reply paths reuse the finite selected-document traversal;
+internal author-only discovery remains unchanged. Owner, unrelated and anonymous
+access, omitted usernames and raw identity comparisons remain explicit test gates.
+No public schema, vote persistence, voter ordering or permission rule changes are
+intended. Other nested producers still require reconciliation; passing root-source
+probes do not close every shared-field contract. Inventory remains 178 selected /
+31 deferred, including the 18 shared-list gates.
