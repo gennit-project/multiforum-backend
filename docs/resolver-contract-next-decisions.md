@@ -929,3 +929,22 @@ unrelated and backing-account viewers. Together with existing contribution suite
 branch makes the executed-key guard fail. Permissions, date/age filters, counts,
 query shape and error ordering are unchanged. This closes the fixed moderation
 activity producer obligation; inventory remains 178 checked / 31 deferred.
+
+### Created-image uploader and album sources
+
+`createImageWithUploader` now checks the actual nullable Uploader username and
+Albums identity items in addition to generated image id/date. Fixed nullable keys
+must be present. Compile fixtures reject incomplete uploader maps, non-string
+album identities and invented album owners. Unrelated persisted image properties
+remain raw; this is not a whole-Image completion claim.
+
+The owned create result now preserves canonical field names and private uploader
+identity. After correcting the permission fixture, baseline probes reproduce a
+stored image value replacing an aliased field and an album id replacing a nullable
+list, causing GraphQL's Iterable error. The metadata fix preserves selected field
+meaning without fetching absent uploader/album data. The 13 response cases and
+seven repository cases pass, including existing claims, fallbacks, write failures,
+missing targets and lazy malformed storage data. Actual write-result guards fail
+when either uploader or album return expression is removed from the executed
+query. No storage, permission, relationship, transaction or schema change is made;
+this closes this fixed-child producer obligation without changing inventory counts.

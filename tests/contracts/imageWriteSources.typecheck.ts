@@ -14,3 +14,15 @@ const bad:CreatedImageSource={...image,id:4};
 // @ts-expect-error non-null root cannot return an absent creation row
 const missing:ImageWriteSourceMutationResolvers['createImageWithUploader']=async()=>undefined;
 void [contracts,storage,flag,bad,missing];
+
+// @ts-expect-error selected uploader identity cannot be omitted
+const shortUploader:ImageWriteSourceMutationResolvers['createImageWithUploader']=async()=>({id:'i',createdAt:'date',Uploader:{},Albums:[]});
+// @ts-expect-error returned album identity must be a completed string
+const badAlbum:ImageWriteSourceMutationResolvers['createImageWithUploader']=async()=>({id:'i',createdAt:'date',Uploader:null,Albums:[{id:42}]});
+// @ts-expect-error unselected album owner remains unavailable
+const owner=image.Albums[0].Owner;
+void [shortUploader,badAlbum,owner];
+
+// @ts-expect-error owned nullable Uploader key is always present
+const absentUploader:ImageWriteSourceMutationResolvers['createImageWithUploader']=async()=>({id:'i',createdAt:'date',Albums:[]});
+void absentUploader;

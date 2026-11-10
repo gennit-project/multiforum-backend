@@ -1,3 +1,5 @@
+import { rememberCanonicalSource } from '../canonicalSourceFields.js';
+import { rememberAccountChildIdentity } from '../accountChildIdentity.js';
 import type { ProfileImageProjection, ChannelIconProjection } from "../../customResolvers/contracts/accountProjections.js";
 import neo4j, { type Driver, type Node, type EagerResult } from "neo4j-driver";
 import type { UserUpdateInput, ChannelUpdateInput } from "../../ogm_types.js";
@@ -190,6 +192,15 @@ export function createImageCreationRepository(driver: Driver): ImageCreationRepo
     image.Albums = (record.get("albumIds") ?? [])
       .filter((id): id is string => typeof id === "string")
       .map((id) => ({ id }));
+    // Only this owned write emits canonical node-property and fixed child maps.
+    // Keep selected-field aliases separate from source identity without fetching
+    // unselected uploader/album data or validating unrelated stored properties.
+    rememberCanonicalSource(image);
+    if (image.Uploader) {
+      rememberCanonicalSource(image.Uploader);
+      rememberAccountChildIdentity(image.Uploader, image.Uploader.username);
+    }
+    image.Albums.forEach(rememberCanonicalSource);
     return { images: [image] };
   },
  };
