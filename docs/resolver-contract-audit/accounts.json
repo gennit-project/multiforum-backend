@@ -48,7 +48,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
@@ -63,7 +66,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
@@ -114,7 +120,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
@@ -129,7 +138,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
@@ -180,7 +192,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."
@@ -195,7 +210,10 @@
       "evidence": [
         "customResolvers/contracts/accounts.ts",
         "tests/contracts/accounts.typecheck.ts",
-        "tests/integration/accountResponseContracts.test.ts"
+        "tests/integration/accountResponseContracts.test.ts",
+        "customResolvers/contracts/serverMembershipSource.d.ts",
+        "tests/contracts/serverMembershipSource.typecheck.ts",
+        "tests/integration/serverMembershipSourceContracts.test.ts"
       ],
       "reason": "Generated signature is checked at actual factory implementation fixture; parent wires equivalent actual composition check. Exact entity projections use schema-executing generated-operation adapter, not unchecked raw object casts.",
       "decision": "No schema or behavior change. Wire exported contract map at actual composition registration."

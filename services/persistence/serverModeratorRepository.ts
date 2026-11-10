@@ -2,7 +2,7 @@ import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { SERVER_MEMBERSHIP_SELECTION } from "./serverMembershipSelections.js";
 
-type UpdatedServers = {serverConfigs: unknown[]};
+import type {ServerMembershipWriteResult as UpdatedServers} from '../../customResolvers/contracts/serverMembershipSource.js';
 export interface ServerModeratorRepository {
  findModeratorProfile(username: string | null | undefined): Promise<Array<{ModerationProfile?: {displayName: string} | null}>>;
  findPendingInvites(serverName: string): Promise<Array<{PendingModInvites: Array<{username:string}>}>>;

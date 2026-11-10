@@ -1,3 +1,4 @@
+import {serverMembershipConfig} from '../../../tests/helpers/serverMembershipSource.js';
 import {forumMembershipChannel} from "../../../tests/helpers/forumMembershipSource.js";
 import assert from "node:assert/strict";
 import test, { before, after, afterEach, mock } from "node:test";
@@ -63,8 +64,8 @@ for(const [name,factory] of Object.entries({inviteForumOwner,inviteForumMod,invi
     },
     serverInvitationRepository:{
      findInvitee:async()=>{order.push("exists");return[{username:"recipient"}];},
-     connectAdminInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
-     connectModeratorInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
+     connectAdminInvite:async()=>{order.push("invite");return{serverConfigs:[serverMembershipConfig()]};},
+     connectModeratorInvite:async()=>{order.push("invite");return{serverConfigs:[serverMembershipConfig()]};},
     },
     emailDelivery:{emailNotificationRepository:repository,sendMail:async()=>{order.push("email");return delivered;}},
    } as never);

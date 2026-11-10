@@ -795,3 +795,16 @@ fragments/directive variables, empty selections, omitted public identities and
 raw identity comparisons. The owner-access regression fails before this fix.
 This closes a concrete selected-source gap, not the whole RelatedChannels item
 contract. The 178 / 31 inventory and 18 unfinished shared-list gates are unchanged.
+
+### Fixed server membership write items
+
+The six server administrator/moderator acceptance, cancellation and invitation
+writes now retain their exact 25-field completed ServerConfig items instead of
+`unknown[]`. Selected nullable properties remain present. String arrays keep
+non-null elements; the three JSON fields retain unknown contents. Compile fixtures
+reject incomplete items, wrong completed scalar values and unselected moderators.
+Actual generated write selections and missing-target lists are checked through
+GraphQL and disposable Neo4j, alongside the existing relationship/event/failure
+regressions. No query, return/error behavior or inventory status changes.
+All 35 focused integration cases pass. Temporarily removing serverDescription from
+the actual executed document makes the selection guard fail; restoring it passes.

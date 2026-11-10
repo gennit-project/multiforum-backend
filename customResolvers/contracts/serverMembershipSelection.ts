@@ -1,0 +1,30 @@
+import type {ServerConfig} from '../../src/generated/graphql.js';
+import type {Selection} from './selection.js';
+/** Fixed completed write projection; retain all existing error-producing fields. */
+export const serverMembershipSelection={
+ serverName:true,
+ serverDescription:true,
+ serverIconURL:true,
+ allowedFileTypes:true,
+ featuredWikiPageIds:true,
+ enableDownloads:true,
+ enableEvents:true,
+ accountAgeGateEnabled:true,
+ minimumAccountAge:true,
+ sensitiveContentAgeGateEnabled:true,
+ minimumSensitiveContentAge:true,
+ brandingProductName:true,
+ brandingDocsURL:true,
+ brandingSourceURL:true,
+ brandingIssuesURL:true,
+ brandingSupportEmail:true,
+ brandingShowUpstreamLinks:true,
+ brandingLogoDarkURL:true,
+ brandingLogoAlt:true,
+ brandingFaviconURL:true,
+ brandingPrimaryColor:true,
+ pluginRegistries:true,
+ rules:true,
+ brandingCustomFooterLinks:true,
+ pluginPipelines:true,
+} as const satisfies Selection<ServerConfig>;
