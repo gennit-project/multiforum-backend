@@ -87,3 +87,28 @@ test('asset identity keeps requested scalar failures local to the selected field
     await driver.executeQuery("MATCH(u:User{username:'alice'}) SET u.bio='alice'");
   }
 });
+
+for (const field of ['Uploader', 'PermanentlyRemovedByUser']) for (const connection of [false, true]) for (const viewer of ['alice', 'outsider', null]) {
+  test(`album images ${field} preserves ${connection ? 'connection' : 'list'} protected identity for ${viewer ?? 'anonymous'}`, async () => {
+    await driver.executeQuery("MATCH(a:Album{id:'alice'}),(i:Image) WHERE i.id IN ['alice','bob','sensitive'] MERGE(a)-[:HAS_IMAGE]->(i)");
+    const selection = `pictures:Images(sort:[{id:ASC}]){id person:${field}{username:bio _accountIdentity:bio ...Private}}`;
+    const root = connection ? `page:albumsConnection(where:{id:{eq:"alice"}}){links:edges{entry:node{${selection}}}}` : `page:albums(where:{id:{eq:"alice"}}){${selection}}`;
+    const source = `query($show:Boolean!){${root}} fragment Private on User{contact:Email @include(if:$show){address}}`;
+    const response = await graphql({schema,source,variableValues:{show:true},contextValue:context(viewer)});
+    const pictures = ['alice','bob'].map(id=>({id,person:{username:'alice',_accountIdentity:'alice',contact:viewer===id?{address:id+'@asset.test'}:null}}));
+    assert.deepEqual(JSON.parse(JSON.stringify(response.data)),connection?{page:{links:[{entry:{pictures}}]}}:{page:[{pictures}]});
+    assert.equal(response.errors?.length,viewer==='alice'?1:2);
+    const skipped = await graphql({schema,source,variableValues:{show:false},contextValue:context(viewer)});
+    assert.equal(skipped.errors,undefined,JSON.stringify(skipped.errors));
+  });
+}
+
+test('album image sources preserve missing actors and raw identity without selected usernames', async()=>{
+  await driver.executeQuery("MATCH(a:Album{id:'alice'}),(i:Image{id:'orphan'}) MERGE(a)-[:HAS_IMAGE]->(i)");
+  await driver.executeQuery("MATCH(u:User{username:'bob'}) SET u.username=17.5");
+  try {
+    const response=await graphql({schema,source:'{albums(where:{id:{eq:"alice"}}){Images(where:{id:{in:["bob","orphan"]}},sort:[{id:ASC}]){id Uploader{Email{address}} PermanentlyRemovedByUser{Email{address}}}}}',contextValue:context('17.5')});
+    assert.equal(response.errors?.length,2);
+    assert.deepEqual(JSON.parse(JSON.stringify(response.data)),{albums:[{Images:[{id:'bob',Uploader:{Email:null},PermanentlyRemovedByUser:{Email:null}},{id:'orphan',Uploader:null,PermanentlyRemovedByUser:null}]}]});
+  } finally { await driver.executeQuery("MATCH(u:User) WHERE u.username=17.5 SET u.username='bob'"); }
+});

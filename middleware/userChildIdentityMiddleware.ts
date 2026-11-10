@@ -191,6 +191,8 @@ export const resolveUserConnectionWithChildIdentity = userChildIdentityAtPath(["
 
 const channelUserLists = ["Admins", "Bots", "PendingOwnerInvites", "PendingModInvites"] as const;
 
+const albumUserPaths = [["Owner"], ["Images", "Uploader"], ["Images", "PermanentlyRemovedByUser"]] as const;
+
 const serverUserLists = ["SuperAdmins", "Admins", "PendingAdminInvites", "PendingModInvites"] as const;
 
 /** Discover only declared identity paths along explicitly selected Comment reply edges.
@@ -311,8 +313,8 @@ export default {
     serverConfigsConnection: userChildIdentityAtPaths(serverUserLists.map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
     images: userChildIdentityAtPaths([{path: ["Uploader"]}, {path: ["PermanentlyRemovedByUser"]}]),
     imagesConnection: userChildIdentityAtPaths(["Uploader", "PermanentlyRemovedByUser"].map(field => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))),
-    albums: userChildIdentityAtPath(["Owner"]),
-    albumsConnection: userChildIdentityAtPath(["edges", "node", "Owner"], ["canonical", "canonical", "response"]),
+    albums: userChildIdentityAtPaths(albumUserPaths.map(path => ({path}))),
+    albumsConnection: userChildIdentityAtPaths(albumUserPaths.map(path => ({path: ["edges", "node", ...path], sourceKeys: ["canonical", "canonical", ...path.map((): "response" => "response")]}))),
     moderationProfiles: userChildIdentityAtPath(["BotUser"]),
     moderationProfilesConnection: userChildIdentityAtPath(["edges", "node", "BotUser"], ["canonical", "canonical", "response"]),
     wikiPages: userChildIdentityAtPaths(["OriginalAuthor", "VersionAuthor"].map(field => ({path: [field]}))),

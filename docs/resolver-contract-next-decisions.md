@@ -660,3 +660,14 @@ No public schema, vote persistence, voter ordering or permission rule changes ar
 intended. Other nested producers still require reconciliation; passing root-source
 probes do not close every shared-field contract. Inventory remains 178 selected /
 31 deferred, including the 18 shared-list gates.
+
+### Generated album image actors
+
+Generated album list and connection reads now carry private raw identity for the
+explicit `Images.Uploader` and `Images.PermanentlyRemovedByUser` paths, alongside
+the existing album owner. Real GraphQL/Shield probes cover independent source
+aliases, fragments/directives, owner/unrelated/anonymous callers, missing actors,
+omitted usernames, raw coercible identities and sensitive-image filtering.
+The fixed public collection projection has separate source evidence and remains
+covered. This does not certify every other producer of Album or Image; the shared
+`Album.Images` contract remains deferred pending that reconciliation.
