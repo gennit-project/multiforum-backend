@@ -7,8 +7,8 @@ export const scratchpadCommentCoreSelection={
  id:true,UpvotedByUsers:scratchpadUsernameSelection,SuperUpvotedByUsers:scratchpadUsernameSelection,
  DiscussionChannel:{discussionId:true,channelUniqueName:true},
 } as const satisfies Selection<Comment>;
-// Both author branches select their discriminator property so the existing
-// union resolver can distinguish a moderator from a User.
+// Both author payloads remain explicit. Internal source metadata determines
+// the union type independently of nullable names or the selected payload.
 export const scratchpadCommentSelection={...scratchpadCommentCoreSelection,
  CommentAuthor:{'... on User':scratchpadUsernameSelection,'... on ModerationProfile':{displayName:true}},
 } as const;

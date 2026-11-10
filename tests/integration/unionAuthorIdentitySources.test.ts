@@ -100,3 +100,29 @@ for (const { root, field } of authorSources) test(`${root} author dependencies p
     assert.deepEqual(JSON.parse(JSON.stringify(response.data)), { [root]: [], [root + 'Connection']: { totalCount: 0, edges: [] } });
   } finally { await driver.executeQuery(`MATCH(n:${root === 'comments' ? 'Comment' : 'Issue'}{id:'user'}) SET n.ageGateRestricted=false`); }
 });
+
+for (const { root, field } of authorSources) test(`${root} internal author reads preserve moderator type without name selection`, async () => {
+  const { executeGeneratedOperation } = await import('../../services/persistence/generatedSchemaOperations.js');
+  const result = await executeGeneratedOperation(driver, `{${root}(where:{id:{eq:"mod"}}){${field}{__typename ... on ModerationProfile{createdAt}}}}`, {});
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), { [root]: [{ [field]: { __typename: 'ModerationProfile', createdAt: '2026-01-01T00:00:00.000Z' } }] });
+});
+test('scratchpad internal source permits a nullable moderator display name', async () => {
+  const { createScratchpadRepository } = await import('../../services/persistence/scratchpadRepository.js');
+  await driver.executeQuery('MATCH(m:ModerationProfile) SET m.displayName=null');
+  try {
+    const rows = await createScratchpadRepository(driver).findCommentSource('mod');
+    assert.deepEqual(JSON.parse(JSON.stringify(rows[0].CommentAuthor)), { displayName: null });
+  } finally { await driver.executeQuery("MATCH(m:ModerationProfile) SET m.displayName='Moderator'"); }
+});
+
+for (const {root,field,union} of authorSources) for (const connection of [false,true]) test(`${root} internal ${connection ? 'connection' : 'list'} keeps aliases, fragments, nulls and filtered pages`, async () => {
+  const {executeGeneratedOperation} = await import('../../services/persistence/generatedSchemaOperations.js');
+  const source = connection
+    ? `query($show:Boolean!=true){page:${root}Connection(where:{id:{in:["mod","user"]}},sort:[{id:ASC}],first:1){links:edges{item:node{id actor:${field}{...AuthorFields}}}}}`
+    : `query($show:Boolean!=true){page:${root}(where:{id:{in:["mod","user"]}},sort:[{id:ASC}],limit:1){id actor:${field}{...AuthorFields}}}`;
+  const result = await executeGeneratedOperation(driver, source + ` fragment AuthorFields on ${union}{kind:__typename ... on ModerationProfile{username:displayName @include(if:$show)} ... on User{displayName:bio}}`, {});
+  const item = {id:'mod',actor:{kind:'ModerationProfile',username:'Moderator'}};
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), connection ? {page:{links:[{item}]}} : {page:[item]});
+  const skipped = await executeGeneratedOperation(driver, `query($hide:Boolean!=true){${root}(where:{id:{eq:"mod"}}){id ${field} @skip(if:$hide){__typename}}}`, {});
+  assert.deepEqual(JSON.parse(JSON.stringify(skipped)), {[root]:[{id:'mod'}]});
+});

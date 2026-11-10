@@ -65,7 +65,8 @@ async function state() {
     recipientNotifications: Number(row.get("recipientNotifications")), notifications: Number(row.get("notifications")),
     karma: row.get("karma").map((u: {username: string; karma: unknown}) => ({username:u.username,karma:Number(u.karma)})).sort((a: {username:string},b: {username:string})=>a.username.localeCompare(b.username)) };
 }
-test("moderator-author super-upvote serializes, notifies the selected recipient and awards no user karma", async () => {
+for (const displayName of ["Moderator", null]) test(`moderator-author super-upvote with ${displayName ?? "null name"} serializes, notifies the selected recipient and awards no user karma`, async () => {
+  await driver.executeQuery("MATCH(m:ModerationProfile) SET m.displayName=$displayName", {displayName});
   const result = await execute();
   assert.equal(result.errors, undefined, JSON.stringify(result.errors));
   assert.ok(result.data?.result);

@@ -1,8 +1,11 @@
 import { graphql, type GraphQLSchema } from "graphql";
 import type { Driver, ManagedTransaction, Transaction } from "neo4j-driver";
 
+import { withInternalAuthorSources } from "./internalAuthorSources.js";
+
 type RegisteredSchema = {
   schema: GraphQLSchema;
+  internalSchema: GraphQLSchema;
   database: string | undefined;
 };
 const registeredSchemas = new WeakMap<Driver, RegisteredSchema>();
@@ -13,7 +16,7 @@ export function registerGeneratedSchema(
   schema: GraphQLSchema,
   database?: string
 ): void {
-  registeredSchemas.set(driver, { schema, database });
+  registeredSchemas.set(driver, { schema, internalSchema: withInternalAuthorSources(schema), database });
 }
 
 /**
@@ -43,7 +46,7 @@ export async function executeGeneratedOperation<T>(
     throw new Error("Generated schema operations are not initialized for this driver");
   }
   const result = await graphql({
-    schema: registered.schema,
+    schema: registered.internalSchema,
     source,
     rootValue: null,
     variableValues,

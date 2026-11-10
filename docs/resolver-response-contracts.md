@@ -1041,3 +1041,25 @@ internal/generated repository calls and custom/nested author sources retain thei
 legacy behavior, including the separate scratchpad-source limitation documented
 above. No public schema, write behavior, event-channel policy or worker-pause
 policy changes. Accounting remains **176 selected / 33 deferred**.
+
+### Internal author reads and nullable moderator names
+
+Named scratchpad moderator authors were already fixed in `59c370b`; the remaining
+reproduced failure was a nullable moderator display name. Three new probes failed
+before this slice: omitted-name internal comment/issue author reads and the null-name
+scratchpad source. Internal execution now has a separate schema view that records
+Neo4j's own literal to-one union type metadata at four explicit comment/issue roots.
+The original raw schema accessor, exact domain-owned selections, variable coercion,
+transaction/JWT context, database filters and first-error propagation are unchanged.
+No Shield or request identity is added to internal execution. Public sources keep
+their separate private-branch selection checks.
+
+Real graph regressions cover internal list/connection aliases, fragments, skipped
+fields and pagination. The exact scratchpad projection guard still passes without
+relaxation. Actual GraphQL/Shield mutation tests now cover both named and null-name
+moderator authors, unchanged notifications/karma, repeat operations and denials.
+Unit checks cover metadata domain validation, absent markers, context isolation,
+unchanged documents and the untouched raw-schema accessor. The metadata adapter is
+limited to the pinned Neo4j to-one author projection: it does not certify arbitrary
+custom parent properties, relationship connections or other nested paths. Existing
+schema-owned nullable names remain nullable; inventory stays 176 selected / 33 deferred.

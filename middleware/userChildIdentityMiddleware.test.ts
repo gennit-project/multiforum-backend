@@ -169,3 +169,23 @@ test('skipped author unions do not inject branch markers or inspect a source', a
   assert.equal(response.errors,undefined);
   assert.deepEqual(authorSourceType(row),{found:false});
 });
+
+test('generated internal author metadata is scoped, validated and never inferred from selected names', async () => {
+  const {generatedAuthorTypesAtPaths} = await import('./userChildIdentityMiddleware.js');
+  const {authorSourceType} = await import('../services/authorSourceType.js');
+  const internalSchema=buildSchema('type Query{items:[Item]} type Item{author:User} type User{username:String}');
+  const adapter=generatedAuthorTypesAtPaths([{path:['author']}]);
+  assert.throws(()=>generatedAuthorTypesAtPaths([{path:[]}]),/Invalid/);
+  assert.throws(()=>generatedAuthorTypesAtPaths([{path:['author'],sourceKeys:[]}]),/Invalid/);
+  for(const marker of ['User','ModerationProfile','forged',null,undefined]) {
+    const row:Record<string,unknown>={username:'forged'};
+    if(marker!==undefined)row.__resolveType=marker;
+    const response=await graphql({schema:internalSchema,source:'{items{alias:author{username}}}',contextValue:context,rootValue:{
+      items:(args:Record<string,unknown>,ctx:GraphQLContext,info:GraphQLResolveInfo)=>adapter((_p,_a,_c,selected)=>{
+        assert.equal(selected,info);return [{alias:row},null,{alias:null}];
+      },null,args,ctx,info),
+    }});
+    assert.equal(response.errors,undefined);
+    assert.deepEqual(authorSourceType(row),marker===undefined?{found:false}:{found:true,value:marker==='User'||marker==='ModerationProfile'?marker:null});
+  }
+});

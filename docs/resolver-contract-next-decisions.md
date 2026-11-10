@@ -206,9 +206,9 @@ fragments, null links and ownership failure before writes.
 
 Counts remain **176 selected / 33 deferred**. This advances the scratchpad source
 work, but the separately returned raw super-upvoter username leaves remain unknown.
-The existing comment-source query's moderator-author error is preserved: the
-fragment-only union currently resolves as User and fails username completion.
-Changing moderator attribution/union behavior is not part of this typing slice.
+Named moderator authors were already fixed by selecting both author branches.
+The later internal-source metadata slice also covers null or omitted display names,
+without changing recipient, permission or karma policy.
 Vote limits, age filtering, karma, notifications and write/error ordering remain.
 
 ### Dynamic activity delegation input boundary
@@ -245,7 +245,7 @@ leaves or arbitrary JSON responses are fully certified.
 The public comments/issues lists and root connections now carry private explicit
 User/moderator branch discriminators, with real graph and Shield regression tests.
 Their type no longer depends on requested username/displayName fields or aliases.
-The internal scratchpad repository call described above remains outside these
-root registrations, as do other custom/nested author sources. Preserve that
-limitation rather than treating this bounded fix as global union certification.
+The subsequent internal-source metadata slice covers the fixed scratchpad read
+and other explicit internal comments/issues roots. Other custom/nested sources
+remain outside these registrations; this is not global union certification.
 Inventory remains 176 selected / 33 deferred; neither pending policy is changed.

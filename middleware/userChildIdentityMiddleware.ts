@@ -225,3 +225,37 @@ export default {
   },
   Mutation: { updateUsers: resolveUpdatedUsersWithChildIdentity },
 };
+
+/**
+ * Internal domain-owned documents keep their exact fixed selections. Neo4j's
+ * to-one union projection appends a literal __resolveType after selected fields.
+ * Only explicitly registered author paths consume that generated metadata;
+ * arbitrary parents and public aliases never become fallback discriminators.
+ */
+export function generatedAuthorTypesAtPaths(paths: readonly UserSourcePath[]): typeof resolveUsersWithChildIdentity {
+  const registrations = paths.map(({path, sourceKeys = path.map(() => 'response')}) => {
+    if (!path.length || sourceKeys.length !== path.length) throw new Error('Invalid generated author source path');
+    return {path: [...path], sourceKeys: [...sourceKeys]};
+  });
+  function remember(value: unknown, path: readonly string[]): void {
+    if (Array.isArray(value)) {
+      const items: readonly unknown[] = value;
+      for (const item of items) remember(item, path);
+    } else if (isObjectSource(value)) {
+      if (path.length) remember(value[path[0]], path.slice(1));
+      else if (Object.prototype.hasOwnProperty.call(value, '__resolveType')) {
+        const type = value.__resolveType;
+        rememberAuthorSourceType(value, type === 'User' || type === 'ModerationProfile' ? type : null);
+      }
+    }
+  }
+  return async (resolve, parent, args, context, info) => {
+    const result: unknown = await resolve(parent, args, context, info);
+    for (const {path, sourceKeys} of registrations) {
+      for (const node of info.fieldNodes) for (const source of sourceUserFields(node.selectionSet, info, path)) {
+        remember(result, path.map((field, index) => sourceKeys[index] === 'canonical' ? field : source.responsePath[index]));
+      }
+    }
+    return result;
+  };
+}

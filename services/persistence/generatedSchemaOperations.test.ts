@@ -66,3 +66,25 @@ test("explicit caller-owned transaction is forwarded without inheriting request 
   assert.deepEqual(observed,{sessionConfig:{database:"isolated"},executionContext:transaction});
   assert.equal((observed as {executionContext:unknown}).executionContext,transaction);
 });
+
+test('internal author projections retain context and documents without changing the raw schema accessor', async () => {
+  const {getGeneratedSchema} = await import('./generatedSchemaOperations.js');
+  const {authorSourceType} = await import('../authorSourceType.js');
+  const {print} = await import('graphql');
+  const instance = driver();
+  let observed: unknown;
+  let selection = '';
+  const raw = makeExecutableSchema({
+    typeDefs: 'type Query{comments:[Comment]} type Comment{CommentAuthor:Author} union Author=User|ModerationProfile type User{username:String} type ModerationProfile{displayName:String}',
+    resolvers: {
+      Query:{comments:(_p,_a,ctx,info)=>{observed=ctx;selection=print(info.fieldNodes[0]);return [{CommentAuthor:{__resolveType:'ModerationProfile',displayName:null,username:'forged'}}];}},
+      Author:{__resolveType:(obj:object)=>{const type=authorSourceType(obj);return type.found?type.value:null;}},
+    },
+  });
+  registerGeneratedSchema(instance, raw, 'isolated');
+  const result = await executeGeneratedOperation(instance, '{comments{CommentAuthor{__typename}}}', {user:{username:'not-request-context'}});
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), {comments:[{CommentAuthor:{__typename:'ModerationProfile'}}]});
+  assert.equal(getGeneratedSchema(instance), raw);
+  assert.deepEqual(observed, {sessionConfig:{database:'isolated'}});
+  assert.equal(selection, 'comments {\n  CommentAuthor {\n    __typename\n  }\n}');
+});
