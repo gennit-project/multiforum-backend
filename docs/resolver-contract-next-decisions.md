@@ -343,3 +343,24 @@ owner/non-owner/anonymous private-field behavior, fragments and lazy local error
 Precise raw leaves remain unknown and unselected relationships are not fabricated;
 `getImageAlbumUsage` remains deferred. Other application-owned maps are not marked
 without separate source evidence. Inventory stays 176 selected / 33 deferred.
+
+### Delegated issue-activity source metadata
+
+The activity payload's delegated Issue read reproduced the same owner-identity and
+moderator-type loss as direct sources, despite an authorized, committed action.
+The delegation now uses the shared-child query view with an explicitly scoped
+metadata capture. Active target reads select private identity dependencies only
+in the database resolver's view; GraphQL does not serialize those hidden fields.
+Raw identity and author provenance are transferred privately to the corresponding
+completed payload objects before outer Shield checks. Public data, caller context,
+read policy, requested-field errors and the single action/comment write remain
+unchanged. Fresh owned contexts isolate parallel payload aliases, and capture is
+removed on success or error; nested GraphQL operations cannot replace its root.
+
+Real tests cover owner children, moderator comments, payload aliases/fragments,
+skipped fields, malformed stored identities, nullable moderator names, anonymity
+and existing post-commit failures. The malformed-identity regression specifically
+prevents treating scalar-coerced text as an authorization identity. Public Issue
+roots now also cover the explicit activity User and Comment author sources. The
+library's dynamic item result is still unknown, not a full Issue assertion; this
+strengthens provenance without promoting the deferred activity boundary.

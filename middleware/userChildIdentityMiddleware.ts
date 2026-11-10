@@ -1,5 +1,6 @@
 import { Kind, valueFromASTUntyped, visit } from "graphql";
 import type { GraphQLResolveInfo, SelectionSetNode, DirectiveNode, FieldNode, SelectionNode } from "graphql";
+import { sourceMetadataRecorder, type SourceMetadataRecorder } from "../services/delegatedSourceMetadata.js";
 import { resolveCanonicalSourceField } from "./canonicalSourceFields.js";
 import { rememberAuthorSourceType } from "../services/authorSourceType.js";
 import { rememberAccountChildIdentity } from "../services/accountChildIdentity.js";
@@ -127,12 +128,12 @@ function sourceUserFields(
   });
 }
 
-function rememberPath(value: unknown, path: readonly string[], alias: string, moderatorAlias?: string): void {
+function rememberPath(value: unknown, path: readonly string[], alias: string, moderatorAlias?: string, capture?: SourceMetadataRecorder, responseKeys: readonly string[] = path, responsePath: readonly (string | number)[] = []): void {
   if (Array.isArray(value)) {
     const values: readonly unknown[] = value;
-    for (const item of values) rememberPath(item, path, alias, moderatorAlias);
+    values.forEach((item, index) => rememberPath(item, path, alias, moderatorAlias, capture, responseKeys, [...responsePath, index]));
   } else if (isObjectSource(value)) {
-    if (path.length) rememberPath(value[path[0]], path.slice(1), alias, moderatorAlias);
+    if (path.length) rememberPath(value[path[0]], path.slice(1), alias, moderatorAlias, capture, responseKeys.slice(1), [...responsePath, responseKeys[0]]);
     else if (moderatorAlias) {
       // Presence of a private branch selection determines type, never the
       // truthiness of public names or the caller's response aliases.
@@ -141,6 +142,7 @@ function rememberPath(value: unknown, path: readonly string[], alias: string, mo
       rememberAuthorSourceType(value, userBranch === moderatorBranch ? null : userBranch ? "User" : "ModerationProfile");
       if (userBranch && !moderatorBranch) rememberAccountChildIdentity(value, value[alias]);
     } else rememberAccountChildIdentity(value, alias in value ? value[alias] : undefined);
+    if (!path.length) capture?.(responsePath, value);
   }
 }
 
@@ -171,8 +173,9 @@ export function userChildIdentityAtPaths(paths: readonly UserSourcePath[]): type
     const visitor = { Field(node: import("graphql").FieldNode) { return replacements.get(node); } };
     const fieldNodes = info.fieldNodes.map(node => visit(node, visitor));
     const fragments = Object.fromEntries(Object.entries(info.fragments).map(([name, node]) => [name, visit(node, visitor)]));
+    const capture = sourceMetadataRecorder(context, info);
     const result: unknown = await resolve(parent, args, context, { ...info, fieldNodes, fragments });
-    for (const source of sources) rememberPath(result, source.sourcePath, selected.alias, source.userUnion ? selected.moderatorAlias : undefined);
+    for (const source of sources) rememberPath(result, source.sourcePath, selected.alias, source.userUnion ? selected.moderatorAlias : undefined, capture, source.responsePath);
     return result;
   };
 }
@@ -223,6 +226,18 @@ function selectedCommentAuthorIdentity(prefix: UserSourcePath = {path: []}, othe
     const paths = [...otherPaths, ...selectedCommentAuthorPaths(info, prefix)];
     return paths.length ? userChildIdentityAtPaths(paths)(resolve, parent, args, context, info) : Promise.resolve(resolve(parent, args, context, info));
   };
+}
+
+/** Explicit Issue author, target-user and activity actor/comment sources. */
+export function issueSourceIdentity(prefix: UserSourcePath = {path: []}): typeof resolveUsersWithChildIdentity {
+  const keys = prefix.sourceKeys ?? prefix.path.map((): "response" => "response");
+  const paths: readonly UserSourcePath[] = [
+    {path: ["Author"], userUnion: true}, {path: ["TargetUser"]}, {path: ["TargetProfilePictureUser"]}, {path: ["ActivityFeed", "User"]},
+  ];
+  return selectedCommentAuthorIdentity(
+    {path: [...prefix.path, "ActivityFeed", "Comment"], sourceKeys: [...keys, "response", "response"]},
+    paths.map(({path,userUnion}) => ({path:[...prefix.path,...path],sourceKeys:[...keys,...path.map((): "response"=>"response")],...(userUnion?{userUnion}:{})})),
+  );
 }
 
 /** Neo4j 7.6's update response assembler examines only direct selections in
@@ -279,8 +294,8 @@ export default {
     eventSeriesConnection: userChildIdentityAtPath(["edges", "node", "Poster"], ["canonical", "canonical", "response"]),
     comments: selectedCommentAuthorIdentity(),
     commentsConnection: selectedCommentAuthorIdentity({path: ["edges", "node"], sourceKeys: ["canonical", "canonical"]}),
-    issues: userChildIdentityAtPaths([{path: ["Author"], userUnion: true}, {path: ["TargetUser"]}, {path: ["TargetProfilePictureUser"]}]),
-    issuesConnection: userChildIdentityAtPaths([{path: ["edges", "node", "Author"], sourceKeys: ["canonical", "canonical", "response"], userUnion: true}, ...["TargetUser", "TargetProfilePictureUser"].map((field): UserSourcePath => ({path: ["edges", "node", field], sourceKeys: ["canonical", "canonical", "response"]}))]),
+    issues: issueSourceIdentity(),
+    issuesConnection: issueSourceIdentity({path:["edges","node"],sourceKeys:["canonical","canonical"]}),
     collections: userChildIdentityAtPath(["CreatedBy"]),
     collectionsConnection: userChildIdentityAtPath(["edges", "node", "CreatedBy"], ["canonical", "canonical", "response"]),
   },

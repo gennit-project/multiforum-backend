@@ -66,3 +66,12 @@ export function getGeneratedSchema(driver: Driver): GraphQLSchema {
   if (!registered) throw new Error("Generated schema operations are not initialized for this driver");
   return registered.schema;
 }
+
+/** Query view for explicitly scoped delegated source metadata; no Shield or
+ * request identity is introduced. Child resolvers remain shared with raw schema.
+ */
+export function getSourceAwareGeneratedSchema(driver: Driver): GraphQLSchema {
+  const registered = registeredSchemas.get(driver);
+  if (!registered) throw new Error("Generated schema operations are not initialized for this driver");
+  return registered.internalSchema;
+}

@@ -4,6 +4,7 @@ import {Neo4jGraphQL} from '@neo4j/graphql';
 import {graphql, type GraphQLSchema} from 'graphql';
 import {applyMiddleware} from 'graphql-middleware';
 import permissions from '../../permissions.js';
+import userChildIdentityMiddleware from '../../middleware/userChildIdentityMiddleware.js';
 import type {Driver} from 'neo4j-driver';
 import getCustomResolvers from '../helpers/getTestResolvers.js';
 import typeDefs from '../../typeDefs.js';
@@ -21,7 +22,7 @@ before(async () => {
   const neo = new Neo4jGraphQL({driver, typeDefs, resolvers: app.resolvers, features: {filters: {String: {MATCHES: true}}}});
   schema = await neo.getSchema();
   registerGeneratedSchema(driver, schema);
-  publicSchema = applyMiddleware(schema, permissions);
+  publicSchema = applyMiddleware(schema, userChildIdentityMiddleware, permissions);
 }, {timeout: 240000});
 beforeEach(async () => resetDatabase(driver));
 after(async () => stopNeo4j());
@@ -281,4 +282,68 @@ test('a skipped delegated payload does not read even when its source would fail'
   assert.equal(result.errors,undefined);assert.equal(reads,0);
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{}});await assertOneWrite();
  }finally{field.resolve=original;}
+});
+
+test('delegated issue author preserves owner child identity without username selection',async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery("MATCH(u:User{username:'reporter'}) CREATE(:Email{address:'reporter@activity.test'})-[:HAS_EMAIL]->(u)");
+ const result=await graphql({schema:publicSchema,source:selectionMutation('items:issues{Author{... on User{mail:Email{address}}}}'),contextValue:requestContext('reporter')});
+ await assertOneWrite();
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{items:[{Author:{mail:{address:'reporter@activity.test'}}}]}});
+});
+test('delegated activity comment author preserves moderator type without displayName selection',async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery("MATCH(m:ModerationProfile{displayName:'mod'}) SET m.createdAt=datetime('2026-01-01T00:00:00Z')");
+ const result=await graphql({schema:publicSchema,source:selectionMutation('items:issues{ActivityFeed{Comment{CommentAuthor{__typename ... on ModerationProfile{createdAt}}}}}'),contextValue:requestContext('reporter')});
+ await assertOneWrite();
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{items:[{ActivityFeed:[{Comment:{CommentAuthor:{__typename:'ModerationProfile',createdAt:'2026-01-01T00:00:00.000Z'}}}]}]}});
+});
+test('delegated private identity remains raw rather than authorizing a scalar-coerced username',async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery(`MATCH(i:Issue{id:'selection'})-[r:AUTHORED_ISSUE]->() DELETE r
+  CREATE(actor:User{username:'17',createdAt:datetime()}),(target:User{username:17,createdAt:datetime()}),
+  (i)-[:AUTHORED_ISSUE]->(actor),(i)-[:TARGETS_USER]->(target),
+  (:Email{address:'private@activity.test'})-[:HAS_EMAIL]->(target)`);
+ const source=selectionMutation('items:issues{id TargetUser{mail:Email{address}}}').replace('displayName:"mod"','username:"17"');
+ const result=await graphql({schema:publicSchema,source,contextValue:requestContext('17')});
+ await assertOneWrite();
+ assert.deepEqual(result.errors?.map(error=>error.path),[['action','items',0,'TargetUser','mail']],JSON.stringify(result));
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{items:[{id:'selection',TargetUser:{mail:null}}]}});
+});
+for(const show of [true,false])test(`delegated author metadata preserves aliases, fragments and private-field include=${show}`,async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery("MATCH(u:User{username:'reporter'}) SET u.bio='public' CREATE(:Email{address:'reporter@activity.test'})-[:HAS_EMAIL]->(u)");
+ const source=selectionMutation('one:issues{...Fields} two:issues{...Fields}', 'fragment Fields on Issue{who:Author{... on User{username:bio mail:Email @include(if:$show){address}}}}','($show:Boolean!=true)');
+ const result=await graphql({schema:publicSchema,source,variableValues:{show},contextValue:requestContext('reporter')});
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ const issue={who:{username:'public',...(show?{mail:{address:'reporter@activity.test'}}:{})}};
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{one:[issue],two:[issue]}});
+ await assertOneWrite();
+});
+test('delegated moderator branch retains nullable displayName without exposing the human account',async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery("MATCH(m:ModerationProfile{displayName:'mod'}),(u:User{username:'reporter'}) SET m.createdAt=datetime('2026-01-01T00:00:00Z') CREATE(u)-[:MODERATION_PROFILE]->(m)");
+ const field=schema.getQueryType()!.getFields().issues,original=field.resolve!;
+ field.resolve=async(parent,args,context,info)=>{
+  await driver.executeQuery("MATCH(m:ModerationProfile{displayName:'mod'}) REMOVE m.displayName");
+  return original(parent,args,context,info);
+ };
+ try{
+  const result=await graphql({schema:publicSchema,source:selectionMutation('items:issues{ActivityFeed{Comment{CommentAuthor{__typename ... on ModerationProfile{displayName createdAt hidden:User{username}}}}}}'),contextValue:requestContext('reporter')});
+  await assertOneWrite();
+  assert.deepEqual(result.errors?.map(error=>error.path),[['action','items',0,'ActivityFeed',0,'Comment','CommentAuthor','hidden']],JSON.stringify(result));
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{items:[{ActivityFeed:[{Comment:{CommentAuthor:{__typename:'ModerationProfile',displayName:null,createdAt:'2026-01-01T00:00:00.000Z',hidden:null}}}]}]}});
+ }finally{field.resolve=original;}
+});
+
+test('delegated activity User actor retains selected owner children without public username',async()=>{
+ await seedSelectionIssue();
+ await driver.executeQuery("MATCH(u:User{username:'reporter'}) CREATE(:Email{address:'reporter@activity.test'})-[:HAS_EMAIL]->(u)");
+ const source=selectionMutation('items:issues{ActivityFeed{User{mail:Email{address}}}}').replace('displayName:"mod"','username:"reporter"');
+ const result=await graphql({schema:publicSchema,source,contextValue:requestContext('reporter')});
+ await assertOneWrite();
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+ assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{action:{items:[{ActivityFeed:[{User:{mail:{address:'reporter@activity.test'}}}]}]}});
 });

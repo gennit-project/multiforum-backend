@@ -1,8 +1,9 @@
+import { withDelegatedSourceMetadata } from "../../services/delegatedSourceMetadata.js";
 import { delegateQueryField } from "../../services/persistence/delegateQueryField.js";
 import type { Driver } from "neo4j-driver";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { getGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
+import { getSourceAwareGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 
 // v7 (campaign #284): the frontend used to add a moderation activity-feed item by
 // calling updateIssues with a nested `create: { ActivityFeed: [...] }` (and, for
@@ -93,16 +94,18 @@ const getResolver = (deps: Input) => {
     // The write remains above this resolver so multiple payload aliases cannot
     // create duplicate actions or comments.
     return {
-      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo): unknown =>
-        delegateQueryField({
-          schema: getGeneratedSchema(driver),
+      issues: (_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo): unknown => {
+        const context = {jwt: {mayAccessSensitiveContent: true}};
+        return withDelegatedSourceMetadata(context, "issues", () => delegateQueryField({
+          schema: getSourceAwareGeneratedSchema(driver),
           fieldName: "issues",
           args: { where: { id: { eq: issueId } } },
           // Preserve the existing post-moderation sensitive-content read policy.
           // Public nested fields still pass through the caller's Shield schema.
-          context: { jwt: { mayAccessSensitiveContent: true } },
+          context,
           info: payloadInfo,
-        }),
+        }));
+      },
     };
   };
 };

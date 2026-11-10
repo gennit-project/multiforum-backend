@@ -1,5 +1,6 @@
+import {sourceMetadataRecorder} from '../delegatedSourceMetadata.js';
 import { defaultFieldResolver, getNamedType, GraphQLObjectType, GraphQLSchema, isObjectType, isUnionType } from 'graphql';
-import { generatedAuthorTypesAtPaths, selectedCommentAuthorPaths } from '../../middleware/userChildIdentityMiddleware.js';
+import { generatedAuthorTypesAtPaths, selectedCommentAuthorPaths, issueSourceIdentity } from '../../middleware/userChildIdentityMiddleware.js';
 
 /** Projection metadata only: never installs Shield or adds request context. */
 export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema {
@@ -19,7 +20,9 @@ export function withInternalAuthorSources(schema: GraphQLSchema): GraphQLSchema 
     if (queryFields?.[root] && getNamedType(queryFields[root].type).name === type) {
       roots[root] = type === "Comment"
         ? (resolve, parent, args, context, info) => generatedAuthorTypesAtPaths(selectedCommentAuthorPaths(info))(resolve, parent, args, context, info)
-        : generatedAuthorTypesAtPaths(paths.map(path => ({path})));
+        : (resolve, parent, args, context, info) => sourceMetadataRecorder(context, info)
+          ? issueSourceIdentity()(resolve, parent, args, context, info)
+          : generatedAuthorTypesAtPaths(paths.map(path => ({path})))(resolve, parent, args, context, info);
     }
     const connection = root + 'Connection';
     if (queryFields?.[connection] && getNamedType(queryFields[connection].type).name === type + 'sConnection') {
