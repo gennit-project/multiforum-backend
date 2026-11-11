@@ -9,7 +9,7 @@ import { executeManagedWrite } from "../../services/neo4jTransactions.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {createEventSeriesUpdateRepository, type EventSeriesUpdateRepository} from "../../services/persistence/eventSeriesUpdateRepository.js";
 import { logger } from "../../logger.js";
-import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
+import { applyEventChannelChanges, normalizeEventChannelUpdate } from "./shared/eventChannelChanges.js";
 
 type Input = {
   eventSeriesUpdateRepository?: EventSeriesUpdateRepository;
@@ -102,10 +102,11 @@ const getResolver = (input: Input) => {
     const {
       eventId,
       scope,
-      eventUpdateInput,
+      eventUpdateInput: suppliedEventUpdateInput,
       channelConnections = [],
       channelDisconnections = [],
     } = args;
+    const eventUpdateInput = normalizeEventChannelUpdate(suppliedEventUpdateInput);
 
     try {
       // Fetch the event and its series relationship with fields needed for notifications

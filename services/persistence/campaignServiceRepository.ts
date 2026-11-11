@@ -16,6 +16,7 @@ export interface CampaignServiceRepository {
  findAttempts(campaignId:string):Promise<CampaignAttemptRow[]>;
  updateProgress(id:string,update:PluginPipelineCampaignUpdateInput):Promise<void>;
  findRunningCampaigns():Promise<CampaignRow[]>;
+ isRunning(id:string):Promise<boolean>;
 }
 export const POLICY_SELECTION = `{ pluginPipelines }`;
 export const FILE_SELECTION = `{ id url uploadedAt createdAt permanentlyRemoved }`;
@@ -62,5 +63,6 @@ export function createCampaignServiceRepository(driver:Driver):CampaignServiceRe
  async findFiles(){const r=await executeGeneratedOperation<{downloadableFiles:CampaignFileRow[]}>(driver,`query CampaignFiles {downloadableFiles(sort: [{createdAt: ASC}, {id: ASC}])${FILE_SELECTION}}`,{});return r.downloadableFiles;},
  async findAttempts(campaignId){const r=await executeGeneratedOperation<{pluginPipelineRuns:CampaignAttemptRow[]}>(driver,`query CampaignAttemptStates($where:PluginPipelineRunWhere){pluginPipelineRuns(where:$where)${ATTEMPT_SELECTION}}`,{where:{campaignId:{eq:campaignId}}});return r.pluginPipelineRuns;},
  async updateProgress(id,update){await executeGeneratedOperation(driver,`mutation UpdateCampaignProgress($where:PluginPipelineCampaignWhere,$update:PluginPipelineCampaignUpdateInput){updatePluginPipelineCampaigns(where:$where,update:$update){pluginPipelineCampaigns${CAMPAIGN_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update});},
+ async isRunning(id){const r=await executeGeneratedOperation<{pluginPipelineCampaigns:Array<{id:string}>}>(driver,`query CampaignBatchAdmission($where:PluginPipelineCampaignWhere){pluginPipelineCampaigns(where:$where){id}}`,{where:{id:{eq:id},status:{eq:'RUNNING'}}});return r.pluginPipelineCampaigns.some(row=>row.id===id);},
  async findRunningCampaigns(){const r=await executeGeneratedOperation<{pluginPipelineCampaigns:CampaignRow[]}>(driver,`query RunningPipelineCampaigns($where:PluginPipelineCampaignWhere){pluginPipelineCampaigns(where:$where)${RUNNING_SELECTION}}`,{where:{status:{eq:'RUNNING'}}});return r.pluginPipelineCampaigns;},
 };}

@@ -151,6 +151,12 @@ export const runPipelineCampaign = async ({
       isAccessible(file) &&
       !attemptedIds.has(file.id)
   );
+  // Admission is a fresh persisted RUNNING read, not the scheduler's earlier
+  // snapshot. A pause before admission prevents dispatch/progress writes. Once
+  // admitted, this bounded batch may finish even if paused during dispatch.
+  if (!await repository.isRunning(campaign.id)) {
+    return { startedCount: 0, finished: false, ...counts };
+  }
   const batch = candidates.slice(0, Math.min(capacity, rateCapacity));
 
   for (const file of batch) {

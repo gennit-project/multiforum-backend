@@ -121,29 +121,45 @@ test('discussion update keeps omitted lists, nullable members, and null failures
  assert.equal(updated.title,'After');assert.equal(updated.body,null);assert.equal(updated.Author.username,'alice');assert.deepEqual(updated.DiscussionChannels,[]);
  assert.deepEqual(updated.Tags,[]);assert.equal(typeof updated.updatedAt,'string');
 });
-test('event updates retain omitted/null list rollback and serialize valid selected responses',async()=>{
- await driver.executeQuery("CREATE(:Event {id:'e',title:'Before',startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false,createdAt:datetime()})");
- const source=`mutation($connections:[String!],$disconnections:[String]){updateEventWithChannelConnections(where:{id:{eq:"e"}},eventUpdateInput:{title:{set:"After"}},channelConnections:$connections,channelDisconnections:$disconnections){id title description startTime endTime EventChannels{id channelUniqueName} Tags{text} SubscribedToNotifications{username} SubscribedToEventUpdates{username Email{address}} createdAt updatedAt}}`;
- for(const [variables,message] of [
-  [{},'channelConnections is not iterable'],
-  [{connections:null,disconnections:[]},'channelConnections is not iterable'],
-  [{connections:[],disconnections:null},'channelDisconnections is not iterable'],
- ] as const) {
-  const result=await run(source,variables);assert.equal(result.data?.updateEventWithChannelConnections,null);
-  assert.ok(result.errors?.[0].message.includes(message),result.errors?.[0].message ?? "missing error");
-  assert.equal((await driver.executeQuery("MATCH(e:Event {id:'e'}) RETURN e.title AS title")).records[0].get('title'),'Before');
+for (const series of [false,true]) test(`event ${series?'series':'ordinary'} update preserves links for omitted, null and empty lists`,async()=>{
+ await driver.executeQuery("MATCH(a:User {username:'alice'}),(c:Channel {uniqueName:'forum'}) CREATE(a)-[:POSTED_BY]->(e:Event {id:'e',title:'Before',startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false,createdAt:datetime()}) CREATE(ec:EventChannel {id:'ec',eventId:'e',channelUniqueName:'forum',createdAt:datetime()})-[:POSTED_IN_CHANNEL]->(e) CREATE(ec)-[:POSTED_IN_CHANNEL]->(c)");
+ const mutation=series?'updateEventInSeries(eventId:"e",scope:THIS_ONLY,':'updateEventWithChannelConnections(where:{id:{eq:"e"}},';
+ const source=`mutation($connections:[String!],$disconnections:[String],$input:EventUpdateInput!){value:${mutation}eventUpdateInput:$input,channelConnections:$connections,channelDisconnections:$disconnections){id title canceled EventChannels{id channelUniqueName} Tags{text}}}`;
+ const execute=(variables:Record<string,unknown>)=>graphql({schema:series?schema:secured,source,variableValues:variables,contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null}}});
+ for(const variables of [{},{connections:null,disconnections:null},{connections:[],disconnections:[]}]) {
+  const updated=data(await execute({...variables,input:{title:{set:'After'},canceled:{set:true}}})).value;
+  assert.equal(updated.title,'After');assert.equal(updated.canceled,true);assert.deepEqual(updated.EventChannels,[{id:'ec',channelUniqueName:'forum'}]);
+  assert.equal((await driver.executeQuery("MATCH(:Event {id:'e'})<-[:POSTED_IN_CHANNEL]-(ec:EventChannel) RETURN ec.id AS id")).records[0].get('id'),'ec');
  }
- const updated=data(await run(source,{connections:[],disconnections:[null]})).updateEventWithChannelConnections;
- assert.equal(updated.title,'After');assert.equal(updated.description,null);assert.deepEqual(updated.EventChannels,[]);assert.deepEqual(updated.Tags,[]);assert.deepEqual(updated.SubscribedToEventUpdates,[]);
+ for(const EventChannels of [null,[]]) {
+  assert.deepEqual(data(await execute({input:{EventChannels}})).value.EventChannels,[{id:'ec',channelUniqueName:'forum'}]);
+ }
+ // The generated v7 relationship operation also supports explicit connect/disconnect.
+ const disconnected=data(await execute({input:{EventChannels:[{disconnect:[{where:{node:{id:{eq:'ec'}}}}]}]}})).value;
+ assert.deepEqual(disconnected.EventChannels,[]);
+ const connected=data(await execute({input:{EventChannels:[{connect:[{where:{node:{id:{eq:'ec'}}}}]}]}})).value;
+ assert.deepEqual(connected.EventChannels,[{id:'ec',channelUniqueName:'forum'}]);
+ // Named-channel operations retain their existing meaning, including no-op empty lists.
+ assert.deepEqual(data(await execute({connections:null,disconnections:['forum'],input:{}})).value.EventChannels,[]);
+ assert.deepEqual(data(await execute({connections:['forum'],disconnections:null,input:{}})).value.EventChannels,[{id:'ec',channelUniqueName:'forum'}]);
+ if(series){
+  const denied=await graphql({schema:secured,source,variableValues:{input:{canceled:{set:false}}},contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null}}});
+  assert.ok(denied.errors,'existing public series restriction must remain');
+  assert.equal((await driver.executeQuery("MATCH(e:Event {id:'e'}) RETURN e.canceled AS canceled")).records[0].get('canceled'),true);
+ }
+
 });
-test('series occurrence update preserves default lists and null failure rollback',async()=>{
- await driver.executeQuery("CREATE(:Event {id:'e',title:'Before',startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false,createdAt:datetime()})");
- const source=`mutation($connections:[String!],$disconnections:[String]){updateEventInSeries(eventId:"e",scope:THIS_ONLY,eventUpdateInput:{title:{set:"After"}},channelConnections:$connections,channelDisconnections:$disconnections){id title description EventSeries{id title} EventChannels{id channelUniqueName} SubscribedToEventUpdates{username Email{address}} Tags{text} createdAt updatedAt}}`;
- for(const variables of [{connections:null},{disconnections:null}]) {
-  const result=await run(source,variables);assert.equal(result.data?.updateEventInSeries,null);assert.match(result.errors?.[0].message ?? '',/channel(?:Connections|Disconnections) is not iterable/);
-  assert.equal((await driver.executeQuery("MATCH(e:Event {id:'e'}) RETURN e.title AS title")).records[0].get('title'),'Before');
+test('event channel omission does not relax ownership or accept invalid non-channel input',async()=>{
+ await driver.executeQuery("MATCH(a:User {username:'alice'}) CREATE(a)-[:POSTED_BY]->(:Event {id:'e',title:'Before',startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false,createdAt:datetime()})");
+ const source=`mutation($input:EventUpdateInput!){updateEventWithChannelConnections(where:{id:{eq:"e"}},eventUpdateInput:$input){id title}}`;
+ for(const username of ['bob',null]) {
+  const result=await graphql({schema:secured,source,variableValues:{input:{title:{set:'Denied'}}},contextValue:{driver,req:{headers:{}},user:username?{username,email:null,email_verified:true,data:null}:undefined}});
+  assert.ok(result.errors,JSON.stringify(result));
  }
- const updated=data(await run(source)).updateEventInSeries;assert.equal(updated.title,'After');assert.equal(updated.EventSeries,null);assert.deepEqual(updated.EventChannels,[]);assert.deepEqual(updated.SubscribedToEventUpdates,[]);assert.deepEqual(updated.Tags,[]);
+ assert.ok((await run(source,{input:{canceled:{set:'invalid'}}})).errors);
+ assert.equal((await driver.executeQuery("MATCH(e:Event {id:'e'}) RETURN e.title AS title")).records[0].get('title'),'Before');
+ const result=await graphql({schema:secured,source,variableValues:{input:{title:{set:'Allowed'}}},contextValue:{driver,req:{headers:{}},user:{username:'alice',email:null,email_verified:true,data:null}}});
+ assert.equal(data(result).updateEventWithChannelConnections.title,'Allowed');
 });
 test('discussion creation serializes the actual fixed projection and crosspost reuse',async()=>{
  const source=`mutation($input:[DiscussionCreateInputWithChannels!]!){createDiscussionWithChannelConnections(input:$input){id title body Author{username} DiscussionChannels{id createdAt channelUniqueName discussionId archived Flairs{id channelUniqueName displayName color order archived} Channel{uniqueName} Discussion{id} UpvotedByUsers{username}} createdAt updatedAt Tags{text}}}`;

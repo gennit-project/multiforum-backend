@@ -1,15 +1,17 @@
 # Remaining response-contract decisions after #450
 
-This is an investigation checkpoint, not approval to change behavior. The campaign
+This ledger includes historical investigation checkpoints and later approved changes. The campaign
 has 180 selected response/source boundaries and 29 deferred entries. The three
 variant URL fields also enforce an application-owned string-map-or-null domain;
 they remain deferred for generated JSON structural guarantees. Selected boundaries
 still leave documented raw residual fields.
 
-Current transition status: the final “Incorporated control-transition dependency”
-section supersedes earlier #446 waiting/stale-status checkpoints below. Its
-control-write fix is now integrated; only the distinct worker-after-pause product
-choice remains unanswered. Earlier numerical checkpoints are historical.
+Current policy status: Catherine approved unchanged event links for omitted/null
+channel inputs and completion of an already-admitted worker batch after pause.
+The final “Approved event-link and worker-pause policies (2026-11-11)” section
+supersedes earlier pending-policy statements. #446's attributed control-write fix
+is integrated; #446 itself remains unmerged. Earlier numerical checkpoints and
+failure witnesses are historical.
 
 ## Fixed download graph reads
 
@@ -1422,10 +1424,51 @@ engineering obligations, not 209 fully enforced response contracts.
 | Six JSON/schema entries | The public JSON contract intentionally allows unrestricted values; domain-owned maps have separate contracts. | Schema owners: narrowing the public contract requires a schema/product decision. |
 | One activity-delegation entry | Real execution covers selected fields, aliases/fragments, auth and failure propagation through the generated resolver. | Backend #413: dynamic upstream selection remains an intentional static limit. |
 | Native property maps, diagnostic children and Point in selected operations | Exact paths are in the source ledger. Diagnostic children are typed in the public schema despite raw JSON storage; requested malformed values still fail and unrequested values remain lazy. | Backend #413: no claim of whole-operation validity; any stricter eager validation needs compatibility review. |
-| Event omitted/null channel input | Existing behavior and regression witnesses are unchanged. | Catherine / product: choose whether omission and explicit null should differ. |
-| Worker batch already underway when paused | #446 control-transition fix is incorporated with original attribution; its existing worker behavior remains tested. | Catherine / product: choose whether the in-flight batch should finish or stop. |
+| Event omitted/null channel input (resolved) | Omission/null leaves links unchanged; empty operation lists remain no-ops. Explicit supported connect/disconnect controls links. | Approved by Catherine; real GraphQL and database regressions cover ordinary and series updates. |
+| Worker batch already underway when paused (resolved) | A fresh persisted RUNNING check admits a bounded batch; an admitted batch may finish after pause. Later admissions reject paused campaigns. | Approved by Catherine; deterministic pre-admission and in-dispatch pause barriers cover the boundary. #446 attribution and locked controls remain intact. |
 
 The two policy questions do not block the independent fixed-source engineering
 above. Neither was resolved implicitly. Public schema, CI thresholds and production
 state are unchanged. PR #419 remains draft for combined review and any further
 intended changes; no merge or deployment is part of this work.
+
+
+### Approved event-link and worker-pause policies (2026-11-11)
+
+This decision supersedes earlier pending-policy statements above. Catherine approved
+both policies; neither remains an unanswered product question.
+
+The installed versions are `graphql` 16.14.2 and `@neo4j/graphql` 7.6.4. The actual
+schema exposes `EventUpdateInput.EventChannels` entries with `connect` and
+`disconnect`, and the custom mutations separately expose `channelConnections`
+and `channelDisconnections`. No public schema change is necessary. These inputs
+are operations, not replacement lists: omission/null and empty operation lists
+leave links unchanged. Explicit names or generated connect/disconnect operations
+control membership. The former nullish-list TypeErrors rolled back otherwise valid
+edits; the shared helper now treats nullish lists as no operations. The generated
+v7 translator also rejects explicit `EventChannels: null` despite its nullable
+input; these custom mutations omit that no-op field before internal execution. Both ordinary
+and series mutation responses, persistent links, unrelated scalar edits, validation
+and ordinary-event ownership are covered through GraphQL. Ordinary operations run
+through Shield. The existing public Shield deny for `updateEventInSeries` remains
+unchanged; series execution coverage exercises the internal schema, not a newly
+authorized public route. Existing connect-before-
+disconnect order and explicit empty-list behavior are retained.
+
+A campaign batch is admitted by a fresh persisted RUNNING read after candidate
+selection and before dispatch. A stale scheduler snapshot cannot admit a paused
+or missing campaign. Failure of the admission read propagates before any dispatch
+or progress write. Once admitted, the bounded batch can finish even if paused;
+a partial batch preserves PAUSED, while a final fully completed batch can retain
+its existing COMPLETED outcome. The next scheduler tick excludes paused campaigns.
+Concurrency/rate budgets, selection order, permissions and #446's attributed locked
+control transitions remain unchanged. This is not a new distributed worker lease
+or cancellation mechanism.
+
+Evidence: `tests/integration/contentResponseContracts.test.ts`,
+`tests/integration/campaignStatusConcurrency.test.ts`, the campaign service and
+event-series persistence suites, and the event helper / campaign service unit tests.
+Baseline regression runs failed for both nullish event updates and pre-admission
+pause dispatch. The source census remains 49 paths and the operation inventory
+180 selected / 29 deferred: resolving product policies does not certify the raw,
+JSON, dynamic-selection or spatial boundaries described above.

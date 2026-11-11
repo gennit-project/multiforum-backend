@@ -10,7 +10,7 @@ before execution and adds executable-schema response evidence.
 
 `resolver-contract-inventory.json` lists all 209 custom composition entries,
 including query, mutation, object, union and scalar implementations. At this
-checkpoint, 178 entries have a checked selected response boundary and 31 remain
+checkpoint, 180 entries have a checked selected response boundary and 29 remain
 `deferred`. Selected-response is deliberately narrower than full-entity or
 end-to-end behavior certification: the exact selected paths and residual paths
 are recorded in `resolver-contract-audit/*.json` for all 191 post-pilot entries.
@@ -1080,3 +1080,9 @@ This is one explicit parent/child hop, not recursive certification. Deeper reply
 trees, mutation responses and unrelated custom/nested sources remain outside the
 path set. Inventory remains **176 selected / 33 deferred**; both pending product
 policies and the public schema are unchanged.
+
+
+The event-link and worker-pause product choices are now approved and implemented;
+see `resolver-contract-next-decisions.md` for the exact admission boundary and
+schema-version evidence. They do not change the 180/29 inventory or the 49-path
+source census. The existing public series-update permission restriction is retained.

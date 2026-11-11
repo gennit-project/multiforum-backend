@@ -13,7 +13,7 @@ import getResolvers from "../helpers/getTestResolvers.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import {createCampaignQueryRepository} from "../../services/persistence/campaignQueryRepository.js";
 import { createCampaignControlRepository } from "../../services/persistence/campaignControlRepository.js";
-import { runPipelineCampaign } from "../../services/plugin/pipelineCampaign.js";
+import { runPipelineCampaign, processRunningPipelineCampaigns } from "../../services/plugin/pipelineCampaign.js";
 import { createCampaignServiceRepository } from "../../services/persistence/campaignServiceRepository.js";
 import { PipelineApplicability, PluginPipelineCampaignStatus as Status } from "../../ogm_types.js";
 import { startNeo4j, stopNeo4j, resetDatabase } from "./neo4jHarness.js";
@@ -174,7 +174,7 @@ test("a response projection error still surfaces after committing the successful
   } finally { field.resolve = original; }
 });
 
-test("documents a selected worker batch continuing after pause and completing it (existing behavior)", async () => {
+test("approved policy lets an admitted worker batch finish after pause and complete", async () => {
   await driver.executeQuery("MATCH(s:ServerConfig) SET s.pluginPipelines=$policies", {
     policies:JSON.stringify([{policyId:"policy",event:"downloadableFile.created",effectiveAt:"2026-01-01T00:00:00Z",applicability:"ALL_FILES_GRADUAL",steps:[{pluginId:"fixture"}]}]),
   });
@@ -302,4 +302,39 @@ test('aliased transition remains denied to anonymous and ordinary callers withou
   const result=await graphql({schema,source,contextValue:{driver,req:{headers:{},body:{query:source}},user:username?{username,email:null,email_verified:true,data:{}}:undefined}});
   assert.ok(result.errors?.length);assert.equal(result.data,null);assert.deepEqual(result.errors[0].path,['result']);assert.equal((await state())?.status,'RUNNING');
  }
+});
+
+
+test("pause before batch admission rejects a stale running snapshot without progress writes",async()=>{
+ await driver.executeQuery("MATCH(s:ServerConfig) SET s.pluginPipelines=$policies",{policies:JSON.stringify([{policyId:'policy',event:'downloadableFile.created',effectiveAt:'2026-01-01T00:00:00Z',applicability:'ALL_FILES_GRADUAL',steps:[{pluginId:'fixture'}]}])});
+ const repository=createCampaignServiceRepository(driver),campaign=(await repository.findRunningCampaigns())[0];
+ const entered=deferred(),release=deferred();let dispatched=0;
+ const worker=runPipelineCampaign({models:{driver,campaignRepository:{...repository,findFiles:async()=>{entered.resolve();await release.promise;return [{id:'file',url:'https://fixture.test/file',uploadedAt:'2025-01-01T00:00:00Z',createdAt:'2025-01-01T00:00:00Z',permanentlyRemoved:false}];}}},campaign,trigger:async()=>{dispatched++;return [];}});
+ try{await entered.promise;success(await execute('pause'));}finally{release.resolve();await worker;}
+ assert.equal(dispatched,0);assert.equal((await state())?.status,'PAUSED');
+ assert.equal(await processRunningPipelineCampaigns({driver,campaignRepository:repository}),0);
+});
+
+test("an admitted partial batch finishes while paused and the next tick admits no batch",async()=>{
+ await driver.executeQuery("MATCH(s:ServerConfig) SET s.pluginPipelines=$policies",{policies:JSON.stringify([{policyId:'policy',event:'downloadableFile.created',effectiveAt:'2026-01-01T00:00:00Z',applicability:'ALL_FILES_GRADUAL',steps:[{pluginId:'fixture'}]}])});
+ const repository=createCampaignServiceRepository(driver),campaign=(await repository.findRunningCampaigns())[0];
+ const entered=deferred(),release=deferred();const dispatched:string[]=[];
+ const worker=runPipelineCampaign({models:{driver,campaignRepository:{...repository,findFiles:async()=>['first','second','third'].map(id=>({id,url:'https://fixture.test/'+id,uploadedAt:'2025-01-01T00:00:00Z',createdAt:'2025-01-01T00:00:00Z',permanentlyRemoved:false}))}},campaign,trigger:async args=>{dispatched.push(args.downloadableFileId);if(dispatched.length===1){entered.resolve();await release.promise;}return [];}});
+ try{await entered.promise;success(await execute('pause'));}finally{release.resolve();await worker;}
+ assert.deepEqual(dispatched,['first','second']);assert.equal((await state())?.status,'PAUSED');
+ assert.equal(await processRunningPipelineCampaigns({driver,campaignRepository:repository}),0);
+});
+
+
+test("batch admission rejects missing campaigns and fails closed on read errors",async()=>{
+ await driver.executeQuery("MATCH(s:ServerConfig) SET s.pluginPipelines=$policies",{policies:JSON.stringify([{policyId:'policy',event:'downloadableFile.created',effectiveAt:'2026-01-01T00:00:00Z',applicability:'ALL_FILES_GRADUAL',steps:[{pluginId:'fixture'}]}])});
+ const repository=createCampaignServiceRepository(driver),campaign=(await repository.findRunningCampaigns())[0];
+ assert.equal(await repository.isRunning('missing'),false);
+ assert.equal(await repository.isRunning(campaign.id),true);
+ const before=await state();
+ await assert.rejects(runPipelineCampaign({models:{driver,campaignRepository:{...repository,isRunning:async()=>{throw Error('fixture admission read failure');},updateProgress:async()=>assert.fail('no progress after rejected admission')}},campaign,trigger:async()=>{assert.fail('no dispatch after rejected admission');}}),/fixture admission read failure/);
+ assert.deepEqual(await state(),before);
+ await driver.executeQuery("MATCH(c:PluginPipelineCampaign {id:'campaign'}) DETACH DELETE c");
+ const result=await runPipelineCampaign({models:{driver,campaignRepository:repository},campaign,trigger:async()=>{assert.fail('no dispatch after deletion');}});
+ assert.equal(result.startedCount,0);assert.equal(result.finished,false);assert.equal(await state(),null);
 });
