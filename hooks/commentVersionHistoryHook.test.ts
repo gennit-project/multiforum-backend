@@ -37,9 +37,9 @@ test('missing editor permits unattributed creation; missing version/target still
  const s=setup({noEditor:true});await s.run();assert.deepEqual(s.calls.find(c=>c[0]==='create')[1],{body:'old'});
  for(const options of [{emptyVersion:true},{missingTarget:true}]){const x=setup(options);await x.run();assert.ok(!x.calls.some(c=>c[0]==='connect'));assert.deepEqual(x.calls.slice(-2).map(c=>c[0]),['notify','issues']);}
 });
-test('empty prior text skips revision but preserves notification/activity; null next text still archives prior text',async()=>{
+test('empty prior text skips revision but preserves notification/activity; explicit null SET still archives prior text',async()=>{
  const s=setup({snapshot:{text:''}});await s.run();assert.deepEqual(s.calls.map(c=>c[0]),['snapshot','notify','issues']);
- const x=setup();await x.run({where:{id:'c'},update:{text:null}});assert.equal(x.calls.find(c=>c[0]==='create')[1].body,'old');
+ const x=setup();await x.run({where:{id:{eq:'c'}},update:{text:{set:null}}});assert.equal(x.calls.find(c=>c[0]==='create')[1].body,'old');
 });
 test('moderation author fallback is notification recipient only, not implicit revision editor',async()=>{
  const s=setup({snapshot:{CommentAuthor:{displayName:'ModAuthor',User:{username:'owner'}}}});s.context.user={};await s.run();assert.ok(!s.calls.some(c=>c[0]==='editor'));assert.deepEqual(s.calls.find(c=>c[0]==='create')[1],{body:'old'});assert.ok(!s.calls.some(c=>c[0]==='notify'));

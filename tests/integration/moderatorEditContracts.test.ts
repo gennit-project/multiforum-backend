@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import {after,before,beforeEach,test} from 'node:test';
 import {graphql,type GraphQLSchema} from 'graphql';
 import {Neo4jGraphQL} from '@neo4j/graphql';
-import {applyMiddleware} from 'graphql-middleware';
+import {applyMiddleware, type IMiddleware} from 'graphql-middleware';
+import commentVersionHistoryMiddleware from '../../middleware/commentVersionHistoryMiddleware.js';
+import type {GraphQLContext} from '../../types/context.js';
 import jwt from 'jsonwebtoken';
 import type {Driver} from 'neo4j-driver';
 import typeDefs from '../../typeDefs.js';
@@ -12,11 +14,12 @@ import {registerGeneratedSchema} from '../../services/persistence/generatedSchem
 import {provisionServerDefaults} from '../../seedData/provisionServerDefaults.js';
 import {createServerDefaultsRepository} from '../../services/persistence/serverDefaultsRepository.js';
 import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
-let driver:Driver,schema:GraphQLSchema;
+let driver:Driver,schema:GraphQLSchema,revisionSchema:GraphQLSchema;
 before(async()=>{
  process.env.E2E_MOCK_AUTH='true';process.env.SERVER_CONFIG_NAME='moderator-edit-contract';
  driver=await startNeo4j();const generated=await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers}).getSchema();
  registerGeneratedSchema(driver,generated);schema=applyMiddleware(generated,permissions);
+ revisionSchema=applyMiddleware(generated,permissions,commentVersionHistoryMiddleware as IMiddleware<unknown,GraphQLContext>);
 },{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{
@@ -112,4 +115,28 @@ test('moderator event updates preserve links for omitted/null lists and record s
  assert.ok(denied.errors?.length);
  const row=(await driver.executeQuery("MATCH(e:Event{id:'denied'}) RETURN e.title AS title")).records[0];
  assert.equal(row.get('title'),'original');
+});
+
+// Exercise the production permission-before-history order, not a mocked success resolver.
+test('comment edits preserve author, attribute revisions to editor and leave denied targets untouched', async()=>{
+ const executeRevision=(id:string,text:string,username='moderator')=>graphql({
+  schema:revisionSchema,
+  source:'mutation Edit($id:ID!,$text:String!){updateComments(where:{id:{eq:$id}},update:{text:{set:$text}}){comments{id text}}}',
+  variableValues:{id,text},
+  contextValue:{driver,req:{headers:{authorization:`Bearer ${jwt.sign({username,email:`${username}@test.invalid`,email_verified:true},'test-only')}`},body:{},isMutation:true}},
+ });
+ const allowed=await executeRevision('allowed','edited');
+ assert.equal(allowed.errors,undefined,JSON.stringify(allowed));
+ const unchanged=await executeRevision('allowed','edited');
+ assert.equal(unchanged.errors,undefined,JSON.stringify(unchanged));
+ const denied=await executeRevision('denied','forbidden');
+ assert.ok(denied.errors?.length,JSON.stringify(denied));
+ const rows=await driver.executeQuery(`MATCH(author:User)-[:AUTHORED_COMMENT]->(c:Comment)
+  OPTIONAL MATCH(c)-[:HAS_VERSION]->(v:TextVersion)<-[:AUTHORED_VERSION]-(editor:User)
+  RETURN c.id AS id,c.text AS text,author.username AS author,c.textLastEdited IS NOT NULL AS edited,
+    collect({body:v.body,editor:editor.username}) AS revisions ORDER BY id`);
+ assert.deepEqual(rows.records.map(row=>row.toObject()),[
+  {id:'allowed',text:'edited',author:'author',edited:true,revisions:[{body:'original',editor:'moderator'}]},
+  {id:'denied',text:'original',author:'author',edited:false,revisions:[{body:null,editor:null}]},
+ ]);
 });
