@@ -153,7 +153,7 @@ export function createEventWriteRepository(driver: Driver): EventWriteRepository
         }`, {where, update}, tx);
     },
     async findUpdatedEvent(id) {
-      const result = await executeGeneratedOperation<{events: UpdatedEventProjection[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{events: UpdatedEventProjection[]}>(driver,
         `query EventAfterCustomUpdate($where: EventWhere) { events(where: $where) ${UPDATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}});
       return result.events;
     },

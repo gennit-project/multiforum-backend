@@ -1,3 +1,4 @@
+import { executeCanonicalFixedOperation } from "./canonicalFixedOperation.js";
 import type { DiscussionUpdateSnapshot, UpdatedDiscussionProjection } from "../../customResolvers/contracts/contentProjections.js";
 import type {Driver, ManagedTransaction} from 'neo4j-driver';
 import type {DiscussionWhere,DiscussionUpdateInput} from '../../src/generated/graphql.js';
@@ -71,5 +72,5 @@ export interface DiscussionUpdateRepository{
 export function createDiscussionUpdateRepository(driver:Driver):DiscussionUpdateRepository{return{
  async findRevisionSnapshot(where){const r=await executeGeneratedOperation<{discussions:DiscussionUpdateSnapshot[]}>(driver,`query DiscussionBeforeCustomUpdate($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_UPDATE_SNAPSHOT_SELECTION}}`,{where});return r.discussions;},
  async updateWithinTransaction(where,update,tx){await executeGeneratedOperation(driver,`mutation UpdateDiscussionInTransaction($where:DiscussionWhere,$update:DiscussionUpdateInput){updateDiscussions(where:$where,update:$update){discussions${DISCUSSION_REVISION_DEFAULT_SELECTION}}}`,{where,update},tx);},
- async findUpdatedDiscussion(id){const r=await executeGeneratedOperation<{discussions:UpdatedDiscussionProjection[]}>(driver,`query DiscussionAfterCustomUpdate($where:DiscussionWhere){discussions(where:$where)${UPDATED_DISCUSSION_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findUpdatedDiscussion(id){const r=await executeCanonicalFixedOperation<{discussions:UpdatedDiscussionProjection[]}>(driver,`query DiscussionAfterCustomUpdate($where:DiscussionWhere){discussions(where:$where)${UPDATED_DISCUSSION_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
 };}

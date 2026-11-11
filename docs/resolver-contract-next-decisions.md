@@ -1311,3 +1311,19 @@ The existing executed-document and rollback tests remain required, alongside
 outer response collisions and collection-share wrapper coverage. These checks
 establish selected-source provenance, not whole-operation correctness. Inventory
 remains 180 selected / 29 deferred.
+
+
+### Fixed content update and series producers
+
+Six further collision regressions reproduced wrong values in discussion updates,
+event updates, series-occurrence updates, series creation, wiki writes and owned
+comment creation. Their fixed final-response documents now use the same checked
+canonical-document adapter; the owned comments envelope also records canonical
+keys. EventSeries/RepeatPattern and the owned-comment wrapper have corresponding
+field resolvers. Internal revision/validation reads remain unchanged.
+
+The original omitted/null event-channel tests still pass with their existing
+rollback/failure behavior. This is not a decision on that product policy. Selected
+nested histories, authors and occurrences retain their precise projections; raw
+scalar and dynamic-selection boundaries remain explicit. Anonymous Shield probes
+exercise aliased mutation responses without granting a new access path.

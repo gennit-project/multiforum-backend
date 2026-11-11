@@ -324,6 +324,9 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
+  EventSeries: resolveCanonicalSourceField,
+  RepeatPattern: resolveCanonicalSourceField,
+  CreateCommentsWithOwnedConnectionsResponse: resolveCanonicalSourceField,
   DownloadScanReviewItem: resolveCanonicalSourceField,
   AgePolicy: resolveCanonicalSourceField,
   AgeGateCheck: resolveCanonicalSourceField,

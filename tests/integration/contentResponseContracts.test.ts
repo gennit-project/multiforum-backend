@@ -1,3 +1,6 @@
+import permissions from "../../permissions.js";
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
+import { applyMiddleware } from "graphql-middleware";
 import createDiscussion from "../../customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import createEvent from "../../customResolvers/mutations/createEventWithChannelConnections.js";
 import { createDiscussionCreationRepository } from "../../services/persistence/discussionCreationRepository.js";
@@ -12,11 +15,13 @@ import getResolvers from "../helpers/getTestResolvers.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 import { startNeo4j, stopNeo4j, resetDatabase } from "./neo4jHarness.js";
 
-let driver: Driver, schema: GraphQLSchema;
+let driver: Driver, schema: GraphQLSchema, secured: GraphQLSchema;
 before(async () => {
  driver = await startNeo4j();
  schema = await new Neo4jGraphQL({driver,typeDefs,resolvers:getResolvers(driver).resolvers,features:{filters:{String:{MATCHES:true}}}}).getSchema();
  registerGeneratedSchema(driver,schema);
+ secured=applyMiddleware(schema,permissions,sourceIdentity);
+ schema=applyMiddleware(schema,sourceIdentity);
 }, {timeout:240000});
 after(async () => stopNeo4j());
 beforeEach(async () => {
@@ -200,4 +205,42 @@ test('event missing transactional response rolls back and omits the failed item'
   assert.equal(result.errors,undefined);assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{createEventWithChannelConnections:[]});
   assert.equal(typeof createdId,'string');assert.equal((await driver.executeQuery('MATCH(e:Event {id:$id}) RETURN e',{id:createdId})).records.length,0);
  } finally {field.resolve=original;}
+});
+
+for(const operation of ['updateDiscussionWithChannelConnections','updateEventWithChannelConnections','updateEventInSeries'] as const) {
+ test(`${operation}: fixed response preserves colliding aliases`,async()=>{
+  await driver.executeQuery("MATCH(a:User {username:'alice'}) CREATE(a)-[:POSTED_DISCUSSION]->(:Discussion{id:'d',title:'Before',createdAt:datetime()}),(:Event{id:'e',title:'Before',createdAt:datetime(),startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false})");
+  const args=operation==='updateDiscussionWithChannelConnections'?'where:{id:{eq:"d"}},discussionUpdateInput:{title:{set:"After"}}':operation==='updateEventWithChannelConnections'?'where:{id:{eq:"e"}},eventUpdateInput:{title:{set:"After"}},channelConnections:[],channelDisconnections:[]':'eventId:"e",scope:THIS_ONLY,eventUpdateInput:{title:{set:"After"}}';
+  const result=data(await run(`mutation{result:${operation}(${args}){title:id id:title}}`)).result;
+  assert.deepEqual(result,{title:operation==='updateDiscussionWithChannelConnections'?'d':'e',id:'After'});
+ });
+}
+test('event series fixed result preserves root and occurrence collisions',async()=>{
+ const source='mutation($input:CreateEventSeriesInput!){result:createEventSeriesWithChannelConnections(input:$input){key:id id:title Occurrences{key:id id:title} Poster{name:username}}}';
+ const result=data(await run(source,{input:{title:'Series',channelConnections:['forum'],occurrences:[{startTime:'2030-01-01T00:00:00Z',endTime:'2030-01-01T01:00:00Z'}],repeatPattern:{type:'MANUAL',endType:'AFTER_COUNT',endCount:1}}})).result;
+ assert.equal(result.id,'Series');assert.equal(result.Occurrences[0].id,'Series');assert.equal(result.Poster.name,'alice');
+});
+test('wiki fixed response preserves collisions and history author fields',async()=>{
+ const result=data(await run('mutation{result:writeWikiPage(input:{channelUniqueName:"forum",slug:"home",title:"Home"}){key:id id:title PastVersions{id:body Author{name:username}}}}')).result;
+ assert.equal(result.id,'Home');assert.equal(result.PastVersions[0].id,'Home');assert.equal(result.PastVersions[0].Author.name,'alice');
+});
+test('owned comment response preserves text/id collision',async()=>{
+ const result=data(await run('mutation{result:createCommentWithOwnedConnections(input:[{text:"Hello",isRootComment:true,isFeedbackComment:false}]){rows:comments{key:id id:text}}}')).result;
+ assert.equal(result.rows[0].id,'Hello');
+});
+
+test('content collision selections cannot bypass anonymous mutation authorization',async()=>{
+ await driver.executeQuery("MATCH(ch:Channel {uniqueName:'forum'}) CREATE(dc:DiscussionChannel {id:'dc',channelUniqueName:'forum',discussionId:'target',createdAt:datetime()})-[:POSTED_IN_CHANNEL]->(d:Discussion {id:'target',title:'Target',createdAt:datetime()}) CREATE(dc)-[:POSTED_IN_CHANNEL]->(ch)");
+ const operations=[
+  'updateDiscussionWithChannelConnections(where:{id:{eq:"missing"}},discussionUpdateInput:{title:{set:"After"}}){id:title}',
+  'updateEventWithChannelConnections(where:{id:{eq:"missing"}},eventUpdateInput:{title:{set:"After"}},channelConnections:[],channelDisconnections:[]){id:title}',
+  'updateEventInSeries(eventId:"missing",scope:THIS_ONLY,eventUpdateInput:{title:{set:"After"}}){id:title}',
+  'writeWikiPage(input:{channelUniqueName:"forum",slug:"home",title:"Home"}){id:title}',
+  'createCommentWithOwnedConnections(input:[{text:"Hello",isRootComment:true,isFeedbackComment:false,DiscussionChannel:{connect:{where:{node:{id:"dc"}}}},Channel:{connect:{where:{node:{uniqueName:"forum"}}}},CommentAuthor:{User:{connect:{where:{node:{username:"alice"}}}}}}]){rows:comments{id:text}}',
+ ];
+ for(const operation of operations){
+  const result=await graphql({schema:secured,source:`mutation{result:${operation}}`,contextValue:{driver,req:{headers:{}},mayAccessSensitiveContent:false}});
+  assert.ok(result.errors?.length,operation);assert.match(result.errors[0].message,/logged in|authenticated|Not Authori[sz]ed|permission/i);
+ }
+ assert.equal((await driver.executeQuery('MATCH(n) WHERE n:Comment OR n:WikiPage RETURN count(n) AS count')).records[0].get('count').toNumber(),0);
 });
