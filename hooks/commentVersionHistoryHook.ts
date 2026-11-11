@@ -1,5 +1,6 @@
 import { createCommentRevisionRepository, type CommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
-import { stringFromScalarFilter } from "../utils/scalarFilter.js";
+import { stringFromUpdate, type StringUpdate } from "../utils/stringUpdate.js";
+import { stringFromScalarFilter, type ScalarFilter } from "../utils/scalarFilter.js";
 import { createIssueActivityRepository } from "../services/persistence/issueActivityRepository.js";
 import {
   createIssueActivityFeedItems,
@@ -13,7 +14,7 @@ import { logger } from "../logger.js";
 
 type VersionHistoryHandlerInput = {
   context: GraphQLContext;
-  params: { where?: { id?: string | null }; update?: { text?: string | null } | null };
+  params: { where?: { id?: ScalarFilter }; update?: { text?: StringUpdate } | null };
   commentSnapshot?: CommentSnapshot | null;
 };
 
@@ -40,7 +41,8 @@ export const commentVersionHistoryHandler = async ({
     }
     
     // Check if text is being updated
-    const isTextUpdated = update.text !== undefined;
+    const nextText = stringFromUpdate(update.text);
+    const isTextUpdated = nextText !== undefined;
     
     // If text is not being updated, skip version tracking
     if (!isTextUpdated) {
@@ -84,7 +86,7 @@ export const commentVersionHistoryHandler = async ({
 
     // Track text version history if text is being updated
     // Save the pre-edit text with the current user attribution
-    if (isTextUpdated && update.text !== comment.text) {
+    if (isTextUpdated && nextText !== comment.text) {
       await trackTextVersionHistory(
         commentId,
         comment.text,

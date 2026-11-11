@@ -1,5 +1,6 @@
 import { createCommentRevisionRepository } from "../services/persistence/commentRevisionRepository.js";
-import { stringFromScalarFilter } from "../utils/scalarFilter.js";
+import { stringFromUpdate, type StringUpdate } from "../utils/stringUpdate.js";
+import { stringFromScalarFilter, type ScalarFilter } from "../utils/scalarFilter.js";
 /**
  * Middleware for tracking comment version history
  * This middleware runs before comment update operations to capture the previous
@@ -18,10 +19,10 @@ import type { GraphQLContext } from "../types/context.js";
 // Define types for the middleware
 interface UpdateCommentsArgs {
   where?: {
-    id?: string;
+    id?: ScalarFilter;
   };
   update?: {
-    text?: string;
+    text?: StringUpdate;
     [key: string]: unknown;
   };
   [key: string]: unknown;
@@ -43,10 +44,11 @@ const commentVersionHistoryMiddleware = {
       if (!update) {
         return resolve(parent, args, context, info);
       }
+      const nextText = stringFromUpdate(update.text);
       let commentSnapshot: CommentSnapshot | null = null;
 
       // Check if text is being updated
-      if (update.text !== undefined) {
+      if (nextText !== undefined) {
         const commentId = stringFromScalarFilter(where?.id);
 
         if (commentId) {
@@ -60,7 +62,7 @@ const commentVersionHistoryMiddleware = {
       const result = await resolve(parent, args, context, info);
 
       // Run the version history handler only after a successful update
-      if (update.text !== undefined) {
+      if (nextText !== undefined) {
         await commentVersionHistoryHandler({
           context,
           params: { where, update },
@@ -72,7 +74,7 @@ const commentVersionHistoryMiddleware = {
             context,
             comment: commentSnapshot,
             previousText: commentSnapshot.text,
-            nextText: update.text,
+            nextText,
           });
         }
       }

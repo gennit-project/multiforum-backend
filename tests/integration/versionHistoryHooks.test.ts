@@ -73,7 +73,7 @@ test("commentVersionHistoryHandler saves the pre-edit text and notifies the auth
 
   await commentVersionHistoryHandler({
     context: editorCtx("mod"),
-    params: { where: { id: "c1" }, update: { text: "new text" } },
+    params: { where: { id: { eq: "c1" } }, update: { text: { set: "new text" } } },
   });
 
   const versions = await run(
@@ -101,7 +101,7 @@ test("commentVersionHistoryHandler is a no-op when text is unchanged", async () 
 
   await commentVersionHistoryHandler({
     context: editorCtx("alice"),
-    params: { where: { id: "c1" }, update: { text: "same" } },
+    params: { where: { id: { eq: "c1" } }, update: { text: { set: "same" } } },
   });
 
   const versions = await run(`MATCH (tv:TextVersion) RETURN count(tv) AS n`);
