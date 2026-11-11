@@ -160,16 +160,16 @@ test("canSuperUpvote resolves a discussion source channel", async () => {
   await expectDeniedOrError(run(canSuperUpvote, { sourceType: "discussion", sourceId: "dc-1" }, ctx));
 });
 
-test("canSuperUpvote uses a provided channel name directly", async () => {
+test("canSuperUpvote resolves the actual source despite a provided channel hint", async () => {
   const counters = makeCounters();
   const ctx = makeCtx(
-    { ServerConfig: [{ Admins: [], SuperAdmins: [] }] },
+    { ServerConfig: [{ Admins: [], SuperAdmins: [] }], Comment: [{ id: "c-1", DiscussionChannel: { channelUniqueName: "cats" } }] },
     counters
   );
   await expectDeniedOrError(
-    run(canSuperUpvote, { sourceType: "comment", sourceId: "c-1", sourceChannelUniqueName: "cats" }, ctx)
+    run(canSuperUpvote, { sourceType: "comment", sourceId: "c-1", sourceChannelUniqueName: "other-forum" }, ctx)
   );
-  assert.equal(counters.commentCalls, 0);
+  assert.equal(counters.commentCalls, 1);
   assert.equal(counters.discussionCalls, 0);
   assert.deepEqual(counters.permissionChannels, ["cats"]);
 });
@@ -213,3 +213,16 @@ test("canUpvoteDiscussion runs the permission check and denies without permissio
   const ctx = withChannelCtx({ DiscussionChannel: [{ id: "dc-1", channelUniqueName: "cats" }] });
   await expectDeniedOrError(run(canUpvoteDiscussion, { discussionChannelId: "dc-1", username: "alice" }, ctx));
 });
+
+for (const [permission,args] of [
+  [canUpvoteComment,{commentId:"comment",username:"bob"}],
+  [canUpvoteDiscussion,{discussionChannelId:"post",username:"bob"}],
+] as const) {
+  test(`vote actor mismatch is rejected before content lookup (${Object.keys(args)[0]})`, async () => {
+    const counters = makeCounters();
+    await assert.rejects(run(permission,args,makeCtx({},counters)),/only change your own/);
+    assert.equal(counters.commentCalls,0);
+    assert.equal(counters.discussionCalls,0);
+    assert.deepEqual(counters.permissionChannels,[]);
+  });
+}

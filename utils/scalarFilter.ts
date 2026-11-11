@@ -1,3 +1,4 @@
+import type { IdScalarFilters } from "../src/generated/graphql.js";
 // v7 (@neo4j/graphql 7) nests scalar `where` filters as `{ eq: "..." }`
 // (IDScalarFilters / StringScalarFilters), where v5 accepted a flat scalar.
 // Hand-written middleware that pulls a single id / uniqueName out of
@@ -15,4 +16,14 @@ export const stringFromScalarFilter = (
     return value.eq || undefined;
   }
   return undefined;
+};
+
+/** Candidate IDs for permission preflight. Equality is the narrowest candidate
+ * when combined with other scalar predicates; arbitrary text filters do not
+ * establish a bounded set of authorized targets. */
+export type IdFilter = string | IdScalarFilters | null | undefined;
+export const idsFromScalarFilter = (value: IdFilter): string[] => {
+  const single = stringFromScalarFilter(value);
+  if (single) return [single];
+  return value && typeof value === "object" ? value.in ?? [] : [];
 };

@@ -66,8 +66,15 @@ test("role authoring reads channel admins and requires ownership of every input"
 test("nested connect filters run sequentially and reject capabilities the caller lacks", async () => {
   const reads: string[] = [];
   const ctx = context(repository({
-    findServerRoleCapabilities: async (where) => { reads.push(String(where?.name)); return [{ canManageRoles: true }]; },
-    findModServerRoleCapabilities: async (where) => { reads.push(String(where?.name)); return [{ canReport: true }]; },
+    findServerRoleCapabilities: async (where) => { reads.push(String(where?.name)); return [{ canCreateChannel:null,canCreateDiscussion:null,canCreateEvent:null,canCreateComment:null,
+      canUpvoteDiscussion:null,canUpvoteComment:null,canUploadFile:null,canGiveFeedback:null,
+      canManageServerSettings:null,canManagePlugins:null,canManageRoles:true,canManageMods:null,
+      canManageAdmins:null,canManageSuperAdmins:null }]; },
+    findModServerRoleCapabilities: async (where) => { reads.push(String(where?.name)); return [{canLockChannel:null,canHideComment:null,canHideEvent:null,canHideDiscussion:null,
+      canEditComments:null,canEditDiscussions:null,canEditEvents:null,canGiveFeedback:null,
+      canOpenSupportTickets:null,canCloseSupportTickets:null,canReport:true,canSuspendUser:null,
+      canArchiveImage:null,canDeleteWiki:null,canPermanentlyRemoveImage:null,
+      canRemoveDiscussionChannel:null,canRemoveEventChannel:null}]; },
   }));
   const result = await serverConfigInputDoesNotEscalate.resolve({}, { update: {
     DefaultServerRole: { connect: [{ where: { node: { name: "one" } } }, { where: { node: { name: "two" } } }] },

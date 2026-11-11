@@ -1,0 +1,13 @@
+import type {Comment,Image,DiscussionChannel,EventChannel} from "../../ogm_types.js";
+export type ArchiveIssueSnapshot={id:string;issueNumber:number;flaggedServerRuleViolation:boolean|null};
+type ArchiveContext={Channel:{uniqueName:string}|null;DiscussionChannel:{discussionId:string;channelUniqueName:string}|null;Event:{id:string;EventChannels:Array<{channelUniqueName:string}>}|null};
+type UnarchiveContext={Channel:{uniqueName:string}|null;DiscussionChannel:{channelUniqueName:string}|null;Event:{EventChannels:Array<{channelUniqueName:string}>}|null};
+export type ArchiveCommentSnapshot=ArchiveContext & {id:string;text:string|null;CommentAuthor:{__typename:'User';username:string}|{__typename:'ModerationProfile';displayName:string|null;User:{username:string}|null}|null;ParentComment:ArchiveContext|null};
+export type UnarchiveCommentSnapshot=UnarchiveContext & {id:string;text:string|null;ParentComment:UnarchiveContext|null};
+export type ArchiveImageSnapshot={id:string;url:string|null;archived:boolean|null;Uploader:{username:string}|null};
+export type UnarchiveImageSnapshot={id:string;archived:boolean|null};
+export type PermanentImageSnapshot={id:string;url:string|null;permanentlyRemoved:boolean|null;Uploader:{username:string}|null};
+export type ArchiveCommentUpdate=Required<Pick<Comment,'id'|'text'|'editReason'|'isRootComment'|'isFeedbackComment'|'deleted'|'archived'|'isSticky'|'stickyByUsername'|'weightedVotesCount'|'botMentions'|'isFavoritedByUser'|'emoji'|'stickyAt'|'updatedAt'|'textLastEdited'|'createdAt'>>;
+export type ArchiveDiscussionChannelUpdate=Required<Pick<DiscussionChannel,'id'|'locked'|'discussionId'|'channelUniqueName'|'weightedVotesCount'|'botMentions'|'archived'|'answered'|'emoji'|'createdAt'>>;
+export type ArchiveEventChannelUpdate=Required<Pick<EventChannel,'id'|'locked'|'eventId'|'channelUniqueName'|'archived'|'createdAt'>>;
+export type ArchiveImageUpdate=Required<Pick<Image,'id'|'url'|'width'|'height'|'list80Url'|'list160Url'|'list320Url'|'detail640Url'|'detail960Url'|'detail1280Url'|'storageBucket'|'storageObjectName'|'storageUrl'|'uploadedByUsername'|'uploadedByIp'|'alt'|'caption'|'longDescription'|'copyright'|'hasSensitiveContent'|'hasSpoiler'|'archived'|'permanentlyRemoved'|'permanentlyRemovedByUsername'|'permanentlyRemovedByModName'|'variantUrls'|'scanStatus'|'uploadedAt'|'createdAt'|'scanCheckedAt'|'permanentlyRemovedAt'>>;

@@ -11,11 +11,11 @@ export type RankingSettings = {
   commentHot: HotRankingSettings;
 };
 
-export type HotRankingSettingsPatch = Partial<HotRankingSettings>;
+export type HotRankingSettingsPatch = { ageOffsetMonths?: number | null; gravity?: number | null };
 
 export type RankingSettingsPatch = {
-  discussionHot?: HotRankingSettingsPatch;
-  commentHot?: HotRankingSettingsPatch;
+  discussionHot?: HotRankingSettingsPatch | null;
+  commentHot?: HotRankingSettingsPatch | null;
 };
 
 export const DEFAULT_RANKING_SETTINGS: RankingSettings = {
@@ -136,8 +136,8 @@ export const readRankingSettings = (value: unknown): RankingSettings => {
 
 const mergeHotRankingPatch = (
   current: HotRankingSettings,
-  patch: HotRankingSettingsPatch | undefined
-): HotRankingSettings => ({
+  patch: HotRankingSettingsPatch | null | undefined
+): unknown => ({
   ...current,
   ...(patch ?? {}),
 });

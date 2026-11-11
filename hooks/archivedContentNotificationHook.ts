@@ -22,7 +22,7 @@ type ArchivedContentNotificationParams = {
   /** Channel where the content exists */
   channelUniqueName: string;
   /** Issue number for the related moderation issue */
-  issueNumber: number;
+  issueNumber: unknown;
   /** Username of the moderator who archived the content */
   moderatorUsername?: string;
 };
@@ -53,7 +53,7 @@ function buildArchivedContentNotificationText(params: {
   contentType: ContentType;
   contentUrl: string;
   channelUniqueName: string;
-  issueNumber: number;
+  issueNumber: unknown;
 }): string {
   const { contentType, contentUrl, channelUniqueName, issueNumber } = params;
   const baseUrl = process.env.FRONTEND_URL || '';

@@ -3,7 +3,7 @@ import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { SERVER_MEMBERSHIP_SELECTION } from "./serverMembershipSelections.js";
 
 type Users = Array<{username: string}>;
-type UpdatedServerConfigs = { serverConfigs: unknown[] };
+import type {ServerMembershipWriteResult as UpdatedServerConfigs} from '../../customResolvers/contracts/serverMembershipSource.js';
 export interface ServerAdminRepository {
  findPendingInvites(serverName: string): Promise<Array<{PendingAdminInvites: Users}>>;
  connectAdmin(serverName: string, username: string): Promise<UpdatedServerConfigs>;

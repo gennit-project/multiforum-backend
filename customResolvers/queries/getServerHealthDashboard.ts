@@ -1,3 +1,7 @@
+import type {DashboardChannelHealthProjection} from '../contracts/dashboardChannelHealth.js';
+import type {ContributionCount} from '../contracts/contributionReadProjections.js';
+import type {DashboardTimeSeriesRow} from '../contracts/dashboardTimeSeries.js';
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import { DateTime } from "luxon";
 import neo4j, { type Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
@@ -17,10 +21,10 @@ type Args = {
 };
 
 type ChannelHealthRow = {
-  id: string;
-  channelUniqueName: string;
-  displayName: string | null;
-  channelIconURL: string | null;
+  id: unknown;
+  channelUniqueName: unknown;
+  displayName: unknown;
+  channelIconURL: unknown;
   discussionCount: number;
   commentCount: number;
   eventCount: number;
@@ -42,7 +46,7 @@ type AttentionItem = {
   severity: "INFO" | "WARNING" | "CRITICAL";
   title: string;
   description: string;
-  channelUniqueName?: string | null;
+  channelUniqueName?: unknown;
   issueNumber?: number | null;
   metric?: string | null;
   value?: number | null;
@@ -173,7 +177,10 @@ const compareChannelRows = (
     comparison = b.openIssueCount - a.openIssueCount;
   }
   if (comparison === 0) {
-    comparison = a.channelUniqueName.localeCompare(b.channelUniqueName);
+    // The old method call rejected non-string native properties at this same
+    // tie-break step. Do not stringify them or validate an unused name earlier.
+    if (typeof a.channelUniqueName !== 'string') throw new TypeError('a.channelUniqueName.localeCompare is not a function');
+    comparison = a.channelUniqueName.localeCompare(String(b.channelUniqueName));
   }
 
   return comparison;
@@ -305,7 +312,7 @@ const getMedian = (values: number[]): number | null => {
   return sorted[mid] ?? null;
 };
 
-const channelHealthQuery = `
+export const channelHealthQuery = `
   WITH date($startDate) AS startDate,
        date($endDate) AS endDate,
        $channelUniqueNames AS channelUniqueNames
@@ -477,7 +484,7 @@ const channelHealthQuery = `
   RETURN collect(row) AS allChannelHealth
 `;
 
-const timeSeriesQuery = `
+export const timeSeriesQuery = `
   WITH date($startDate) AS startDate,
        date($endDate) AS endDate,
        $channelUniqueNames AS channelUniqueNames
@@ -580,7 +587,7 @@ const issueSummaryQuery = `
          count(DISTINCT CASE WHEN closeActions > 0 OR coalesce(issue.isOpen, false) = false THEN issue END) AS issueClosedCount
 `;
 
-const openIssueSummaryQuery = `
+export const openIssueSummaryQuery = `
   WITH $channelUniqueNames AS channelUniqueNames
   MATCH (issue:Issue)
   WHERE coalesce(issue.isOpen, false) = true
@@ -672,14 +679,14 @@ const repeatedPluginFailuresQuery = `
   RETURN count(*) AS repeatedPluginFailureCount24h
 `;
 
-const runDashboardQuery = async (
+const runDashboardQuery = async <Row extends Record<string, unknown> = Record<string, unknown>>(
   session: Session,
   name: string,
   query: string,
   params: Record<string, unknown>
-): Promise<QueryResult> => {
+): Promise<QueryResult<Row>> => {
   try {
-    return await session.run(query, params);
+    return await session.run<Row>(query, params);
   } catch (error) {
     logger.error(`Error fetching server health dashboard subquery: ${name}`, error);
     throw error;
@@ -712,10 +719,10 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         channelUniqueNames,
         limit,
       };
-      const channelResult = await runDashboardQuery(session, "channelHealth", channelHealthQuery, params);
-      const timeSeriesResult = await runDashboardQuery(session, "timeSeries", timeSeriesQuery, params);
+      const channelResult = await runDashboardQuery<{allChannelHealth:DashboardChannelHealthProjection[]}>(session, "channelHealth", channelHealthQuery, params);
+      const timeSeriesResult = await runDashboardQuery<{timeSeries:DashboardTimeSeriesRow[]}>(session, "timeSeries", timeSeriesQuery, params);
       const issueSummaryResult = await runDashboardQuery(session, "issueSummary", issueSummaryQuery, params);
-      const openIssueSummaryResult = await runDashboardQuery(session, "openIssueSummary", openIssueSummaryQuery, params);
+      const openIssueSummaryResult = await runDashboardQuery<{totalOpenIssueCount:ContributionCount;openIssueAges:ContributionCount[]}>(session, "openIssueSummary", openIssueSummaryQuery, params);
       const moderationActionTotalResult = await runDashboardQuery(session, "moderationActionTotal", moderationActionTotalQuery, params);
       const suspensionTotalResult = await runDashboardQuery(session, "suspensionTotal", suspensionTotalQuery, params);
       const failedDownloadScanTotalResult = await runDashboardQuery(
@@ -744,22 +751,49 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
       );
 
       const channelRecord = channelResult.records[0];
-      const allChannelHealth = sanitize(channelRecord?.get("allChannelHealth") || []) as Array<Omit<ChannelHealthRow, "healthLabel">>;
+      const allChannelHealth = (channelRecord?.get("allChannelHealth") || []).map(row => ({
+        id:sanitize(row.id),
+        channelUniqueName:sanitize(row.channelUniqueName),
+        displayName:sanitize(row.displayName),
+        channelIconURL:sanitize(row.channelIconURL),
+        discussionCount:neo4j.isInt(row.discussionCount) ? row.discussionCount.toNumber() : row.discussionCount,
+        commentCount:neo4j.isInt(row.commentCount) ? row.commentCount.toNumber() : row.commentCount,
+        eventCount:neo4j.isInt(row.eventCount) ? row.eventCount.toNumber() : row.eventCount,
+        downloadCount:neo4j.isInt(row.downloadCount) ? row.downloadCount.toNumber() : row.downloadCount,
+        voteCount:neo4j.isInt(row.voteCount) ? row.voteCount.toNumber() : row.voteCount,
+        uniqueContributorCount:neo4j.isInt(row.uniqueContributorCount) ? row.uniqueContributorCount.toNumber() : row.uniqueContributorCount,
+        openIssueCount:neo4j.isInt(row.openIssueCount) ? row.openIssueCount.toNumber() : row.openIssueCount,
+        issueOpenedCount:neo4j.isInt(row.issueOpenedCount) ? row.issueOpenedCount.toNumber() : row.issueOpenedCount,
+        moderationActionCount:neo4j.isInt(row.moderationActionCount) ? row.moderationActionCount.toNumber() : row.moderationActionCount,
+        archivedContentCount:neo4j.isInt(row.archivedContentCount) ? row.archivedContentCount.toNumber() : row.archivedContentCount,
+        lockedContentCount:neo4j.isInt(row.lockedContentCount) ? row.lockedContentCount.toNumber() : row.lockedContentCount,
+        activityScore:neo4j.isInt(row.activityScore) ? row.activityScore.toNumber() : row.activityScore,
+        oldestOpenIssueAgeDays:row.oldestOpenIssueAgeDays === null ? null : neo4j.isInt(row.oldestOpenIssueAgeDays) ? row.oldestOpenIssueAgeDays.toNumber() : row.oldestOpenIssueAgeDays,
+        issuesPerHundredContributions:row.issuesPerHundredContributions,
+      }));
       const normalizedChannelHealth = allChannelHealth.map((row) => {
         const normalized = {
           ...row,
           oldestOpenIssueAgeDays: toNullableNumber(row.oldestOpenIssueAgeDays),
           issuesPerHundredContributions: toNumber(row.issuesPerHundredContributions),
         };
-        return {
+        return rememberCanonicalSource({
           ...normalized,
           healthLabel: getHealthLabel(normalized),
-        };
+        });
       });
       const channelHealth = normalizedChannelHealth
         .sort((a, b) => compareChannelRows(a, b, sortBy, sortDirection))
         .slice(0, limit);
-      const timeSeries = sanitize(timeSeriesResult.records[0]?.get("timeSeries") || []);
+      const timeSeries = (timeSeriesResult.records[0]?.get("timeSeries") || []).map(row => rememberCanonicalSource({
+        date:row.date,
+        discussions:neo4j.isInt(row.discussions) ? row.discussions.toNumber() : row.discussions,
+        comments:neo4j.isInt(row.comments) ? row.comments.toNumber() : row.comments,
+        events:neo4j.isInt(row.events) ? row.events.toNumber() : row.events,
+        downloads:neo4j.isInt(row.downloads) ? row.downloads.toNumber() : row.downloads,
+        issuesOpened:neo4j.isInt(row.issuesOpened) ? row.issuesOpened.toNumber() : row.issuesOpened,
+        moderationActions:neo4j.isInt(row.moderationActions) ? row.moderationActions.toNumber() : row.moderationActions,
+      }));
       const issueSummary = issueSummaryResult.records[0];
       const openIssueSummary = openIssueSummaryResult.records[0];
       const totalModerationActionCount = toNumber(
@@ -806,11 +840,11 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
           pluginJobOperations?.get("oldestQueuedPluginJobAgeSeconds")
         ),
       };
-      const openIssueAges = (sanitize(openIssueSummary?.get("openIssueAges") || []) as unknown[])
+      const openIssueAges = (openIssueSummary?.get("openIssueAges") || [])
         .map(toNumber);
-      const issueAging = buildIssueAging(openIssueAges);
+      const issueAging = buildIssueAging(openIssueAges).map(rememberCanonicalSource);
       const medianOpenIssueAgeDays = getMedian(openIssueAges);
-      const summary = {
+      const summary = rememberCanonicalSource({
         activeChannelCount: allChannelHealth.filter((row) => row.activityScore > 0).length,
         discussionCount: allChannelHealth.reduce((total, row) => total + toNumber(row.discussionCount), 0),
         commentCount: allChannelHealth.reduce((total, row) => total + toNumber(row.commentCount), 0),
@@ -827,9 +861,9 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
         failedDownloadScanCount,
         ...pipelineOperations,
         medianOpenIssueAgeDays,
-      };
+      });
 
-      return {
+      return rememberCanonicalSource({
         startDate,
         endDate,
         generatedAt: now.toISO(),
@@ -841,8 +875,8 @@ const getServerHealthDashboardResolver = ({ driver }: Input) => {
           channelHealth,
           failedDownloadScanCount,
           pipelineOperations
-        ),
-      };
+        ).map(rememberCanonicalSource),
+      });
     } catch (error) {
       logger.error("Error fetching server health dashboard:", error);
       throw new Error("Failed to fetch server health dashboard");

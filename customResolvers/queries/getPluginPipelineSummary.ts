@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { Driver } from "neo4j-driver"
 import { createPipelineTargetRepository, type PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
 import { createPipelineHistoryRepository, type PipelineHistoryRepository } from "../../services/persistence/pipelineHistoryRepository.js"
@@ -26,7 +27,7 @@ const getResolver = ({
   const attempts = await pipelineHistoryRepository.findSummaryAttempts(targetId, targetType)
   const jobs = await pipelineHistoryRepository.findSummaryJobs(targetId, targetType)
 
-  return {
+  return rememberCanonicalSource({
     targetId,
     targetType,
     attempts: attempts.map(attempt =>
@@ -35,7 +36,7 @@ const getResolver = ({
         jobs,
       })
     ),
-  }
+  })
 }
 
 export default getResolver

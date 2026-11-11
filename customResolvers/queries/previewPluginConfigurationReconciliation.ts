@@ -1,3 +1,4 @@
+import {reconciliationPlanSource} from '../contracts/pluginConfigurationSources.js'
 import type { Driver } from "neo4j-driver";
 import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -20,17 +21,6 @@ import type { EventPipeline, PipelineStep } from '../../services/plugin/types.js
 type Input = {
   driver: Driver
   pluginConfigurationReadRepository?: PluginConfigurationReadRepository
-}
-
-type InstalledVersionEdge = {
-  properties?: {
-    enabled?: boolean | null
-    settingsJson?: unknown
-  } | null
-  node?: {
-    version?: string | null
-    Plugin?: { name?: string | null } | null
-  } | null
 }
 
 const mapCondition = (
@@ -162,7 +152,7 @@ const getResolver = (input: Input) => {
 
     const edges = (
       config.InstalledVersionsConnection?.edges ?? []
-    ) as InstalledVersionEdge[]
+    )
     const secrets = await repository.listReconciliationSecretStatuses()
     const desired = mapPluginConfigurationDesiredStateInput(args.manifest)
     const channels = repository.listReconciliationChannels
@@ -171,7 +161,7 @@ const getResolver = (input: Input) => {
         )
       : []
 
-    return buildPluginConfigurationReconciliationPlan({
+    return reconciliationPlanSource(buildPluginConfigurationReconciliationPlan({
       desired,
       live: {
         registries: config.pluginRegistries ?? [],
@@ -206,7 +196,7 @@ const getResolver = (input: Input) => {
         }),
         pipelines: parseStoredPipelines(config.pluginPipelines),
       },
-    })
+    }))
   }
 
 }

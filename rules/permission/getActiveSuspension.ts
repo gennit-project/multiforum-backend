@@ -15,8 +15,8 @@ type ActiveSuspensionInput = {
 export type ActiveSuspensionResult = {
   activeSuspension: ChannelPermissionSuspension | null;
   isSuspended: boolean;
-  relatedIssueId: string | null;
-  relatedIssueNumber: number | null;
+  relatedIssueId: unknown;
+  relatedIssueNumber: unknown;
   expiredUserSuspensions: ChannelPermissionSuspension[];
   expiredModSuspensions: ChannelPermissionSuspension[];
   suspendedEntity: "user" | "mod" | null;

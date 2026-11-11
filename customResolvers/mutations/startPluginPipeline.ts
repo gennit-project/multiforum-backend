@@ -1,11 +1,7 @@
+import {startedAttemptSource} from '../contracts/pluginExecutionSources.js';
 import {createPipelineStartRepository, type PipelineStartRepository} from "../../services/persistence/pipelineStartRepository.js";
 import { createContentRevisionHash } from "../../services/plugin/moderationJobIdentity.js";
 import { GraphQLError } from "graphql";
-import type {
-  Channel as ChannelType,
-  DownloadableFile as DownloadableFileType,
-  ServerConfig as ServerConfigType,
-} from "../../ogm_types.js";
 import {
   PluginPipelineRunStatus,
   PluginPipelineRunTrigger,
@@ -26,7 +22,6 @@ import {
 } from "../../services/plugin/pipelineUtils.js";
 import type {
   EventPipeline,
-  PluginEdgeData,
 } from "../../services/plugin/types.js";
 
 export type StartPluginPipelineInput = { startRepository?: PipelineStartRepository };
@@ -36,33 +31,6 @@ type StartPluginPipelineArgs = {
   targetType: string;
   eventType: string;
   channelId?: string | null;
-};
-
-type FileRecord = DownloadableFileType & {
-  uploadedByUsername?: string | null;
-  Discussion?: {
-    Author?: { username?: string | null } | null;
-    DiscussionChannels?: Array<{
-      channelUniqueName?: string | null;
-      archived?: boolean | null;
-    }>;
-  } | null;
-};
-
-type DiscussionRecord = {
-  id: string;
-  title?: string | null;
-  body?: string | null;
-  Author?: { username?: string | null } | null;
-  DownloadableFiles?: Array<{
-    uploadedAt?: string | null;
-    createdAt?: string | null;
-    uploadedByUsername?: string | null;
-  }> | null;
-  DiscussionChannels?: Array<{
-    channelUniqueName?: string | null;
-    archived?: boolean | null;
-  }>;
 };
 
 const userInputError = (message: string) =>
@@ -106,7 +74,7 @@ export const createStartPluginPipelineResolver = (
     let pipelines: EventPipeline[] = [];
 
     if (targetType === "DownloadableFile") {
-      const files = (await repository.findFileTarget(targetId)) as FileRecord[];
+      const files = (await repository.findFileTarget(targetId));
       const file = files[0];
       if (!file) {
         throw new GraphQLError("Pipeline target not found", {
@@ -128,7 +96,7 @@ export const createStartPluginPipelineResolver = (
           "A channelId is required to start a channel pipeline"
         );
       }
-      const discussions = (await repository.findDiscussionTarget(targetId)) as DiscussionRecord[];
+      const discussions = (await repository.findDiscussionTarget(targetId));
       const discussion = discussions[0];
       const belongsToChannel = discussion?.DiscussionChannels?.some(
         item =>
@@ -141,7 +109,7 @@ export const createStartPluginPipelineResolver = (
         });
       }
       const channels = await repository.findChannelPlan(requestedChannelId);
-      const channel = channels[0] as ChannelType | undefined;
+      const channel = channels[0];
       if (!channel) {
         throw new GraphQLError("Pipeline target not found", {
           extensions: { code: "NOT_FOUND" },
@@ -193,7 +161,7 @@ export const createStartPluginPipelineResolver = (
     }
 
     const configs = await repository.findServerPlan();
-    const config = configs[0] as ServerConfigType | undefined;
+    const config = configs[0];
     if (scope === "SERVER") {
       pipelines = parseStoredPipelines(config?.pluginPipelines);
     }
@@ -208,7 +176,7 @@ export const createStartPluginPipelineResolver = (
       installedPluginEdges: pipelineConfigured
         ? (
             config?.InstalledVersionsConnection?.edges || []
-          ) as unknown as PluginEdgeData[]
+          )
         : [],
       uploadedAt,
     });
@@ -277,7 +245,7 @@ export const createStartPluginPipelineResolver = (
     if (!attempts[0]) {
       throw new Error("Pipeline runner did not create an attempt");
     }
-    return attempts[0];
+    return startedAttemptSource(attempts[0]);
   };
 };
 

@@ -7,5 +7,6 @@ export function campaignServiceRepositoryStub(models:Pick<ModelMap,'Downloadable
  findFiles:()=>models.DownloadableFile.find({selectionSet:FILE_SELECTION,options:{sort:[{createdAt:SortDirection.Asc},{id:SortDirection.Asc}]}}),
  findAttempts:campaignId=>models.PluginPipelineRun!.find({where:{campaignId},selectionSet:ATTEMPT_SELECTION}),
  updateProgress:async(id,update)=>{await models.PluginPipelineCampaign!.update({where:{id},update});},
+ isRunning:async id=>(await models.PluginPipelineCampaign!.find({where:{id,status:PluginPipelineCampaignStatus.Running},selectionSet:"{ id }"})).some(row=>row.id===id),
  findRunningCampaigns:()=>models.PluginPipelineCampaign!.find({where:{status:PluginPipelineCampaignStatus.Running},selectionSet:RUNNING_SELECTION}),
 };}

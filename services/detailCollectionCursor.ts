@@ -8,11 +8,19 @@ export type DetailCollectionCursor = {
   id: string;
 };
 
+/** The writer preserves the raw stored ID. Decoding is the validation boundary;
+ * encoding alone does not certify a usable round-trip cursor for corrupt data. */
+export type DetailCollectionCursorSource = {
+  kind: DetailCollectionKind;
+  createdAt: string;
+  id: unknown;
+};
+
 type EncodedDetailCollectionCursor = {
   v: 1;
   k: DetailCollectionKind;
   c: string;
-  i: string;
+  i: unknown;
 };
 
 const invalidCursor = () =>
@@ -21,7 +29,7 @@ const invalidCursor = () =>
   });
 
 export const encodeDetailCollectionCursor = (
-  cursor: DetailCollectionCursor
+  cursor: DetailCollectionCursorSource
 ): string => {
   const encoded: EncodedDetailCollectionCursor = {
     v: 1,

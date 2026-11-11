@@ -145,6 +145,7 @@ test("campaign runner honors concurrency and records provenance", async () => {
       },
     },
     PluginPipelineCampaign: {
+      find: async (args: {where: {id: string}}) => [{id:args.where.id}],
       update: async (input: unknown) => {
         updates.push(input);
         return { pluginPipelineCampaigns: [] };
@@ -208,6 +209,7 @@ test("campaign runner does not exceed active concurrency", async () => {
       }],
     },
     PluginPipelineCampaign: {
+      find: async (args: {where: {id: string}}) => [{id:args.where.id}],
       update: async (input: unknown) => {
         updates.push(input);
         return { pluginPipelineCampaigns: [] };
@@ -255,7 +257,8 @@ test("processor completes empty campaigns and the service can start and stop", a
       find: async () => [],
     },
     PluginPipelineCampaign: {
-      find: async () => {
+      find: async (args: {where: {id?: string}}) => {
+        if (args.where.id) return [campaign];
         campaignFindCount += 1;
         return campaignFindCount === 1 ? [campaign] : [];
       },

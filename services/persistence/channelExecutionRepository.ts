@@ -1,16 +1,17 @@
 import type {Driver} from "neo4j-driver";
-import type {Channel, Discussion, DownloadableFileUpdateInput, ServerConfig, ServerSecret, PluginRun, PluginRunCreateInput, PluginRunUpdateInput, CreatePluginRunsMutationResponse} from "../../ogm_types.js";
+import type {PluginRunCreateInput,PluginRunUpdateInput} from "../../ogm_types.js";
+import type {ChannelExecutionChannel,ChannelExecutionDiscussion,ChannelDiscussionExecutionSource,ExecutionConfiguration,ExecutionReturnedRun,ExecutionSecret,CreatedExecutionRuns} from "../../customResolvers/contracts/pipelineExecutorProjections.js";
 import {executeGeneratedOperation} from "./generatedSchemaOperations.js";
 import {PLUGIN_RUN_DEFAULT_SELECTION} from "./pipelineLeaseRepository.js";
 export interface ChannelExecutionRepository {
- findChannel(uniqueName:string):Promise<Channel[]>;
- findDiscussion(id:string):Promise<Discussion[]>;
- findConfiguration():Promise<ServerConfig[]>;
+ findChannel(uniqueName:string):Promise<ChannelExecutionChannel[]>;
+ findDiscussion(id:string):Promise<ChannelDiscussionExecutionSource[]>;
+ findConfiguration():Promise<ExecutionConfiguration[]>;
  writeScanState(id:string,update:Record<string,unknown>):Promise<void>;
- createPendingRuns(input:PluginRunCreateInput[]):Promise<CreatePluginRunsMutationResponse>;
+ createPendingRuns(input:PluginRunCreateInput[]):Promise<CreatedExecutionRuns>;
  markSkippedRun(id:string,update:PluginRunUpdateInput):Promise<void>;
- findReturnedRun(id:string):Promise<PluginRun[]>;
- findSecrets(pluginId:string):Promise<ServerSecret[]>;
+ findReturnedRun(id:string):Promise<ExecutionReturnedRun[]>;
+ findSecrets(pluginId:string):Promise<ExecutionSecret[]>;
 }
 export const CHANNEL_SELECTION = `{
       uniqueName
@@ -149,13 +150,13 @@ const FILE_DEFAULT_SELECTION = `{
 }`;
 export function createChannelExecutionRepository(driver:Driver):ChannelExecutionRepository {
  return {
- async findChannel(uniqueName){const r=await executeGeneratedOperation<{channels:Channel[]}>(driver,`query ChannelExecutionChannel($where:ChannelWhere){channels(where:$where)${CHANNEL_SELECTION}}`,{where:{uniqueName:{eq:uniqueName}}});return r.channels;},
- async findDiscussion(id){const r=await executeGeneratedOperation<{discussions:Discussion[]}>(driver,`query ChannelExecutionDiscussion($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
- async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query ChannelExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
+ async findChannel(uniqueName){const r=await executeGeneratedOperation<{channels:ChannelExecutionChannel[]}>(driver,`query ChannelExecutionChannel($where:ChannelWhere){channels(where:$where)${CHANNEL_SELECTION}}`,{where:{uniqueName:{eq:uniqueName}}});return r.channels;},
+ async findDiscussion(id){const r=await executeGeneratedOperation<{discussions:ChannelExecutionDiscussion[]}>(driver,`query ChannelExecutionDiscussion($where:DiscussionWhere){discussions(where:$where)${DISCUSSION_SELECTION}}`,{where:{id:{eq:id}}});return r.discussions;},
+ async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:ExecutionConfiguration[]}>(driver,`query ChannelExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
  async writeScanState(id,update){await executeGeneratedOperation(driver,`mutation WriteChannelExecutionScanState($where:DownloadableFileWhere,$update:DownloadableFileUpdateInput){updateDownloadableFiles(where:$where,update:$update){downloadableFiles${FILE_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
- async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:CreatePluginRunsMutationResponse}>(driver,`mutation CreatePendingChannelJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
+ async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:CreatedExecutionRuns}>(driver,`mutation CreatePendingChannelJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
  async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipChannelJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
- async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedChannelJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
- async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query ChannelExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
+ async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:ExecutionReturnedRun[]}>(driver,`query ReturnedChannelJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
+ async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ExecutionSecret[]}>(driver,`query ChannelExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
  };
 }

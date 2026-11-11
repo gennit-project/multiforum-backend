@@ -80,8 +80,10 @@ try {
       ['legacyJobs',`MATCH (j:PluginRun {targetId:$targetId,targetType:$targetType}) RETURN j`,filter],
     ] as const) {
       let metrics;
+      let observedPlan;
       for (let warm=0;warm<2;warm++) {
         const result = await driver.executeQuery('PROFILE '+query,params);
+        observedPlan = result.summary.profile;
         metrics = summarizeProfile(result.summary.profile as ProfilePlan,result.records.length);
         if (name === 'jobs') assert.ok(result.records.every(row => row.get('jobs').length <= 21));
       }
@@ -92,7 +94,9 @@ try {
         name==='flags' ? {baseDbHits:1000, dbHitsPerRequestedRow:0,baseIntermediateRows:20,intermediateRowsPerRequestedRow:0,requestedRows:1} :
         name==='jobs' && fixture.jobs===20 ? {baseDbHits:1000,dbHitsPerRequestedRow:40,baseIntermediateRows:20,intermediateRowsPerRequestedRow:2,requestedRows:Math.min(fixture.attempts,10)*20} : null;
       const evaluation = budget && metrics ? evaluateProfile(metrics,budget) : null;
-      profiles.push({name,metrics,evaluation});
+      // Retain the exact failing plan in the always-uploaded disposable-fixture
+      // artifact. Summary metrics alone cannot explain planner-dependent scans.
+      profiles.push({name,metrics,evaluation,...(evaluation && !evaluation.passed ? {plan:observedPlan} : {})});
       console.log(JSON.stringify({fixture, name, metrics, evaluation}));
       if (evaluation && !evaluation.passed) {
         console.error(`Budget failed: ${name}: ${evaluation.violations.join('; ')}`);

@@ -2,7 +2,7 @@ import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { SERVER_MEMBERSHIP_SELECTION } from "./serverMembershipSelections.js";
 
-type UpdatedServers={serverConfigs:unknown[]};
+import type {ServerMembershipWriteResult as UpdatedServers} from '../../customResolvers/contracts/serverMembershipSource.js';
 export interface ServerInvitationRepository {
  findInvitee(username:string):Promise<Array<{username:string}>>;
  connectAdminInvite(serverName:string,username:string):Promise<UpdatedServers>;

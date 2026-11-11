@@ -1,5 +1,6 @@
 import { GraphQLBoolean, GraphQLInt, GraphQLString } from "graphql";
 import neo4j, { type Driver } from "neo4j-driver";
+import type { NativeInstancePolicySelections, CompletedAgePolicy, CompletedSetupPolicy } from "../../customResolvers/contracts/instancePolicySource.js";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
 export type ServerAgeConfig = Partial<{
@@ -35,6 +36,15 @@ export const FIND_SETUP_CONFIGS = `
   ORDER BY config.serverName
 `;
 
+const policyQueries = { age: FIND_AGE_POLICY_CONFIGS, setup: FIND_SETUP_CONFIGS };
+
+// The native implementation completes every selected scalar. Optional keys on
+// the injected reader interface remain supported for existing test/adaptor users.
+export interface CompletedInstancePolicyRepository extends InstancePolicyRepository {
+  findAgePolicyConfigs(serverName: string): Promise<CompletedAgePolicy[]>;
+  findSetupConfigs(serverName?: string): Promise<CompletedSetupPolicy[]>;
+}
+
 const boolean = (value: unknown): boolean | null =>
   value == null ? null : GraphQLBoolean.serialize(neo4j.isInt(value) ? value.toNumber() : value);
 // Match GraphQL 5 numericalResolver before GraphQL Int serialization, including
@@ -53,23 +63,25 @@ const integer = (value: unknown): number | null =>
 export function createInstancePolicyRepository(
   driver: Driver,
   database = resolveNeo4jDatabase()
-): InstancePolicyRepository {
-  const read = async (query: string, serverName?: string): Promise<Record<string, unknown>[]> => {
+): CompletedInstancePolicyRepository {
+  const read = async <K extends keyof NativeInstancePolicySelections>(
+    selection: K, serverName?: string
+  ): Promise<NativeInstancePolicySelections[K][]> => {
     // Match the generated OGM find execution, including managed reads/bookmarks.
     const session = driver.session({
       database, defaultAccessMode: neo4j.session.READ,
       bookmarkManager: driver.executeQueryBookmarkManager,
     });
     try {
-      const result = await session.executeRead(tx => tx.run(query, { serverName: serverName ?? null }));
-      return result.records.map(record => record.get("config") as Record<string, unknown>);
+      const result = await session.executeRead(tx => tx.run<{ config: NativeInstancePolicySelections[K] }>(policyQueries[selection], { serverName: serverName ?? null }));
+      return result.records.map(record => record.get("config"));
     } finally {
       await session.close();
     }
   };
   return {
     async findAgePolicyConfigs(serverName) {
-      return (await read(FIND_AGE_POLICY_CONFIGS, serverName)).map(config => ({
+      return (await read("age", serverName)).map(config => ({
         accountAgeGateEnabled: boolean(config.accountAgeGateEnabled),
         minimumAccountAge: integer(config.minimumAccountAge),
         sensitiveContentAgeGateEnabled: boolean(config.sensitiveContentAgeGateEnabled),
@@ -77,7 +89,7 @@ export function createInstancePolicyRepository(
       }));
     },
     async findSetupConfigs(serverName) {
-      return (await read(FIND_SETUP_CONFIGS, serverName)).map(config => {
+      return (await read("setup", serverName)).map(config => {
         // The old selection included serverName even though the caller ignores it.
         if (config.serverName != null) GraphQLString.serialize(config.serverName);
         return {

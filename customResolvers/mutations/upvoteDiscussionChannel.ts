@@ -1,3 +1,4 @@
+import { voteSource } from "../contracts/voteSources.js";
 import { discussionChannelIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -98,7 +99,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
       const existingUpvotedByUsers = discussionChannel.UpvotedByUsers || [];
       const existingUpvotedByUsersAggregate = { count: existingUpvotedByUsers.length };
 
-      return {
+      return voteSource({
         id: discussionChannelId,
         weightedVotesCount: (discussionChannel.weightedVotesCount ?? 0) + 1 + weightedVoteBonus,
         UpvotedByUsers: [
@@ -114,7 +115,7 @@ const upvoteDiscussionChannelResolver = (input: Input) => {
           totalCount: existingUpvotedByUsersAggregate.count + 1,
           aggregate: { count: { nodes: existingUpvotedByUsersAggregate.count + 1 } },
         },
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

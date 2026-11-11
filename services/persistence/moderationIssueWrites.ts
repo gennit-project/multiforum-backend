@@ -1,4 +1,5 @@
-import neo4j, { type Driver, type ManagedTransaction } from "neo4j-driver";
+import { rememberCanonicalSource } from '../canonicalSourceFields.js';
+import neo4j, { type Driver, type ManagedTransaction, type Node, type EagerResult } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { issueTargetDefinitions } from "../issueTargetIdentity.js";
 
@@ -78,9 +79,12 @@ export type AppendModerationActionsParams = {
 
 export type ModerationIssueRow = Record<string, unknown> & {
   id: string;
-  issueNumber: number;
-  flaggedServerRuleViolation?: boolean | null;
 };
+export type OpenModerationIssueRow = ModerationIssueRow & { isOpen: boolean };
+export type ReportModerationIssueRow = OpenModerationIssueRow & { flaggedServerRuleViolation: boolean };
+export type ReportModerationActionsParams = AppendModerationActionsParams & { isOpen: boolean; flaggedServerRuleViolation: boolean };
+type IssueProperties = Record<string, unknown> & {id:string};
+type IssueRecord = {issue:Node<neo4j.Integer,IssueProperties>};
 
 // Reproduces the embedded-comment text format of the former shared
 // getModerationActionCreateInput: the body wrapped in blank lines, with an
@@ -88,8 +92,8 @@ export type ModerationIssueRow = Record<string, unknown> & {
 // close actions) stays null.
 export const formatModerationActionText = (input: {
   text?: string | null;
-  suspendUntil?: string;
-  suspendIndefinitely?: boolean;
+  suspendUntil?: string | null;
+  suspendIndefinitely?: boolean | null;
 }): string | null => {
   const { text, suspendUntil, suspendIndefinitely } = input;
   if (!text) return null;
@@ -125,10 +129,12 @@ const convertNeo4jValue = (value: unknown): unknown => {
   return value;
 };
 
-const toIssueRow = (properties: Record<string, unknown>): ModerationIssueRow => {
-  const out: Record<string, unknown> = {};
+// id is guaranteed by randomUUID() on creation or MATCH(id:$issueId) on append.
+// All other persisted values stay unknown and keep the original conversion order.
+const toIssueRow = (properties: IssueProperties): ModerationIssueRow => {
+  const out: ModerationIssueRow = {id:properties.id};
   for (const [key, value] of Object.entries(properties)) out[key] = convertNeo4jValue(value);
-  return out as ModerationIssueRow;
+  return rememberCanonicalSource(out);
 };
 
 const definitionsByField = new Map(issueTargetDefinitions.map((d) => [d.scalarField, d]));
@@ -142,7 +148,7 @@ const definitionsByField = new Map(issueTargetDefinitions.map((d) => [d.scalarFi
 export async function createModerationIssue(
   driver: Driver,
   params: CreateModerationIssueParams
-): Promise<ModerationIssueRow> {
+): Promise<ReportModerationIssueRow> {
   const {
     issueNumber,
     title,
@@ -205,10 +211,12 @@ export async function createModerationIssue(
  RETURN i AS issue
 `;
 
-  const result = await driver.executeQuery(cypher, queryParams);
+  const result = await driver.executeQuery<EagerResult<IssueRecord>>(cypher, queryParams);
   const row = result.records[0];
   if (!row) throw new Error("Error creating moderation issue");
-  return toIssueRow((row.get("issue") as { properties: Record<string, unknown> }).properties);
+  // SET writes both flags unconditionally. Copy the typed parameters only after
+  // the same full property conversion; no additional validation or eager reads.
+  return rememberCanonicalSource({...toIssueRow(row.get("issue").properties),isOpen:true,flaggedServerRuleViolation});
 }
 
 const buildAppendActionCypher = (action: ModerationActionParams): string => {
@@ -251,6 +259,9 @@ const UPDATE_ISSUE_SCALARS = `
  * transaction. Returns the updated issue rows (empty if the issue was not found,
  * mirroring updateIssues matching nothing).
  */
+export function appendModerationActions(driver:Driver,params:ReportModerationActionsParams):Promise<{issues:ReportModerationIssueRow[]}>;
+export function appendModerationActions(driver:Driver,params:AppendModerationActionsParams & {isOpen:boolean}):Promise<{issues:OpenModerationIssueRow[]}>;
+export function appendModerationActions(driver:Driver,params:AppendModerationActionsParams):Promise<{issues:ModerationIssueRow[]}>;
 export async function appendModerationActions(
   driver: Driver,
   params: AppendModerationActionsParams
@@ -277,14 +288,21 @@ export async function appendModerationActions(
           extras,
         });
       }
-      const res = await tx.run(UPDATE_ISSUE_SCALARS, {
+      const res = await tx.run<IssueRecord>(UPDATE_ISSUE_SCALARS, {
         issueId,
         isOpen: isOpen ?? null,
         flagged: flaggedServerRuleViolation ?? null,
       });
-      return res.records.map((r) =>
-        toIssueRow((r.get("issue") as { properties: Record<string, unknown> }).properties)
-      );
+      return res.records.map((r) => {
+        const issue=toIssueRow(r.get("issue").properties);
+        // A non-null argument selects the parameter arm of CASE in the write.
+        // Omitted/null flags retain unknown persisted values, not a claimed bool.
+        if(typeof isOpen === "boolean") {
+          if(typeof flaggedServerRuleViolation === "boolean") return rememberCanonicalSource({...issue,isOpen,flaggedServerRuleViolation});
+          return rememberCanonicalSource({...issue,isOpen});
+        }
+        return issue;
+      });
     });
     return { issues };
   } finally {

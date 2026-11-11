@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../canonicalSourceFields.js";
 import { scalars } from "@neo4j/graphql";
 import { GraphQLBoolean, GraphQLID, GraphQLInt, GraphQLString, type GraphQLScalarType } from "graphql";
 import neo4j, { type Driver } from "neo4j-driver";
@@ -77,52 +78,52 @@ function serialize(value: unknown, scalar: GraphQLScalarType, required: boolean,
 // scalar's declared serializer, not an assertion that a partial map is an entity.
 function subscribers(raw: Record<string, unknown>): Subscribers {
   const values = raw.subscribers as { username: unknown }[];
-  return values.map(value => ({ username: serialize(value.username, GraphQLString, true, "User.username") }));
+  return values.map(value => rememberCanonicalSource({ username: serialize(value.username, GraphQLString, true, "User.username") }));
 }
 function decodeComment(raw: Record<string, unknown>): CommentSubscriptionTarget {
-  return {
+  return rememberCanonicalSource({
     id: serialize(raw.id, GraphQLID, true, "Comment.id"),
     text: serialize(raw.text, GraphQLString, false, "Comment.text"),
     createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Comment.createdAt"),
     SubscribedToNotifications: subscribers(raw),
-  };
+  });
 }
 function decodeDiscussionChannel(raw: Record<string, unknown>): DiscussionChannelSubscriptionTarget {
-  return {
+  return rememberCanonicalSource({
     id: serialize(raw.id, GraphQLID, true, "DiscussionChannel.id"),
     discussionId: serialize(raw.discussionId, GraphQLID, true, "DiscussionChannel.discussionId"),
     channelUniqueName: serialize(raw.channelUniqueName, GraphQLString, true, "DiscussionChannel.channelUniqueName"),
     createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "DiscussionChannel.createdAt"),
     archived: serialize(raw.archived, GraphQLBoolean, false, "DiscussionChannel.archived"),
     SubscribedToNotifications: subscribers(raw),
-  };
+  });
 }
 function decodeEvent(raw: Record<string, unknown>): EventSubscriptionTarget {
-  return {
+  return rememberCanonicalSource({
     id: serialize(raw.id, GraphQLID, true, "Event.id"),
     title: serialize(raw.title, GraphQLString, true, "Event.title"),
     description: serialize(raw.description, GraphQLString, false, "Event.description"),
     createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Event.createdAt"),
     SubscribedToNotifications: subscribers(raw),
-  };
+  });
 }
 function decodeEventUpdates(raw: Record<string, unknown>): EventUpdatesSubscriptionTarget {
-  return {
+  return rememberCanonicalSource({
     id: serialize(raw.id, GraphQLID, true, "Event.id"),
     title: serialize(raw.title, GraphQLString, true, "Event.title"),
     createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Event.createdAt"),
     SubscribedToEventUpdates: subscribers(raw),
-  };
+  });
 }
 function decodeIssue(raw: Record<string, unknown>): IssueSubscriptionTarget {
-  return {
+  return rememberCanonicalSource({
     id: serialize(raw.id, GraphQLID, true, "Issue.id"),
     issueNumber: serialize(raw.issueNumber, GraphQLInt, true, "Issue.issueNumber"),
     title: serialize(raw.title, GraphQLString, false, "Issue.title"),
     channelUniqueName: serialize(raw.channelUniqueName, GraphQLString, false, "Issue.channelUniqueName"),
     createdAt: serialize(raw.createdAt, scalars.GraphQLDateTime, true, "Issue.createdAt"),
     SubscribedToNotifications: subscribers(raw),
-  };
+  });
 }
 
 export function createSubscriptionTargetRepository(

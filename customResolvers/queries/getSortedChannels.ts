@@ -1,4 +1,7 @@
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
+import { canonicalSortedChannel } from "../../services/canonicalSortedChannel.js";
+import type { SortedViewerChannel } from "../contracts/viewerReadProjections.js";
+import type { Driver, Integer } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import { logger } from "../../logger.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -13,10 +16,10 @@ type Input = {
 };
 
 type Args = {
-  limit?: string;
-  offset?: string;
-  tags?: string[];
-  searchInput?: string;
+  limit?: string | number | null;
+  offset?: string | number | null;
+  tags?: (string | null)[] | null;
+  searchInput?: string | null;
   countDownloads?: boolean | null;
 };
 
@@ -30,7 +33,7 @@ const getSortedChannelsResolver = (input: Input) => {
     });
     const tags = args.tags || [];
     const searchInput = args.searchInput || "";
-    const countDownloads = args.countDownloads;
+    const countDownloads = args.countDownloads ?? null;
     if (context) {
       context.user = await setUserDataOnContext({ context });
     }
@@ -52,7 +55,7 @@ const getSortedChannelsResolver = (input: Input) => {
          WITH c, 0.0 AS score`;
 
     try {
-      const result = await session.run(
+      const result = await session.run<{channel: SortedViewerChannel; aggregateChannelCount: Integer}>(
         `
         // Select the candidate channels (full-text search or all channels)
         ${matchClause}
@@ -132,8 +135,8 @@ const getSortedChannelsResolver = (input: Input) => {
         }
       );
 
-      const channels = result.records.map((record: Neo4jRecord) =>
-        record.get("channel")
+      const channels = result.records.map((record) =>
+        canonicalSortedChannel(record.get("channel"))
       );
 
       const aggregateChannelCount =
@@ -141,7 +144,7 @@ const getSortedChannelsResolver = (input: Input) => {
           ? result.records[0].get("aggregateChannelCount")
           : 0;
 
-      return { channels, aggregateChannelCount };
+      return rememberCanonicalSource({ channels, aggregateChannelCount });
     } catch (error) {
       logger.error("Error fetching sorted channels:", error);
       throw new Error("Failed to fetch sorted channels");

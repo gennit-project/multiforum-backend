@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { removeEmoji } from "./updateEmoji.js";
 import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
 import type { ReactionWriter } from "../../services/persistence/reactionWriter.js";
@@ -38,10 +39,10 @@ const getRemoveEmojiResolver = (input: Input) => {
 
       await reactionWriter.updateDiscussionChannelEmoji(discussionChannelId, updatedEmojiJSON);
 
-      return {
+      return rememberCanonicalSource({
         id: discussionChannelId,
         emoji: updatedEmojiJSON,
-      };
+      });
     } catch (e) {
       logger.error(e);
       throw e;

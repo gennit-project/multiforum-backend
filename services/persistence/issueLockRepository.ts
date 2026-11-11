@@ -1,9 +1,9 @@
-import neo4j, { type Driver } from "neo4j-driver";
+import { rememberCanonicalSource } from '../canonicalSourceFields.js';
+import neo4j, { type EagerResult, type Driver, type Node, type Record as Neo4jRecord } from "neo4j-driver";
 import type { Issue } from "../../ogm_types.js";
 import {
   appendModerationActions,
   type ModerationActionParams,
-  type ModerationIssueRow,
 } from "./moderationIssueWrites.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
@@ -22,10 +22,16 @@ export type IssueLockWrite = {
   action: ModerationActionParams;
 };
 
+export type IssueLockSnapshot = Required<Pick<Issue, "id" | "issueNumber" | "channelUniqueName" | "locked">>;
+// Only MATCH/SET-guaranteed properties are known; all unrelated persisted fields
+// stay unknown and retain outer GraphQL's selected-field serialization.
+type WrittenIssueProperties = Record<string, unknown> & {id:string;locked:boolean;lockedAt?:neo4j.DateTime;lockReason?:string};
+type WrittenIssueRecord = {issue:Node<neo4j.Integer,WrittenIssueProperties>};
+export type IssueLockResult = Record<string,unknown> & {id:string;locked:boolean;lockedAt?:string;lockReason?:string};
 export interface IssueLockRepository {
-  findLockState(id: string): Promise<Pick<Issue, "id" | "issueNumber" | "channelUniqueName" | "locked">[]>;
-  lockIssue(params: IssueLockWrite): Promise<{ issues: ModerationIssueRow[] }>;
-  unlockIssue(params: IssueLockWrite): Promise<{ issues: ModerationIssueRow[] }>;
+  findLockState(id: string): Promise<IssueLockSnapshot[]>;
+  lockIssue(params: IssueLockWrite): Promise<{ issues: IssueLockResult[] }>;
+  unlockIssue(params: IssueLockWrite): Promise<{ issues: IssueLockResult[] }>;
 }
 
 const FIND = `query IssueLockState($where: IssueWhere!) {
@@ -33,7 +39,7 @@ const FIND = `query IssueLockState($where: IssueWhere!) {
 }`;
 
 const convertNeo4jValue = (value: unknown): unknown => {
-  if (neo4j.isInt(value)) return (value as neo4j.Integer).toNumber();
+  if (neo4j.isInt(value)) return value.toNumber();
   if (
     neo4j.isDateTime(value) ||
     neo4j.isLocalDateTime(value) ||
@@ -42,15 +48,20 @@ const convertNeo4jValue = (value: unknown): unknown => {
     neo4j.isTime(value) ||
     neo4j.isDuration(value)
   ) {
-    return (value as { toString(): string }).toString();
+    return value.toString();
   }
   return value;
 };
 
-const toIssueRow = (properties: Record<string, unknown>): ModerationIssueRow => {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(properties)) out[key] = convertNeo4jValue(value);
-  return out as ModerationIssueRow;
+const toIssueRow = (properties: WrittenIssueProperties): IssueLockResult => {
+  const out: IssueLockResult = {id:properties.id,locked:properties.locked};
+  for (const [key, value] of Object.entries(properties)) {
+    if (key === "id" || key === "locked") continue;
+    if (key === "lockedAt") out.lockedAt = properties.lockedAt?.toString();
+    else if (key === "lockReason") out.lockReason = properties.lockReason;
+    else out[key] = convertNeo4jValue(value);
+  }
+  return rememberCanonicalSource(out);
 };
 
 const LOCK_SCALARS = `
@@ -77,18 +88,18 @@ const UNLOCK_SCALARS = `
 `;
 
 export function createIssueLockRepository(driver: Driver): IssueLockRepository {
-  const toRows = (records: Array<{ get(k: string): unknown }>): ModerationIssueRow[] =>
-    records.map((r) => toIssueRow((r.get("issue") as { properties: Record<string, unknown> }).properties));
+  const toRows = (records: Array<Neo4jRecord<WrittenIssueRecord>>): IssueLockResult[] =>
+    records.map((r) => toIssueRow(r.get("issue").properties));
   return {
     async findLockState(id) {
-      const result = await executeGeneratedOperation<{ issues: Issue[] }>(driver, FIND, { where: { id: { eq: id } } });
+      const result = await executeGeneratedOperation<{ issues: IssueLockSnapshot[] }>(driver, FIND, { where: { id: { eq: id } } });
       return result.issues;
     },
     async lockIssue(params) {
       // Action + embedded comment graph via the owned moderation write, then the
       // lock scalars + LockedBy edge.
       await appendModerationActions(driver, { issueId: params.issueId, actions: [params.action] });
-      const result = await driver.executeQuery(LOCK_SCALARS, {
+      const result = await driver.executeQuery<EagerResult<WrittenIssueRecord>>(LOCK_SCALARS, {
         issueId: params.issueId,
         lockedAt: params.lockedAt,
         lockReason: params.lockReason,
@@ -98,7 +109,7 @@ export function createIssueLockRepository(driver: Driver): IssueLockRepository {
     },
     async unlockIssue(params) {
       await appendModerationActions(driver, { issueId: params.issueId, actions: [params.action] });
-      const result = await driver.executeQuery(UNLOCK_SCALARS, { issueId: params.issueId });
+      const result = await driver.executeQuery<EagerResult<WrittenIssueRecord>>(UNLOCK_SCALARS, { issueId: params.issueId });
       return { issues: toRows(result.records) };
     },
   };

@@ -1,8 +1,7 @@
-import {createCampaignServiceRepository, type CampaignServiceRepository} from "../persistence/campaignServiceRepository.js";
+import {createCampaignServiceRepository, type CampaignServiceRepository, type CampaignRow} from "../persistence/campaignServiceRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
   DownloadableFile,
-  PluginPipelineCampaign,
   PluginPipelineRun,
 } from "../../ogm_types.js";
 import {
@@ -82,7 +81,7 @@ export const previewPipelineCampaign = async ({
 }) => {
   const repository = campaignRepository ?? createCampaignServiceRepository(driver!);
   const policy = await getCampaignPolicy({ driver, campaignRepository: repository, policyId });
-  const files = (await repository.findFiles()) as CampaignFile[];
+  const files = await repository.findFiles();
   const affected = files.filter(file => isBefore(file, policy.effectiveAt!));
   const accessibleFileCount = affected.filter(isAccessible).length;
 
@@ -124,7 +123,7 @@ export const runPipelineCampaign = async ({
   trigger = triggerPluginRunsForDownloadableFile,
 }: {
   models: CampaignModels;
-  campaign: PluginPipelineCampaign;
+  campaign: Pick<CampaignRow,"id"|"policyId"|"concurrency"|"rateLimitPerMinute"|"createdByUsername">;
   now?: Date;
   trigger?: typeof triggerPluginRunsForDownloadableFile;
 }) => {
@@ -134,7 +133,7 @@ export const runPipelineCampaign = async ({
     campaignRepository: repository,
     policyId: campaign.policyId,
   });
-  const attempts = (await repository.findAttempts(campaign.id)) as CampaignAttempt[];
+  const attempts = await repository.findAttempts(campaign.id);
   const counts = campaignCounts(attempts);
   const recentAttempts = attempts.filter(
     item => Date.parse(String(item.createdAt)) >= now.getTime() - 60_000
@@ -145,13 +144,19 @@ export const runPipelineCampaign = async ({
     campaign.rateLimitPerMinute - recentAttempts
   );
   const attemptedIds = new Set(attempts.map(item => item.targetId));
-  const files = (await repository.findFiles()) as CampaignFile[];
+  const files = await repository.findFiles();
   const candidates = files.filter(
     file =>
       isBefore(file, policy.effectiveAt!) &&
       isAccessible(file) &&
       !attemptedIds.has(file.id)
   );
+  // Admission is a fresh persisted RUNNING read, not the scheduler's earlier
+  // snapshot. A pause before admission prevents dispatch/progress writes. Once
+  // admitted, this bounded batch may finish even if paused during dispatch.
+  if (!await repository.isRunning(campaign.id)) {
+    return { startedCount: 0, finished: false, ...counts };
+  }
   const batch = candidates.slice(0, Math.min(capacity, rateCapacity));
 
   for (const file of batch) {
@@ -172,7 +177,7 @@ export const runPipelineCampaign = async ({
     );
   }
 
-  const refreshedAttempts = (await repository.findAttempts(campaign.id)) as CampaignAttempt[];
+  const refreshedAttempts = await repository.findAttempts(campaign.id);
   const refreshedCounts = campaignCounts(refreshedAttempts);
   const finished =
     candidates.length <= batch.length && refreshedCounts.runningCount === 0;

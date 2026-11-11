@@ -1,3 +1,7 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
+import {canonicalEventMetadata} from "../../services/canonicalEventMetadata.js";
+import { canonicalEventComment } from "../../services/customCommentSources.js";
+import type { EventViewerMetadata, EventViewerComment } from "../contracts/viewerReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import {
@@ -17,9 +21,9 @@ type Input = {
 
 type Args = {
   eventId: string;
-  offset: string;
-  limit: string;
-  sort: string;
+  offset?: string | number | null;
+  limit?: string | number | null;
+  sort?: string | null;
 };
 
 const getResolver = (input: Input) => {
@@ -50,7 +54,7 @@ const getResolver = (input: Input) => {
       });
 
       return await session.executeWrite(async (transaction) => {
-        const eventResult = await transaction.run(
+        const eventResult = await transaction.run<{Event: EventViewerMetadata}>(
           getEventCommentsMetadataQuery,
           {
             eventId,
@@ -58,9 +62,9 @@ const getResolver = (input: Input) => {
           }
         );
         const event = eventResult.records[0]?.get("Event");
-        if (!event) return { Event: null, Comments: [] };
+        if (!event) return rememberCanonicalSource({ Event: null, Comments: [] });
 
-        const commentsResult = await transaction.run(getEventCommentsQuery, {
+        const commentsResult = await transaction.run<{comment: EventViewerComment}>(getEventCommentsQuery, {
           eventId,
           offset,
           limit,
@@ -69,17 +73,17 @@ const getResolver = (input: Input) => {
           ...rankingParams,
         });
 
-        return {
-          Event: event,
-          Comments: commentsResult.records.map((record) => record.get("comment")),
-        };
+        return rememberCanonicalSource({
+          Event: canonicalEventMetadata(event),
+          Comments: commentsResult.records.map((record) => canonicalEventComment(record.get("comment"))),
+        });
       });
     } catch (error: unknown) {
       logger.error("Error getting event comments:", error);
-      return {
+      return rememberCanonicalSource({
         Event: null,
         Comments: [],
-      };
+      });
     } finally {
       await session.close();
     }

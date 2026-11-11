@@ -1,0 +1,14 @@
+import type {Issue,Comment,Discussion,Event,User,ModerationProfile} from '../../src/generated/graphql.js';
+import type {Projection,Selection} from './selection.js';
+export const botExistingReportSelection={id:true,issueNumber:true,flaggedServerRuleViolation:true,relatedUsername:true,relatedModProfileName:true} as const satisfies Selection<Issue>;
+export type BotExistingReport=Projection<Issue,typeof botExistingReportSelection>;
+export const botReportedUserSelection={username:true} as const satisfies Selection<User>;
+export const botReportedModSelection={displayName:true} as const satisfies Selection<ModerationProfile>;
+const commentCore={id:true,text:true} as const satisfies Selection<Comment>;
+export const botReportedCommentSelection={...commentCore,CommentAuthor:{__typename:true,'... on User':botReportedUserSelection,'... on ModerationProfile':botReportedModSelection}} as const;
+export type BotReportedAuthor=({__typename:'User'} & Projection<User,typeof botReportedUserSelection>) | ({__typename:'ModerationProfile'} & Projection<ModerationProfile,typeof botReportedModSelection>);
+export type BotReportedComment=Projection<Comment,typeof commentCore> & {CommentAuthor:BotReportedAuthor|null};
+export const botReportedDiscussionSelection={id:true,title:true,Author:botReportedUserSelection} as const satisfies Selection<Discussion>;
+export type BotReportedDiscussion=Projection<Discussion,typeof botReportedDiscussionSelection>;
+export const botReportedEventSelection={id:true,title:true,Poster:botReportedUserSelection} as const satisfies Selection<Event>;
+export type BotReportedEvent=Projection<Event,typeof botReportedEventSelection>;

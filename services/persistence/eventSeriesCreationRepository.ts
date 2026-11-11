@@ -1,7 +1,7 @@
+import type { CreatedEventSeriesProjection } from "../../customResolvers/contracts/contentProjections.js";
 import type {Driver, ManagedTransaction} from "neo4j-driver";
 import type {EventSeriesCreateInput} from "../../src/generated/graphql.js";
-import type {EventSeries} from "../../ogm_types.js";
-import {executeGeneratedOperation} from "./generatedSchemaOperations.js";
+import {executeCanonicalFixedOperation} from "./canonicalFixedOperation.js";
 
 export const CREATED_EVENT_SERIES_SELECTION = `
   {
@@ -58,20 +58,20 @@ export const CREATED_EVENT_SERIES_SELECTION = `
 `;
 
 export interface EventSeriesCreationRepository {
-  createWithinTransaction(input: EventSeriesCreateInput, tx: ManagedTransaction): Promise<EventSeries[]>;
-  findCreatedSeries(id: string): Promise<EventSeries[]>;
+  createWithinTransaction(input: EventSeriesCreateInput, tx: ManagedTransaction): Promise<CreatedEventSeriesProjection[]>;
+  findCreatedSeries(id: string): Promise<CreatedEventSeriesProjection[]>;
 }
 export function createEventSeriesCreationRepository(driver: Driver): EventSeriesCreationRepository {
   return {
     async createWithinTransaction(input, tx) {
-      const result = await executeGeneratedOperation<{createEventSeries: {eventSeries: EventSeries[]}}>(driver,
+      const result = await executeCanonicalFixedOperation<{createEventSeries: {eventSeries: CreatedEventSeriesProjection[]}}>(driver,
         `mutation CreateSeriesInTransaction($input: [EventSeriesCreateInput!]!) {
           createEventSeries(input: $input) {eventSeries ${CREATED_EVENT_SERIES_SELECTION}}
         }`, {input: [input]}, tx);
       return result.createEventSeries.eventSeries;
     },
     async findCreatedSeries(id) {
-      const result = await executeGeneratedOperation<{eventSeries: EventSeries[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{eventSeries: CreatedEventSeriesProjection[]}>(driver,
         `query SeriesAfterCustomCreate($where: EventSeriesWhere) {eventSeries(where: $where) ${CREATED_EVENT_SERIES_SELECTION}}`, {where: {id: {eq: id}}});
       return result.eventSeries;
     },

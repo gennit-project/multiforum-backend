@@ -1,9 +1,9 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
 import type {
   CreateInfo,
-  DownloadableFile,
   DownloadableFileCreateInput,
 } from "../../ogm_types.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -22,34 +22,18 @@ type Input = {
   driver: Driver;
 };
 
-type CreatedDownloadableFile = Pick<
-  DownloadableFile,
-  | "id"
-  | "fileName"
-  | "kind"
-  | "size"
-  | "url"
-  | "storageBucket"
-  | "storageObjectName"
-  | "storageUrl"
-  | "uploadedAt"
-  | "uploadedByUsername"
-  | "uploadedByIp"
-  | "createdAt"
-  | "priceModel"
-  | "priceCents"
-  | "priceCurrency"
-  | "downloadCountTotal"
-  | "downloadCountUnique"
-  | "attributionOverride"
-  | "supportPatreonUrl"
-  | "supportBuyMeACoffeeUrl"
-  | "supportKoFiUrl"
-  | "supportPayPalMeUrl"
-  | "scanStatus"
-  | "scanCheckedAt"
-  | "scanReason"
->;
+// Raw driver values are not GraphQL output values. Only id is proven here by
+// randomUUID(); persisted/input-derived scalars remain outside this boundary.
+export type CreatedDownloadableFileRow = {
+  id: string;
+  fileName: unknown; kind: unknown; size: unknown; url: unknown;
+  storageBucket: unknown; storageObjectName: unknown; storageUrl: unknown;
+  uploadedAt: unknown; uploadedByUsername: unknown; uploadedByIp: unknown;
+  createdAt: unknown; priceModel: unknown; priceCents: unknown; priceCurrency: unknown;
+  downloadCountTotal: unknown; downloadCountUnique: unknown; attributionOverride: unknown;
+  supportPatreonUrl: unknown; supportBuyMeACoffeeUrl: unknown; supportKoFiUrl: unknown;
+  supportPayPalMeUrl: unknown; scanStatus: unknown; scanCheckedAt: unknown; scanReason: unknown;
+};
 
 const createDownloadableFiles = async ({
   driver,
@@ -57,7 +41,7 @@ const createDownloadableFiles = async ({
 }: {
   driver: Driver;
   inputs: DownloadableFileCreateInput[];
-}): Promise<{ downloadableFiles: CreatedDownloadableFile[]; info: CreateInfo }> => {
+}): Promise<{ downloadableFiles: CreatedDownloadableFileRow[]; info: CreateInfo }> => {
   const session = driver.session({ defaultAccessMode: "WRITE" });
   const persistenceInputs = inputs.map((input) => ({
     fileName: input.fileName,
@@ -89,7 +73,7 @@ const createDownloadableFiles = async ({
   try {
     // A managed write, so the age-gate reconcile step runs before commit.
     const result = await session.executeWrite((tx) =>
-      tx.run(
+      tx.run<{ file: CreatedDownloadableFileRow }>(
       `
       UNWIND $inputs AS input
       CREATE (file:DownloadableFile {
@@ -164,7 +148,7 @@ const createDownloadableFiles = async ({
     const { nodesCreated, relationshipsCreated } = result.summary.counters.updates();
     return {
       downloadableFiles: result.records.map(
-        (record) => record.get("file") as CreatedDownloadableFile
+        (record) => record.get("file")
       ),
       // Use the committed create query's counters, as the generated mutation
       // does. Claiming an existing upload audit creates no nodes/relationships.
@@ -242,7 +226,8 @@ const createDownloadableFilesWithUploadMetadata = ({ driver }: Input) => {
         })
       );
 
-      return { downloadableFiles, info };
+      for (const file of downloadableFiles) rememberCanonicalSource(file);
+      return rememberCanonicalSource({ downloadableFiles, info: rememberCanonicalSource(info) });
     } catch (error: unknown) {
       logger.error("Error creating downloadable files:", error);
       const message = error instanceof Error ? error.message : String(error);

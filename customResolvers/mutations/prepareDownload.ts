@@ -1,4 +1,6 @@
-import { createDownloadReviewRepository, type DownloadReviewRepository } from "../../services/persistence/downloadReviewRepository.js";
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
+import type { PreparedDownload } from "../contracts/downloadActions.js";
+import { createDownloadReviewRepository, type DownloadReviewRepository, type DownloadPreparationRow } from "../../services/persistence/downloadReviewRepository.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { Storage } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
@@ -17,26 +19,14 @@ type Input = {
   driver: Driver;
 };
 
-type FileRecord = {
-  id: string;
-  url?: string | null;
-  storageBucket?: string | null;
-  storageObjectName?: string | null;
-  scanStatus?: string | null;
-  scanReason?: string | null;
-  scanCheckedAt?: string | null;
-  uploadedByUsername?: string | null;
-  Discussion?: {
-    id?: string | null;
-    Author?: { username?: string | null } | null;
-    hasSensitiveContent?: boolean | null;
-  } | null;
-};
+type FileRecord = DownloadPreparationRow;
 
 type PluginRunRecord = {
   pluginId?: string | null;
   status?: string | null;
 };
+
+type ScanTrigger = (...args: Parameters<typeof triggerPluginRunsForDownloadableFile>) => Promise<PluginRunRecord[]>;
 
 type TrackDownloadResolver = ReturnType<typeof trackDownload>;
 
@@ -78,14 +68,14 @@ const selectFile = async (
   repository: DownloadReviewRepository,
   downloadableFileId: string
 ): Promise<FileRecord | null> => {
-  const files = await repository.findPreparation(downloadableFileId) as FileRecord[];
+  const files = await repository.findPreparation(downloadableFileId);
 
   return files[0] || null;
 };
 
 export const createPrepareDownloadResolver = (
   input: Input,
-  triggerRuns: typeof triggerPluginRunsForDownloadableFile =
+  triggerRuns: ScanTrigger =
     triggerPluginRunsForDownloadableFile,
   checkServerModPermission: typeof hasServerModPermission =
     hasServerModPermission,
@@ -109,7 +99,7 @@ export const createPrepareDownloadResolver = (
       driver: input.driver,
       downloadableFileId,
       event: "downloadableFile.downloaded",
-    }) as Promise<PluginRunRecord[]>).finally(() => {
+    })).finally(() => {
       inFlightScans.delete(downloadableFileId);
     });
     inFlightScans.set(downloadableFileId, scan);
@@ -123,7 +113,7 @@ export const createPrepareDownloadResolver = (
       discussionId,
     }: { downloadableFileId: string; discussionId: string },
     context: GraphQLContext
-  ) => {
+  ): Promise<PreparedDownload> => {
     if (!downloadableFileId) throw new Error("Downloadable file ID is required");
     if (!discussionId) throw new Error("Discussion ID is required");
 
@@ -167,7 +157,7 @@ export const createPrepareDownloadResolver = (
       );
 
       if (!securityRun) {
-        return {
+        return rememberCanonicalSource({
           ready: false,
           url: null,
           scanStatus: "FAILED",
@@ -175,7 +165,7 @@ export const createPrepareDownloadResolver = (
           scanCheckedAt: null,
           reviewAccess: false,
           message: "The download security scanner is not configured.",
-        };
+        });
       }
 
       scannedFile = await selectFile(repository, downloadableFileId);
@@ -186,7 +176,7 @@ export const createPrepareDownloadResolver = (
     const reviewAccess = scanStatus !== "CLEAN" && canReview;
     const ready = scanStatus === "CLEAN" || reviewAccess;
     if (!ready) {
-      return {
+      return rememberCanonicalSource({
         ready: false,
         url: null,
         scanStatus,
@@ -196,7 +186,7 @@ export const createPrepareDownloadResolver = (
         message: scanStatus === "FAILED"
           ? "The security check could not be completed. Please try again."
           : "This download was blocked by the security check.",
-      };
+      });
     }
 
     const url = await createDownloadReadUrl({
@@ -204,7 +194,7 @@ export const createPrepareDownloadResolver = (
       storage: storageFactory(),
     });
     if (!url) {
-      return {
+      return rememberCanonicalSource({
         ready: false,
         url: null,
         scanStatus: "FAILED",
@@ -212,7 +202,7 @@ export const createPrepareDownloadResolver = (
         scanCheckedAt: scannedFile.scanCheckedAt || null,
         reviewAccess: false,
         message: "The download URL could not be prepared. Please try again.",
-      };
+      });
     }
 
     await trackDownloadResolver(
@@ -221,7 +211,7 @@ export const createPrepareDownloadResolver = (
       context
     );
 
-    return {
+    return rememberCanonicalSource({
       ready: true,
       url,
       scanStatus,
@@ -231,7 +221,7 @@ export const createPrepareDownloadResolver = (
       message: reviewAccess
         ? "The file is still held for review. Reviewer download prepared."
         : "No threats found. Your download is ready.",
-    };
+    });
   };
 };
 

@@ -1,3 +1,5 @@
+import {internalAttemptSource,internalJobSource} from '../contracts/internalPipelineSources.js';
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
 import type { Driver } from "neo4j-driver";
 import { createPipelineDetailRepository, type PipelineDetailRepository } from "../../services/persistence/pipelineDetailRepository.js";
 
@@ -9,6 +11,6 @@ const getResolver = ({ driver, pipelineDetailRepository = createPipelineDetailRe
   const attempt = attempts[0];
   if (!attempt) return null;
   const jobs = await pipelineDetailRepository.findInternalJobs(attempt.pipelineId);
-  return { attempt, jobs };
+  return rememberCanonicalSource({ attempt:internalAttemptSource(attempt), jobs:jobs.map(internalJobSource) });
 };
 export default getResolver;

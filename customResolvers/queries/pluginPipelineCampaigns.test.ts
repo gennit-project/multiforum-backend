@@ -1,3 +1,5 @@
+import type {CampaignRow} from '../../services/persistence/campaignServiceRepository.js';
+import {PipelineApplicability,PluginPipelineCampaignStatus} from '../../ogm_types.js';
 import {campaignQueryRepositoryStub} from "../../tests/fixtures/campaignQueryRepositoryStub.js";
 import {campaignServiceRepositoryStub} from "../../tests/fixtures/campaignServiceRepositoryStub.js";
 import assert from "node:assert/strict";
@@ -10,6 +12,13 @@ import {
 } from "./pluginPipelineCampaigns.js";
 
 test("campaign queries expose previews and campaign history", async () => {
+  const campaign:CampaignRow={
+    id:'campaign-1',policyId:'policy-1',eventType:'downloadableFile.created',scope:'SERVER',channelId:null,
+    applicability:PipelineApplicability.AllFilesImmediate,enforcementBehavior:'fixture',status:PluginPipelineCampaignStatus.Running,
+    concurrency:1,rateLimitPerMinute:5,affectedFileCount:0,accessibleFileCount:0,unavailableFileCount:0,estimatedProviderRuns:0,
+    completedCount:0,runningCount:0,failedCount:0,timedOutCount:0,createdByUsername:'actor',
+    createdAt:'2026-01-01T00:00:00Z',updatedAt:'2026-01-01T00:00:00Z',startedAt:null,pausedAt:null,finishedAt:null,
+  };
   const models = {
     DownloadableFile: {
       find: async () => [{
@@ -31,7 +40,7 @@ test("campaign queries expose previews and campaign history", async () => {
       }],
     },
     PluginPipelineCampaign: {
-      find: async () => [{ id: "campaign-1" }],
+      find: async () => [campaign],
     },
   } as unknown as Pick<
     ModelMap,
@@ -44,9 +53,7 @@ test("campaign queries expose previews and campaign history", async () => {
   );
   assert.equal(preview.affectedFileCount, 1);
   assert.match(preview.enforcementBehavior, /held/);
-  assert.deepEqual(await getPluginPipelineCampaigns(models)(), [
-    { id: "campaign-1" },
-  ]);
+  assert.deepEqual(await getPluginPipelineCampaigns(models)(), [campaign]);
 });
 
 test("failure query returns stable public destinations and skips orphaned files", async () => {

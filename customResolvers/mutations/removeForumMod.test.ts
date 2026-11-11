@@ -1,3 +1,4 @@
+import {forumMembershipChannel} from "../../tests/helpers/forumMembershipSource.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import removeForumMod from "./removeForumMod.js";
@@ -7,7 +8,7 @@ function createModels(profileName: string | null = "ModAlice") {
   const repository = {
     disconnectModerator: async (name: string, displayName: string) => {
       calls.update = {channelUniqueName:name,displayName};
-      return {channels:[{}]};
+      return {channels:[forumMembershipChannel()]};
     },
     findModeratorProfile: async () => {
       calls.userFind += 1;

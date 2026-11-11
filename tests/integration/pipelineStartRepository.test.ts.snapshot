@@ -102,6 +102,7 @@ exports[`active attempts retain full predicate, unbounded result and started-att
     "eventType": "downloadableFile.created",
     "finishedAt": null,
     "heartbeatAt": null,
+    "id": "1",
     "initiatedByUsername": null,
     "pipelineId": "1",
     "policyEffectiveAt": null,

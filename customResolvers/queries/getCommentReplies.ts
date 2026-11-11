@@ -1,6 +1,9 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
+import { canonicalReplyComment } from "../../services/customCommentSources.js";
+import type { CommentRepliesRow } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Integer } from "neo4j-driver";
+import type { Driver } from "neo4j-driver";
 import { getCommentRepliesQuery } from "../cypher/cypherQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -19,10 +22,10 @@ type Input = {
 
 type Args = {
   commentId: string;
-  modName: string;
-  offset: string;
-  limit: string;
-  sort: string;
+  modName?: string | null;
+  offset?: string | number | null;
+  limit?: string | number | null;
+  sort?: string | null;
 };
 
 const getResolver = (input: Input) => {
@@ -33,7 +36,7 @@ const getResolver = (input: Input) => {
     context: GraphQLContext,
     _info: GraphQLResolveInfo
   ) => {
-    const { commentId, modName, sort } = args;
+    const { commentId, modName = null, sort } = args;
     const { offset, limit } = normalizePagination(args);
     context.user = await setUserDataOnContext({
       context,
@@ -49,7 +52,7 @@ const getResolver = (input: Input) => {
       !canViewSensitiveContent &&
       await isSensitiveContentTarget(driver, { commentId })
     ) {
-      return { ChildComments: [], aggregateChildCommentCount: 0 };
+      return rememberCanonicalSource({ ChildComments: [], aggregateChildCommentCount: 0 });
     }
 
     const session = driver.session();
@@ -64,7 +67,7 @@ const getResolver = (input: Input) => {
         serverName,
       });
 
-      const commentRepliesResult = await session.run(getCommentRepliesQuery, {
+      const commentRepliesResult = await session.run<CommentRepliesRow>(getCommentRepliesQuery, {
         commentId,
         modName,
         offset,
@@ -76,18 +79,18 @@ const getResolver = (input: Input) => {
 
       const record = commentRepliesResult.records[0];
       if (!record) {
-        return {
+        return rememberCanonicalSource({
           ChildComments: [],
           aggregateChildCommentCount: 0,
-        };
+        });
       }
 
-      const aggregateCount = record.get("aggregateChildCommentCount") as Integer;
+      const aggregateCount = record.get("aggregateChildCommentCount");
 
-      return {
-        ChildComments: record.get("ChildComments") || [],
+      return rememberCanonicalSource({
+        ChildComments: (record.get("ChildComments") || []).map(canonicalReplyComment),
         aggregateChildCommentCount: aggregateCount?.toNumber() || 0,
-      };
+      });
     } catch (error: unknown) {
       logger.error("Error getting comment replies:", error);
       const message = error instanceof Error ? error.message : String(error);

@@ -23,7 +23,8 @@ export function decodePipelineCursor(cursor: string | null | undefined, binding:
 }
 
 /** Activity wins, then failures, then cancellation. Never infer success from a partial job page. */
-export function pipelineDisplayStatus(attemptStatus: string, jobStatuses: string[]): string {
+export type PipelineDisplayStatus = 'RUNNING'|'PENDING'|'FAILED'|'TIMED_OUT'|'CANCELLED'|'SKIPPED'|'SUCCEEDED';
+export function pipelineDisplayStatus(attemptStatus: string, jobStatuses: string[]): PipelineDisplayStatus {
   const statuses = new Set([...jobStatuses, attemptStatus === 'QUEUED' ? 'PENDING' : attemptStatus]);
-  return ['RUNNING', 'PENDING', 'FAILED', 'TIMED_OUT', 'CANCELLED'].find(status => statuses.has(status)) ?? (jobStatuses.length > 0 && jobStatuses.every(status => status === 'SKIPPED') ? 'SKIPPED' : 'SUCCEEDED');
+  return (['RUNNING', 'PENDING', 'FAILED', 'TIMED_OUT', 'CANCELLED'] as const).find(status => statuses.has(status)) ?? (jobStatuses.length > 0 && jobStatuses.every(status => status === 'SKIPPED') ? 'SKIPPED' : 'SUCCEEDED');
 }

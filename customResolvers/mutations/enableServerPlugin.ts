@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import { createServerPluginEnablementRepository, type ServerPluginEnablementRepository } from '../../services/persistence/serverPluginEnablementRepository.js'
@@ -16,10 +17,6 @@ type Args = {
   version: string
   enabled: boolean
   settingsJson?: Record<string, unknown>
-}
-
-type InstallationEdge = {
-  properties?: { settingsJson?: unknown } | null
 }
 
 export const parsePluginSettings = (value: unknown): Record<string, unknown> => {
@@ -78,7 +75,7 @@ const getResolver = (input: Input) => {
       }
 
       const installationEdge = serverConfig.InstalledVersionsConnection
-        ?.edges?.[0] as InstallationEdge | undefined
+        ?.edges?.[0]
       const settingsToApply = settingsJson ?? parsePluginSettings(
         installationEdge?.properties?.settingsJson
       )
@@ -115,8 +112,8 @@ const getResolver = (input: Input) => {
 
 
 
-      return {
-        plugin: {
+      return rememberCanonicalSource({
+        plugin: rememberCanonicalSource({
           id: plugin.id,
           name: plugin.name,
           displayName: plugin.displayName,
@@ -127,7 +124,7 @@ const getResolver = (input: Input) => {
           license: plugin.license,
           tags: plugin.tags || [],
           metadata: plugin.metadata || null
-        },
+        }),
         version,
         scope: 'SERVER',
         enabled,
@@ -143,7 +140,7 @@ const getResolver = (input: Input) => {
         sourceCommit: pluginVersion.sourceCommit || null,
         minServerVersion: pluginVersion.minServerVersion || null,
         apiVersion: pluginVersion.apiVersion || null
-      }
+      })
 
     } catch (error: unknown) {
       logger.error('Error in enableServerPlugin resolver:', error)

@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -23,7 +24,7 @@ before(async () => {
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
   registerGeneratedSchema(driver, schema);
-  protectedSchema = applyMiddleware(schema, permissions);
+  protectedSchema = applyMiddleware(schema, permissions, sourceIdentity);
 }, { timeout: 240000 });
 after(async () => stopNeo4j());
 beforeEach(async () => {
@@ -148,4 +149,12 @@ test("nullable selected scalar values are valid responses, not contract violatio
     assert.equal(result.errors, undefined);
     assert.deepEqual(JSON.parse(JSON.stringify(result.data)), { vote: { ...expected("c", 0).vote, weightedVotesCount: null } });
   } finally { field.resolve = previous; }
+});
+
+for(const [id,argument,up,undo] of [['c','commentId','upvoteComment','undoUpvoteComment'],['dc','discussionChannelId','upvoteDiscussionChannel','undoUpvoteDiscussionChannel']] as const) test(`${up}/${undo}: canonical count and connection collisions`,async()=>{
+ for(const [name,count] of [[up,1],[undo,0]] as const){
+  const response=await graphql({schema:protectedSchema,source:`mutation{vote:${name}(${argument}:"${id}",username:"voter"){id:weightedVotesCount weightedVotesCount:id UpvotedByUsersConnection:UpvotedByUsers{name:username} UpvotedByUsers:UpvotedByUsersConnection{count:totalCount aggregate{count{value:nodes}}}}}`,contextValue:{driver,req:{headers:{}},user:{username:'voter',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(response.data)).vote,{id:count,weightedVotesCount:id,UpvotedByUsersConnection:count?[{name:'voter'}]:[],UpvotedByUsers:{count,aggregate:{count:{value:count}}}});
+ }
 });

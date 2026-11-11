@@ -11,7 +11,7 @@ type IsImageUploaderInput = {
   where: ImageWhere;
 };
 
-export const isImageUploader = rule({ cache: "contextual" })(
+export const isImageUploader = rule({ cache: "strict" })(
   async (parent: unknown, args: IsImageUploaderInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const imageId = where?.id?.eq;

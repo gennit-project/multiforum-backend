@@ -15,7 +15,7 @@ type IsIssueAuthorInput = {
  * Check if the current user is the author of the issue.
  * The issue author can be either a User or a ModerationProfile.
  */
-export const isIssueAuthor = rule({ cache: "contextual" })(
+export const isIssueAuthor = rule({ cache: "strict" })(
   async (parent: unknown, args: IsIssueAuthorInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { where } = args;
     const issueId = where?.id?.eq;

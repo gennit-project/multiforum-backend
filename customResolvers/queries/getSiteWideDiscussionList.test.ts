@@ -1,3 +1,4 @@
+import type { SiteWideDiscussionSource } from "../contracts/siteWideDiscussionSources.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLResolveInfo } from "graphql";
@@ -5,6 +6,12 @@ import type { Driver, SessionConfig } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
 import getSiteWideDiscussionListResolver from "./getSiteWideDiscussionList.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
+
+function discussionFixture(id:string,title:unknown=null,body:unknown=null):SiteWideDiscussionSource {
+ return {id,title,body,createdAt:'2026-09-27T12:00:00.000Z',updatedAt:null,
+  hasSensitiveContent:null,hasSpoiler:null,Author:null,DiscussionChannels:[],Tags:[],
+  Album:null,DownloadableFiles:[],isFavorited:null};
+}
 
 type SessionRunCall = {
   query: string;
@@ -416,11 +423,7 @@ test("getSiteWideDiscussionList passes username when user is logged in", async (
 
 // Response structure tests
 test("getSiteWideDiscussionList returns discussions and aggregateCount", async () => {
-  const mockDiscussion = {
-    id: "d-1",
-    title: "Test Discussion",
-    body: "Test body content",
-  };
+  const mockDiscussion = discussionFixture("d-1","Test Discussion","Test body content");
   const driver = createMockDriver([
     { discussion: mockDiscussion, totalCount: 100 },
   ]);
@@ -440,9 +443,9 @@ test("getSiteWideDiscussionList returns discussions and aggregateCount", async (
 
 test("getSiteWideDiscussionList fetches one extra row to detect another page", async () => {
   const driver = createMockDriver([
-    { discussion: { id: "d-1" }, totalCount: 3 },
-    { discussion: { id: "d-2" }, totalCount: 3 },
-    { discussion: { id: "d-3" }, totalCount: 3 },
+    { discussion: discussionFixture("d-1"), totalCount: 3 },
+    { discussion: discussionFixture("d-2"), totalCount: 3 },
+    { discussion: discussionFixture("d-3"), totalCount: 3 },
   ]);
   const resolver = getSiteWideDiscussionListResolver({
     driver,
@@ -457,7 +460,7 @@ test("getSiteWideDiscussionList fetches one extra row to detect another page", a
 
   assert.deepEqual(
     {
-      ids: result.discussions.map((discussion: { id: string }) => discussion.id),
+      ids: result.discussions.map((discussion) => discussion.id),
       pageInfo: result.pageInfo,
       hydratedIds: driver.runCalls[2].params.discussionIds,
     },
@@ -475,10 +478,7 @@ test("getSiteWideDiscussionList fetches one extra row to detect another page", a
 test("getSiteWideDiscussionList decodes an after cursor into seek parameters", async () => {
   const firstDriver = createMockDriver([
     {
-      discussion: {
-        id: "d-1",
-        createdAt: "2026-09-27T12:00:00.000Z",
-      },
+      discussion: discussionFixture("d-1"),
       totalCount: 2,
     },
   ]);
@@ -534,9 +534,9 @@ test("getSiteWideDiscussionList returns empty array and zero count when no resul
 
 test("getSiteWideDiscussionList returns multiple discussions", async () => {
   const mockDiscussions = [
-    { discussion: { id: "d-1", title: "First" }, totalCount: 3 },
-    { discussion: { id: "d-2", title: "Second" }, totalCount: 3 },
-    { discussion: { id: "d-3", title: "Third" }, totalCount: 3 },
+    { discussion: discussionFixture("d-1","First"), totalCount: 3 },
+    { discussion: discussionFixture("d-2","Second"), totalCount: 3 },
+    { discussion: discussionFixture("d-3","Third"), totalCount: 3 },
   ];
   const driver = createMockDriver(mockDiscussions);
   const resolver = getSiteWideDiscussionListResolver({
@@ -622,4 +622,26 @@ test("getSiteWideDiscussionList applies multiple filters together", async () => 
   assert.equal(params.resultsOrder, "desc");
   assert.equal(params.sortOption, "top");
   assert.ok(params.startOfTimeFrame !== null);
+});
+
+test("nullable search/list errors retain their position around ranking reads", async () => {
+  for (const argument of ["searchInput", "selectedChannels", "selectedTags"] as const) {
+    const driver = createMockDriver([]);
+    const resolver = getSiteWideDiscussionListResolver({ driver, serverName: `null-order-${argument}` });
+    await assert.rejects(resolver(null, {
+      ...baseArgs, [argument]: null, options: { ...baseArgs.options, sort: "hot" },
+    }, createMockContext(), mockInfo), {
+      message: `Failed to fetch discussions. Cannot read properties of null (reading '${argument === "searchInput" ? "trim" : "length"}')`,
+    });
+    assert.equal(driver.runCalls.length, argument === "searchInput" ? 0 : 1);
+    if (argument !== "searchInput") assert.match(driver.runCalls[0].query, /ServerConfig/);
+  }
+});
+
+test("nullable archived option retains raw query parameter and falsy query construction", async () => {
+  const driver = createMockDriver([]);
+  const resolver = getSiteWideDiscussionListResolver({ driver });
+  await resolver(null, { ...baseArgs, showArchived: null }, createMockContext(), mockInfo);
+  assert.equal(driver.runCalls[0].params.showArchived, null);
+  assert.match(driver.runCalls[0].query, /coalesce\(dc.archived, false\) = false/);
 });

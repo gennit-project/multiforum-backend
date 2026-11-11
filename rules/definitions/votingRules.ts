@@ -3,15 +3,29 @@ import { rule } from "graphql-shield";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { ERROR_MESSAGES } from "../errorMessages.js";
+import { setUserDataOnContext } from "../permission/userDataHelperFunctions.js";
 import { hasChannelPermission } from "../permission/hasChannelPermission.js";
 import { resolveContentChannelPermissionRepository } from "../../services/persistence/contentChannelPermissionRepository.js";
 
+const assertVoteActor = async (context: GraphQLContext, username: string) => {
+  // Shield may evaluate sibling rules concurrently. Resolve through the same
+  // request identity cache rather than relying on isAuthenticated finishing first.
+  if (!context.user?.data) {
+    context.user = await setUserDataOnContext({ context });
+  }
+  if (!context.user?.username || context.user.username !== username) {
+    throw new Error("You may only change your own votes and reactions.");
+  }
+};
+
+// These rules depend on mutation arguments. Keep cache entries distinct for
+// different actors and targets, including aliased fields in the same request.
 type CanUpvoteCommentArgs = {
   commentId: string;
   username: string;
 };
 
-export const canUpvoteComment = rule({ cache: "contextual" })(
+export const canUpvoteComment = rule({ cache: "strict" })(
   async (parent: unknown, args: CanUpvoteCommentArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     const { commentId, username } = args;
 
@@ -19,6 +33,7 @@ export const canUpvoteComment = rule({ cache: "contextual" })(
       throw new Error("All arguments (commentId, username) are required");
     }
 
+    await assertVoteActor(ctx, username);
     const repository = resolveContentChannelPermissionRepository(ctx);
     const commentData = await repository.findCommentChannelReferences(commentId);
 
@@ -59,43 +74,36 @@ export const canUpvoteComment = rule({ cache: "contextual" })(
 type CanSuperUpvoteArgs = {
   sourceType: "comment" | "discussion";
   sourceId: string;
-  sourceChannelUniqueName?: string;
+  sourceChannelUniqueName?: string | null;
 };
 
 // Super upvoting is a second vote, so it requires the same channel permission as
 // a normal upvote (this blocks suspended users from super upvoting). The mutation
 // handles both comments and discussions, so resolve the channel + permission from
 // the source type. Reused for undoSuperUpvote, which sends the same args.
-export const canSuperUpvote = rule({ cache: "contextual" })(
+export const canSuperUpvote = rule({ cache: "strict" })(
   async (parent: unknown, args: CanSuperUpvoteArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
-    const { sourceType, sourceId, sourceChannelUniqueName } = args;
+    const { sourceType, sourceId } = args;
 
     if (!sourceType || !sourceId) {
       throw new Error("sourceType and sourceId are required");
     }
 
-    let channelName = sourceChannelUniqueName;
+    // The optional display/navigation hint is not an authorization target.
+    let channelName: string | undefined;
     let permission: "canUpvoteComment" | "canUpvoteDiscussion";
 
     if (sourceType === "comment") {
       permission = "canUpvoteComment";
-      if (!channelName) {
-        const repository = resolveContentChannelPermissionRepository(ctx);
-        const commentData =
-          await repository.findCommentChannelReferences(sourceId);
-        channelName =
-          commentData.discussionChannelUniqueName ||
-          commentData.directChannelUniqueName ||
-          undefined;
-      }
+      const repository = resolveContentChannelPermissionRepository(ctx);
+      const commentData = await repository.findCommentChannelReferences(sourceId);
+      channelName = commentData.discussionChannelUniqueName ||
+        commentData.directChannelUniqueName || undefined;
     } else if (sourceType === "discussion") {
       permission = "canUpvoteDiscussion";
-      if (!channelName) {
-        const repository = resolveContentChannelPermissionRepository(ctx);
-        const discussionChannel =
-          await repository.findDiscussionChannelReference(sourceId);
-        channelName = discussionChannel.channelUniqueName || undefined;
-      }
+      const repository = resolveContentChannelPermissionRepository(ctx);
+      const discussionChannel = await repository.findDiscussionChannelReference(sourceId);
+      channelName = discussionChannel.channelUniqueName || undefined;
     } else {
       throw new Error('sourceType must be "comment" or "discussion"');
     }
@@ -127,7 +135,7 @@ type CanUpvoteDiscussionChannelArgs = {
   username: string;
 };
 
-export const canUpvoteDiscussion = rule({ cache: "contextual" })(
+export const canUpvoteDiscussion = rule({ cache: "strict" })(
   async (
     parent: unknown,
     args: CanUpvoteDiscussionChannelArgs,
@@ -143,6 +151,7 @@ export const canUpvoteDiscussion = rule({ cache: "contextual" })(
       );
     }
 
+    await assertVoteActor(ctx, username);
     const repository = resolveContentChannelPermissionRepository(ctx);
     const discussionChannelData =
       await repository.findDiscussionChannelReference(discussionChannelId);

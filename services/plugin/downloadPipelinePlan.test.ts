@@ -187,3 +187,25 @@ test('applies all-files policies to older files', () => {
 
   assert.equal(plan.required, true)
 })
+
+test('missing Plugin relation is filtered before planning without narrowing casts', () => {
+  const edge = installedPlugin();
+  const plan = resolveDownloadPipelinePlan({
+    event: EVENT,
+    pipelines: [{ event: EVENT, steps: [{ pluginId: 'security-attachment-scan' }] }],
+    installedPluginEdges: [{ ...edge, node: { ...edge.node, Plugin: null } }],
+  });
+  assert.equal(plan.required, false);
+  assert.deepEqual(plan.pluginsToRun, []);
+});
+
+test('explicit null event retains null identity and no matched plan', () => {
+  const plan = resolveDownloadPipelinePlan({
+    event: null,
+    pipelines: [{ event: EVENT, steps: [{ pluginId: 'security-attachment-scan' }] }],
+    installedPluginEdges: [installedPlugin()],
+  });
+  assert.equal(plan.event, null);
+  assert.equal(plan.eventPipeline, null);
+  assert.deepEqual(plan.pluginsToRun, []);
+});

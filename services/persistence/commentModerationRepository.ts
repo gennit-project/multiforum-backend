@@ -1,24 +1,25 @@
+import type {ArchiveIssueSnapshot, ArchiveCommentSnapshot, UnarchiveCommentSnapshot, ArchiveCommentUpdate} from "./archiveProjections.js";
+import {archiveIssueAppender, type ArchiveIssueAppender} from "./archiveIssueWrites.js";
+import type {ReportModerationIssueRow} from "./moderationIssueWrites.js";
 import type { Driver } from "neo4j-driver";
-import type { Comment, Issue, CommentWhere, CommentUpdateInput } from "../../ogm_types.js";
+import type { CommentWhere, CommentUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { COMMENT_REVISION_DEFAULT_SELECTION } from "./commentRevisionRepository.js";
 import {
   createModerationIssue,
-  appendModerationActions,
   type CreateModerationIssueParams,
-  type AppendModerationActionsParams,
 } from "./moderationIssueWrites.js";
 
 export interface CommentModerationRepository {
-  findArchiveTarget(id: string): Promise<Comment[]>;
-  findUnarchiveTarget(id: string): Promise<Comment[]>;
-  findIssue(channelUniqueName: string, relatedCommentId: string): Promise<Issue[]>;
+  findArchiveTarget(id: string): Promise<ArchiveCommentSnapshot[]>;
+  findUnarchiveTarget(id: string): Promise<UnarchiveCommentSnapshot[]>;
+  findIssue(channelUniqueName: string, relatedCommentId: string): Promise<ArchiveIssueSnapshot[]>;
   // FAMILY-3 / v7 (campaign #284): Issue + ModerationAction + Comment writes are
   // owned Cypher (moderationIssueWrites). setArchived stays on the generated API
   // (the archived scalar + the to-many RelatedIssues connect are unchanged in v7).
-  createArchiveIssue(params: CreateModerationIssueParams): Promise<{issues: Issue[]}>;
-  appendIssueAction(params: AppendModerationActionsParams): Promise<{issues: Issue[]}>;
-  setArchived(where: CommentWhere, update: CommentUpdateInput): Promise<{comments: Comment[]}>;
+  createArchiveIssue(params: CreateModerationIssueParams): Promise<{issues: ReportModerationIssueRow[]}>;
+  appendIssueAction: ArchiveIssueAppender;
+  setArchived(where: CommentWhere, update: CommentUpdateInput): Promise<{comments: ArchiveCommentUpdate[]}>;
 }
 export const ARCHIVE_TARGET_SELECTION = `{
             id
@@ -29,6 +30,7 @@ export const ARCHIVE_TARGET_SELECTION = `{
                 username
               }
               ... on ModerationProfile {
+                displayName
                 User {
                   username
                 }
@@ -100,24 +102,21 @@ const UPDATE_COMMENT = `mutation SetCommentArchived($where: CommentWhere!, $upda
 export function createCommentModerationRepository(driver: Driver): CommentModerationRepository {
   return {
     async findArchiveTarget(id) {
-      return (await executeGeneratedOperation<{comments: Comment[]}>(driver, ARCHIVE_TARGET, {where: {id: {eq: id}}})).comments;
+      return (await executeGeneratedOperation<{comments: ArchiveCommentSnapshot[]}>(driver, ARCHIVE_TARGET, {where: {id: {eq: id}}})).comments;
     },
     async findUnarchiveTarget(id) {
-      return (await executeGeneratedOperation<{comments: Comment[]}>(driver, UNARCHIVE_TARGET, {where: {id: {eq: id}}})).comments;
+      return (await executeGeneratedOperation<{comments: UnarchiveCommentSnapshot[]}>(driver, UNARCHIVE_TARGET, {where: {id: {eq: id}}})).comments;
     },
     async findIssue(channelUniqueName, relatedCommentId) {
-      return (await executeGeneratedOperation<{issues: Issue[]}>(driver, FIND_ISSUE, {where: {channelUniqueName: {eq: channelUniqueName}, relatedCommentId: {eq: relatedCommentId}}})).issues;
+      return (await executeGeneratedOperation<{issues: ArchiveIssueSnapshot[]}>(driver, FIND_ISSUE, {where: {channelUniqueName: {eq: channelUniqueName}, relatedCommentId: {eq: relatedCommentId}}})).issues;
     },
     async createArchiveIssue(params) {
       const issue = await createModerationIssue(driver, params);
-      return { issues: [issue as unknown as Issue] };
+      return { issues: [issue] };
     },
-    async appendIssueAction(params) {
-      const result = await appendModerationActions(driver, params);
-      return { issues: result.issues as unknown as Issue[] };
-    },
+    appendIssueAction: archiveIssueAppender(driver),
     async setArchived(where, update) {
-      return (await executeGeneratedOperation<{updateComments: {comments: Comment[]}}>(driver, UPDATE_COMMENT, {where, update})).updateComments;
+      return (await executeGeneratedOperation<{updateComments: {comments: ArchiveCommentUpdate[]}}>(driver, UPDATE_COMMENT, {where, update})).updateComments;
     },
   };
 }

@@ -116,6 +116,9 @@ export const createBotReport = async (input: {
   const botModName = botUser.username
 
   let existingIssueId = ''
+  // The read schema validates Int values; owned append rows deliberately retain
+  // raw stored leaves. Keep the validated/allocated number for this API response.
+  let responseIssueNumber = 0
   let existingIssueFlaggedServerRuleViolation = false
   let contextText = ''
 
@@ -154,6 +157,7 @@ export const createBotReport = async (input: {
 
   if (existingIssues.length > 0) {
     existingIssueId = existingIssues[0]?.id || ''
+    responseIssueNumber = existingIssues[0]?.issueNumber ?? 0
     existingIssueFlaggedServerRuleViolation =
       existingIssues[0]?.flaggedServerRuleViolation || false
   }
@@ -198,6 +202,7 @@ export const createBotReport = async (input: {
   // If an issue does NOT already exist, create a new one
   if (!existingIssueId) {
     const issueNumber = await getNextIssueNumber(driver, channelUniqueName)
+    responseIssueNumber = issueNumber
     const title = `[Reported ${contentType}] "${contextText?.substring(0, 50) || ''}${
       contextText.length > 50 ? '...' : ''
     }"`
@@ -252,7 +257,7 @@ export const createBotReport = async (input: {
     }
     return {
       issueId: issue.id,
-      issueNumber: issue.issueNumber ?? 0
+      issueNumber: responseIssueNumber
     }
   } catch (error) {
     if (input.idempotencyKey) {

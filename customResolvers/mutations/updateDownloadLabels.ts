@@ -104,7 +104,7 @@ const getResolver = (input: Input) => {
 
     let selectedLabels: SelectedLabel[] = [];
     if (labelOptionIds.length > 0) {
-      selectedLabels = await repository.findOptions(labelOptionIds) as SelectedLabel[];
+      selectedLabels = await repository.findOptions(labelOptionIds);
       assertValidUploadSelections(selectedLabels);
     }
 

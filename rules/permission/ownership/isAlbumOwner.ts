@@ -17,7 +17,7 @@ type IsAlbumOwnerArgs = {
 // createAlbums forces the Owner server-side, but update/delete are
 // auto-generated mutations that accept an arbitrary `where`, so without this
 // rule any authenticated user could edit or delete anyone's album.
-export const isAlbumOwner = rule({ cache: "contextual" })(
+export const isAlbumOwner = rule({ cache: "strict" })(
   async (parent: { id?: string } | undefined, args: IsAlbumOwnerArgs, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     // Server admins and the env root pass any ownership-gated mutation (replaces isAdmin).
     if (await passesAsServerAdminOrRoot(ctx)) {

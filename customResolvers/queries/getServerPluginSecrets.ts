@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { Driver } from "neo4j-driver";
 import { createPluginConfigurationReadRepository, type PluginConfigurationReadRepository } from "../../services/persistence/pluginConfigurationReadRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -24,11 +25,11 @@ const getResolver = (input: Input) => {
       const secrets = await repository.listPluginSecretStatuses(pluginId)
 
       // Map to the response format
-      return secrets.map(secret => ({
+      return secrets.map(secret => rememberCanonicalSource({
         key: secret.key,
         status: secret.lastValidatedAt 
-          ? (secret.isValid ? 'VALID' : 'INVALID')
-          : 'SET_UNTESTED',
+          ? (secret.isValid ? 'VALID' as const : 'INVALID' as const)
+          : 'SET_UNTESTED' as const,
         lastValidatedAt: secret.lastValidatedAt,
         validationError: secret.validationError
       }))

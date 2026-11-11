@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -17,8 +18,8 @@ import {
 type Args = {
   filename: string;
   contentType: string;
-  channelConnections?: string[]; // Optional array of channel names
-  uploadTarget?: "PUBLIC_MEDIA" | "PRIVATE_DOWNLOAD";
+  channelConnections?: string[] | null; // Optional array of channel names
+  uploadTarget?: "PUBLIC_MEDIA" | "PRIVATE_DOWNLOAD" | null;
 };
 
 interface ValidationContext {
@@ -33,7 +34,7 @@ type ResolverContext = ValidationContext & Pick<GraphQLContext, "req" | "user">;
  */
 export const validateFileType = async (
   filename: string,
-  channelConnections: string[] = [],
+  channelConnections: string[] | null = [],
   ctx: ValidationContext
 ): Promise<void> => {
   // Extract file extension
@@ -62,6 +63,7 @@ export const validateFileType = async (
     }
 
     // If there are channel connections, check each channel's allowed file types
+    if (channelConnections === null) throw new TypeError("Cannot read properties of null (reading 'length')");
     if (channelConnections.length > 0) {
       for (const channelName of channelConnections) {
         const channel = await repository.findChannelPolicy(channelName);
@@ -95,9 +97,10 @@ export const validateFileType = async (
 };
 
 export const validateImageUploadsEnabled = async (
-  channelConnections: string[] = [],
+  channelConnections: string[] | null = [],
   ctx: ValidationContext
 ): Promise<void> => {
+  if (channelConnections === null) throw new TypeError("Cannot read properties of null (reading 'length')");
   if (channelConnections.length === 0) {
     return;
   }
@@ -120,7 +123,7 @@ export const validateImageUploadsEnabled = async (
 export const validateFile = async (
   filename: string,
   contentType: string,
-  channelConnections: string[] = [],
+  channelConnections: string[] | null = [],
   ctx: ValidationContext
 ): Promise<void> => {
   if (contentType.toLowerCase().startsWith("image/")) {
@@ -153,7 +156,12 @@ export const resolveUploadBucketName = ({
   return bucketName;
 };
 
-const createSignedStorageURL = () => {
+type SignUploadUrl = (storage: Storage, bucketName: string, objectName: string, options: GetSignedUrlConfig) => Promise<[string]>;
+const signUploadUrl: SignUploadUrl = (storage, bucketName, objectName, options) =>
+  storage.bucket(bucketName).file(objectName).getSignedUrl(options);
+
+// The optional signer is a test seam; the default retains the same storage call.
+const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUploadUrl } = {}) => {
   return async (parent: unknown, args: Args, ctx: ResolverContext) => {
     const {
       filename,
@@ -197,14 +205,11 @@ const createSignedStorageURL = () => {
     };
 
     // Generate the Signed URL
-    const [url] = await storage
-      .bucket(bucketName)
-      .file(storageObjectName)
-      .getSignedUrl(options);
+    const [url] = await signUrl(storage, bucketName, storageObjectName, options);
 
     if (!url) {
       logger.error("No URL returned from getSignedUrl method");
-      return { url: "" };
+      return rememberCanonicalSource({ url: "" });
     }
 
     await createUploadAuditRecord({
@@ -220,13 +225,13 @@ const createSignedStorageURL = () => {
     });
 
     // Return the Signed URL
-    return {
+    return rememberCanonicalSource({
       url,
       storageBucket: bucketName,
       storageObjectName,
       storageUrl,
       uploadedAt,
-    };
+    });
   };
 };
 

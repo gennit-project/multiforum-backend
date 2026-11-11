@@ -1,3 +1,5 @@
+import type { ChannelUserSuspensionSource, ChannelModSuspensionSource } from "../../customResolvers/contracts/channelSuspensionSource.js";
+import type {ChannelAuthorizationRecord,NativeChannelAuthorizationSnapshot,RawChannelCapabilities} from "../../customResolvers/contracts/channelAuthorizationSource.js";
 import neo4j, { type Driver } from "neo4j-driver";
 import { resolveNeo4jDatabase } from "../neo4jDatabase.js";
 
@@ -28,15 +30,12 @@ const MOD_CHANNEL_ROLE_CAPABILITIES = [
 ] as const;
 
 export type ChannelPermission = (typeof CHANNEL_ROLE_CAPABILITIES)[number];
-export type ChannelCapabilityMap = Record<
-  string,
-  boolean | null | undefined
->;
+export type ChannelCapabilityMap = RawChannelCapabilities;
 
 export type ChannelAuthorizationSnapshot = {
-  locked?: boolean | null;
-  Admins: Array<{ username?: string | null }>;
-  Moderators: Array<{ displayName?: string | null }>;
+  locked?: unknown;
+  Admins: Array<{ username?: unknown }>;
+  Moderators: Array<{ displayName?: unknown }>;
   DefaultChannelRole?: ChannelCapabilityMap | null;
   ElevatedChannelRole?: ChannelCapabilityMap | null;
   SuspendedRole?: ChannelCapabilityMap | null;
@@ -45,15 +44,16 @@ export type ChannelAuthorizationSnapshot = {
   SuspendedModRole?: ChannelCapabilityMap | null;
 };
 
+// Compatible injected-reader shape; native query containers below are exact.
 export type ChannelPermissionSuspension = {
-  id: string;
-  username?: string | null;
-  modProfileName?: string | null;
+  id: unknown;
+  username?: unknown;
+  modProfileName?: unknown;
   suspendedUntil?: string | null;
-  suspendedIndefinitely?: boolean | null;
-  RelatedIssue?: { id?: string | null; issueNumber?: number | null } | null;
-  SuspendedUser?: { username?: string | null } | null;
-  SuspendedMod?: { displayName?: string | null } | null;
+  suspendedIndefinitely?: unknown;
+  RelatedIssue?: { id?: unknown; issueNumber?: unknown } | null;
+  SuspendedUser?: { username?: unknown } | null;
+  SuspendedMod?: { displayName?: unknown } | null;
 };
 
 export type TargetedChannelSuspensions = {
@@ -169,7 +169,7 @@ export const MOD_CHANNEL_SUSPENSION_QUERY = `
   } AS suspension
 `;
 
-const normalizeNeo4jValue = (value: unknown): any => {
+const normalizeNeo4jValue = (value: unknown): unknown => {
   if (neo4j.isInt(value)) return value.toNumber();
   if (Array.isArray(value)) return value.map(normalizeNeo4jValue);
   if (value && typeof value === "object") {
@@ -182,6 +182,34 @@ const normalizeNeo4jValue = (value: unknown): any => {
   }
   return value;
 };
+
+// Authorization source leaves are
+// not asserted to be schema-completed booleans or strings. Preserve the native
+// query's exact containers and existing recursive integer normalization.
+const normalizeCapabilities=(role:RawChannelCapabilities|null):RawChannelCapabilities|null=>role===null?null:Object.fromEntries(Object.entries(role).map(([key,value])=>[key,normalizeNeo4jValue(value)]));
+const normalizeAuthorizationSnapshot=(value:NativeChannelAuthorizationSnapshot):NativeChannelAuthorizationSnapshot=>({
+ locked:normalizeNeo4jValue(value.locked),
+ Admins:value.Admins.map(admin=>({username:normalizeNeo4jValue(admin.username)})),
+ Moderators:value.Moderators.map(moderator=>({displayName:normalizeNeo4jValue(moderator.displayName)})),
+ DefaultChannelRole:normalizeCapabilities(value.DefaultChannelRole),
+ ElevatedChannelRole:normalizeCapabilities(value.ElevatedChannelRole),
+ SuspendedRole:normalizeCapabilities(value.SuspendedRole),
+ DefaultModRole:normalizeCapabilities(value.DefaultModRole),
+ ElevatedModRole:normalizeCapabilities(value.ElevatedModRole),
+ SuspendedModRole:normalizeCapabilities(value.SuspendedModRole),
+});
+
+const normalizeSuspensionCore = (value: ChannelUserSuspensionSource | ChannelModSuspensionSource) => ({
+  id: normalizeNeo4jValue(value.id),
+  username: normalizeNeo4jValue(value.username),
+  modProfileName: normalizeNeo4jValue(value.modProfileName),
+  suspendedUntil: value.suspendedUntil,
+  suspendedIndefinitely: normalizeNeo4jValue(value.suspendedIndefinitely),
+  RelatedIssue: value.RelatedIssue == null ? value.RelatedIssue : {
+    id: normalizeNeo4jValue(value.RelatedIssue.id),
+    issueNumber: normalizeNeo4jValue(value.RelatedIssue.issueNumber),
+  },
+});
 
 export function createChannelPermissionRepository(
   driver: Driver,
@@ -199,12 +227,12 @@ export function createChannelPermissionRepository(
     async findAuthorizationSnapshot(channelUniqueName) {
       const session = openAuthorizationSession();
       try {
-        const result = await session.run(CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY, {
+        const result = await session.run<ChannelAuthorizationRecord>(CHANNEL_AUTHORIZATION_SNAPSHOT_QUERY, {
           channelUniqueName,
         });
         const value = result.records[0]?.get("channel");
         return value
-          ? (normalizeNeo4jValue(value) as ChannelAuthorizationSnapshot)
+          ? normalizeAuthorizationSnapshot(value)
           : null;
       } finally {
         await session.close();
@@ -221,25 +249,31 @@ export function createChannelPermissionRepository(
         // Neo4j sessions do not support concurrent queries. A moderation
         // target may provide both identifiers, so execute these in sequence.
         const userResult = username
-          ? await session.run(USER_CHANNEL_SUSPENSION_QUERY, {
+          ? await session.run<{ suspension: ChannelUserSuspensionSource }>(USER_CHANNEL_SUSPENSION_QUERY, {
               channelUniqueName,
               username,
             })
           : { records: [] };
         const modResult = modProfileName
-          ? await session.run(MOD_CHANNEL_SUSPENSION_QUERY, {
+          ? await session.run<{ suspension: ChannelModSuspensionSource }>(MOD_CHANNEL_SUSPENSION_QUERY, {
               channelUniqueName,
               modProfileName,
             })
           : { records: [] };
 
         return {
-          userSuspensions: userResult.records.map((record) =>
-            normalizeNeo4jValue(record.get("suspension"))
-          ),
-          modSuspensions: modResult.records.map((record) =>
-            normalizeNeo4jValue(record.get("suspension"))
-          ),
+          userSuspensions: userResult.records.map((record): ChannelUserSuspensionSource => {
+            const value = record.get("suspension");
+            return { ...normalizeSuspensionCore(value), SuspendedUser: value.SuspendedUser == null ? value.SuspendedUser : {
+              username: normalizeNeo4jValue(value.SuspendedUser.username),
+            } };
+          }),
+          modSuspensions: modResult.records.map((record): ChannelModSuspensionSource => {
+            const value = record.get("suspension");
+            return { ...normalizeSuspensionCore(value), SuspendedMod: value.SuspendedMod == null ? value.SuspendedMod : {
+              displayName: normalizeNeo4jValue(value.SuspendedMod.displayName),
+            } };
+          }),
         };
       } finally {
         await session.close();

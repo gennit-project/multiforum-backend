@@ -23,10 +23,16 @@ test("findByName uses the configured database and leader routing", async () => {
                   assert.equal(key, "serverConfig");
                   return {
                     enableDownloads: true,
-                    DefaultServerRole: { canCreateChannel: true },
-                    SuperAdmins: [],
-                    Admins: [],
-                    Moderators: [],
+                    DefaultServerRole: { canCreateChannel: true, canManageRoles: "true", canManageAdmins: neo4j.int(1) },
+                    DefaultSuspendedRole: null,
+                    DefaultAdminRole: null,
+                    DefaultSuperAdminRole: null,
+                    DefaultModRole: null,
+                    DefaultElevatedModRole: null,
+                    DefaultSuspendedModRole: null,
+                    SuperAdmins: [{ username: neo4j.int(1) }],
+                    Admins: [{ username: null }],
+                    Moderators: [{ displayName: "mod" }],
                     SuspendedUsers: [
                       {
                         id: "suspension-1",
@@ -63,6 +69,11 @@ test("findByName uses the configured database and leader routing", async () => {
     ],
   ]);
   assert.equal(closeCalls, 1);
+  assert.equal(result?.DefaultServerRole?.canManageRoles, "true");
+  assert.equal(result?.DefaultServerRole?.canManageAdmins, 1);
+  assert.deepEqual(result?.SuperAdmins, [{ username: 1 }]);
+  assert.deepEqual(result?.Admins, [{ username: null }]);
+  assert.deepEqual(result?.Moderators, [{ displayName: "mod" }]);
   assert.equal(result?.SuspendedUsers[0]?.RelatedIssue?.issueNumber, 42);
 });
 
@@ -81,4 +92,29 @@ test("findByName returns null when the server config is absent", async () => {
   const repository = createPermissionServerConfigRepository(driver, "neo4j");
 
   assert.equal(await repository.findByName(undefined), null);
+});
+
+test("unvalidated server capability values cannot grant permissions or escalation rights", async () => {
+  const { evaluateServerPermission } = await import("../../rules/permission/hasServerPermission.js");
+  const { findEscalatedCapabilities } = await import("../../rules/validation/roleEscalation.js");
+  for (const value of ["true", 1, [], {}, null, undefined, false]) {
+    const role = { canManageRoles: value };
+    for (const tier of ["default", "admin", "super-admin", "suspended"]) {
+      assert.ok(evaluateServerPermission({
+        permission: "canManageRoles",
+        defaultServerRole: role,
+        adminRole: role,
+        superAdminRole: role,
+        defaultSuspendedRole: role,
+        isAdmin: tier === "admin",
+        isSuperAdmin: tier === "super-admin",
+        hasActiveSuspension: tier === "suspended",
+      }) instanceof Error);
+    }
+    assert.deepEqual(findEscalatedCapabilities({
+      requested: [{ canManageRoles: true }],
+      capabilityFields: ["canManageRoles"],
+      actorRole: role,
+    }), ["canManageRoles"]);
+  }
 });

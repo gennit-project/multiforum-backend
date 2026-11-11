@@ -1,5 +1,8 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
+import { canonicalSiteWideDiscussion } from "../../services/canonicalSiteWideDiscussion.js";
+import type { SiteWideDiscussionSource } from "../contracts/siteWideDiscussionSources.js";
 import type { GraphQLResolveInfo } from "graphql";
-import type { Driver, Record as Neo4jRecord } from "neo4j-driver";
+import type { Driver, Integer } from "neo4j-driver";
 import neo4j from "neo4j-driver";
 import { getSiteWideDiscussionsQuery } from "../cypher/cypherQueries.js";
 import {
@@ -17,8 +20,11 @@ import { buildFulltextQuery } from "../../services/channelFulltext.js";
 import { DISCUSSION_FULLTEXT_INDEX } from "../../services/contentFulltext.js";
 import {
   decodeDiscussionListCursor,
-  encodeDiscussionListCursor,
+  encodeRawDiscussionListCursor,
 } from "../../services/discussionListCursor.js";
+
+// Missing keys intentionally fall back to the year window.
+const timeFrameTable: Record<string, { start: string | null } | undefined> = timeFrameOptions;
 
 type Input = {
   driver: Driver;
@@ -26,28 +32,30 @@ type Input = {
   serverName?: string;
 };
 
-enum timeFrameOptionKeys {
-  year = "year",
-  month = "month",
-  week = "week",
-  day = "day",
-}
-
+// Accept the schema's nullable inputs while retaining legacy direct-call
+// string pagination and resultsOrder. Explicit null search/lists retain their
+// existing TypeError paths below; this migration does not normalize them.
 type Args = {
-  searchInput: string;
-  selectedChannels: string[];
-  selectedTags: string[];
-  showArchived: boolean;
-  hasDownload: boolean | null;
-  loggedInUsername?: string;
-  options: {
-    offset: string;
-    after?: string;
-    limit: string;
-    resultsOrder: string;
-    sort: string;
-    timeFrame: timeFrameOptionKeys;
-  };
+  searchInput?: string | null;
+  selectedChannels?: Array<string | null> | null;
+  selectedTags?: Array<string | null> | null;
+  showArchived?: boolean | null;
+  hasDownload?: boolean | null;
+  loggedInUsername?: string | null;
+  options?: {
+    offset?: string | number | null;
+    after?: string | null;
+    limit?: string | number | null;
+    resultsOrder?: string | null;
+    sort?: string | null;
+    timeFrame?: string | null;
+  } | null;
+};
+
+// Preserve the old selected-row conversion and wrapped failure for absent dates.
+const cursorDateText = (value: unknown): string => {
+  if (value === null || value === undefined) throw new TypeError(`Cannot read properties of ${value} (reading 'toString')`);
+  return value.toString();
 };
 
 const getResolver = (input: Input) => {
@@ -63,7 +71,7 @@ const getResolver = (input: Input) => {
       searchInput = "",
       selectedChannels = [],
       selectedTags = [],
-      showArchived,
+      showArchived = null,
       hasDownload,
       loggedInUsername,
       options,
@@ -83,6 +91,11 @@ const getResolver = (input: Input) => {
     });
 
     try {
+      // Preserve the existing explicit-null failure at the original trim call,
+      // rather than silently treating a schema-valid null as an empty search.
+      if (searchInput === null) {
+        throw new TypeError("Cannot read properties of null (reading 'trim')");
+      }
       const fulltextQuery = buildFulltextQuery(searchInput);
       const effectiveSort: SiteWideDiscussionSortOption =
         sort === "new" || sort === "top" ? sort : "hot";
@@ -92,7 +105,7 @@ const getResolver = (input: Input) => {
       });
       const computedTimeFrame =
         effectiveSort === "top"
-          ? (timeFrameOptions[timeFrame] ?? timeFrameOptions.year).start
+          ? ((timeFrame == null ? undefined : timeFrameTable[timeFrame]) ?? timeFrameOptions.year).start
           : null;
       const rankingAnchor =
         cursor?.rankingAnchor ??
@@ -110,13 +123,18 @@ const getResolver = (input: Input) => {
         sortOption: effectiveSort,
         serverName,
       });
+      // These were previously .length accesses. Keep their null failure after
+      // ranking reads and before query construction, including the same message.
+      if (selectedChannels === null || selectedTags === null) {
+        throw new TypeError("Cannot read properties of null (reading 'length')");
+      }
       const { countQuery, pageQuery } = buildSiteWideDiscussionPageQueries({
         hasDownload:
           typeof hasDownload === "boolean" ? hasDownload : null,
         hasSearch: fulltextQuery !== "",
         hasSelectedChannels: selectedChannels.length > 0,
         hasSelectedTags: selectedTags.length > 0,
-        showArchived,
+        showArchived: Boolean(showArchived),
         sortOption: effectiveSort,
         paginationMode,
       });
@@ -144,15 +162,15 @@ const getResolver = (input: Input) => {
       };
 
       return await session.executeRead(async (transaction) => {
-        const countResult = await transaction.run(countQuery, queryParams);
+        const countResult = await transaction.run<{totalCount:Integer}>(countQuery, queryParams);
         const aggregateDiscussionCount =
           countResult.records[0]?.get("totalCount") ?? 0;
 
-        const pageResult = await transaction.run(pageQuery, queryParams);
+        const pageResult = await transaction.run<{discussionId:unknown;cursorCreatedAt:unknown;cursorScore:unknown}>(pageQuery, queryParams);
         const hasNextPage = pageResult.records.length > limit;
         const selectedRecords = pageResult.records.slice(0, limit);
         const discussionIds = selectedRecords.map(
-          (record: Neo4jRecord) => record.get("discussionId") as string
+          (record) => record.get("discussionId")
         );
         const lastRecord = selectedRecords[selectedRecords.length - 1];
         const cursorScore = lastRecord?.get("cursorScore");
@@ -163,21 +181,21 @@ const getResolver = (input: Input) => {
               ? cursorScore
               : Number(cursorScore.toString());
         const endCursor = lastRecord
-          ? encodeDiscussionListCursor({
+          ? encodeRawDiscussionListCursor({
               sort: effectiveSort,
               sortValue: normalizedCursorScore,
-              createdAt: lastRecord.get("cursorCreatedAt").toString(),
-              discussionId: lastRecord.get("discussionId") as string,
+              createdAt: cursorDateText(lastRecord.get("cursorCreatedAt")),
+              discussionId: lastRecord.get("discussionId"),
               rankingAnchor,
             })
           : null;
-        const pageInfo = { endCursor, hasNextPage };
+        const pageInfo = rememberCanonicalSource({ endCursor, hasNextPage });
 
         if (discussionIds.length === 0) {
-          return { discussions: [], aggregateDiscussionCount, pageInfo };
+          return rememberCanonicalSource({ discussions: [], aggregateDiscussionCount, pageInfo });
         }
 
-        const discussionsResult = await transaction.run(
+        const discussionsResult = await transaction.run<{discussion:SiteWideDiscussionSource}>(
           getSiteWideDiscussionsQuery,
           {
             discussionIds,
@@ -188,10 +206,10 @@ const getResolver = (input: Input) => {
           }
         );
         const discussions = discussionsResult.records.map(
-          (record: Neo4jRecord) => record.get("discussion")
+          (record) => canonicalSiteWideDiscussion(record.get("discussion"))
         );
 
-        return { discussions, aggregateDiscussionCount, pageInfo };
+        return rememberCanonicalSource({ discussions, aggregateDiscussionCount, pageInfo });
       });
     } catch (error: unknown) {
       logger.error("Error getting discussions:", error);

@@ -1,0 +1,14 @@
+import type {Channel,Comment,Discussion,DiscussionChannel,DownloadableFile} from '../../src/generated/graphql.js';
+import type {Selection,Projection} from './selection.js';
+export const emojiChannelPreferenceSelection={uniqueName:true,emojiEnabled:true} as const satisfies Selection<Channel>;
+export const emojiDiscussionContextSelection={channelUniqueName:true,locked:true,archived:true,Channel:emojiChannelPreferenceSelection} as const satisfies Selection<DiscussionChannel>;
+export const discussionChannelEmojiSelection={...emojiDiscussionContextSelection,id:true,emoji:true} as const satisfies Selection<DiscussionChannel>;
+export const commentEmojiSelection={id:true,emoji:true,archived:true,Channel:emojiChannelPreferenceSelection,DiscussionChannel:emojiDiscussionContextSelection} as const satisfies Selection<Comment>;
+export const validationDiscussionChannelsSelection={DiscussionChannels:{channelUniqueName:true}} as const satisfies Selection<Discussion>;
+export const validationExistingFilesSelection={id:true,fileName:true} as const satisfies Selection<DownloadableFile>;
+export type EmojiChannelPreference=Projection<Channel,typeof emojiChannelPreferenceSelection>;
+export type EmojiDiscussionContext=Projection<DiscussionChannel,typeof emojiDiscussionContextSelection>;
+export type DiscussionChannelEmojiState=Projection<DiscussionChannel,typeof discussionChannelEmojiSelection>;
+export type CommentEmojiState=Projection<Comment,typeof commentEmojiSelection>;
+export type ValidationDiscussionChannels=Projection<Discussion,typeof validationDiscussionChannelsSelection>;
+export type ValidationExistingFile=Projection<DownloadableFile,typeof validationExistingFilesSelection>;

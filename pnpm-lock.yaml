@@ -27,6 +27,9 @@ overrides:
   js-yaml: ^4.3.2
 
 patchedDependencies:
+  '@neo4j/graphql@7.6.4':
+    hash: d49235e0582f90c1683d92fdddb3146df62339eb7c62fec25cc84ef9c89250ba
+    path: patches/@neo4j__graphql@7.6.4.patch
   graphql-shield@7.6.5:
     hash: 2c998cd3ea2df8b94bdb166da562e3e7381db7ca4fb1cacc27f11b62e4c4d938
     path: patches/graphql-shield@7.6.5.patch
@@ -52,7 +55,7 @@ importers:
         version: 10.1.0(graphql@16.14.2)
       '@neo4j/graphql':
         specifier: ^7.6.4
-        version: 7.6.4(graphql@16.14.2)(neo4j-driver@6.2.0)
+        version: 7.6.4(patch_hash=d49235e0582f90c1683d92fdddb3146df62339eb7c62fec25cc84ef9c89250ba)(graphql@16.14.2)(neo4j-driver@6.2.0)
       '@sendgrid/mail':
         specifier: ^8.1.4
         version: 8.1.6
@@ -5349,7 +5352,7 @@ snapshots:
 
   '@neo4j/cypher-builder@3.2.2': {}
 
-  '@neo4j/graphql@7.6.4(graphql@16.14.2)(neo4j-driver@6.2.0)':
+  '@neo4j/graphql@7.6.4(patch_hash=d49235e0582f90c1683d92fdddb3146df62339eb7c62fec25cc84ef9c89250ba)(graphql@16.14.2)(neo4j-driver@6.2.0)':
     dependencies:
       '@apollo/subgraph': 2.14.2(graphql@16.14.2)
       '@graphql-tools/merge': 9.2.3(graphql@16.14.2)

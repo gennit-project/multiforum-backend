@@ -31,13 +31,13 @@ export enum ModChannelPermission {
 
 // A mod role is a flat map of permission name -> granted. Modeled loosely so the
 // decision logic is decoupled from the generated OGM role types.
-type ModRole = Record<string, boolean | null | undefined> | null | undefined;
+type ModRole = Record<string, unknown> | null | undefined;
 
 interface ChannelModRoles {
   DefaultModRole?: ModRole;
   ElevatedModRole?: ModRole;
   SuspendedModRole?: ModRole;
-  Moderators?: Array<{ displayName?: string | null }> | null;
+  Moderators?: Array<{ displayName?: unknown }> | null;
 }
 
 interface ServerModDefaults {
@@ -62,7 +62,7 @@ interface ServerModDefaults {
 export function evaluateChannelModPermission(args: {
   permission: ModChannelPermission;
   channelData: ChannelModRoles;
-  serverDefaults: ServerModDefaults | undefined;
+  serverDefaults: ServerModDefaults | null | undefined;
   isSuspended: boolean;
   modProfileName: string | null | undefined;
 }): { role: ModRole; allowed: boolean } {
@@ -105,8 +105,8 @@ export const hasChannelModPermission: (
   }
 
   // 2. Check if user has a moderation profile
-  const hasModProfile = context.user?.data?.ModerationProfile !== null;
-  if (!hasModProfile) {
+  const modProfileName = context.user?.data?.ModerationProfile?.displayName;
+  if (typeof modProfileName !== "string" || !modProfileName) {
     return new Error(ERROR_MESSAGES.channel.notMod);
   }
 
@@ -119,7 +119,6 @@ export const hasChannelModPermission: (
   if (!channelData) {
     return new Error(ERROR_MESSAGES.channel.notFound);
   }
-  const modProfileName = context.user?.data?.ModerationProfile?.displayName ?? undefined;
 
   // Request-cached (see hasChannelPermission for rationale); the cached
   // selection set is a superset of the mod-role fields read here.
@@ -150,8 +149,8 @@ export const hasChannelModPermission: (
   // tested without a database.
   const { role: roleToUse, allowed } = evaluateChannelModPermission({
     permission,
-    channelData: channelData as unknown as ChannelModRoles,
-    serverDefaults: serverConfig as unknown as ServerModDefaults | undefined,
+    channelData,
+    serverDefaults: serverConfig,
     isSuspended: suspensionInfo.isSuspended,
     modProfileName,
   });

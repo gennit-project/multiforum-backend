@@ -1,3 +1,4 @@
+import { voteSource } from "../contracts/voteSources.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { createDiscussionChannelVoteRepository, type DiscussionChannelVoteRepository } from "../../services/persistence/discussionChannelVoteRepository.js";
@@ -104,7 +105,7 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
       const existingUpvotedByUsers = discussionChannel.UpvotedByUsers || [];
       const existingUpvotedByUsersCount = existingUpvotedByUsers.length;
 
-      return {
+      return voteSource({
         id: discussionChannelId,
         weightedVotesCount:
           (discussionChannel.weightedVotesCount ?? 0) - 1 - weightedVoteBonus,
@@ -118,7 +119,7 @@ const undoUpvoteDiscussionChannelResolver = (input: Input) => {
           totalCount: existingUpvotedByUsersCount - 1,
           aggregate: { count: { nodes: existingUpvotedByUsersCount - 1 } },
         },
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

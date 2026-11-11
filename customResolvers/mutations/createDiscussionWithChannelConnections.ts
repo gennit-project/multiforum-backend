@@ -1,3 +1,4 @@
+import type { CreatedDiscussionProjection } from "../contracts/contentProjections.js";
 import { reconcileAgeGateBeforeRead } from "../../services/ageGate/reconcile.js";
 import { createExistingDiscussionCrosspost } from "../../services/persistence/crosspostWrite.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
@@ -149,7 +150,7 @@ export const createDiscussionsFromInput = async (
   input: DiscussionCreateInputWithChannels[],
   context?: GraphQLContext,
   triggerPipelines = triggerCreatedDiscussionPipelines
-): Promise<unknown[]> => {
+): Promise<[CreatedDiscussionProjection, ...CreatedDiscussionProjection[]]> => {
   if (!input || input.length === 0) {
     throw new Error("Input cannot be empty");
   }
@@ -237,7 +238,7 @@ export const createDiscussionsFromInput = async (
   }
 
   const session = driver.session();
-  const discussions: unknown[] = [];
+  const discussions: CreatedDiscussionProjection[] = [];
 
   try {
     for (const { channelConnections } of sanitizedInput) {
@@ -273,7 +274,7 @@ export const createDiscussionsFromInput = async (
         const { created, downloadableFileIds } = await createExistingDiscussionCrosspost(driver,discussionCreateInput,crosspostedDiscussionId,contextUsername,
           channelConnections,flairIdsByInput[inputIndex],sensitive);
         discussions.push(created);
-        const createdId = (created as {id:string}).id;
+        const createdId = created.id;
         await triggerPipelines({driver,discussionId:createdId,channelConnections,downloadableFileIds});
         continue;
       }
@@ -377,7 +378,12 @@ export const createDiscussionsFromInput = async (
     await session.close();
   }
 
-  return discussions;
+  // Empty input is rejected above and each completed item appends one snapshot.
+  // Encode that invariant without an array-to-tuple cast. This is a defensive
+  // postcondition, not a transaction or outer GraphQL completion guarantee.
+  const [first, ...remaining] = discussions;
+  if (!first) throw new Error("Discussion creation returned no discussion");
+  return [first, ...remaining];
 };
 
 /**

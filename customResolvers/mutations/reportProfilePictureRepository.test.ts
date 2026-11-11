@@ -9,8 +9,8 @@ function fixture(options:{existing?:boolean;fail?:string;missing?:string}={}) {
  const repository:ProfilePictureReportRepository={
   async findReportedProfile(username){enter('profile');values.username=username;return options.missing==='profile'?[]:[{username:'owner',displayName:'Owner Name',profilePicURL:options.missing==='picture'?null:'https://example.test/pic.png'}];},
   async findPriorProfileReport(username){enter('prior');values.prior=username;return options.existing?[{id:'issue',issueNumber:2,flaggedServerRuleViolation:false}]:[];},
-  async createProfileReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7}]};},
-  async appendProfileReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,relatedProfilePicUserId:'owner'}]};},
+  async createProfileReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7,isOpen:true,flaggedServerRuleViolation:input.flaggedServerRuleViolation}]};},
+  async appendProfileReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,isOpen:params.isOpen,flaggedServerRuleViolation:params.flaggedServerRuleViolation,relatedProfilePicUserId:'owner'}]};},
  };
  const driver={session:()=>{enter('session');return{executeWrite:async(fn:any)=>{enter('counter');return fn({run:async()=>({records:[{get:()=>7}]})});},close:async()=>enter('close')};}};
  return {calls,values,resolver:reportProfilePicture({driver:driver as never,profilePictureReportRepository:repository})};

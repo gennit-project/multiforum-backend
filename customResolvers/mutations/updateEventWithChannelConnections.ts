@@ -12,7 +12,7 @@ import { createEventWriteRepository, type EventWriteRepository } from "../../ser
 import { eventRevisionActivityHandler } from "../../hooks/eventVersionHistoryHook.js";
 import { createEventRevisionRepository } from "../../services/persistence/eventRevisionRepository.js";
 import { logger } from "../../logger.js";
-import { applyEventChannelChanges } from "./shared/eventChannelChanges.js";
+import { applyEventChannelChanges, normalizeEventChannelUpdate } from "./shared/eventChannelChanges.js";
 
 type Input = {
   eventWriteRepository?: EventWriteRepository;
@@ -27,8 +27,8 @@ type Input = {
 type Args = {
   where: EventWhere;
   eventUpdateInput: EventUpdateInput;
-  channelConnections: string[];
-  channelDisconnections: string[];
+  channelConnections?: string[] | null;
+  channelDisconnections?: (string | null)[] | null;
 };
 
 type NotifiableUser = {
@@ -49,10 +49,11 @@ const getResolver = (input: Input) => {
   return async (parent: unknown, args: Args, context: GraphQLContext, info: GraphQLResolveInfo) => {
     const {
       where,
-      eventUpdateInput,
+      eventUpdateInput: suppliedEventUpdateInput,
       channelConnections,
       channelDisconnections,
     } = args;
+    const eventUpdateInput = normalizeEventChannelUpdate(suppliedEventUpdateInput);
 
     try {
       const existingEvents = await repository.findUpdateSnapshot(where);

@@ -10,12 +10,12 @@ export type DiscussionListCursor = {
   rankingAnchor: string | null;
 };
 
-type EncodedDiscussionListCursor = {
+type EncodedDiscussionListCursor<Identity = string> = {
   v: 1;
   s: DiscussionListCursorSort;
   r: number | null;
   c: string;
-  i: string;
+  i: Identity;
   a: string | null;
 };
 
@@ -24,10 +24,12 @@ const invalidCursor = () =>
     extensions: { code: "BAD_USER_INPUT" },
   });
 
-export const encodeDiscussionListCursor = (
-  cursor: DiscussionListCursor
+/** Serializes an owned query's raw identity without claiming it is a valid
+ * decoded cursor. Decoder validation remains unchanged. */
+export const encodeRawDiscussionListCursor = (
+  cursor: Omit<DiscussionListCursor, "discussionId"> & {discussionId: unknown}
 ): string => {
-  const encoded: EncodedDiscussionListCursor = {
+  const encoded: EncodedDiscussionListCursor<unknown> = {
     v: 1,
     s: cursor.sort,
     r: cursor.sortValue,
@@ -38,6 +40,9 @@ export const encodeDiscussionListCursor = (
 
   return Buffer.from(JSON.stringify(encoded), "utf8").toString("base64url");
 };
+
+export const encodeDiscussionListCursor = (cursor: DiscussionListCursor): string =>
+  encodeRawDiscussionListCursor(cursor);
 
 export const decodeDiscussionListCursor = ({
   after,

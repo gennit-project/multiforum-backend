@@ -1,0 +1,30 @@
+import type {ServerMembershipConfig} from '../../customResolvers/contracts/serverMembershipSource.js';
+export function serverMembershipConfig(serverName='cats'):ServerMembershipConfig {
+ return {
+  serverName,
+  serverDescription:null,
+  serverIconURL:null,
+  allowedFileTypes:null,
+  featuredWikiPageIds:null,
+  enableDownloads:null,
+  enableEvents:null,
+  accountAgeGateEnabled:null,
+  minimumAccountAge:null,
+  sensitiveContentAgeGateEnabled:null,
+  minimumSensitiveContentAge:null,
+  brandingProductName:null,
+  brandingDocsURL:null,
+  brandingSourceURL:null,
+  brandingIssuesURL:null,
+  brandingSupportEmail:null,
+  brandingShowUpstreamLinks:null,
+  brandingLogoDarkURL:null,
+  brandingLogoAlt:null,
+  brandingFaviconURL:null,
+  brandingPrimaryColor:null,
+  pluginRegistries:null,
+  rules:null,
+  brandingCustomFooterLinks:null,
+  pluginPipelines:null,
+ };
+}

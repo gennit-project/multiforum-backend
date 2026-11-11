@@ -1,28 +1,8 @@
 import type { Driver } from "neo4j-driver";
-import type { PluginEdgeData } from "../plugin/types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 
-export type PipelineDiscussionSnapshot = {
-  id: string;
-  deleted?: boolean | null;
-  DownloadableFiles?: Array<{ id?: string; permanentlyRemoved?: boolean | null }>;
-  DiscussionChannels?: Array<{ archived?: boolean | null }>;
-};
-export type PipelineDownloadSnapshot = {
-  id: string;
-  permanentlyRemoved?: boolean | null;
-  Discussion?: {
-    id?: string;
-    deleted?: boolean | null;
-    DiscussionChannels?: Array<{ channelUniqueName?: string | null; archived?: boolean | null }>;
-  } | null;
-};
-export type PipelineDownloadTiming = { id: string; uploadedAt?: string | null; createdAt: string };
-export type ServerApplicabilityConfig = {
-  pluginPipelines?: unknown;
-  InstalledVersionsConnection?: { edges?: PluginEdgeData[] };
-};
-export type ChannelApplicabilityConfig = { uniqueName: string; pluginPipelines?: unknown };
+import type { PipelineDiscussionSnapshot, PipelineDownloadSnapshot, PipelineDownloadTiming, ServerApplicabilityConfig, ChannelApplicabilityConfig } from "../../customResolvers/contracts/pluginPolicyProjections.js";
+export type { PipelineDiscussionSnapshot, PipelineDownloadSnapshot, PipelineDownloadTiming, ServerApplicabilityConfig, ChannelApplicabilityConfig } from "../../customResolvers/contracts/pluginPolicyProjections.js";
 
 export interface PipelineTargetRepository {
   findDiscussionVisibility(id: string): Promise<PipelineDiscussionSnapshot[]>;

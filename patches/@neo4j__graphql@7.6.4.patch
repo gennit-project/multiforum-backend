@@ -1,0 +1,72 @@
+diff --git a/dist/translate/queryAST/ast/operations/ReadOperation.d.ts b/dist/translate/queryAST/ast/operations/ReadOperation.d.ts
+index 9750f8c68887de48d5973587c7a626512c8d1e55..61223de3b860aa99df2f98fce829dd87db22288b 100644
+--- a/dist/translate/queryAST/ast/operations/ReadOperation.d.ts
++++ b/dist/translate/queryAST/ast/operations/ReadOperation.d.ts
+@@ -42,7 +42,7 @@ export declare class ReadOperation extends Operation {
+     protected getFieldsSubqueries(context: QueryASTContext): Cypher.Clause[];
+     protected getCypherFieldsSubqueries(context: QueryASTContext): Cypher.Clause[];
+     private getCypherFields;
+-    protected getProjectionMap(context: QueryASTContext): Cypher.MapProjection;
+-    protected addSortToClause(context: QueryASTContext, node: Cypher.Node, clause: Cypher.With | Cypher.Return): void;
++    protected getProjectionMap(context: QueryASTContext, preferSelectedFields?: boolean): Cypher.MapProjection;
++    protected addSortToClause(context: QueryASTContext, node: Cypher.Node, clause: Cypher.With | Cypher.Return, sortByDatabaseName?: boolean): void;
+ }
+ //# sourceMappingURL=ReadOperation.d.ts.map
+\ No newline at end of file
+diff --git a/dist/translate/queryAST/ast/operations/ReadOperation.js b/dist/translate/queryAST/ast/operations/ReadOperation.js
+index 864370c93dfd860d32622a888c2e8b93cf25c0e9..1fc9781e9625d32933ac0a7d10ae0070438071b6 100644
+--- a/dist/translate/queryAST/ast/operations/ReadOperation.js
++++ b/dist/translate/queryAST/ast/operations/ReadOperation.js
+@@ -53,11 +53,16 @@ class ReadOperation extends operations_1.Operation {
+         if (!(0, context_has_target_1.hasTarget)(context)) {
+             throw new Error("No parent node found!");
+         }
+-        const projection = this.getProjectionMap(context);
+-        let aggregationExpr = cypher_builder_1.default.collect(context.target);
+-        const withClause = new cypher_builder_1.default.With([projection, context.target]);
++        // Sort original values before building response aliases. A projected
++        // key may refer to a different field (for example username: bio).
++        const sortBeforeProjection = this.sortFields.length > 0;
++        const projection = this.getProjectionMap(context, sortBeforeProjection);
++        let aggregationExpr = cypher_builder_1.default.collect(sortBeforeProjection ? projection : context.target);
++        const withClause = sortBeforeProjection
++            ? new cypher_builder_1.default.With("*")
++            : new cypher_builder_1.default.With([projection, context.target]);
+         if (this.sortFields.length > 0 || this.pagination) {
+-            this.addSortToClause(context, context.target, withClause);
++            this.addSortToClause(context, context.target, withClause, sortBeforeProjection ? true : undefined);
+         }
+         if (this.relationship?.isList === false) {
+             aggregationExpr = cypher_builder_1.default.head(aggregationExpr);
+@@ -193,13 +198,17 @@ class ReadOperation extends operations_1.Operation {
+     getCypherFields() {
+         return this.fields.filter((f) => f.isCypherField());
+     }
+-    getProjectionMap(context) {
++    getProjectionMap(context, preferSelectedFields = false) {
+         if (!context.hasTarget()) {
+             throw new Error("No parent node found!");
+         }
+         const projectionFields = this.fields.map((f) => f.getProjectionField(context.target));
+         const sortProjectionFields = this.sortFields.map((f) => f.getProjectionField(context));
+-        const uniqueProjectionFields = Array.from(new Set([...projectionFields, ...sortProjectionFields])); // TODO remove duplicates with alias
++        // Keep historical implicit sort fields, but never let them overwrite
++        // requested response aliases after sorting has already taken place.
++        const uniqueProjectionFields = Array.from(new Set(preferSelectedFields
++            ? [...sortProjectionFields, ...projectionFields]
++            : [...projectionFields, ...sortProjectionFields]));
+         const stringFields = [];
+         let otherFields = {};
+         for (const field of uniqueProjectionFields) {
+@@ -212,9 +221,9 @@ class ReadOperation extends operations_1.Operation {
+         }
+         return new cypher_builder_1.default.MapProjection(context.target, stringFields, otherFields);
+     }
+-    addSortToClause(context, node, clause) {
++    addSortToClause(context, node, clause, sortByDatabaseName) {
+         const isNested = Boolean(context.source); // This is to keep Cypher compatibility
+-        const orderByFields = this.sortFields.flatMap((f) => f.getSortFields(context, node, !isNested));
++        const orderByFields = this.sortFields.flatMap((f) => f.getSortFields(context, node, sortByDatabaseName ?? !isNested));
+         const pagination = this.pagination ? this.pagination.getPagination() : undefined;
+         clause.orderBy(...orderByFields);
+         if (pagination?.skip) {

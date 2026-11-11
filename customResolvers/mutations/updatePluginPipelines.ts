@@ -9,18 +9,18 @@ type Input = {
 
 export type PipelineStepInput = {
   pluginId: string
-  version?: string
-  continueOnError?: boolean
-  condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED'
+  version?: string | null
+  continueOnError?: boolean | null
+  condition?: 'ALWAYS' | 'PREVIOUS_SUCCEEDED' | 'PREVIOUS_FAILED' | null
 }
 
 export type EventPipelineInput = {
   event: string
   steps: PipelineStepInput[]
-  stopOnFirstFailure?: boolean
-  effectiveAt?: string
-  applicability?: 'NEW_FILES_ONLY' | 'ALL_FILES_GRADUAL' | 'ALL_FILES_IMMEDIATE'
-  policyId?: string
+  stopOnFirstFailure?: boolean | null
+  effectiveAt?: string | null
+  applicability?: 'NEW_FILES_ONLY' | 'ALL_FILES_GRADUAL' | 'ALL_FILES_IMMEDIATE' | null
+  policyId?: string | null
 }
 
 type Args = {

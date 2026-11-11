@@ -1,5 +1,8 @@
+import type { SiteWideIssueProjection } from '../contracts/siteWideIssueProjection.js';
+import { rememberCanonicalSource } from '../../services/canonicalSourceFields.js';
+import type { IssueCountRow, ContributionCount } from "../contracts/contributionReadProjections.js";
 import type { GraphQLResolveInfo } from "graphql";
-import neo4j, { type Driver, type Record as Neo4jRecord } from "neo4j-driver";
+import neo4j, { type Driver } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { buildSiteWideIssuesQuery } from "../cypher/buildContentSearchQueries.js";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -17,11 +20,11 @@ type Input = {
 };
 
 type Args = {
-  searchInput?: string;
-  selectedChannels?: string[];
+  searchInput?: string | null;
+  selectedChannels?: (string | null)[] | null;
   startDate?: string | null;
   endDate?: string | null;
-  showOnlyServerRuleViolations?: boolean;
+  showOnlyServerRuleViolations?: boolean | null;
   isOpen: boolean;
   filterCreatedByMe?: boolean | null;
   filterIAmOP?: boolean | null;
@@ -30,12 +33,14 @@ type Args = {
     offset?: number | null;
     limit?: number | null;
     sort?: string | null;
-  };
+  } | null;
 };
 
 const VALID_SORTS = new Set(["newest", "oldest", "mostReports"]);
 
-const sanitize = (value: unknown): unknown => {
+function sanitize(value: ContributionCount): number;
+function sanitize(value: unknown): unknown;
+function sanitize(value: unknown): unknown {
   if (neo4j.isInt(value)) return value.toNumber();
   if (Array.isArray(value)) return value.map(sanitize);
   if (value && typeof value === "object") {
@@ -45,6 +50,30 @@ const sanitize = (value: unknown): unknown => {
   }
   return value;
 };
+
+const normalizeIssue = (issue: SiteWideIssueProjection) => rememberCanonicalSource({
+  id: sanitize(issue.id),
+  issueNumber: sanitize(issue.issueNumber),
+  title: sanitize(issue.title),
+  body: sanitize(issue.body),
+  isOpen: sanitize(issue.isOpen),
+  createdAt: sanitize(issue.createdAt),
+  updatedAt: sanitize(issue.updatedAt),
+  relatedCommentId: sanitize(issue.relatedCommentId),
+  relatedDiscussionId: sanitize(issue.relatedDiscussionId),
+  relatedEventId: sanitize(issue.relatedEventId),
+  relatedImageId: sanitize(issue.relatedImageId),
+  relatedWikiPageId: sanitize(issue.relatedWikiPageId),
+  relatedWikiRevisionId: sanitize(issue.relatedWikiRevisionId),
+  relatedUsername: sanitize(issue.relatedUsername),
+  flaggedServerRuleViolation: sanitize(issue.flaggedServerRuleViolation),
+  locked: sanitize(issue.locked),
+  lockReason: sanitize(issue.lockReason),
+  channelUniqueName: sanitize(issue.channelUniqueName),
+  channelIconURL: sanitize(issue.channelIconURL),
+  authorName: sanitize(issue.authorName),
+  reportCount: sanitize(issue.reportCount),
+});
 
 const normalizeDateStart = (value: string | null | undefined) => {
   if (!value) return null;
@@ -106,10 +135,10 @@ const getResolver = (input: Input) => {
     // An unauthenticated caller cannot match any identity filter, so short
     // circuit to an empty result instead of running the query.
     if (requestedIdentityFilter && !hasIdentity) {
-      return {
+      return rememberCanonicalSource({
         aggregateIssueCount: 0,
         issues: [],
-      };
+      });
     }
 
     const session = driver.session();
@@ -118,7 +147,7 @@ const getResolver = (input: Input) => {
     const endDate = normalizeDateEnd(args.endDate);
 
     try {
-      const issueResult = await session.run(buildSiteWideIssuesQuery(fulltextQuery !== ""), {
+      const issueResult = await session.run<IssueCountRow>(buildSiteWideIssuesQuery(fulltextQuery !== ""), {
         fulltextIndex: ISSUE_FULLTEXT_INDEX,
         fulltextQuery,
         selectedChannels,
@@ -141,14 +170,14 @@ const getResolver = (input: Input) => {
       const aggregateIssueCount = firstRecord
         ? sanitize(firstRecord.get("totalCount"))
         : 0;
-      const issues = issueResult.records.map((record: Neo4jRecord) =>
-        sanitize(record.get("issue"))
+      const issues = issueResult.records.map((record) =>
+        normalizeIssue(record.get("issue"))
       );
 
-      return {
+      return rememberCanonicalSource({
         aggregateIssueCount,
         issues,
-      };
+      });
     } catch (error: unknown) {
       logger.error("Error getting site wide issues:", error);
       const message = error instanceof Error ? error.message : String(error);

@@ -17,7 +17,7 @@ test("detail collection pages return the requested limit and a cursor", async ()
   let closed = false;
   const records = ["answer-1", "answer-2", "answer-3"].map((id, index) =>
     record({
-      item: { id },
+      item: { id,text:null,createdAt:null,CommentAuthor:null },
       cursorCreatedAt: `2026-01-0${index + 1}T00:00:00.000Z`,
       cursorId: id,
     })
@@ -63,7 +63,7 @@ test("detail collection pages return the requested limit and a cursor", async ()
     },
     {
       result: {
-        answers: [{ id: "answer-1" }, { id: "answer-2" }],
+        answers: ["answer-1","answer-2"].map(id=>({id,text:null,createdAt:null,CommentAuthor:null})),
         pageInfo: {
           endCursor: result.pageInfo.endCursor,
           hasNextPage: true,

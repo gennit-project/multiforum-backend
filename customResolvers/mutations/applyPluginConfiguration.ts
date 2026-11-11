@@ -1,3 +1,5 @@
+import {configurationApplySource} from '../contracts/pluginConfigurationSources.js'
+import type { ConfigurationApplyResponse } from "../contracts/pluginConfiguration.js";
 import type { GraphQLResolveInfo } from 'graphql'
 
 import type {
@@ -106,7 +108,7 @@ export const createApplyPluginConfigurationResolver = (
     args: MutationApplyPluginConfigurationArgs,
     context: GraphQLContext,
     info: GraphQLResolveInfo
-  ) => {
+  ): Promise<ConfigurationApplyResponse> => {
     const operations = operationsFactory({ input, context, info })
     const desired = mapPluginConfigurationDesiredStateInput(args.manifest)
     const planBefore = await operations.preview(args.manifest)
@@ -138,13 +140,13 @@ export const createApplyPluginConfigurationResolver = (
     }
 
     if (planBefore.inSync && resolutions.size === 0) {
-      return {
+      return configurationApplySource({
         status: 'NO_CHANGES',
         message: 'Plugin configuration is already in sync',
         planBefore,
         planAfter: planBefore,
         operations: operationResults,
-      }
+      })
     }
 
     for (const change of planBefore.changes.filter(change => change.blocked)) {
@@ -180,13 +182,13 @@ export const createApplyPluginConfigurationResolver = (
     }
 
     if (operationResults.length > 0) {
-      return {
+      return configurationApplySource({
         status: 'BLOCKED',
         message: 'Apply was blocked before making changes',
         planBefore,
         planAfter: planBefore,
         operations: operationResults,
-      }
+      })
     }
 
     let activeChange: PluginConfigurationChange | null = null
@@ -344,17 +346,17 @@ export const createApplyPluginConfigurationResolver = (
         })
       }
       const planAfter = await operations.preview(args.manifest)
-      return {
+      return configurationApplySource({
         status: 'FAILED',
         message: 'Apply stopped after an operation failed',
         planBefore,
         planAfter,
         operations: operationResults,
-      }
+      })
     }
 
     const planAfter = await operations.preview(args.manifest)
-    return {
+    return configurationApplySource({
       status: planAfter.inSync ? 'SUCCEEDED' : 'FAILED',
       message: planAfter.inSync
         ? 'Plugin configuration was applied and verified'
@@ -362,7 +364,7 @@ export const createApplyPluginConfigurationResolver = (
       planBefore,
       planAfter,
       operations: operationResults,
-    }
+    })
   }
 
 export default createApplyPluginConfigurationResolver

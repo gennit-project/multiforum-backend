@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -26,25 +27,37 @@ export type AgeGateCheck = {
   minimumAge: number | null;
 };
 
-const NOT_REQUIRED: AgeGateCheck = {
+const NOT_REQUIRED: AgeGateCheck = rememberCanonicalSource({
   requiresAgeCheck: false,
   status: "ALLOWED",
   minimumAge: null,
-};
+});
 
-const readOne = async <T>(params: {
-  driver: Driver;
-  query: string;
-  values: Record<string, unknown>;
-  key: string;
-}): Promise<T | null> => {
-  const session = params.driver.session({ defaultAccessMode: "READ" });
+// The sensitive property is intentionally unknown: its existing truthiness,
+// rather than a new Boolean coercion policy, controls this check.
+const readSensitive = async (driver: Driver, discussionId: string): Promise<unknown> => {
+  const session = driver.session({ defaultAccessMode: "READ" });
   try {
-    const result = await session.run(params.query, params.values);
-    return (result.records[0]?.get(params.key) as T | undefined) ?? null;
-  } finally {
-    await session.close();
-  }
+    const result = await session.run<{ sensitive: unknown }>(
+      `MATCH (discussion:Discussion {id: $discussionId})
+              RETURN coalesce(discussion.hasSensitiveContent, false) AS sensitive`,
+      { discussionId }
+    );
+    return result.records[0]?.get("sensitive") ?? null;
+  } finally { await session.close(); }
+};
+const readBirthday = async (driver: Driver, username: string): Promise<string | null> => {
+  const session = driver.session({ defaultAccessMode: "READ" });
+  try {
+    // The result type follows this fixed Cypher toString expression, not a
+    // caller-chosen generic assertion over arbitrary database properties.
+    const result = await session.run<{ birthday: string | null }>(
+      `MATCH (user:User {username: $username})
+              RETURN toString(user.dateOfBirth) AS birthday`,
+      { username }
+    );
+    return result.records[0]?.get("birthday") ?? null;
+  } finally { await session.close(); }
 };
 
 /**
@@ -69,36 +82,24 @@ const getDiscussionAgeGateCheck =
 
     // Read the mark directly: the API's authorization filter hides the
     // discussion from exactly the viewers this check is for.
-    const sensitive = await readOne<boolean>({
-      driver,
-      query: `MATCH (discussion:Discussion {id: $discussionId})
-              RETURN coalesce(discussion.hasSensitiveContent, false) AS sensitive`,
-      values: { discussionId },
-      key: "sensitive",
-    });
+    const sensitive = await readSensitive(driver, discussionId);
     if (!sensitive) return NOT_REQUIRED;
 
     const minimumAge = policy.minimumSensitiveContentAge;
     context.user = await setUserDataOnContext({ context });
     const username = context.user?.username;
     if (!username) {
-      return { requiresAgeCheck: true, status: "SIGN_IN_REQUIRED", minimumAge };
+      return rememberCanonicalSource({ requiresAgeCheck: true, status: "SIGN_IN_REQUIRED", minimumAge });
     }
 
-    const birthday = await readOne<string>({
-      driver,
-      query: `MATCH (user:User {username: $username})
-              RETURN toString(user.dateOfBirth) AS birthday`,
-      values: { username },
-      key: "birthday",
-    });
+    const birthday = await readBirthday(driver, username);
     if (!birthday) {
-      return { requiresAgeCheck: true, status: "BIRTHDAY_REQUIRED", minimumAge };
+      return rememberCanonicalSource({ requiresAgeCheck: true, status: "BIRTHDAY_REQUIRED", minimumAge });
     }
 
     return getAgeEligibility({ birthday, policy }).mayAccessSensitiveContent
       ? NOT_REQUIRED
-      : { requiresAgeCheck: true, status: "UNDER_MINIMUM_AGE", minimumAge };
+      : rememberCanonicalSource({ requiresAgeCheck: true, status: "UNDER_MINIMUM_AGE", minimumAge });
   };
 
 export default getDiscussionAgeGateCheck;

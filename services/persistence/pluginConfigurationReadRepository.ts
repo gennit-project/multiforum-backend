@@ -14,59 +14,42 @@ export type ReconciliationSecretSnapshot = {
   lastValidatedAt: string | null;
 };
 export type InstalledPluginEdge = {
-  properties?: {
-    enabled?: boolean
-    settingsJson?: string | Record<string, unknown>
-  }
-  node?: {
-    version?: string
-    manifest?: string | Record<string, unknown> | null
-    settingsDefaults?: string | Record<string, unknown> | null
-    uiSchema?: string | Record<string, unknown> | null
-    documentationPath?: string | null
-    readmeMarkdown?: string | null
-    registryUrl?: string | null
-    releaseNotesUrl?: string | null
-    sourceRepoUrl?: string | null
-    sourceCommit?: string | null
-    minServerVersion?: string | null
-    apiVersion?: string | null
-    Plugin?: {
-      id?: string
-      name?: string
-      displayName?: string
-      description?: string
-      authorName?: string
-      authorUrl?: string
-      homepage?: string
-      license?: string
-      tags?: string[]
-      metadata?: unknown
-    }
-    [key: string]: unknown
-  }
-}
-
+  properties: { enabled: boolean; settingsJson: unknown };
+  node: {
+    id: string; version: string; repoUrl: string; entryPath: string;
+    tarballGsUri: string | null; integritySha256: string | null;
+    manifest: unknown; settingsDefaults: unknown; uiSchema: unknown;
+    documentationPath: string | null; readmeMarkdown: string | null;
+    registryUrl: string | null; releaseNotesUrl: string | null;
+    sourceRepoUrl: string | null; sourceCommit: string | null;
+    minServerVersion: string | null; apiVersion: string | null;
+    Plugin: {
+      id: string; name: string; displayName: string | null; description: string | null;
+      authorName: string | null; authorUrl: string | null; homepage: string | null;
+      license: string | null; tags: string[] | null; metadata: unknown;
+    } | null;
+  };
+};
 export type InstalledPluginConfigSnapshot = {
-  serverName?: string | null;
-  pluginRegistries?: string[] | null;
-  InstalledVersionsConnection?: { edges?: InstalledPluginEdge[] };
+  serverName: string | null;
+  pluginRegistries: string[] | null;
+  InstalledVersionsConnection: { edges: InstalledPluginEdge[] };
+};
+// Exact selected relationships. Only Plugin is nullable; edges/node/properties
+// are non-null GraphQL connection results. JSON values intentionally stay unknown.
+export type ReconciliationInstalledEdge = {
+  properties: { enabled: boolean; settingsJson: unknown };
+  node: { version: string; Plugin: { name: string } | null };
 };
 export type ReconciliationConfigSnapshot = {
-  serverName?: string | null;
-  pluginRegistries?: string[] | null;
-  pluginPipelines?: unknown;
-  InstalledVersionsConnection?: { edges?: Array<{
-    properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
-    node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
-  }> };
+  serverName: string | null;
+  pluginRegistries: string[] | null;
+  pluginPipelines: unknown;
+  InstalledVersionsConnection: { edges: ReconciliationInstalledEdge[] };
 };
 export type ReconciliationChannelSnapshot = {
-  uniqueName?: string | null;
-  EnabledPluginsConnection?: { edges?: Array<{
-    properties?: { enabled?: boolean | null; settingsJson?: unknown } | null;
-    node?: { version?: string | null; Plugin?: { name?: string | null } | null } | null;
-  }> };
+  uniqueName: string;
+  EnabledPluginsConnection: { edges: ReconciliationInstalledEdge[] };
 };
 
 export interface PluginConfigurationReadRepository {

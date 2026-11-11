@@ -20,3 +20,10 @@ test('callers without an idempotency key continue to append repeated reports',as
 test('a replayed keyed report returns the issue without reading content or reopening it',async()=>{const f=fixture();f.repo.findIdempotentReport=async()=>{f.calls.push('replay');return [{id:'i',issueNumber:7}] as any;};const result=await f.run('same-job');assert.deepEqual(result,{issueId:'i',issueNumber:7});assert.deepEqual(f.calls,['identity','membership','replay']);});
 test('a concurrent keyed replay recovers after the uniqueness constraint wins elsewhere',async()=>{const f=fixture();let replayReads=0;f.repo.findIdempotentReport=async()=>{f.calls.push('replay');replayReads+=1;return replayReads===1?[]:[{id:'i',issueNumber:7}] as any;};f.repo.appendBotReport=async()=>{f.calls.push('append');throw Error('constraint conflict');};const result=await f.run('same-job');assert.deepEqual(result,{issueId:'i',issueNumber:7});assert.deepEqual(f.calls,['identity','membership','replay','issue','comment','append','replay']);});
 test('missing append result retains original error wrapping',async()=>{const f=fixture();f.repo.appendBotReport=async()=>({issues:[]});await assert.rejects(f.run(),{message:'Error updating issue: Error updating issue'});});
+
+for(const existing of [true,false])test(`bot report uses ${existing?'validated':'allocated'} number instead of the raw append leaf`,async()=>{
+ const f=fixture(existing);
+ f.repo.appendBotReport=async()=>{f.calls.push('append');return {issues:[{id:'i',issueNumber:'unvalidated'}]};};
+ assert.deepEqual(await f.run(),{issueId:'i',issueNumber:7});
+ assert.equal(f.calls.filter(call=>call==='append').length,1);
+});

@@ -44,7 +44,7 @@ export const evaluateServerDownloadsEnabled = ({
   enableDownloads,
 }: {
   input: CreateDiscussionItem[] | null | undefined;
-  enableDownloads: boolean | null | undefined;
+  enableDownloads: unknown;
 }): true | string => {
   if (!inputCreatesDownload(input)) {
     return true; // Not a download — this rule is a no-op.

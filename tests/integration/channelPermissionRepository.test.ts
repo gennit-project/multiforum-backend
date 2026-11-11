@@ -107,3 +107,24 @@ test("returns only suspensions for the requested user and moderator", async () =
     ["mod-suspension"]
   );
 });
+
+test("targeted suspension source preserves native unknown leaves and Cypher date conversion", async () => {
+  await driver.executeQuery(`CREATE(ch:Channel{uniqueName:'cats'}),
+    (u:User{username:'alice'}),(m:ModerationProfile{displayName:'Mod A'}),
+    (su:Suspension{id:123,username:'alice',suspendedIndefinitely:'false',suspendedUntil:datetime('2000-01-01T00:00:00Z')}),
+    (sm:Suspension{id:456,modProfileName:'Mod A',suspendedIndefinitely:true}),
+    (i:Issue{id:789,issueNumber:'9'})
+    CREATE(ch)-[:SUSPENDED_AS_USER]->(su),(u)-[:SUSPENDED_AS_USER]->(su),
+      (ch)-[:SUSPENDED_AS_MOD]->(sm),(m)-[:SUSPENDED_AS_MOD]->(sm),
+      (su)-[:HAS_CONTEXT]->(i),(sm)-[:HAS_CONTEXT]->(i)`);
+  const repository = createChannelPermissionRepository(driver);
+  const result = await repository.findTargetedSuspensions({channelUniqueName:"cats",username:"alice",modProfileName:"Mod A"});
+  assert.equal(result.userSuspensions[0].id, 123);
+  assert.equal(result.userSuspensions[0].suspendedIndefinitely, "false");
+  assert.equal(typeof result.userSuspensions[0].suspendedUntil, "string");
+  assert.deepEqual(result.userSuspensions[0].RelatedIssue, {id:789,issueNumber:"9"});
+  assert.deepEqual(result.userSuspensions[0].SuspendedUser, {username:"alice"});
+  assert.equal(result.modSuspensions[0].id, 456);
+  assert.equal(result.modSuspensions[0].suspendedUntil, null);
+  assert.deepEqual(result.modSuspensions[0].SuspendedMod, {displayName:"Mod A"});
+});

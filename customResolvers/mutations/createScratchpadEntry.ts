@@ -1,3 +1,5 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
+import { readScratchpadSuperVoters } from "../../services/persistence/scratchpadSuperVoters.js";
 import type { Driver } from 'neo4j-driver';
 import type { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../../types/context.js';
@@ -9,9 +11,9 @@ type Input = { scratchpadRepository: ScratchpadRepository; driver: Driver };
 type Args = {
   recipientUsername: string;
   text: string;
-  sourceType: 'comment' | 'discussion';
+  sourceType: string;
   sourceId: string;
-  sourceChannelUniqueName?: string;
+  sourceChannelUniqueName?: string | null;
 };
 
 const MAX_TEXT_LENGTH = 500;
@@ -112,7 +114,11 @@ const createScratchpadEntryResolver = (input: Input) => {
 
       // 3. Create the ScratchpadEntry node + Author/Recipient relationships in
       //    the transaction (not via OGM) so it is atomic with everything below.
-      const createEntryResult = await tx.run(
+      const createEntryResult = await tx.run<{
+        id: string; createdAt: string; text: string; isPublic: false;
+        sourceType: 'comment' | 'discussion'; sourceId: string;
+        sourceChannelUniqueName: unknown; discussionId: unknown;
+      }>(
         `MATCH (author:User { username: $loggedInUsername })
          MATCH (recipient:User { username: $recipientUsername })
          CREATE (author)-[:WROTE_SCRATCHPAD_ENTRY]->(e:ScratchpadEntry {
@@ -221,20 +227,12 @@ const createScratchpadEntryResolver = (input: Input) => {
       //    on a fresh OGM session can lag behind the write on a clustered
       //    database, returning a stale list that omits the actor — which left the
       //    frontend super-upvote button looking inactive (and un-undoable).
-      const readSuperUpvotersQuery =
-        sourceType === 'comment'
-          ? `MATCH (u:User)-[:SUPER_UPVOTED_COMMENT]->(:Comment { id: $sourceId })
-             RETURN collect({ username: u.username }) AS users`
-          : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
-             RETURN collect({ username: u.username }) AS users`;
-      const superUpvotersResult = await tx.run(readSuperUpvotersQuery, { sourceId });
-      const superUpvotedByUsers: Array<{ username: string }> =
-        superUpvotersResult.records[0]?.get('users') || [];
+      const superUpvotedByUsers = await readScratchpadSuperVoters(tx, sourceType, sourceId);
 
       await tx.commit();
 
       // Return the created entry with author info and updated super upvoted users
-      return {
+      return rememberCanonicalSource({
         id: entryId,
         createdAt: entryRecord.get('createdAt'),
         text: entryRecord.get('text'),
@@ -250,7 +248,7 @@ const createScratchpadEntryResolver = (input: Input) => {
           username: recipientUsername,
         },
         superUpvotedByUsers,
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

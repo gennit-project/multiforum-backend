@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -24,7 +25,8 @@ const getMyAgeProfile = ({ driver, agePolicyRepository }: Input) => async (
 
   const session = driver.session();
   try {
-    const result = await session.run(
+    // Cypher toString returns only a native string or null, independent of property type.
+    const result = await session.run<{ birthday: string | null }>(
       `MATCH (user:User {username: $username})
        RETURN toString(user.dateOfBirth) AS birthday`,
       { username }
@@ -32,10 +34,10 @@ const getMyAgeProfile = ({ driver, agePolicyRepository }: Input) => async (
     const birthday = result.records[0]?.get("birthday") ?? null;
     const policy = await loadAgePolicy(agePolicyRepository);
 
-    return {
+    return rememberCanonicalSource({
       birthday,
       ...getAgeEligibility({ birthday, policy }),
-    };
+    });
   } finally {
     await session.close();
   }

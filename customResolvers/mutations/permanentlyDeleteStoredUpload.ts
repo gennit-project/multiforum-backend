@@ -1,3 +1,5 @@
+import type { RemovedUploadColumns } from '../contracts/storedUploadSources.js';
+import { rememberCanonicalSource } from '../../services/canonicalSourceFields.js';
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -29,6 +31,8 @@ type StoredUploadTarget = StoredObjectMetadata & {
   uploadedByUsername: string | null;
   discussionAuthorUsernames: string[];
 };
+
+export type { RemovedUploadColumns } from '../contracts/storedUploadSources.js';
 
 type Args = {
   imageId?: string;
@@ -164,11 +168,11 @@ const markStoredUploadRemoved = async ({
   id: string;
   username: string;
   modProfileName?: string | null;
-}): Promise<Record<string, unknown>> => {
+}): Promise<RemovedUploadColumns> => {
   const removedAt = new Date().toISOString();
 
   return executeManagedWrite(driver, async (transaction) => {
-      const result = await transaction.run(
+      const result = await transaction.run<RemovedUploadColumns>(
         mediaType === "Image"
           ? `
           MATCH (target:Image {id: $id})
@@ -263,7 +267,9 @@ const markStoredUploadRemoved = async ({
         throw new GraphQLError("Upload not found");
       }
 
-      return Object.fromEntries(record.keys.map((key) => [key, record.get(key)]));
+      // Neo4j's typed record preserves every actual selected column, including
+      // null values; do not erase the projection through Object.fromEntries.
+      return record.toObject();
   });
 };
 
@@ -277,7 +283,7 @@ const getResolver = ({
     parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<Record<string, unknown> & { storageDeletion: StorageDeletionResult }> => {
+  ): Promise<RemovedUploadColumns & { storageDeletion: StorageDeletionResult }> => {
     const id = getTargetId(mediaType, args);
     const target = await readStoredUploadTarget({ driver, mediaType, id });
 
@@ -319,10 +325,10 @@ const getResolver = ({
       modProfileName,
     });
 
-    return {
+    return rememberCanonicalSource({
       ...removed,
       storageDeletion,
-    };
+    });
   };
 };
 

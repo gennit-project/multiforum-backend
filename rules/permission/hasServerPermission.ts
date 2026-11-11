@@ -12,8 +12,8 @@ import { createSuspensionEffectsRepository } from "../../services/persistence/su
 
 type EvaluateServerPermissionInput = {
   permission: keyof ServerRole;
-  defaultServerRole?: ServerRole | null;
-  defaultSuspendedRole?: ServerRole | null;
+  defaultServerRole?: Record<string, unknown> | null;
+  defaultSuspendedRole?: Record<string, unknown> | null;
   hasActiveSuspension: boolean;
   // Tier inputs (see docs/isadmin-phaseout-design.md). All optional so existing
   // callers/tests keep working: with none set, this evaluates the default
@@ -21,8 +21,8 @@ type EvaluateServerPermissionInput = {
   isRoot?: boolean;
   isSuperAdmin?: boolean;
   isAdmin?: boolean;
-  superAdminRole?: ServerRole | null;
-  adminRole?: ServerRole | null;
+  superAdminRole?: Record<string, unknown> | null;
+  adminRole?: Record<string, unknown> | null;
 };
 
 export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
@@ -131,12 +131,12 @@ export const hasServerPermission: (
   const isSuperAdmin =
     !!username &&
     (serverConfig.SuperAdmins ?? []).some(
-      (member: { username?: string | null }) => member?.username === username
+      (member) => member?.username === username
     );
   const isAdmin =
     !!username &&
     (serverConfig.Admins ?? []).some(
-      (member: { username?: string | null }) => member?.username === username
+      (member) => member?.username === username
     );
 
   const result = evaluateServerPermission({

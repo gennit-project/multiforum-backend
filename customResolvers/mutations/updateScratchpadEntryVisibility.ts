@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { ScratchpadRepository } from "../../services/persistence/scratchpadRepository.js";
 import type { GraphQLContext } from "../../types/context.js";
@@ -53,10 +54,10 @@ const updateScratchpadEntryVisibilityResolver = (input: Input) => {
     // Update the entry
     await scratchpadRepository.updateVisibility(scratchpadEntryId, isPublic);
 
-    return {
+    return rememberCanonicalSource({
       ...entry,
       isPublic,
-    };
+    });
   };
 };
 

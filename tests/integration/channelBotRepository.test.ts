@@ -1,3 +1,6 @@
+import {graphql} from 'graphql';
+import {applyMiddleware} from 'graphql-middleware';
+import permissions from '../../permissions.js';
 import assert from 'node:assert/strict';
 import {before,beforeEach,after,test} from 'node:test';
 import {Neo4jGraphQL} from '@neo4j/graphql';
@@ -29,3 +32,25 @@ const execute=async(repository:ChannelBotRepository)=>{const result={updateChann
 test('channel/server plugin snapshots retain exact selections, data and defaults',async(t)=>{await seed();const repo=createChannelBotRepository(driver);t.assert.snapshot(normalize(await repo.findChannelPlugins('cats')));assert.deepEqual(await repo.findChannelPlugins('missing'),[]);t.assert.snapshot(normalize(await repo.findServerPlugins()));await driver.executeQuery("UNWIND range(1,28) AS i CREATE (:ServerConfig {serverName:toString(i)})");assert.equal((await repo.findServerPlugins()).length,29);t.assert.snapshot(normalize(await repo.findServerPlugins()));});
 test('middleware creates configured profile bots then deprecates/disconnects old bots with same graph/events',async()=>{for(const repository of [createChannelBotRepository(driver)]){await resetDatabase(driver);await seed();events=[];await execute(repository);const rows=await state();assert.deepEqual(rows,[{username:'bot-cats-helper-p1',deprecated:false,reason:null,channel:'cats'},{username:'bot-old',deprecated:true,reason:'Bot profile removed from channel "cats"',channel:null},{username:'human',deprecated:null,reason:null,channel:'cats'}]);}});
 test('postcommit default deprecation error is swallowed and prevents disconnect',async()=>{const field=(schema.getType('User') as GraphQLObjectType).getFields().pronouns;const old=field.resolve;field.resolve=()=>{throw new Error('deprecation projection failure');};try{for(const repository of [createChannelBotRepository(driver)]){await resetDatabase(driver);await seed();await driver.executeQuery('MATCH ()-[e:ENABLED]->() SET e.enabled=false');events=[];await execute(repository);const rows=await state();assert.equal(rows.find(r=>r.username==='bot-old')?.deprecated,true);assert.equal(rows.find(r=>r.username==='bot-old')?.channel,'cats');}}finally{field.resolve=old;}});
+
+const updateBotsDocument=`mutation ConfigureBots {
+ result:updateChannels(where:{uniqueName:{eq:"cats"}},update:{EnabledPlugins:[{update:{edge:{enabled:{set:true}}}}]}) {
+  channels { ...ChannelIdentity }
+ }
+} fragment ChannelIdentity on Channel { uniqueName }`;
+const protectedUpdate=(viewer:string|null)=>graphql({schema:applyMiddleware(schema,permissions,middleware),source:updateBotsDocument,
+ contextValue:{driver,req:{headers:{},isMutation:true},user:viewer?{username:viewer,email:null,email_verified:true,data:null}:null,mayAccessSensitiveContent:false}});
+test('GraphQL and Shield permit owner provisioning with aliases/fragments and repeated updates',async()=>{
+ await seed();await driver.executeQuery("MATCH(c:Channel{uniqueName:'cats'}) CREATE(:User{username:'owner'})-[:ADMIN_OF_CHANNEL]->(c)");
+ for(let i=0;i<2;i++){
+  const result=await protectedUpdate('owner');assert.equal(result.errors,undefined,JSON.stringify(result.errors));
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{result:{channels:[{uniqueName:'cats'}]}});
+ }
+ const rows=await state();assert.equal(rows.filter(row=>row.username==='bot-cats-helper-p1').length,1);
+ assert.equal(rows.find(row=>row.username==='bot-cats-helper-p1')?.channel,'cats');
+ assert.equal(rows.find(row=>row.username==='bot-old')?.channel,null);
+});
+test('GraphQL and Shield reject anonymous and non-owner changes before bot side effects',async()=>{
+ await seed();await driver.executeQuery("CREATE(:User{username:'visitor'})");const before=await state();
+ for(const viewer of [null,'visitor']){const result=await protectedUpdate(viewer);assert.ok(result.errors?.length);assert.deepEqual(await state(),before);}
+});

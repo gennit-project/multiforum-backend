@@ -1,21 +1,18 @@
 import { GraphQLError } from 'graphql'
-import type { PipelineTargetRepository } from "../../services/persistence/pipelineTargetRepository.js"
+import type { PipelineTargetRepository, PipelineDiscussionSnapshot, PipelineDownloadSnapshot } from "../../services/persistence/pipelineTargetRepository.js"
 
-export const assertPublicPipelineTargetVisible = async ({
-  repository,
-  targetId,
-  targetType,
-}: {
+type VisibilityInput = {
   repository: PipelineTargetRepository
   targetId: string
   targetType: string
-}) => {
+}
+export function assertPublicPipelineTargetVisible(input: VisibilityInput & { targetType: 'Discussion' }): Promise<PipelineDiscussionSnapshot>
+export function assertPublicPipelineTargetVisible(input: VisibilityInput & { targetType: 'DownloadableFile' }): Promise<PipelineDownloadSnapshot>
+export function assertPublicPipelineTargetVisible(input: VisibilityInput): Promise<PipelineDiscussionSnapshot | PipelineDownloadSnapshot>
+export async function assertPublicPipelineTargetVisible({ repository, targetId, targetType }: VisibilityInput) {
   if (targetType === 'Discussion') {
     const discussions = await repository.findDiscussionVisibility(targetId)
-    const discussion = discussions[0] as typeof discussions[number] & {
-      DownloadableFiles?: Array<{ permanentlyRemoved?: boolean | null }>
-      DiscussionChannels?: Array<{ archived?: boolean | null }>
-    }
+    const discussion = discussions[0]
     const hasPublicChannel = discussion?.DiscussionChannels?.some(
       channel => channel.archived !== true
     )
@@ -33,15 +30,7 @@ export const assertPublicPipelineTargetVisible = async ({
     }
   } else if (targetType === 'DownloadableFile') {
     const files = await repository.findDownloadVisibility(targetId)
-    const file = files[0] as typeof files[number] & {
-      Discussion?: {
-        deleted?: boolean | null
-        DiscussionChannels?: Array<{
-          channelUniqueName?: string | null
-          archived?: boolean | null
-        }>
-      } | null
-    }
+    const file = files[0]
     const discussion = file?.Discussion
     const hasPublicChannel = discussion?.DiscussionChannels?.some(
       channel => channel.archived !== true

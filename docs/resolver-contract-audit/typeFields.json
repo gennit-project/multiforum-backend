@@ -1,0 +1,777 @@
+{
+  "family": "typeFields",
+  "fields": [
+    {
+      "field": "Album.Images",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts",
+        "services/canonicalCollectionSources.ts",
+        "services/fixedCollectionUserSources.ts",
+        "tests/integration/fixedCollectionSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts",
+        "tests/integration/assetIdentitySources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed. Fixed internal collection projections now preserve canonical response keys and privately transfer their explicit User source identities across inner GraphQL completion. Existing generated selection declarations and executed-document guards remain authoritative; other dynamic producers are not certified by this change. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Album.detailImagesPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "Channel.Admins",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.Bots",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "tests/integration/botSuspensionConnection.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/integration/pinnedChannelResponseContracts.test.ts",
+        "graphql-compatibility/response-operations.json",
+        "customResolvers/contracts/botProvisioningProjections.ts",
+        "tests/contracts/botProvisioningProjections.typecheck.ts",
+        "tests/integration/botProvisioningProjectionContracts.test.ts",
+        "tests/integration/channelBotRepository.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Merged #443 preserves aliases/independent filters, fragments, skipped fields, nullable paths and Shield privacy. Items remain opaque despite checked generated arguments and list-container nullability. The exact supported GET_CHANNEL and GET_CHANNEL_PLUGIN_SETTINGS documents now execute against GraphQL/Shield and disposable Neo4j; compatibility CI verifies their original bundle provenance. This adds client-shape execution evidence without claiming static opaque-item validity. Bot provisioning now has precise fixed identity/settings/write snapshots and executable query-drift checks; these upstream fixed reads do not establish a universal dynamic child selection. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Retain deferred item contract until upstream selections have precise item types; do not count the OpaqueListSource container check as a generated child response guarantee.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.Comments",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "tests/integration/channelCommentAuthorSources.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. Explicit public channel roots now preserve private author branch and owner identity for comments and selected ParentComment/ChildComments chains, with real selection and permission regressions; other item properties and unrelated descendants remain opaque. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.DiscussionChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.EventChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.InCollections",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.Moderators",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts",
+        "tests/integration/moderatorBotIdentitySources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.PendingModInvites",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.PendingOwnerInvites",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.PinnedDiscussionChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.PinnedWikiPages",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.RelatedChannels",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "tests/contracts/userSourcePaths.typecheck.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers. Selected related-channel recursion now retains declared child-source identities with executable nested alias, fragment, directive, connection and nullable permission regressions. This does not certify every dynamic item field or other producer.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.SuspendedMods",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.SuspendedUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.Tags",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "services/canonicalSortedChannel.ts",
+        "tests/integration/sortedChannelSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The owned sorted-channel source now declares every fixed scalar, tag item and native count map, checked against the generated root selection and real query keys. Canonical source provenance preserves colliding scalar/list aliases and nested connection count aliases; malformed stored leaves still fail only when selected. This does not certify other generated or custom Channel producers or unprojected child fields. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "Channel.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
+      ],
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection.",
+      "disposition": "schema-limit"
+    },
+    {
+      "field": "Comment.SuperUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "CommentAuthor.__resolveType",
+      "selectedPaths": [
+        "User | ModerationProfile"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "services/authorSourceType.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "middleware/userChildIdentityMiddleware.test.ts",
+        "tests/integration/unionAuthorIdentitySources.test.ts",
+        "services/persistence/internalAuthorSources.ts",
+        "tests/integration/nestedCommentAuthorSources.test.ts",
+        "services/persistence/generatedSchemaOperations.test.ts"
+      ],
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover selected ParentComment/ChildComments chains, including internal fixed reads; public channel Comments paths use the same bounded field-name traversal. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and unrelated nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
+    },
+    {
+      "field": "Discussion.detailFilesPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "DiscussionChannel.SuperUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "every returned list item and nested item field"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/customCommentSources.d.ts",
+        "services/customCommentSources.ts",
+        "tests/integration/customCommentAuthorSources.test.ts",
+        "customResolvers/contracts/discussionDetailSources.d.ts",
+        "services/canonicalDiscussionDetail.ts",
+        "tests/integration/discussionDetailSourceContracts.test.ts",
+        "tests/helpers/sharedListSources.ts",
+        "tests/contracts/sharedListSources.typecheck.ts",
+        "tests/integration/generatedSharedListSources.test.ts"
+      ],
+      "reason": "Parent-provided list items are opaque unknown values; fallback filters null only and GraphQL performs item completion. The custom comment/reply/event/answer producers now have exact raw nested maps, private label-derived author type provenance and executable projection guards. This does not certify other dynamic producers or unprojected child fields. The initial detail and three continuation-page sources now use exact raw maps and actual generated raw-selection boundaries, with all six executable Cypher projections checked. Canonical maps and private label-derived answer-author provenance preserve nested aliases and nullable moderator identity. The page factory retains kind-specific item types instead of an unchecked dynamic output key. Stored scalar completion remains lazy; no full entity guarantee is claimed. The schema-typed generated-root probe manifest is checked against every actual opaque registration. Real GraphQL probes preserve independent aliases, filters/limits, empty and skipped lists, and selected versus unrequested malformed fields. This is generated-source execution evidence, not a whole-item static contract or certification of other producers.",
+      "decision": "Require accurate checked upstream item projections or separately authorized runtime item validation before promotion.",
+      "disposition": "source-migration"
+    },
+    {
+      "field": "DiscussionChannel.detailAnswersPageInfo",
+      "selectedPaths": [
+        "endCursor",
+        "hasNextPage"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "DiscussionChannelListItem.Flairs",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Raw persisted scalar completion and unselected DiscussionFlair child relationships"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/discussionListFlairs.ts",
+        "customResolvers/fields/discussionListFlairs.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts"
+      ],
+      "reason": "The actual registration checks an explicit generated-schema-derived raw six-field item selection. The sole owned hydration document has exact nested projection drift tests. Persisted scalar values remain unknown until GraphQL completes the requested child fields.",
+      "decision": "Source/container obligations are checked; retain deferred generated response-value status because raw persisted leaves are not validated output. Preserve lazy scalar/null errors and archived assignments without eager decoding.",
+      "disposition": "raw-scalar-limit"
+    },
+    {
+      "field": "DiscussionChannelListItem.SuperUpvotedByUsers",
+      "selectedPaths": [
+        "username"
+      ],
+      "residualPaths": [
+        "Unselected User fields and lazy child relationships"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "customResolvers/fields/discussionListViewerVotes.ts",
+        "customResolvers/cypher/getDiscussionChannelsQuery.cypher",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "build_scripts/resolverContractInventory.test.ts"
+      ],
+      "reason": "The sole producer copies the typed viewer username into fixed Cypher maps. Exact projection tests and the actual generated selected field signature check the username response without asserting full Users.",
+      "decision": "Preserve canonical aliases, empty/null fallback, viewer isolation and lazy children. No arbitrary stored username is narrowed by this boundary."
+    },
+    {
+      "field": "DiscussionChannelListItem.UpvotedByUsers",
+      "selectedPaths": [
+        "username"
+      ],
+      "residualPaths": [
+        "Unselected User fields and lazy child relationships"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "customResolvers/fields/discussionListViewerVotes.ts",
+        "customResolvers/cypher/getDiscussionChannelsQuery.cypher",
+        "customResolvers/contracts/viewerReadProjections.d.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/viewerReadResponseContracts.test.ts",
+        "build_scripts/resolverContractInventory.test.ts"
+      ],
+      "reason": "The sole producer copies the typed viewer username into fixed Cypher maps. Exact projection tests and the actual generated selected field signature check the username response without asserting full Users.",
+      "decision": "Preserve canonical aliases, empty/null fallback, viewer isolation and lazy children. No arbitrary stored username is narrowed by this boundary."
+    },
+    {
+      "field": "DownloadableFile.url",
+      "selectedPaths": [
+        "String"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered.",
+      "decision": "Selected response checked; retain documented residual scope."
+    },
+    {
+      "field": "Image.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
+      ],
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection.",
+      "disposition": "schema-limit"
+    },
+    {
+      "field": "IssueAuthor.__resolveType",
+      "selectedPaths": [
+        "User | ModerationProfile"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "services/authorSourceType.ts",
+        "middleware/userChildIdentityMiddleware.ts",
+        "middleware/userChildIdentityMiddleware.test.ts",
+        "tests/integration/unionAuthorIdentitySources.test.ts",
+        "services/persistence/internalAuthorSources.ts",
+        "tests/integration/nestedCommentAuthorSources.test.ts",
+        "services/persistence/generatedSchemaOperations.test.ts"
+      ],
+      "reason": "Generated checked resolver signatures retain the allowed type names. Explicit public comment/issue sources use private branch selections; fixed internal reads use validated generated to-one union metadata. Comment roots additionally cover selected ParentComment/ChildComments chains, including internal fixed reads; public channel Comments paths use the same bounded field-name traversal. Real schema/Shield/database tests prove alias-independent completion, ownership and moderator anonymity.",
+      "decision": "No inventory promotion. Other custom, mutation and unrelated nested sources retain legacy discrimination; this is not full author-object certification. Missing or ambiguous public markers and invalid present internal metadata yield GraphQL type errors rather than guessed names."
+    },
+    {
+      "field": "JSON",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts"
+      ],
+      "reason": "Generated JSON scalar is unrestricted; runtime shape cannot be certified by satisfies.",
+      "decision": "Retain explicit custom-scalar exception; changing JSON acceptance requires separate contract decision.",
+      "disposition": "schema-limit"
+    },
+    {
+      "field": "ScratchpadEntry.superUpvotedByUsers",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Raw username scalar completion and unselected User child relationships"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/scratchpadProjections.ts",
+        "tests/contracts/scratchpadProjections.typecheck.ts",
+        "tests/integration/scratchpadProjectionContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/scratchpadSuperVoters.ts",
+        "customResolvers/fields/scratchpadSuperVoters.ts",
+        "services/persistence/scratchpadSuperVoters.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/scratchpadSuperVoterSources.test.ts",
+        "tests/integration/scratchpadAuthorContracts.test.ts"
+      ],
+      "reason": "The actual registration checks the generated raw User.username item source. Both actual Cypher branches retain exact map-key coverage and read through the existing write transaction. Stored usernames remain unknown until requested GraphQL completion.",
+      "decision": "Source/container obligations are checked; retain deferred generated scalar-value status. Preserve list reference and missing/nullable fallback, read-before-commit behavior, and all permissions and side effects.",
+      "disposition": "raw-scalar-limit"
+    },
+    {
+      "field": "SiteWideDiscussionListItem.DownloadableFiles",
+      "selectedPaths": [],
+      "residualPaths": [
+        "Raw persisted file ID/scanStatus completion and unselected DownloadableFile children"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/deferredSources.d.ts",
+        "tests/contracts/deferredSources.typecheck.ts",
+        "build_scripts/deferredSourceContracts.test.ts",
+        "customResolvers/contracts/rawSelectedSource.d.ts",
+        "customResolvers/contracts/siteWideDownloadFiles.ts",
+        "customResolvers/contracts/siteWideDiscussionSources.d.ts",
+        "customResolvers/fields/siteWideDownloadableFiles.ts",
+        "services/canonicalSiteWideDiscussion.ts",
+        "tests/contracts/rawSelectedSource.typecheck.ts",
+        "tests/integration/discussionConnectionCounts.test.ts"
+      ],
+      "reason": "Actual registration checks a generated raw ID/scanStatus item selection. The sole owned hydration producer has exact nested raw types and real-query key-drift coverage. Persisted values retain GraphQL selection-time completion.",
+      "decision": "The fixed item source is checked, but retain deferred generated scalar response status. Preserve aliases, filtering, pagination, native counts, lazy enum errors and denied child behavior. Do not fabricate unprojected child relationships.",
+      "disposition": "raw-scalar-limit"
+    },
+    {
+      "field": "User.Collections",
+      "selectedPaths": [
+        "id",
+        "name",
+        "description",
+        "visibility",
+        "collectionType",
+        "itemCount",
+        "itemOrder",
+        "createdAt",
+        "updatedAt",
+        "Channels.uniqueName",
+        "Channels.displayName",
+        "Channels.channelIconURL",
+        "Discussions.id",
+        "Discussions.title",
+        "Comments.id",
+        "Comments.text",
+        "Downloads.id",
+        "Downloads.title",
+        "Images.id",
+        "Images.url"
+      ],
+      "residualPaths": [
+        "unselected Collection fields; custom scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "tests/integration/collectionProfilePrivacy.test.ts",
+        "services/canonicalCollectionSources.ts",
+        "tests/integration/fixedCollectionSourceContracts.test.ts"
+      ],
+      "reason": "Actual composition uses generated checked field signature; executable-schema serialization covered. The fixed profile collection result now retains canonical aliases across its declared child maps while keeping its visibility and caller-filter enforcement unchanged.",
+      "decision": "Caller filters intersect profile authorization; generated collection reads enforce public-or-owner visibility. Generated pagination arguments are forwarded. Response projection accounting remains selected-only."
+    },
+    {
+      "field": "User.variantUrls",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON internal structure"
+      ],
+      "evidence": [
+        "customResolvers/typeResolvers.ts",
+        "customResolvers/contracts/typeFields.ts",
+        "tests/contracts/typeFields.typecheck.ts",
+        "tests/integration/typeFieldResponseContracts.test.ts",
+        "customResolvers/contracts/variantUrlsDomain.d.ts",
+        "tests/contracts/variantUrlsDomain.typecheck.ts",
+        "build_scripts/variantUrlsDomainContract.test.ts"
+      ],
+      "reason": "Actual registration enforces existing normalized Record<string,string>|null domain, with generated argument signatures and unknown raw parent values. Generated JSON is still unrestricted and cannot certify structure.",
+      "decision": "Retain explicit domain enforcement without inflating generated-boundary counts; preserve normalization rather than adding eager rejection.",
+      "disposition": "schema-limit"
+    }
+  ]
+}

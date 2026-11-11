@@ -31,4 +31,29 @@ test('target selections and default nested EventChannels limit match',async()=>{
 test('owned action write against a missing issue commits nothing; invalid archived input is rejected',async()=>{await seed();const r=await createCommentModerationRepository(driver).appendIssueAction({issueId:'missing',actions:[{actionType:'archive',actionDescription:'Archived the comment',text:'x',modDisplayName:'mod'}]});assert.deepEqual(r.issues,[]);await assert.rejects(createCommentModerationRepository(driver).setArchived({id:{eq:'c'}},{archived:'invalid'} as any));assert.equal(events.length,0);});
 test('default comment projection failure retains committed archive and native events',async(t)=>{const app=getCustomResolvers(driver);const neo=new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Comment:{editReason:()=>{throw Error('projection failed');}}},features:{filters:{String:{MATCHES:true}},subscriptions:engine as unknown as boolean}});const schema=await neo.getSchema();registerGeneratedSchema(driver,schema);try{await seed();await assert.rejects(createCommentModerationRepository(driver).setArchived({id:{eq:'c'}},{archived:{set:true}}),/projection failed/);const result=await state();assert.equal(result.rows[0].archived,true);t.assert.snapshot(result);}finally{registerGeneratedSchema(driver,baseSchema);}});
 
-test('moderator-author fragment projection retains existing read error before writes',async()=>{await seed(true);await assert.rejects(run(createCommentModerationRepository(driver)),/Cannot return null for non-nullable field User.username/);assert.equal(events.length,0);});
+test('moderator-author archive preserves moderator target and legitimate notification recipient',async()=>{
+ await seed(true);
+ const repository=createCommentModerationRepository(driver);
+ const target=await repository.findArchiveTarget('c');
+ assert.equal(target[0].CommentAuthor?.__typename,'ModerationProfile');
+ const result=await run(repository);
+ assert.equal(result.state.rows[0].archived,false);
+ assert.equal(result.state.rows[0].open,false);
+ assert.equal(result.state.rows[0].modTarget,true);
+ assert.equal(result.state.rows[0].userTarget,false);
+ assert.equal(result.state.actions.length,6);
+ assert.deepEqual(result.notifications.map((entry:{username:string})=>entry.username),['author','author']);
+ assert.equal(result.archived.relatedModProfileName,'mod');
+ assert.equal(result.archived.relatedUsername,undefined);
+ // Owned moderation writes retain the same empty native-event stream as the user-author baseline.
+ assert.deepEqual(result.state.events,[]);
+});
+test('moderator archive source preserves nullable profile name and creates no writes during read',async()=>{
+ await seed(true);
+ await driver.executeQuery('MATCH(m:ModerationProfile) REMOVE m.displayName');
+ events=[];
+ const target=await createCommentModerationRepository(driver).findArchiveTarget('c');
+ assert.deepEqual(normalize(target[0].CommentAuthor),{__typename:'ModerationProfile',displayName:null,User:{username:'author'}});
+ assert.equal(events.length,0);
+ assert.equal((await driver.executeQuery('MATCH(i:Issue) RETURN i')).records.length,0);
+});

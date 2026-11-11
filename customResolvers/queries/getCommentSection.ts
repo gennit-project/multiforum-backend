@@ -1,3 +1,6 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js';
+import { canonicalCommentSectionChannel, canonicalRootComment } from "../../services/customCommentSources.js";
+import type { CommentSectionChannel, RootViewerComment } from "../contracts/viewerReadProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
@@ -25,16 +28,16 @@ const ANSWER_LIMIT = 5
 type Args = {
   channelUniqueName: string
   discussionId: string
-  modName: string
-  offset: string
-  limit: string
-  sort: string
+  modName?: string | null
+  offset?: string | number | null
+  limit?: string | number | null
+  sort?: string | null
 }
 
 const getResolver = (input: Input) => {
   const { driver, agePolicyRepository, serverName } = input
   return async (_parent: unknown, args: Args, context: GraphQLContext, _info: GraphQLResolveInfo) => {
-    const { channelUniqueName, discussionId, modName, sort } =
+    const { channelUniqueName, discussionId, modName = null, sort } =
       args
     const { offset, limit } = normalizePagination(args)
     context.user = await setUserDataOnContext({
@@ -51,7 +54,7 @@ const getResolver = (input: Input) => {
       !canViewSensitiveContent &&
       await isSensitiveContentTarget(driver, { discussionId })
     ) {
-      return { DiscussionChannel: null, Comments: [] };
+      return rememberCanonicalSource({ DiscussionChannel: null, Comments: [] });
     }
 
     const session = driver.session()
@@ -69,7 +72,7 @@ const getResolver = (input: Input) => {
       // comment query selects the page before expanding votes, versions, or
       // replies, so the amount of hydration work is bounded by `limit`.
       return await session.executeWrite(async (transaction) => {
-        const channelResult = await transaction.run(
+        const channelResult = await transaction.run<{DiscussionChannel: CommentSectionChannel}>(
           getCommentSectionChannelQuery,
           {
             discussionId,
@@ -81,10 +84,10 @@ const getResolver = (input: Input) => {
         const discussionChannel = channelResult.records[0]?.get('DiscussionChannel')
 
         if (!discussionChannel) {
-          return { DiscussionChannel: null, Comments: [] }
+          return rememberCanonicalSource({ DiscussionChannel: null, Comments: [] })
         }
 
-        const queryResult = await transaction.run(getCommentsQuery, {
+        const queryResult = await transaction.run<{comment: RootViewerComment}>(getCommentsQuery, {
           discussionChannelId: discussionChannel.id,
           modName,
           offset,
@@ -94,10 +97,10 @@ const getResolver = (input: Input) => {
           ...rankingParams,
         })
 
-        return {
-          DiscussionChannel: discussionChannel,
-          Comments: queryResult.records.map((record) => record.get('comment')),
-        }
+        return rememberCanonicalSource({
+          DiscussionChannel: canonicalCommentSectionChannel(discussionChannel),
+          Comments: queryResult.records.map((record) => canonicalRootComment(record.get('comment'))),
+        })
       })
     } catch (error: unknown) {
       logger.error('Error getting comment section:', error)

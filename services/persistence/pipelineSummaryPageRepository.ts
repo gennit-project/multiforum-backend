@@ -20,9 +20,16 @@ export const summaryPageQueries = {
 /** Split the lexicographic cursor into two index ranges, each bounded before UNION. */
 export function summaryAttemptsPageQuery(after: PagePosition | null): string {
   if (!after) return summaryPageQueries.attempts;
-  const tied = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+  // On Neo4j 5.26.33, redundant presence predicates can win over the cursor
+  // equality/range predicate and scan the entire target index prefix. Equality
+  // and range comparisons already exclude null dates (and tied-branch ids).
+  const tied = summaryPageQueries.attempts
+    .replace('AND a.createdAt IS NOT NULL AND a.id IS NOT NULL', '')
+    .replace('// CURSOR_FILTER',
     'AND a.createdAt = datetime($afterCreatedAt) AND a.id < $afterId');
-  const older = summaryPageQueries.attempts.replace('// CURSOR_FILTER',
+  const older = summaryPageQueries.attempts
+    .replace('AND a.createdAt IS NOT NULL AND a.id IS NOT NULL', 'AND a.id IS NOT NULL')
+    .replace('// CURSOR_FILTER',
     'AND a.createdAt < datetime($afterCreatedAt)');
   return `CALL { ${tied} UNION ALL ${older} }
     RETURN attempt ORDER BY attempt.createdAt DESC, attempt.id DESC LIMIT $limit`;
@@ -56,8 +63,13 @@ export function createPipelineSummaryPageRepository(driver: Driver): PipelineSum
       return result.records.map(row => normalizeRecord<PipelineAttemptRecord>(row.get('attempt')));
     },
     async findFlags(filter) {
-      const result = await run(summaryPageQueries.flags, filter);
-      return { hasActiveWork: result.records[0].get('hasActiveWork'), hasFailedWork: result.records[0].get('hasFailedWork') };
+      // This named query produces EXISTS/OR expressions, never raw node values.
+      // The exact driver projection is witnessed against Neo4j in metadata tests.
+      const session = driver.session();
+      try {
+        const result = await session.run<SummaryFlags>(summaryPageQueries.flags, filter);
+        return { hasActiveWork: result.records[0].get('hasActiveWork'), hasFailedWork: result.records[0].get('hasFailedWork') };
+      } finally { await session.close(); }
     },
     async findAttempt(id) {
       const result = await run(summaryPageQueries.attempt, { id });

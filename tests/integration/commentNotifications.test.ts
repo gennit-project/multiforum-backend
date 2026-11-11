@@ -152,3 +152,48 @@ test("handleCommentCreatedNotification is a no-op for an unknown comment id", as
   const all = await run(`MATCH (n:Notification) RETURN count(n) AS n`);
   assert.equal(Number(all[0].n), 0);
 });
+
+// Nullable text is normalized only for the email excerpt. Actual recipients,
+// in-app writes and persisted comment text must remain unchanged.
+for(const path of ['discussion','event','reply'] as const)for(const text of [null,'**kept excerpt**'])for(const notifyReply of (path==='reply'?[true,false]:[true]))test(`${path} notifications preserve delivery with ${text===null?'null':'non-null'} text${notifyReply?'':' and opted-out author'}`,async(t)=>{
+ await run(`
+  CREATE(bob:User{username:'bob'}),(alice:User{username:'alice',notifyOnReplyToCommentByDefault:$notifyReply})
+  CREATE(ch:Channel{uniqueName:'cats',createdAt:datetime()})
+  CREATE(d:Discussion{id:'d1',title:'Discussion',createdAt:datetime()})
+  CREATE(dc:DiscussionChannel{id:'dc1',discussionId:'d1',channelUniqueName:'cats',createdAt:datetime()})
+  CREATE(e:Event{id:'e1',title:'Event'}),(ec:EventChannel{id:'ec1',eventId:'e1',channelUniqueName:'cats'})
+  CREATE(parent:Comment{id:'p1',text:'parent',isRootComment:true,createdAt:datetime()})
+  CREATE(c:Comment{id:'c1',text:$text,isRootComment:$root,createdAt:datetime()})
+  CREATE(:Email{address:'alice@example.test'})-[:HAS_EMAIL]->(alice)
+  CREATE(dc)-[:POSTED_IN_CHANNEL]->(d), (dc)-[:POSTED_IN_CHANNEL]->(ch)
+  CREATE(ec)-[:POSTED_IN_CHANNEL]->(e), (ec)-[:POSTED_IN_CHANNEL]->(ch)
+  CREATE(ch)-[:HAS_COMMENT]->(c), (bob)-[:AUTHORED_COMMENT]->(c), (alice)-[:AUTHORED_COMMENT]->(parent)
+  FOREACH(_ IN CASE WHEN $path='event' THEN [1] ELSE [] END | CREATE(e)-[:HAS_COMMENT]->(c) CREATE(alice)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(e) CREATE(bob)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(e))
+  FOREACH(_ IN CASE WHEN $path<>'event' THEN [1] ELSE [] END | CREATE(dc)-[:CONTAINS_COMMENT]->(c) CREATE(alice)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(dc) CREATE(bob)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(dc))
+  FOREACH(_ IN CASE WHEN $path='reply' THEN [1] ELSE [] END | CREATE(c)-[:IS_REPLY_TO]->(parent) CREATE(bob)-[:SUBSCRIBED_TO_NOTIFICATIONS]->(parent))
+ `,{path,text,notifyReply,root:path!=='reply'});
+ const {createNotificationSnapshotRepository}=await import('../../services/persistence/notificationSnapshotRepository.js');
+ const snapshot=await createNotificationSnapshotRepository(env.driver).findCommentNotificationSnapshot('c1');
+ assert.equal(snapshot.length,1);assert.equal(snapshot[0].text,text);
+ const {Resend}=await import('resend');const batches:unknown[]=[];
+ t.mock.method(Resend.prototype,'post',async(_path:string,body:unknown)=>{batches.push(body);return {data:[],error:null};});
+ t.mock.method(globalThis,'fetch',async()=>assert.fail('Notification regression must never send a real HTTP request'));
+ const mailKeys=['EMAIL_PROVIDER','EMAIL_FROM','RESEND_API_KEY'] as const;
+ const prior=mailKeys.map(key=>[key,process.env[key]] as const);
+ t.after(()=>{for(const [key,value] of prior){if(value===undefined)delete process.env[key];else process.env[key]=value;}});
+ process.env.EMAIL_PROVIDER='resend';process.env.EMAIL_FROM='sender@example.test';process.env.RESEND_API_KEY='re_test_only_do_not_send';
+ await handleCommentCreatedNotification(deps(),'c1');
+ const expected=path!=='reply'||notifyReply?1:0;
+ assert.equal((await notificationsFor('alice')).length,expected);
+ assert.deepEqual(await notificationsFor('bob'),[]);
+ assert.equal(batches.length,expected);
+ if(expected){assert.ok(Array.isArray(batches[0]));assert.equal(batches[0].length,1);
+ const message=batches[0][0];assert.ok(message&&typeof message==='object');
+ assert.deepEqual(message.to,['alice@example.test']);assert.ok(typeof message.html==='string');assert.ok(typeof message.text==='string');
+ assert.ok(message.text.includes(`"${text ?? ''}"`));
+ if(text===null){assert.match(message.html,/<blockquote[^>]*>\s*<\/blockquote>/);assert.doesNotMatch(message.html,/kept excerpt/);}
+ else assert.match(message.html,/<strong>kept excerpt<\/strong>/);
+ }
+ const after=await createNotificationSnapshotRepository(env.driver).findCommentNotificationSnapshot('c1');assert.equal(after[0].text,text);
+ assert.equal((await run("MATCH(c:Comment{id:'c1'}) RETURN count(c) AS count"))[0].count.toNumber(),1);
+});

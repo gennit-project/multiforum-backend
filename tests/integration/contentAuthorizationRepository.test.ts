@@ -153,3 +153,42 @@ test("distinguishes locked, unlocked, null, and missing issues", async () => {
     locked: null,
   });
 });
+
+test("native ownership projections preserve raw properties and exact query columns", async () => {
+  const queries = await import('../../services/persistence/contentAuthorizationRepository.js');
+  const { isInt } = await import('neo4j-driver');
+  await driver.executeQuery(`CREATE(u:User{username:123}),(m:ModerationProfile{displayName:456}),
+    (a:Album{id:'target'}),(c:Collection{id:'target'}),(comment:Comment{id:'target'}),
+    (d:Discussion{id:'target'}),(e:Event{id:'target'}),(i:Image{id:'target'}),(issue:Issue{id:'target',locked:'false'})
+    CREATE(u)-[:HAS_ALBUM]->(a),(c)-[:CREATED_BY]->(u),(m)-[:AUTHORED_COMMENT]->(comment),
+    (u)-[:POSTED_DISCUSSION]->(d),(u)-[:POSTED_BY]->(e),(u)-[:UPLOADED_IMAGE]->(i),(issue)-[:AUTHORED_ISSUE]->(m)`);
+  const ownerKeys = {id:true,username:true} satisfies Record<keyof import('../../customResolvers/contracts/contentOwnershipSource.js').UserOwnershipRecord,true>;
+  const actorKeys = {username:true,displayName:true} satisfies Record<keyof import('../../customResolvers/contracts/contentOwnershipSource.js').ActorIdentity,true>;
+  for (const [query, keys] of [
+    [queries.FIND_ALBUM_OWNERS_QUERY,Object.keys(ownerKeys)],
+    [queries.FIND_COLLECTION_OWNERS_QUERY,Object.keys(ownerKeys)],
+    [queries.FIND_COMMENT_AUTHOR_QUERY,Object.keys(actorKeys)],
+    [queries.FIND_ISSUE_AUTHOR_QUERY,Object.keys(actorKeys)],
+    [queries.FIND_DISCUSSION_AUTHOR_QUERY,['username']],
+    [queries.FIND_EVENT_POSTER_QUERY,['username']],
+    [queries.FIND_IMAGE_UPLOADER_QUERY,['username']],
+    [queries.FIND_ISSUE_LOCK_QUERY,['locked']],
+  ] as const) {
+    const result = await driver.executeQuery(query,{id:'target',ids:['target']});
+    assert.equal(result.records.length,1);
+    assert.deepEqual([...result.records[0].keys].sort(),[...keys].sort());
+  }
+  const repository = createContentAuthorizationRepository(driver,'neo4j');
+  for (const owner of [
+    ...(await repository.findAlbumOwners(['target'])),
+    ...(await repository.findCollectionOwners(['target'])),
+    await repository.findDiscussionAuthor('target'),
+    await repository.findEventPoster('target'),
+    await repository.findImageUploader('target'),
+  ]) assert.ok(isInt(owner.username), 'native identity must not be silently stringified');
+  for (const actor of [await repository.findCommentAuthor('target'),await repository.findIssueAuthor('target')]) {
+    assert.equal(actor.actor?.username,null);
+    assert.ok(isInt(actor.actor?.displayName));
+  }
+  assert.deepEqual(await repository.findIssueLock('target'),{found:true,locked:'false'});
+});

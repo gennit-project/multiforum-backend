@@ -1,6 +1,7 @@
+import { executeCanonicalFixedOperation } from "./canonicalFixedOperation.js";
+import type { SeriesOccurrenceSnapshot, UpdatedSeriesOccurrenceProjection } from "../../customResolvers/contracts/contentProjections.js";
 import type {Driver, ManagedTransaction} from "neo4j-driver";
 import type {EventUpdateInput, EventSeriesUpdateInput} from "../../src/generated/graphql.js";
-import type {Event} from "../../ogm_types.js";
 import {executeGeneratedOperation} from "./generatedSchemaOperations.js";
 import {EVENT_REVISION_DEFAULT_SELECTION} from "./eventRevisionRepository.js";
 export const SERIES_OCCURRENCE_SNAPSHOT_SELECTION = `
@@ -90,15 +91,15 @@ export const EVENT_SERIES_DEFAULT_SELECTION = `{
   updatedAt
 }`;
 export interface EventSeriesUpdateRepository {
-  findSnapshot(id: string): Promise<Event[]>;
+  findSnapshot(id: string): Promise<SeriesOccurrenceSnapshot[]>;
   updateOccurrence(id: string, update: EventUpdateInput, tx: ManagedTransaction): Promise<void>;
   updateTemplate(id: string, update: EventSeriesUpdateInput, tx: ManagedTransaction): Promise<void>;
-  findUpdatedOccurrence(id: string): Promise<Event[]>;
+  findUpdatedOccurrence(id: string): Promise<UpdatedSeriesOccurrenceProjection[]>;
 }
 export function createEventSeriesUpdateRepository(driver: Driver): EventSeriesUpdateRepository {
   return {
     async findSnapshot(id) {
-      const result = await executeGeneratedOperation<{events: Event[]}>(driver,
+      const result = await executeGeneratedOperation<{events: SeriesOccurrenceSnapshot[]}>(driver,
         `query SeriesOccurrenceBeforeUpdate($where: EventWhere) {events(where: $where) ${SERIES_OCCURRENCE_SNAPSHOT_SELECTION}}`, {where: {id: {eq: id}}});
       return result.events;
     },
@@ -111,7 +112,7 @@ export function createEventSeriesUpdateRepository(driver: Driver): EventSeriesUp
         `mutation UpdateSeriesTemplate($where: EventSeriesWhere, $update: EventSeriesUpdateInput) {updateEventSeries(where: $where, update: $update) {eventSeries ${EVENT_SERIES_DEFAULT_SELECTION}}}`, {where: {id: {eq: id}}, update}, tx);
     },
     async findUpdatedOccurrence(id) {
-      const result = await executeGeneratedOperation<{events: Event[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{events: UpdatedSeriesOccurrenceProjection[]}>(driver,
         `query SeriesOccurrenceAfterUpdate($where: EventWhere) {events(where: $where) ${UPDATED_SERIES_OCCURRENCE_SELECTION}}`, {where: {id: {eq: id}}});
       return result.events;
     },

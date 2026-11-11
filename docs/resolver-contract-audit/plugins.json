@@ -1,0 +1,1548 @@
+{
+  "formatVersion": 1,
+  "family": "plugins-downloads",
+  "scope": "Assigned plugin/pipeline and download custom roots; finite first milestone, not completion of this family.",
+  "fields": [
+    {
+      "field": "Mutation.applyPluginConfiguration",
+      "status": "selected-response",
+      "selectedPaths": [
+        "status",
+        "message",
+        "operations.kind",
+        "operations.path",
+        "operations.status",
+        "operations.message",
+        "planBefore.apiVersion",
+        "planBefore.inSync",
+        "planBefore.warnings",
+        "planBefore.changes.kind",
+        "planBefore.changes.path",
+        "planBefore.changes.message",
+        "planBefore.changes.current",
+        "planBefore.changes.desired",
+        "planBefore.changes.blocked",
+        "planAfter.apiVersion",
+        "planAfter.inSync",
+        "planAfter.warnings",
+        "planAfter.changes.kind",
+        "planAfter.changes.path",
+        "planAfter.changes.message",
+        "planAfter.changes.current",
+        "planAfter.changes.desired",
+        "planAfter.changes.blocked"
+      ],
+      "residualPaths": [
+        "planBefore/planAfter changes.current/desired JSON scalar internals",
+        "atomicity of multi-operation application (existing partial writes)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginConfiguration.ts",
+        "tests/contracts/pluginConfiguration.typecheck.ts",
+        "customResolvers/mutations/applyPluginConfiguration.ts",
+        "tests/integration/pluginConfigurationReconciliation.test.ts"
+      ],
+      "reason": "Contextual generated response projection checks every return branch, including exact status/kind enum values and recursive plans. Real GraphQL tests cover successful/no-op/blocked/partial-failure results, auth denial and redaction.",
+      "decision": "Wire the generated signature. Preserve existing partial application and read-back behavior; no transaction or semantics change."
+    },
+    {
+      "field": "Mutation.clearDownloadableFileScan",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "fileName",
+        "scanStatus",
+        "scanReason",
+        "scanCheckedAt"
+      ],
+      "residualPaths": [
+        "all unselected DownloadableFile fields",
+        "DateTime scalar internals",
+        "non-null outer result if a post-write read becomes empty"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/downloadReviewRepository.ts",
+        "tests/integration/downloadReviewRepository.test.ts"
+      ],
+      "reason": "Exact schema-executed projection replaces full entity annotation. Tests prove response scalars and committed-write projection errors. Array indexing retains legacy missing-result behavior.",
+      "decision": "Wire selected signature; do not claim post-write existence or cross-session atomicity."
+    },
+    {
+      "field": "Mutation.createDownloadableFiles",
+      "status": "selected-response",
+      "selectedPaths": [
+        "downloadableFiles.id",
+        "info.nodesCreated",
+        "info.relationshipsCreated"
+      ],
+      "residualPaths": [
+        "downloadableFiles.ageGateTouchedAt",
+        "downloadableFiles.ageGateSensitive",
+        "downloadableFiles.ageGateRestricted",
+        "downloadableFiles.fileName",
+        "downloadableFiles.kind",
+        "downloadableFiles.size",
+        "downloadableFiles.url",
+        "downloadableFiles.storageBucket",
+        "downloadableFiles.storageObjectName",
+        "downloadableFiles.storageUrl",
+        "downloadableFiles.uploadedAt",
+        "downloadableFiles.uploadedByUsername",
+        "downloadableFiles.uploadedByIp",
+        "downloadableFiles.createdAt",
+        "downloadableFiles.permanentlyRemoved",
+        "downloadableFiles.permanentlyRemovedAt",
+        "downloadableFiles.permanentlyRemovedByUsername",
+        "downloadableFiles.permanentlyRemovedByModName",
+        "downloadableFiles.PermanentlyRemovedByUser",
+        "downloadableFiles.PermanentlyRemovedByMod",
+        "downloadableFiles.priceModel",
+        "downloadableFiles.priceCents",
+        "downloadableFiles.priceCurrency",
+        "downloadableFiles.paywallExpiresAt",
+        "downloadableFiles.stripeProductId",
+        "downloadableFiles.stripePriceId",
+        "downloadableFiles.downloadCountTotal",
+        "downloadableFiles.downloadCountUnique",
+        "downloadableFiles.attributionOverride",
+        "downloadableFiles.supportPatreonUrl",
+        "downloadableFiles.supportBuyMeACoffeeUrl",
+        "downloadableFiles.supportKoFiUrl",
+        "downloadableFiles.supportPayPalMeUrl",
+        "downloadableFiles.license",
+        "downloadableFiles.versions",
+        "downloadableFiles.scanStatus",
+        "downloadableFiles.scanCheckedAt",
+        "downloadableFiles.scanReason",
+        "downloadableFiles.reviewRequestedAt",
+        "downloadableFiles.reviewRequestReason",
+        "downloadableFiles.reviewRequestedByUsername",
+        "downloadableFiles.purchasers",
+        "downloadableFiles.Discussion"
+      ],
+      "evidence": [
+        "customResolvers/mutations/createDownloadableFilesWithUploadMetadata.ts",
+        "tests/integration/downloadProjectionExceptions.test.ts",
+        "customResolvers/contracts/downloadWrites.ts",
+        "tests/contracts/downloadWrites.typecheck.ts",
+        "tests/integration/downloadMutationResponses.test.ts"
+      ],
+      "reason": "#440 supplies real committed query counters. The checked subset covers those counters and randomUUID-created ids. Exact raw row fields retain unknown types instead of a full DownloadableFile output assertion; no eager field decoding.",
+      "decision": "Remaining raw scalar and relationship paths require selection-aware completion. No additional behavior change is included."
+    },
+    {
+      "field": "Mutation.createPluginPipelineCampaign",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
+      "residualPaths": [
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
+      ],
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
+    },
+    {
+      "field": "Mutation.enableServerPlugin",
+      "status": "selected-response",
+      "selectedPaths": [
+        "plugin.id",
+        "plugin.name",
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags",
+        "plugin.metadata",
+        "version",
+        "scope",
+        "enabled",
+        "settingsJson",
+        "manifest",
+        "settingsDefaults",
+        "uiSchema",
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion"
+      ],
+      "residualPaths": [
+        "plugin.Versions",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions",
+        "carryOverReport",
+        "plugin.metadata JSON internals",
+        "settingsJson JSON internals",
+        "manifest JSON internals",
+        "settingsDefaults JSON internals",
+        "uiSchema JSON internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
+      ],
+      "reason": "Fixed executable-schema plugin and installation projections replace optional catch-all snapshots. Returned metadata is validated by actual generated operation completion; JSON interiors remain scalar-owned. Real-schema tests verify enable/disable persistence and missing plugin/version/installation errors.",
+      "decision": "No behavior change. Remaining fields are absent from the assembled object and outside this selected boundary; plugin.Versions is a required relationship not supplied by this assembly and needs separate resolver-completion evidence or an approved behavior decision."
+    },
+    {
+      "field": "Mutation.installPluginVersion",
+      "status": "selected-response",
+      "selectedPaths": [
+        "plugin.id",
+        "plugin.name",
+        "version",
+        "scope",
+        "enabled",
+        "settingsJson",
+        "carryOverReport"
+      ],
+      "residualPaths": [
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags",
+        "plugin.metadata",
+        "plugin.Versions",
+        "manifest",
+        "settingsDefaults",
+        "uiSchema",
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
+      ],
+      "reason": "Exact read/create repository projections and actual return union replace full-model claims; constructed String identity/version and constant scope/Boolean enabled are checked. Registry, download and artifact parsing use test seams with external I/O denied; successful install/repeat persistence and failure wrapping pass real-schema execution.",
+      "decision": "Fetched manifest metadata retains existing assertions and write-input adapters; those paths are not certified. Preserve metadata behavior. A subsequent input-validation change needs a precise compatibility decision; missing assembled relationship/default metadata fields remain outside this response boundary."
+    },
+    {
+      "field": "Mutation.pausePluginPipelineCampaign",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
+      "residualPaths": [
+        "Generated DateTime scalar internals; this response contract does not change worker behavior after pause."
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignStatusLock.ts",
+        "tests/integration/campaignStatusConcurrency.test.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts"
+      ],
+      "reason": "Actual resolver registration checks the fixed generated campaign projection. The incorporated #446 transition returns a complete successful row or throws; database-controlled races cover identity, version, status, deletion and failure behavior.",
+      "decision": "Selected response checked. Preserve locked transitions and existing worker-after-pause behavior; its separate product policy remains undecided."
+    },
+    {
+      "field": "Mutation.permanentlyDeleteDownloadableFile",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "permanentlyRemoved",
+        "permanentlyRemovedAt",
+        "permanentlyRemovedByUsername",
+        "permanentlyRemovedByModName"
+      ],
+      "residualPaths": [
+        "ageGateTouchedAt",
+        "ageGateSensitive",
+        "ageGateRestricted",
+        "fileName",
+        "kind",
+        "size",
+        "url",
+        "storageBucket",
+        "storageObjectName",
+        "storageUrl",
+        "uploadedAt",
+        "uploadedByUsername",
+        "uploadedByIp",
+        "createdAt",
+        "PermanentlyRemovedByUser",
+        "PermanentlyRemovedByMod",
+        "priceModel",
+        "priceCents",
+        "priceCurrency",
+        "paywallExpiresAt",
+        "stripeProductId",
+        "stripePriceId",
+        "downloadCountTotal",
+        "downloadCountUnique",
+        "attributionOverride",
+        "supportPatreonUrl",
+        "supportBuyMeACoffeeUrl",
+        "supportKoFiUrl",
+        "supportPayPalMeUrl",
+        "license",
+        "versions",
+        "scanStatus",
+        "scanCheckedAt",
+        "scanReason",
+        "reviewRequestedAt",
+        "reviewRequestReason",
+        "reviewRequestedByUsername",
+        "purchasers",
+        "Discussion"
+      ],
+      "evidence": [
+        "customResolvers/mutations/permanentlyDeleteStoredUpload.ts",
+        "tests/integration/downloadProjectionExceptions.test.ts",
+        "customResolvers/contracts/downloadWrites.ts",
+        "tests/contracts/downloadWrites.typecheck.ts",
+        "tests/integration/downloadMutationResponses.test.ts"
+      ],
+      "reason": "#440 fixes persisted scalar presence. This boundary checks only MATCH/SET-derived identity/removal fields through typed driver columns. Other persisted fields remain unknown and retain selection-dependent serialization after storage/database writes.",
+      "decision": "Persisted scalar/relationship paths remain outside the selective guarantee; do not eagerly validate them or alter storage-before-database behavior."
+    },
+    {
+      "field": "Mutation.prepareDownload",
+      "status": "selected-response",
+      "selectedPaths": [
+        "ready",
+        "url",
+        "scanStatus",
+        "scanReason",
+        "scanCheckedAt",
+        "reviewAccess",
+        "message"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/downloadActions.ts",
+        "tests/contracts/downloadActions.typecheck.ts",
+        "tests/integration/downloadActionResponseContracts.test.ts",
+        "customResolvers/mutations/prepareDownload.ts",
+        "services/persistence/downloadReviewRepository.ts",
+        "tests/integration/downloadReviewRepository.test.ts"
+      ],
+      "reason": "Explicit generated response projection checks every assembled field. The exact generated-operation preparation read validates scanStatus enum and serialized nullable DateTime; malformed persisted enum fails before permission, scanning or signing. The trigger dependency now uses a precise consumed result without a cast. Real-schema tests cover stale and held scans, missing/inaccessible targets, scanner/read/sign/track errors and result ordering with mocked providers.",
+      "decision": "Preserve public schema and behavior. All response paths selected; provider internals and independent scan pipeline side effects are outside this response contract. Signing is mocked and external HTTP prohibited in tests."
+    },
+    {
+      "field": "Mutation.refreshPlugins",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "name",
+        "Versions.id",
+        "Versions.version"
+      ],
+      "residualPaths": [
+        "displayName",
+        "description",
+        "authorName",
+        "authorUrl",
+        "homepage",
+        "license",
+        "tags",
+        "metadata",
+        "Versions.repoUrl",
+        "Versions.tarballGsUri",
+        "Versions.integritySha256",
+        "Versions.registryUrl",
+        "Versions.releaseNotesUrl",
+        "Versions.sourceRepoUrl",
+        "Versions.sourceCommit",
+        "Versions.minServerVersion",
+        "Versions.apiVersion",
+        "Versions.entryPath",
+        "Versions.manifest",
+        "Versions.settingsDefaults",
+        "Versions.uiSchema",
+        "Versions.documentationPath",
+        "Versions.readmeMarkdown",
+        "Versions.Plugin"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginInstallation.ts",
+        "customResolvers/contracts/pluginInstallationProjections.ts",
+        "tests/contracts/pluginInstallation.typecheck.ts",
+        "tests/integration/pluginInstallationResponseContracts.test.ts",
+        "build_scripts/pluginInstallationProjections.test.ts"
+      ],
+      "reason": "All fixed repository reads use exact executable-schema projections. Removed updatedPlugins:any[]; failed final refetch preserves the earlier id/name lookup and Versions:[] fallback. Real-schema tests cover create/update, fallback, skipped artifact errors and registry failure.",
+      "decision": "No behavior change. Fetched metadata/input casts remain unclaimed. Metadata and remaining version fields are absent in some fallback paths and excluded from this narrow selection; do not count this as full Plugin/PluginVersion response validation."
+    },
+    {
+      "field": "Mutation.requestDownloadableFileReview",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "fileName",
+        "scanStatus",
+        "scanReason",
+        "scanCheckedAt",
+        "reviewRequestedAt",
+        "reviewRequestReason",
+        "reviewRequestedByUsername"
+      ],
+      "residualPaths": [
+        "all unselected DownloadableFile fields",
+        "DateTime scalar internals",
+        "non-null outer result if a post-write read becomes empty"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/downloadReviewRepository.ts",
+        "tests/integration/downloadReviewRepository.test.ts"
+      ],
+      "reason": "Exact schema-executed projection replaces full entity annotation. Tests prove response scalars and committed-write projection errors. Array indexing retains legacy missing-result behavior.",
+      "decision": "Wire selected signature; do not claim post-write existence or cross-session atomicity."
+    },
+    {
+      "field": "Mutation.rerunPluginPipeline",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pipelineId",
+        "targetId",
+        "targetType",
+        "targetVersion",
+        "eventType",
+        "scope",
+        "channelId",
+        "status",
+        "trigger",
+        "initiatedByUsername",
+        "retryOfPipelineRunId",
+        "attemptNumber",
+        "configurationSnapshot",
+        "applicability",
+        "policyEffectiveAt",
+        "policyId",
+        "campaignId",
+        "queuedAt",
+        "startedAt",
+        "heartbeatAt",
+        "timeoutAt",
+        "finishedAt",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "id",
+        "notifiedAt",
+        "configurationSnapshot JSON scalar internals",
+        "unselected attempt properties and runtime plugin/provider effects",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
+        "customResolvers/mutations/rerunPluginPipeline.ts",
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineStartRepository.test.ts",
+        "tests/integration/pipelineRerunRepository.test.ts",
+        "tests/integration/discussionPipelineExecution.test.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pipelineProjectionContracts.test.ts",
+        "tests/helpers/staticResponsePaths.ts"
+      ],
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures. The ten actual start/rerun repository operations are executed through the real generated schema with only root data sources replaced; selected response paths must exactly match declared generated projections.",
+      "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
+    },
+    {
+      "field": "Mutation.resumePluginPipelineCampaign",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
+      "residualPaths": [
+        "Generated DateTime scalar internals; this response contract does not change worker behavior after pause."
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignStatusLock.ts",
+        "tests/integration/campaignStatusConcurrency.test.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts"
+      ],
+      "reason": "Actual resolver registration checks the fixed generated campaign projection. The incorporated #446 transition returns a complete successful row or throws; database-controlled races cover identity, version, status, deletion and failure behavior.",
+      "decision": "Selected response checked. Preserve locked transitions and existing worker-after-pause behavior; its separate product policy remains undecided."
+    },
+    {
+      "field": "Mutation.retryDownloadableFileScan",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "pluginName",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "pipelineId",
+        "executionOrder",
+        "skippedReason",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "deferred",
+        "finishedAt",
+        "heartbeatAt",
+        "leaseId",
+        "nextAttemptAt",
+        "publicDiagnostics",
+        "queuedAt",
+        "retryCount",
+        "ruleSetVersion",
+        "startedAt",
+        "targetVersion",
+        "timeoutAt",
+        "payload JSON scalar internals",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
+        "customResolvers/mutations/retryDownloadableFileScan.ts",
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineRetryRepository.test.ts",
+        "tests/integration/downloadExecutionRepository.test.ts"
+      ],
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Wire selected job response; preserve no-plugin/held/skipped branches and returned-run guards. Do not expand validation or change provider execution."
+    },
+    {
+      "field": "Mutation.setServerPluginSecret",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "customResolvers/mutations/setServerPluginSecret.ts"
+      ],
+      "reason": "Response is a literal Boolean after existing write/error paths; full generated scalar response signature checks it. Real GraphQL tests cover success/repeats and failure/denial.",
+      "decision": "Wire generated scalar signature; no business/permission change."
+    },
+    {
+      "field": "Mutation.startPluginPipeline",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pipelineId",
+        "targetId",
+        "targetType",
+        "targetVersion",
+        "eventType",
+        "scope",
+        "channelId",
+        "status",
+        "trigger",
+        "initiatedByUsername",
+        "retryOfPipelineRunId",
+        "attemptNumber",
+        "configurationSnapshot",
+        "applicability",
+        "policyEffectiveAt",
+        "policyId",
+        "campaignId",
+        "queuedAt",
+        "startedAt",
+        "heartbeatAt",
+        "timeoutAt",
+        "finishedAt",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "id",
+        "notifiedAt",
+        "configurationSnapshot JSON scalar internals",
+        "unselected attempt properties and runtime plugin/provider effects",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
+        "customResolvers/mutations/startPluginPipeline.ts",
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineStartRepository.test.ts",
+        "tests/integration/pipelineRerunRepository.test.ts",
+        "tests/integration/discussionPipelineExecution.test.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pipelineProjectionContracts.test.ts",
+        "tests/helpers/staticResponsePaths.ts"
+      ],
+      "reason": "Merged #442 fixes supported plural attachment reads and current/legacy content revision guards. Exact generated Discussion projections now include selected title/body and attachment arrays. Real GraphQL/Shield/persistence tests cover successful execution, retry lineage and permission/version failures. The ten actual start/rerun repository operations are executed through the real generated schema with only root data sources replaced; selected response paths must exactly match declared generated projections.",
+      "decision": "Retain selected attempt response contract without asserting arbitrary unselected provider output; preserve first-attachment and current/legacy revision behavior from main."
+    },
+    {
+      "field": "Mutation.trackDownload",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "customResolvers/mutations/trackDownload.ts"
+      ],
+      "reason": "Response is a literal Boolean after existing write/error paths; full generated scalar response signature checks it. Real GraphQL tests cover success/repeats and failure/denial.",
+      "decision": "Wire generated scalar signature; no business/permission change."
+    },
+    {
+      "field": "Mutation.triggerDownloadableFilePluginRuns",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "pluginName",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "pipelineId",
+        "executionOrder",
+        "skippedReason",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "deferred",
+        "finishedAt",
+        "heartbeatAt",
+        "leaseId",
+        "nextAttemptAt",
+        "publicDiagnostics",
+        "queuedAt",
+        "retryCount",
+        "ruleSetVersion",
+        "startedAt",
+        "targetVersion",
+        "timeoutAt",
+        "payload JSON scalar internals",
+        "external provider payload validation and side effects (unchanged; mocked in tests)"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginExecution.ts",
+        "customResolvers/contracts/pluginExecutionProjections.ts",
+        "tests/contracts/pluginExecution.typecheck.ts",
+        "build_scripts/pluginExecutionProjections.test.ts",
+        "tests/integration/pluginExecutionResponseContracts.test.ts",
+        "customResolvers/mutations/triggerDownloadableFilePluginRuns.ts",
+        "services/plugin/downloadTrigger.ts",
+        "services/plugin/downloadTrigger.execution.test.ts",
+        "tests/integration/pipelineRetryRepository.test.ts",
+        "tests/integration/downloadExecutionRepository.test.ts"
+      ],
+      "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
+      "decision": "Wire selected job response; preserve no-plugin/held/skipped branches and returned-run guards. Do not expand validation or change provider execution."
+    },
+    {
+      "field": "Mutation.updateChannelPluginPipelines",
+      "status": "deferred",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON scalar output structure"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginPolicies.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "build_scripts/pluginPolicyDomainBoundary.test.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "customResolvers/mutations/updateChannelPluginPipelines.ts"
+      ],
+      "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign.",
+      "disposition": "schema-limit"
+    },
+    {
+      "field": "Mutation.updateDownloadLabels",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "LabelOptions.id",
+        "LabelOptions.value",
+        "LabelOptions.displayName",
+        "LabelOptions.order",
+        "LabelOptions.group.id",
+        "LabelOptions.group.key",
+        "LabelOptions.group.displayName"
+      ],
+      "residualPaths": [
+        "Answers",
+        "AnswersConnection",
+        "Channel",
+        "ChannelConnection",
+        "Comments",
+        "CommentsConnection",
+        "Discussion",
+        "DiscussionConnection",
+        "Flairs",
+        "FlairsConnection",
+        "LabelChangeHistory",
+        "LabelChangeHistoryConnection",
+        "LabelOptionsConnection",
+        "RelatedIssues",
+        "RelatedIssuesConnection",
+        "SubscribedToNotifications",
+        "SubscribedToNotificationsConnection",
+        "SuperUpvotedByUsers",
+        "SuperUpvotedByUsersConnection",
+        "UpvotedByUsers",
+        "UpvotedByUsersConnection",
+        "answered",
+        "archived",
+        "botMentions",
+        "channelUniqueName",
+        "createdAt",
+        "detailAnswersPageInfo",
+        "discussionId",
+        "emoji",
+        "locked",
+        "weightedVotesCount",
+        "LabelOptions.groupConnection",
+        "LabelOptions.group.channel",
+        "LabelOptions.group.channelConnection",
+        "LabelOptions.group.mode",
+        "LabelOptions.group.options",
+        "LabelOptions.group.optionsConnection",
+        "LabelOptions.group.order",
+        "LabelOptions.group.uploadSelection"
+      ],
+      "evidence": [
+        "customResolvers/contracts/downloadActions.ts",
+        "tests/contracts/downloadActions.typecheck.ts",
+        "tests/integration/downloadActionResponseContracts.test.ts",
+        "customResolvers/mutations/updateDownloadLabels.ts",
+        "services/persistence/downloadLabelRepository.ts",
+        "tests/integration/downloadLabelRepository.test.ts"
+      ],
+      "reason": "Exact generated-operation validation and update projections replace full entity types and remove the selected-label cast. Real-schema tests cover nested and empty label responses, nullable groups, repeats, authorization and selection rejection before writes, swallowed history failure after committed update, and selected-field projection failure after committed update.",
+      "decision": "Preserve schema, permissions and write ordering. Remaining DiscussionChannel and nested FilterOption/FilterGroup paths are not returned by this selection and need independent completion evidence; do not certify them from the full schema model. Existing raw history/moderation-action input adapters are unchanged and not certified by this response boundary."
+    },
+    {
+      "field": "Mutation.updateDownloadableFileSupportSettings",
+      "status": "selected-response",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "customResolvers/mutations/updateDownloadableFileSupportSettings.ts"
+      ],
+      "reason": "Response is a literal Boolean after existing write/error paths; full generated scalar response signature checks it. Real GraphQL tests cover success/repeats and failure/denial.",
+      "decision": "Wire generated scalar signature; no business/permission change."
+    },
+    {
+      "field": "Mutation.updatePluginPipelines",
+      "status": "deferred",
+      "selectedPaths": [],
+      "residualPaths": [
+        "JSON scalar output structure"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginPolicies.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "build_scripts/pluginPolicyDomainBoundary.test.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "customResolvers/mutations/updatePluginPipelines.ts"
+      ],
+      "reason": "JSON! generated output is any and cannot certify object structure. Actual registration separately enforces generated inputs and EventPipelineInput[] domain output; exact generated persistence projections replace full/optional models.",
+      "decision": "Retain scalar-owned exception; preserve explicit nullable inputs, policy normalization and write-before-bot synchronization/error semantics. Structural GraphQL output typing requires a public schema change outside this campaign.",
+      "disposition": "schema-limit"
+    },
+    {
+      "field": "Query.getApplicablePluginPipeline",
+      "status": "selected-response",
+      "selectedPaths": [
+        "targetId",
+        "targetType",
+        "scope",
+        "channelId",
+        "configured",
+        "required",
+        "reason",
+        "expectedJobs.pluginName",
+        "expectedJobs.version",
+        "expectedJobs.order"
+      ],
+      "residualPaths": [
+        "eventType",
+        "applicability",
+        "effectiveAt",
+        "policyId",
+        "expectedJobs.pluginId",
+        "expectedJobs.condition",
+        "expectedJobs.continueOnError"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginPolicies.ts",
+        "customResolvers/contracts/pluginPolicyProjections.d.ts",
+        "tests/contracts/pluginPolicies.typecheck.ts",
+        "tests/integration/pluginPolicyResponseContracts.test.ts",
+        "tests/integration/pipelineTargetRepository.test.ts"
+      ],
+      "reason": "Computed fields and schema-executed selected plugin name/version values are checked. Explicit null eventType can succeed when only computed fields are selected and fails when non-null eventType is selected; malformed stored applicability enum similarly fails only on selection. Remaining persisted policy JSON is parsed without structural validation.",
+      "decision": "Preserve lazy field serialization and existing visibility/read order; eager stored-policy decoding or rejecting explicit nullable event requires a separate behavior decision."
+    },
+    {
+      "field": "Query.getDownloadScanReviewQueue",
+      "status": "selected-response",
+      "selectedPaths": [
+        "scanStatus"
+      ],
+      "residualPaths": [
+        "all properties except scanStatus; date strings have no generated scalar structural guarantee"
+      ],
+      "evidence": [
+        "customResolvers/queries/getDownloadScanReviewQueue.ts",
+        "tests/integration/downloadQueryGraphExceptions.test.ts",
+        "customResolvers/contracts/downloadReadProjections.d.ts",
+        "tests/contracts/downloadReadSources.typecheck.ts",
+        "tests/integration/downloadQueryAttribution.test.ts"
+      ],
+      "reason": "Merged #441 fixes canonical author fallback. WHERE scanStatus IN the three review statuses proves the selected enum; other exact review keys retain unknown property values.",
+      "decision": "Preserve lazy GraphQL completion of unselected properties; alias/fragment tests prove malformed raw nested leaves only fail when selected. Do not claim entire objects are checked."
+    },
+    {
+      "field": "Query.getInstalledPlugins",
+      "selectedPaths": [
+        "version",
+        "scope",
+        "enabled",
+        "documentationPath",
+        "readmeMarkdown",
+        "registryUrl",
+        "releaseNotesUrl",
+        "sourceRepoUrl",
+        "sourceCommit",
+        "minServerVersion",
+        "apiVersion",
+        "hasUpdate",
+        "latestVersion",
+        "availableVersions",
+        "plugin.displayName",
+        "plugin.description",
+        "plugin.authorName",
+        "plugin.authorUrl",
+        "plugin.homepage",
+        "plugin.license",
+        "plugin.tags"
+      ],
+      "residualPaths": [
+        "plugin.id",
+        "plugin.name",
+        "plugin.metadata",
+        "plugin.Versions and other unreturned Plugin fields",
+        "settingsJson",
+        "manifest",
+        "settingsDefaults",
+        "uiSchema",
+        "carryOverReport"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginSettingsRead.ts",
+        "tests/contracts/pluginSettingsRead.typecheck.ts",
+        "tests/integration/pluginSettingsReadContracts.test.ts",
+        "customResolvers/queries/getInstalledPlugins.ts",
+        "services/persistence/pluginConfigurationReadRepository.ts",
+        "tests/integration/pluginConfigurationReadRepository.test.ts",
+        "customResolvers/queries/pluginConfigurationReads.test.ts"
+      ],
+      "reason": "Actual factory output satisfies generated selected signature. Exact storage projections include nullable Plugin link. Real GraphQL verifies nullable/list defaults, decoding, malformed storage, public middleware access and orphan safe selections versus lazy non-null identity error. JSON internals remain unrestricted.",
+      "decision": [
+        "Promote only selected response paths.",
+        "Do not claim plugin.id/name checked: an orphan PluginVersion has no Plugin and these requested non-null fields still fail during completion. Repairing/rejecting orphan storage requires a separate behavior decision.",
+        "Keep JSON internals and unreturned fields outside certification; no permission/schema/error behavior changes."
+      ]
+    },
+    {
+      "field": "Query.getInternalPluginPipelineRun",
+      "status": "selected-response",
+      "selectedPaths": [
+        "attempt.id",
+        "attempt.pipelineId",
+        "attempt.targetId",
+        "attempt.targetType",
+        "attempt.eventType",
+        "attempt.scope",
+        "attempt.channelId",
+        "attempt.status",
+        "attempt.trigger",
+        "attempt.initiatedByUsername",
+        "attempt.retryOfPipelineRunId",
+        "attempt.attemptNumber",
+        "attempt.configurationSnapshot",
+        "attempt.applicability",
+        "attempt.policyEffectiveAt",
+        "attempt.policyId",
+        "attempt.campaignId",
+        "attempt.queuedAt",
+        "attempt.startedAt",
+        "attempt.heartbeatAt",
+        "attempt.timeoutAt",
+        "attempt.finishedAt",
+        "attempt.createdAt",
+        "attempt.updatedAt",
+        "jobs.id",
+        "jobs.pluginId",
+        "jobs.pluginName",
+        "jobs.version",
+        "jobs.scope",
+        "jobs.channelId",
+        "jobs.eventType",
+        "jobs.status",
+        "jobs.message",
+        "jobs.durationMs",
+        "jobs.targetId",
+        "jobs.targetType",
+        "jobs.payload",
+        "jobs.pipelineId",
+        "jobs.executionOrder",
+        "jobs.skippedReason",
+        "jobs.createdAt",
+        "jobs.updatedAt",
+        "jobs.publicDiagnostics",
+        "jobs.leaseId",
+        "jobs.queuedAt",
+        "jobs.startedAt",
+        "jobs.heartbeatAt",
+        "jobs.timeoutAt",
+        "jobs.finishedAt"
+      ],
+      "residualPaths": [
+        "configurationSnapshot/payload/publicDiagnostics JSON internals",
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pipelineDetailRepository.ts"
+      ],
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getPipelineRunPage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "displayStatus",
+        "hasActiveWork",
+        "jobsPageInfo.hasNextPage",
+        "jobsPageInfo.endCursor"
+      ],
+      "residualPaths": [
+        "run.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getPluginPipelinePage.ts",
+        "services/persistence/pipelineSummaryPageRepository.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
+      ],
+      "reason": "Actual factory checked for exact generated display-status enum, computed activity flag and cursor/page metadata. Missing run remains nullable. Nested raw run values intentionally excluded.",
+      "decision": "Keep raw run completion lazy; real-schema test proves metadata succeeds with invalid unselected run.status, and selecting that enum retains its GraphQL error."
+    },
+    {
+      "field": "Query.getPipelineRuns",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "pluginName",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "pipelineId",
+        "executionOrder",
+        "skippedReason",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "all unselected PluginRun fields",
+        "payload JSON internal structure",
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pipelineHistoryRepository.ts"
+      ],
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getPipelineSummary",
+      "status": "selected-response",
+      "selectedPaths": [
+        "targetId",
+        "targetType",
+        "attempts.id",
+        "attempts.pipelineId",
+        "attempts.targetId",
+        "attempts.targetType",
+        "attempts.eventType",
+        "attempts.scope",
+        "attempts.channelId",
+        "attempts.initiatedByUsername",
+        "attempts.retryOfPipelineRunId",
+        "attempts.attemptNumber",
+        "attempts.policyEffectiveAt",
+        "attempts.policyId",
+        "attempts.campaignId",
+        "attempts.queuedAt",
+        "attempts.startedAt",
+        "attempts.heartbeatAt",
+        "attempts.timeoutAt",
+        "attempts.finishedAt",
+        "attempts.createdAt",
+        "attempts.updatedAt",
+        "attempts.jobs.id",
+        "attempts.jobs.pluginId",
+        "attempts.jobs.pluginName",
+        "attempts.jobs.version",
+        "attempts.jobs.scope",
+        "attempts.jobs.channelId",
+        "attempts.jobs.eventType",
+        "attempts.jobs.durationMs",
+        "attempts.jobs.executionOrder",
+        "attempts.jobs.skippedReason",
+        "attempts.jobs.message",
+        "attempts.jobs.queuedAt",
+        "attempts.jobs.startedAt",
+        "attempts.jobs.heartbeatAt",
+        "attempts.jobs.timeoutAt",
+        "attempts.jobs.finishedAt",
+        "attempts.jobs.createdAt",
+        "attempts.jobs.updatedAt"
+      ],
+      "residualPaths": [
+        "attempts.status",
+        "attempts.trigger",
+        "attempts.applicability",
+        "attempts.jobs.status",
+        "diagnostic details JSON and DateTime scalar internals",
+        "Stored publicDiagnostics JSON items remain unknown; only the array container is established. Requested child values complete through GraphQL without eager validation."
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pipelineHistoryRepository.ts",
+        "services/plugin/publicDiagnostics.ts",
+        "tests/integration/pipelineSummaryPage.test.ts"
+      ],
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL. Diagnostic item certification was removed after finding the parser only checked the array container; source tests preserve lazy errors and alias semantics.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getPipelineSummaryPage",
+      "status": "selected-response",
+      "selectedPaths": [
+        "targetId",
+        "targetType",
+        "hasActiveWork",
+        "hasFailedWork",
+        "pageInfo.hasNextPage",
+        "pageInfo.endCursor",
+        "attempts.displayStatus",
+        "attempts.hasActiveWork",
+        "attempts.jobsPageInfo.hasNextPage",
+        "attempts.jobsPageInfo.endCursor"
+      ],
+      "residualPaths": [
+        "attempts.run.*"
+      ],
+      "evidence": [
+        "customResolvers/queries/getPluginPipelinePage.ts",
+        "services/persistence/pipelineSummaryPageRepository.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
+      ],
+      "reason": "Actual factory checked for computed envelope and page metadata; named EXISTS/OR query declares exact boolean projection through driver generic and has real Neo4j zero/active/failed witnesses.",
+      "decision": "Keep nested raw runs outside checked scope; preserve bounded fan-out, authoritative all-jobs flags, cursor bindings, ordering and lazy scalar completion."
+    },
+    {
+      "field": "Query.getPluginConfigStatus",
+      "selectedPaths": [
+        "isFullyConfigured",
+        "fields.key",
+        "fields.label",
+        "fields.scope",
+        "fields.kind",
+        "fields.required",
+        "fields.isSet",
+        "fields.isValid",
+        "fields.message"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/pluginSettingsRead.ts",
+        "tests/contracts/pluginSettingsRead.typecheck.ts",
+        "tests/integration/pluginSettingsReadContracts.test.ts",
+        "customResolvers/queries/getPluginConfigStatus.ts",
+        "services/persistence/pluginStatusRepository.ts",
+        "services/plugin/configStatus.ts",
+        "tests/integration/pluginStatusRepository.test.ts",
+        "customResolvers/queries/getPluginConfigStatus.test.ts",
+        "services/plugin/configStatus.test.ts"
+      ],
+      "reason": "Full constructed response satisfies generated signature. Accurate selected storage projections and real-schema tests cover required-field status, null/empty/default/custom scope, missing version/installation, and protected anonymous access. Scope annotation widened to match existing runtime acceptance without changing behavior.",
+      "decision": [
+        "Promote full constructed config-status response.",
+        "Preserve existing manifest/settings interpretation, wrapped errors, and auth/managePlugins middleware."
+      ]
+    },
+    {
+      "field": "Query.getPluginPipelineCampaignFailures",
+      "status": "selected-response",
+      "selectedPaths": [
+        "pipelineId",
+        "targetId",
+        "discussionId",
+        "channelId",
+        "status",
+        "attemptNumber"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
+      ],
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
+    },
+    {
+      "field": "Query.getPluginPipelineCampaigns",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "policyId",
+        "eventType",
+        "scope",
+        "channelId",
+        "applicability",
+        "enforcementBehavior",
+        "status",
+        "concurrency",
+        "rateLimitPerMinute",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns",
+        "completedCount",
+        "runningCount",
+        "failedCount",
+        "timedOutCount",
+        "createdByUsername",
+        "createdAt",
+        "updatedAt",
+        "startedAt",
+        "pausedAt",
+        "finishedAt"
+      ],
+      "residualPaths": [
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
+      ],
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
+    },
+    {
+      "field": "Query.getPluginRunsForDownloadableFile",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pluginId",
+        "version",
+        "scope",
+        "channelId",
+        "eventType",
+        "status",
+        "message",
+        "durationMs",
+        "targetId",
+        "targetType",
+        "payload",
+        "createdAt",
+        "updatedAt"
+      ],
+      "residualPaths": [
+        "all unselected PluginRun fields (including pipelineId/executionOrder)",
+        "payload JSON internal structure",
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pipelineHistoryRepository.ts"
+      ],
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getPublicPipelineRun",
+      "status": "selected-response",
+      "selectedPaths": [
+        "id",
+        "pipelineId",
+        "targetId",
+        "targetType",
+        "eventType",
+        "scope",
+        "channelId",
+        "initiatedByUsername",
+        "retryOfPipelineRunId",
+        "attemptNumber",
+        "policyEffectiveAt",
+        "policyId",
+        "campaignId",
+        "queuedAt",
+        "startedAt",
+        "heartbeatAt",
+        "timeoutAt",
+        "finishedAt",
+        "createdAt",
+        "updatedAt",
+        "jobs.id",
+        "jobs.pluginId",
+        "jobs.pluginName",
+        "jobs.version",
+        "jobs.scope",
+        "jobs.channelId",
+        "jobs.eventType",
+        "jobs.durationMs",
+        "jobs.executionOrder",
+        "jobs.skippedReason",
+        "jobs.message",
+        "jobs.queuedAt",
+        "jobs.startedAt",
+        "jobs.heartbeatAt",
+        "jobs.timeoutAt",
+        "jobs.finishedAt",
+        "jobs.createdAt",
+        "jobs.updatedAt"
+      ],
+      "residualPaths": [
+        "status",
+        "trigger",
+        "applicability",
+        "jobs.status",
+        "diagnostic details JSON and DateTime scalar internals",
+        "Stored publicDiagnostics JSON items remain unknown; only the array container is established. Requested child values complete through GraphQL without eager validation."
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pipelineDetailRepository.ts",
+        "services/plugin/publicDiagnostics.ts",
+        "tests/integration/pipelineSummaryPage.test.ts"
+      ],
+      "reason": "Actual factory output is checked against selected generated fields; repository operations execute the real schema. Public string enum passthrough remains intentionally outside the signature and is exercised through GraphQL. Diagnostic item certification was removed after finding the parser only checked the array container; source tests preserve lazy errors and alias semantics.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getServerHealthDashboard",
+      "status": "selected-response",
+      "selectedPaths": [
+        "summary.activeChannelCount",
+        "summary.discussionCount",
+        "summary.commentCount",
+        "summary.eventCount",
+        "summary.downloadCount",
+        "summary.voteCount",
+        "summary.openIssueCount",
+        "summary.issueOpenedCount",
+        "summary.issueClosedCount",
+        "summary.moderationActionCount",
+        "summary.archivedContentCount",
+        "summary.lockedContentCount",
+        "summary.suspensionCount",
+        "summary.failedDownloadScanCount",
+        "summary.queuedPluginJobCount",
+        "summary.runningPluginJobCount",
+        "summary.pluginTimeoutCount24h",
+        "summary.pluginTimeoutRate24h",
+        "summary.repeatedPluginFailureCount24h",
+        "summary.pluginRetryAttemptCount1h",
+        "summary.pluginRetryStormCount1h",
+        "summary.oldestQueuedPluginJobAgeSeconds",
+        "summary.medianOpenIssueAgeDays",
+        "issueAging.label",
+        "issueAging.minDays",
+        "issueAging.maxDays",
+        "issueAging.count"
+      ],
+      "residualPaths": [
+        "channelHealth.*",
+        "timeSeries.*",
+        "attentionItems.*",
+        "startDate",
+        "endDate",
+        "generatedAt"
+      ],
+      "evidence": [
+        "customResolvers/queries/getServerHealthDashboard.ts",
+        "customResolvers/contracts/pluginSummaryMetadata.ts",
+        "tests/contracts/pluginSummaryMetadata.typecheck.ts",
+        "tests/integration/pluginSummaryMetadataContracts.test.ts"
+      ],
+      "reason": "Actual factory checked for every explicitly computed numerical summary field and aging bucket; no raw channel/time-series map is certified.",
+      "decision": "Preserve existing numeric conversion and error behavior; real-schema test proves malformed unselected displayName does not prevent summary, while selecting displayName retains its field error."
+    },
+    {
+      "field": "Query.getServerPluginSecrets",
+      "status": "selected-response",
+      "selectedPaths": [
+        "key",
+        "status",
+        "lastValidatedAt",
+        "validationError"
+      ],
+      "residualPaths": [
+        "DateTime scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/plugins.ts",
+        "tests/contracts/plugins.typecheck.ts",
+        "tests/integration/pluginResponseContracts.test.ts",
+        "services/persistence/pluginConfigurationReadRepository.ts"
+      ],
+      "reason": "Actual factory output is checked against all selected generated scalar fields including exact VALID/INVALID/SET_UNTESTED enum literal branches; repository snapshot is schema-executed.",
+      "decision": "Wire this map at actual composition; retain residual paths in accounting, not full-return certification."
+    },
+    {
+      "field": "Query.getUploadedDownloadableFiles",
+      "status": "selected-response",
+      "selectedPaths": [
+        "files.uploadedByUsername"
+      ],
+      "residualPaths": [
+        "discussion.id/title/channelUniqueNames and files.* except uploader; date strings have no generated scalar structural guarantee"
+      ],
+      "evidence": [
+        "customResolvers/queries/getUploadedDownloadableFiles.ts",
+        "tests/integration/downloadQueryGraphExceptions.test.ts",
+        "customResolvers/contracts/downloadReadProjections.d.ts",
+        "tests/contracts/downloadReadSources.typecheck.ts",
+        "tests/integration/downloadQueryAttribution.test.ts"
+      ],
+      "reason": "Merged #441 fixes canonical graph traversal. WHERE file.uploadedByUsername = $username proves the nested uploader string; explicit group/discussion/file projections leave property reads unknown.",
+      "decision": "Preserve lazy GraphQL completion of unselected properties; alias/fragment tests prove malformed raw nested leaves only fail when selected. Do not claim entire objects are checked."
+    },
+    {
+      "field": "Query.previewPluginConfigurationReconciliation",
+      "status": "selected-response",
+      "selectedPaths": [
+        "apiVersion",
+        "inSync",
+        "warnings",
+        "changes.kind",
+        "changes.path",
+        "changes.message",
+        "changes.current",
+        "changes.desired",
+        "changes.blocked"
+      ],
+      "residualPaths": [
+        "changes.current/desired JSON scalar internals"
+      ],
+      "evidence": [
+        "customResolvers/contracts/pluginConfiguration.ts",
+        "tests/contracts/pluginConfiguration.typecheck.ts",
+        "services/persistence/pluginConfigurationReadRepository.ts",
+        "tests/integration/pluginConfigurationReconciliation.test.ts",
+        "tests/integration/pluginConfigurationReadRepository.test.ts"
+      ],
+      "reason": "Actual factory output matches the full generated recursive custom response. Schema-executed live snapshots have exact nullable fields and non-null connection shapes; nullable Plugin links remain filtered by existing logic.",
+      "decision": "Wire the generated signature at composition. JSON internals remain scalar-owned; no schema/behavior change."
+    },
+    {
+      "field": "Query.previewPluginPipelineCampaign",
+      "status": "selected-response",
+      "selectedPaths": [
+        "policyId",
+        "eventType",
+        "applicability",
+        "enforcementBehavior",
+        "affectedFileCount",
+        "accessibleFileCount",
+        "unavailableFileCount",
+        "estimatedProviderRuns"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/pluginCampaigns.ts",
+        "tests/contracts/pluginCampaigns.typecheck.ts",
+        "tests/integration/pluginCampaignResponseContracts.test.ts",
+        "services/persistence/campaignControlRepository.ts",
+        "services/persistence/campaignQueryRepository.ts",
+        "services/persistence/campaignServiceRepository.ts"
+      ],
+      "reason": "Exact fixed projections execute through the generated schema; actual factory satisfies generated recursive response boundary. Real-schema tests cover counts, nulls, enums, auth and failures; existing repository tests retain limits and write ordering.",
+      "decision": "Checked selected response; preserve anonymous URL redaction, 25-file preview limit and existing non-atomic write/projection behavior."
+    }
+  ]
+}

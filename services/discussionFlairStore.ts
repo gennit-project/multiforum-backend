@@ -1,17 +1,18 @@
+import { rememberCanonicalSource } from "./canonicalSourceFields.js";
 import neo4j, { type Record as Neo4jRecord } from "neo4j-driver";
 
 export type DiscussionFlairOption = {
-  id: string;
+  id: unknown;
   channelUniqueName: string;
-  displayName: string;
-  color: string | null;
+  displayName: unknown;
+  color: unknown;
   order: number;
-  archived: boolean;
+  archived: unknown;
 };
 
 export type ChannelDiscussionFlairConfig = {
   channelUniqueName: string;
-  flairRequired: boolean;
+  flairRequired: unknown;
   flairs: DiscussionFlairOption[];
 };
 
@@ -19,7 +20,7 @@ export type CypherExecutor = {
   run: (
     query: string,
     params?: Record<string, unknown>
-  ) => Promise<{ records: Neo4jRecord[] }>;
+  ) => Promise<{ records: Neo4jRecord<{ channelUniqueName: string; flairRequired: unknown; flairs: Array<Omit<DiscussionFlairOption, "order"> & {order: unknown}> }>[] }>;
 };
 
 const toNumber = (value: unknown) =>
@@ -64,14 +65,14 @@ export const findChannelDiscussionFlairConfig = async ({
     return null;
   }
 
-  return {
+  return rememberCanonicalSource({
     channelUniqueName: record.get("channelUniqueName"),
     flairRequired: record.get("flairRequired"),
     flairs: (record.get("flairs") ?? [])
       .filter(Boolean)
-      .map((flair: DiscussionFlairOption & { order: unknown }) => ({
+      .map((flair) => rememberCanonicalSource({
         ...flair,
         order: toNumber(flair.order),
       })),
-  };
+  });
 };

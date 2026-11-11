@@ -76,6 +76,10 @@ RETURN comment {
   isSticky: coalesce(comment.isSticky, false),
   .stickyAt, .stickyByUsername,
   CommentAuthor: CASE WHEN author IS NULL THEN null ELSE author {
+      __sourceAuthorType: CASE
+        WHEN author:User AND NOT (author:ModerationProfile) THEN 'User'
+        WHEN author:ModerationProfile AND NOT (author:User) THEN 'ModerationProfile'
+        ELSE null END,
     .username, .displayName, .profilePicURL, .discussionKarma,
     .commentKarma, .createdAt, .isBot
   } END,

@@ -1,3 +1,4 @@
+import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import { createPluginInstallRepository, type PluginInstallRepository } from "../../services/persistence/pluginInstallRepository.js";
 import type { Driver } from "neo4j-driver"
 import { createServerSecretRepository, type ServerSecretRepository } from "../../services/persistence/serverSecretRepository.js"
@@ -23,16 +24,6 @@ type Args = {
   pluginId: string
   version: string
   carrySettings?: boolean
-}
-
-type InstalledVersionEdge = {
-  properties?: { settingsJson?: unknown }
-  node?: {
-    id?: string
-    version?: string
-    manifest?: unknown
-    Plugin?: { id?: string; name?: string }
-  }
 }
 
 const buildReleaseMetadataPayload = (registryVersion: RegistryVersion) => ({
@@ -198,7 +189,7 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
 
       pluginSlug = artifacts.id
 
-      let pluginVersion = existingDbVersions[0] || null
+      let pluginVersion: Awaited<ReturnType<PluginInstallRepository["findInstallVersion"]>>[number] | Awaited<ReturnType<PluginInstallRepository["createInstallVersion"]>>["pluginVersions"][number] | null = existingDbVersions[0] || null
       // Neo4j only accepts primitive types, so stringify nested objects
       const settingsDefaultsRaw = manifest.settingsDefaults ?? manifest.settings ?? null
       const uiSchemaRaw = manifest.ui ?? null
@@ -253,7 +244,7 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
 
       const installedEdges = (
         installedVersions[0]?.InstalledVersionsConnection?.edges || []
-      ) as InstalledVersionEdge[]
+      )
       const isAlreadyInstalled = installedEdges.some(
         edge => edge.node?.id === pluginVersion.id
       )
@@ -290,8 +281,8 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
                   : null)
       }
 
-      return {
-        plugin: {
+      return rememberCanonicalSource({
+        plugin: rememberCanonicalSource({
           id: String(pluginRecord!.id),
           name: String(pluginRecord!.name),
           displayName: pluginUpdatePayload.displayName,
@@ -302,13 +293,13 @@ const getResolver = (input: Input, { fetchRegistry = fetchMergedPluginRegistry, 
           license: pluginUpdatePayload.license,
           tags: pluginUpdatePayload.tags,
           metadata: pluginUpdatePayload.metadata
-        },
+        }),
         version: String(version),
         scope: 'SERVER',
         enabled: false,
         settingsJson: reconciledSettings,
         carryOverReport
-      }
+      })
 
     } catch (error: unknown) {
       logger.error('Error in installPluginVersion resolver:', error)

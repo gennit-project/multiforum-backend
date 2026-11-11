@@ -1,3 +1,4 @@
+import { rankingSettingsSource } from "../contracts/accountConfigurationSources.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { findRankingSettings } from "../../services/rankingSettingsStore.js";
@@ -20,11 +21,11 @@ export const getRankingSettings = ({ driver }: Input) => {
         throw new GraphQLError("Server configuration not found.");
       }
 
-      return {
+      return rankingSettingsSource({
         ...stored.settings,
         updatedAt: stored.updatedAt,
         updatedBy: stored.updatedBy,
-      };
+      });
     } finally {
       await session.close();
     }

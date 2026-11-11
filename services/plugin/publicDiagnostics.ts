@@ -152,12 +152,14 @@ export const createPublicDiagnosticCollector = ({
   }
 }
 
-export const parsePublicDiagnostics = (value: unknown): PublicDiagnostic[] => {
-  if (Array.isArray(value)) return value as PublicDiagnostic[]
+// Stored JSON establishes only an array container. Its items remain raw until
+// requested GraphQL fields complete; do not claim collector validation here.
+export const parsePublicDiagnostics = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) return value
   if (typeof value !== 'string') return []
   try {
-    const parsed = JSON.parse(value)
-    return Array.isArray(parsed) ? parsed as PublicDiagnostic[] : []
+    const parsed:unknown = JSON.parse(value)
+    return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }

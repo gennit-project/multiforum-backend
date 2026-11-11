@@ -48,7 +48,7 @@ function makeModels(opts: {
     User: model("User", () => []), // no existing bot user -> gets created
     Channel: model("Channel", () => [{ uniqueName: "cats", Bots: [] }]),
     Issue: model("Issue", () =>
-      opts.existingIssue === null ? [] : [opts.existingIssue ?? { id: "i-1", flaggedServerRuleViolation: false }]
+      opts.existingIssue === null ? [] : [opts.existingIssue ?? { id: "i-1", issueNumber: 5, flaggedServerRuleViolation: false }]
     ),
     Comment: model("Comment", () => (opts.comment ? [opts.comment] : [])),
     Discussion: model("Discussion", () => (opts.discussion ? [opts.discussion] : [])),

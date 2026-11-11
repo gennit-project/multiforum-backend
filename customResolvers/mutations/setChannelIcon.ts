@@ -1,3 +1,4 @@
+import type { ChannelIconProjection } from "../contracts/accountProjections.js";
 import { createChannelIconRepository, type ChannelIconRepository } from "../../services/persistence/imageWriteRepository.js";
 import type { ChannelUpdateInput } from "../../src/generated/graphql.js";
 import { GraphQLError } from "graphql";
@@ -34,7 +35,7 @@ const getResolver = ({
     _parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<Record<string, unknown>> => {
+  ): Promise<ChannelIconProjection> => {
     if (!context.user?.username) {
       context.user = await setUserDataOnContext({ context });
     }

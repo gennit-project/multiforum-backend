@@ -1,3 +1,4 @@
+import {pluginConfigStatusSource} from '../contracts/pluginConfigurationSources.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
 import { createPluginStatusRepository, type PluginStatusRepository } from '../../services/persistence/pluginStatusRepository.js'
@@ -5,8 +6,7 @@ import type { GraphQLContext } from '../../types/context.js'
 import { logger } from '../../logger.js'
 import {
   buildPluginConfigStatus,
-  resolveSecretValidationStatus,
-  type PluginConfigScope
+  resolveSecretValidationStatus
 } from '../../services/plugin/configStatus.js'
 
 type Input = { driver: Driver; pluginStatusRepository?: PluginStatusRepository }
@@ -14,7 +14,7 @@ type Input = { driver: Driver; pluginStatusRepository?: PluginStatusRepository }
 type Args = {
   pluginId: string
   version: string
-  scope?: PluginConfigScope
+  scope?: string | null
 }
 
 const getResolver = ({ driver, pluginStatusRepository: repository = createPluginStatusRepository(driver) }: Input) =>
@@ -44,7 +44,7 @@ const getResolver = ({ driver, pluginStatusRepository: repository = createPlugin
         ? await repository.findSecretStatuses(args.pluginId)
         : []
 
-      return buildPluginConfigStatus({
+      return pluginConfigStatusSource(buildPluginConfigStatus({
         manifest: pluginVersion.manifest,
         settingsJson: edge.properties?.settingsJson,
         secretStatuses: secrets.map(secret => ({
@@ -52,7 +52,7 @@ const getResolver = ({ driver, pluginStatusRepository: repository = createPlugin
           status: resolveSecretValidationStatus(secret)
         })),
         scope
-      })
+      }))
     } catch (error) {
       logger.error('Error in getPluginConfigStatus resolver:', error)
       throw new Error(`Failed to get plugin config status: ${error instanceof Error ? error.message : String(error)}`)

@@ -1,3 +1,25 @@
+import type { DelegatedActivitySource } from "./contracts/deferredSources.js";
+import type { ImageWriteSourceMutationResolvers } from "./contracts/imageWriteSources.js";
+import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
+import type { ModerationSuspensionMutationResolvers } from "./contracts/moderationSuspensions.js";
+import type { AccountWriteSourceMutationResolvers } from "./contracts/accountWriteSources.js";
+import type { ModerationReportMutationResolvers } from "./contracts/moderationReports.js";
+import type { ModerationUndoMutationResolvers } from "./contracts/moderationUndo.js";
+import type { ModerationLockMutationResolvers } from "./contracts/moderationLocks.js";
+import type { DownloadWriteMutationResolvers } from "./contracts/downloadWrites.js";
+import type { PluginExecutionMutationResolvers } from "./contracts/pluginExecution.js";
+import type { DownloadActionMutationResolvers } from "./contracts/downloadActions.js";
+import type { PluginPolicyDomainMutationResolvers } from "./contracts/pluginPolicies.js";
+import type { PluginInstallationMutationResolvers } from "./contracts/pluginInstallation.js";
+import type { PluginCampaignMutationResolvers } from "./contracts/pluginCampaigns.js";
+import type { AccountSafetyMutationResolvers } from "./contracts/accountSafety.js";
+import type { PluginConfigurationMutationResolvers } from "./contracts/pluginConfiguration.js";
+import type { AccountObjectMutationResolvers } from "./contracts/accounts.js";
+import type { AccountScalarMutationResolvers } from "./contracts/accounts.js";
+import type { PluginMutationResolvers } from "./contracts/plugins.js";
+import type { ModerationMutationResolvers } from "./contracts/moderation.js";
+import type { ContentMutationResolvers } from "./contracts/content.js";
+import type { ReactionMutationResolvers } from "./contracts/reactions.js";
 import type { SubscriptionMutationResolvers } from "./contracts/subscriptions.js";
 import type { VotingMutationResolvers } from "./contracts/voting.js";
 import { writeWikiPage, setWikiHomePage } from "./mutations/writeWikiPage.js";
@@ -149,6 +171,21 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     driver,
   } = deps;
 
+  const reactionResolvers = {
+    addEmojiToComment: addEmojiToComment({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    removeEmojiFromComment: removeEmojiFromComment({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
+      reactionWriter: createReactionWriter(driver),
+    }),
+    removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
+      reactionWriter: createReactionWriter(driver),
+    }),
+  } satisfies ReactionMutationResolvers;
+
   const votingResolvers = {
     upvoteComment: upvoteComment({
       driver,
@@ -197,19 +234,19 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies SubscriptionMutationResolvers;
 
-  return {
-    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
-      driver,
-    }),
+  const contentResolvers = {
     createDiscussionWithChannelConnections:
       createDiscussionWithChannelConnections({
         driver,
       }),
+
+    createEventWithChannelConnections: createEventWithChannelConnections({
+      driver,
+    }),
+
     createCommentWithOwnedConnections: createCommentWithOwnedConnections({
       driver,
     }),
-    softDeleteComment: softDeleteComment({ driver }),
-    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }),
     createIssue: createIssue({ driver }),
     writeWikiPage: writeWikiPage({driver}),
     setWikiHomePage: setWikiHomePage({driver}),
@@ -217,9 +254,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       updateDiscussionWithChannelConnections({
         driver,
       }),
-    createEventWithChannelConnections: createEventWithChannelConnections({
-      driver,
-    }),
     createEventSeriesWithChannelConnections: createEventSeriesWithChannelConnections({
       driver,
     }),
@@ -231,71 +265,6 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
     deleteEventInSeries: deleteEventInSeries({
       driver,
-    }),
-    addEmojiToComment: addEmojiToComment({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    removeEmojiFromComment: removeEmojiFromComment({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    addEmojiToDiscussionChannel: addEmojiToDiscussionChannel({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    removeEmojiFromDiscussionChannel: removeEmojiFromDiscussionChannel({
-      reactionWriter: createReactionWriter(driver),
-    }),
-    ...votingResolvers,
-    createSignedStorageURL: createSignedStorageURL(),
-    setProfileImage: setProfileImage({
-      driver,
-    }),
-    setChannelIcon: setChannelIcon({
-      driver,
-    }),
-    createEmailAndUser: getCreateEmailAndUserResolver({
-      accountRegistrationRepository: createAccountRegistrationRepository(driver),
-      agePolicyRepository: instancePolicyRepository,
-    }),
-    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
-    inviteForumOwner: inviteForumOwner({
-      driver
-    }),
-    cancelInviteForumOwner: cancelInviteOwner(),
-    removeForumOwner: removeForumOwner(),
-    acceptForumOwnerInvite: acceptForumOwnerInvite(),
-    becomeForumAdmin: becomeForumAdmin(),
-    inviteForumMod: inviteForumMod({
-      driver
-    }),
-    cancelInviteForumMod: cancelInviteForumMod(),
-    removeForumMod: removeForumMod(),
-    acceptForumModInvite: acceptForumModInvite(),
-    // Server admin/mod invite workflow
-    inviteServerAdmin: inviteServerAdmin({
-      driver
-    }),
-    cancelInviteServerAdmin: cancelInviteServerAdmin(),
-    acceptServerAdminInvite: acceptServerAdminInvite(),
-    inviteServerMod: inviteServerMod({
-      driver
-    }),
-    cancelInviteServerMod: cancelInviteServerMod(),
-    acceptServerModInvite: acceptServerModInvite(),
-    dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
-    seedDataForCypressTests: seedDataForCypressTestsResolver({
-      driver,
-    }),
-    reportComment: reportComment({
-      driver
-    }),
-    reportDiscussion: reportDiscussion({
-      driver
-    }),
-    reportEvent: reportEvent({
-      driver
-    }),
-    reportWikiEdit: reportWikiEdit({
-      driver
     }),
     deleteCommentRevision: redactTextVersionRevision({
       driver,
@@ -313,153 +282,21 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
       driver,
       revisionType: 'wiki',
     }),
-    reportChannel: reportChannel({
-      driver
-    }),
-    reportImage: reportImage({
-      driver
-    }),
-    reportProfilePicture: reportProfilePicture({
-      driver
-    }),
-    reportChannelImage: reportChannelImage({
-      driver
-    }),
-    archiveImage: archiveImage({
-      driver
-    }),
-    unarchiveImage: unarchiveImage({
-      driver,
-    }),
-    permanentlyRemoveImage: permanentlyRemoveImage({
-      driver
-    }),
-    permanentlyDeleteImage: permanentlyDeleteImage({
-      driver
-    }),
-    permanentlyDeleteDownloadableFile: permanentlyDeleteDownloadableFile({
-      driver
-    }),
-    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
-      driver
-    }),
-    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
-      driver
-    }),
-    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
-      driver
-    }),
-    lockChannel: lockChannel({
-      driver
-    }),
-    unlockChannel: unlockChannel({
-      driver
-    }),
-    suspendUser: suspendUser({
-      includeWikiPage: true,
-      includeTextVersion: true
-    }),
-    unsuspendUser: unsuspendUser(),
-    suspendMod: suspendMod(),
-    unsuspendMod: unsuspendMod(),
-    lockIssue: lockIssue(),
-    unlockIssue: unlockIssue(),
-    archiveComment: archiveComment({
-      driver,
-    }),
-    stickyComment: stickyComment({
-      stickyCommentRepository: createStickyCommentRepository(driver),
-    }),
-    unstickyComment: unstickyComment({
-      stickyCommentRepository: createStickyCommentRepository(driver),
-    }),
-    archiveDiscussion: archiveDiscussion({
-      driver,
-    }),
-    archiveEvent: archiveEvent({
-      driver,
-    }),
-    unarchiveComment: unarchiveComment({
-      driver,
-    }),
-    unarchiveDiscussion: unarchiveDiscussion({
-      driver,
-    }),
-    unarchiveEvent: unarchiveEvent({
-      driver,
-    }),
-    ...subscriptionResolvers,
-    sendBugReport: sendBugReport(),
-    refreshPlugins: refreshPlugins({
-      driver
-    }),
-    installPluginVersion: installPluginVersion({
-      driver
-    }),
-    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
-    retryDownloadableFileScan: retryDownloadableFileScan({}),
-    startPluginPipeline: startPluginPipeline({}),
-    rerunPluginPipeline: rerunPluginPipeline({}),
-    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
-    pausePluginPipelineCampaign: pausePluginPipelineCampaign({
-      driver,
-    }),
-    resumePluginPipelineCampaign: resumePluginPipelineCampaign({
-      driver,
-    }),
-    clearDownloadableFileScan: clearDownloadableFileScan({
-      driver
-    }),
-    requestDownloadableFileReview: requestDownloadableFileReview({
-      driver
-    }),
-    trackDownload: trackDownload({
-      driver,
-      agePolicyRepository: instancePolicyRepository
-    }),
-    prepareDownload: prepareDownload({
-      agePolicyRepository: instancePolicyRepository,
-      driver
-    }),
-    updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
-      driver
-    }),
-    createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
-      driver
-    }),
-    enableServerPlugin: enableServerPlugin({
-      driver
-    }),
-    setServerPluginSecret: setServerPluginSecret({
-      driver
-    }),
-    updatePluginPipelines: updatePluginPipelines({
-      driver
-    }),
-    applyPluginConfiguration: applyPluginConfiguration({}),
-    updateChannelPluginPipelines: updateChannelPluginPipelines({
-      driver,
-    }),
-    createImageWithUploader: createImageWithUploader({
-      driver
-    }),
-    addToCollection: addToCollection({
-      driver
-    }),
-    removeFromCollection: removeFromCollection({
-      driver
-    }),
-    reorderCollectionItem: reorderCollectionItem({
-      driver
-    }),
     addImageToAlbum: addImageToAlbum({
       driver
     }),
     removeImageFromAlbum: removeImageFromAlbum({
       driver
     }),
-    shareCollectionAsDiscussion: shareCollectionAsDiscussion({
-      driver
+  } satisfies ContentMutationResolvers;
+
+  const moderationResolvers = {
+    softDeleteComment: softDeleteComment({ driver }),
+    stickyComment: stickyComment({
+      stickyCommentRepository: createStickyCommentRepository(driver),
+    }),
+    unstickyComment: unstickyComment({
+      stickyCommentRepository: createStickyCommentRepository(driver),
     }),
     pinWikiPageToChannel: pinWikiPageToChannel({
       driver,
@@ -476,24 +313,289 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     setFeaturedWikiPages: setFeaturedWikiPages({
       driver,
     }),
-    setRankingSettings: setRankingSettings({
-      driver,
+  } satisfies ModerationMutationResolvers;
+
+  const pluginResolvers = {
+    clearDownloadableFileScan: clearDownloadableFileScan({
+      driver
     }),
-    updateDownloadLabels: updateDownloadLabels({
-      driver,
+    requestDownloadableFileReview: requestDownloadableFileReview({
+      driver
     }),
-    createScratchpadEntry: createScratchpadEntry({
+    trackDownload: trackDownload({
+      driver,
+      agePolicyRepository: instancePolicyRepository
+    }),
+    updateDownloadableFileSupportSettings: updateDownloadableFileSupportSettings({
+      driver
+    }),
+    setServerPluginSecret: setServerPluginSecret({
+      driver
+    }),
+  } satisfies PluginMutationResolvers;
+
+  const accountScalarResolvers = {
+    inviteForumOwner: inviteForumOwner({
+      driver
+    }),
+    cancelInviteForumOwner: cancelInviteOwner(),
+    removeForumOwner: removeForumOwner(),
+    acceptForumOwnerInvite: acceptForumOwnerInvite(),
+    becomeForumAdmin: becomeForumAdmin(),
+    inviteForumMod: inviteForumMod({
+      driver
+    }),
+    cancelInviteForumMod: cancelInviteForumMod(),
+    removeForumMod: removeForumMod(),
+    acceptForumModInvite: acceptForumModInvite(),
+    inviteServerAdmin: inviteServerAdmin({
+      driver
+    }),
+    cancelInviteServerAdmin: cancelInviteServerAdmin(),
+    acceptServerAdminInvite: acceptServerAdminInvite(),
+    inviteServerMod: inviteServerMod({
+      driver
+    }),
+    cancelInviteServerMod: cancelInviteServerMod(),
+    acceptServerModInvite: acceptServerModInvite(),
+    sendBugReport: sendBugReport(),
+    addToCollection: addToCollection({
+      driver
+    }),
+    removeFromCollection: removeFromCollection({
+      driver
+    }),
+    reorderCollectionItem: reorderCollectionItem({
+      driver
+    }),
+    deleteScratchpadEntry: deleteScratchpadEntry({
       scratchpadRepository: createScratchpadRepository(driver),
+    }),
+  } satisfies AccountScalarMutationResolvers;
+
+  const accountObjectResolvers = {
+    shareCollectionAsDiscussion: shareCollectionAsDiscussion({ driver }),
+    setProfileImage: setProfileImage({
       driver,
     }),
-    undoSuperUpvote: undoSuperUpvote({
+    setChannelIcon: setChannelIcon({
+      driver,
+    }),
+    createEmailAndUser: getCreateEmailAndUserResolver({
+      accountRegistrationRepository: createAccountRegistrationRepository(driver),
+      agePolicyRepository: instancePolicyRepository,
+    }),
+    dropDataForCypressTests: dropDataForCypressTestsResolver({ driver }),
+    seedDataForCypressTests: seedDataForCypressTestsResolver({
+      driver,
+    }),
+    setRankingSettings: setRankingSettings({
       driver,
     }),
     updateScratchpadEntryVisibility: updateScratchpadEntryVisibility({
       scratchpadRepository: createScratchpadRepository(driver),
     }),
-    deleteScratchpadEntry: deleteScratchpadEntry({
-      scratchpadRepository: createScratchpadRepository(driver),
+  } satisfies AccountObjectMutationResolvers;
+
+  const pluginConfigurationResolvers = {
+    applyPluginConfiguration: applyPluginConfiguration({}),
+  } satisfies PluginConfigurationMutationResolvers;
+
+  const accountSafetyResolvers = {
+    createSignedStorageURL: createSignedStorageURL(),
+    setMyBirthday: setMyBirthday({ driver, agePolicyRepository: instancePolicyRepository }),
+  } satisfies AccountSafetyMutationResolvers;
+
+  const pluginCampaignResolvers = {
+    pausePluginPipelineCampaign: pausePluginPipelineCampaign({driver}),
+    resumePluginPipelineCampaign: resumePluginPipelineCampaign({driver}),
+    createPluginPipelineCampaign: createPluginPipelineCampaign({}),
+  } satisfies PluginCampaignMutationResolvers;
+
+  const pluginInstallationResolvers = {
+    refreshPlugins: refreshPlugins({
+      driver
     }),
+    installPluginVersion: installPluginVersion({
+      driver
+    }),
+    enableServerPlugin: enableServerPlugin({
+      driver
+    }),
+  } satisfies PluginInstallationMutationResolvers;
+
+  const pluginPolicyDomainResolvers = {
+    updatePluginPipelines: updatePluginPipelines({
+      driver
+    }),
+    updateChannelPluginPipelines: updateChannelPluginPipelines({
+      driver,
+    }),
+  } satisfies PluginPolicyDomainMutationResolvers;
+
+  const downloadActionResolvers = {
+    prepareDownload: prepareDownload({
+      agePolicyRepository: instancePolicyRepository,
+      driver
+    }),
+    updateDownloadLabels: updateDownloadLabels({
+      driver,
+    }),
+  } satisfies DownloadActionMutationResolvers;
+
+  const pluginExecutionResolvers = {
+    triggerDownloadableFilePluginRuns: triggerDownloadableFilePluginRuns({}),
+    retryDownloadableFileScan: retryDownloadableFileScan({}),
+    startPluginPipeline: startPluginPipeline({}),
+    rerunPluginPipeline: rerunPluginPipeline({}),
+  } satisfies PluginExecutionMutationResolvers;
+
+  const downloadWriteResolvers = {
+    permanentlyDeleteDownloadableFile: permanentlyDeleteDownloadableFile({
+      driver
+    }),
+    createDownloadableFiles: createDownloadableFilesWithUploadMetadata({
+      driver
+    }),
+  } satisfies DownloadWriteMutationResolvers;
+
+  const moderationLockResolvers = {
+    lockChannel: lockChannel({
+      driver
+    }),
+    unlockChannel: unlockChannel({
+      driver
+    }),
+    lockIssue: lockIssue(),
+    unlockIssue: unlockIssue(),
+  } satisfies ModerationLockMutationResolvers;
+
+  const moderationUndoResolvers = {
+    undoSuperUpvote: undoSuperUpvote({
+      driver,
+    }),
+  } satisfies ModerationUndoMutationResolvers;
+
+  const moderationReportResolvers = {
+    reportComment: reportComment({
+      driver
+    }),
+    reportDiscussion: reportDiscussion({
+      driver
+    }),
+    reportEvent: reportEvent({
+      driver
+    }),
+    reportWikiEdit: reportWikiEdit({
+      driver
+    }),
+    reportChannel: reportChannel({
+      driver
+    }),
+    reportImage: reportImage({
+      driver
+    }),
+    reportProfilePicture: reportProfilePicture({
+      driver
+    }),
+    reportChannelImage: reportChannelImage({
+      driver
+    }),
+  } satisfies ModerationReportMutationResolvers;
+
+  const accountWriteSourceResolvers = {
+    permanentlyRemoveImage: permanentlyRemoveImage({
+      driver
+    }),
+
+    setChannelDiscussionFlairConfig: setChannelDiscussionFlairConfig({
+      driver,
+    }),
+    permanentlyDeleteImage: permanentlyDeleteImage({
+      driver
+    }),
+    permanentlyDeleteProfileImage: permanentlyDeleteProfileImage({
+      driver
+    }),
+    permanentlyDeleteChannelIcon: permanentlyDeleteChannelIcon({
+      driver
+    }),
+    permanentlyDeleteChannelBanner: permanentlyDeleteChannelBanner({
+      driver
+    }),
+    createScratchpadEntry: createScratchpadEntry({
+      scratchpadRepository: createScratchpadRepository(driver),
+      driver,
+    }),
+  } satisfies AccountWriteSourceMutationResolvers;
+
+  const moderationSuspensionResolvers = {
+    suspendUser: suspendUser({
+      includeWikiPage: true,
+      includeTextVersion: true
+    }),
+    unsuspendUser: unsuspendUser(),
+    suspendMod: suspendMod(),
+    unsuspendMod: unsuspendMod(),
+  } satisfies ModerationSuspensionMutationResolvers;
+
+  const moderationArchiveResolvers = {
+    archiveImage: archiveImage({
+      driver
+    }),
+    unarchiveImage: unarchiveImage({
+      driver,
+    }),
+    archiveComment: archiveComment({
+      driver,
+    }),
+    archiveDiscussion: archiveDiscussion({
+      driver,
+    }),
+    archiveEvent: archiveEvent({
+      driver,
+    }),
+    unarchiveComment: unarchiveComment({
+      driver,
+    }),
+    unarchiveDiscussion: unarchiveDiscussion({
+      driver,
+    }),
+    unarchiveEvent: unarchiveEvent({
+      driver,
+    }),
+  } satisfies ModerationArchiveMutationResolvers;
+
+  const imageWriteSourceResolvers = {
+    createImageWithUploader: createImageWithUploader({
+      driver
+    }),
+  } satisfies ImageWriteSourceMutationResolvers;
+
+  return {
+    ...accountWriteSourceResolvers,
+    ...contentResolvers,
+    ...moderationResolvers,
+    addIssueActivityFeedItem: addIssueActivityFeedItem({ driver }) satisfies DelegatedActivitySource,
+    ...reactionResolvers,
+    ...votingResolvers,
+    ...accountSafetyResolvers,
+    ...accountObjectResolvers,
+    ...accountScalarResolvers,
+    ...moderationReportResolvers,
+    ...moderationArchiveResolvers,
+    ...downloadWriteResolvers,
+    ...moderationLockResolvers,
+    ...moderationSuspensionResolvers,
+    ...subscriptionResolvers,
+    ...pluginInstallationResolvers,
+    ...pluginExecutionResolvers,
+    ...pluginCampaignResolvers,
+    ...pluginResolvers,
+    ...downloadActionResolvers,
+    ...pluginPolicyDomainResolvers,
+    ...pluginConfigurationResolvers,
+    ...imageWriteSourceResolvers,
+    ...moderationUndoResolvers,
   };
 }

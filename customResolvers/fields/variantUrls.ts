@@ -1,3 +1,4 @@
+import type { VariantUrlsDomain } from "../contracts/variantUrlsDomain.js";
 import type { GraphQLResolveInfo } from "graphql";
 
 type VariantParent = Record<string, unknown> & {
@@ -9,7 +10,7 @@ const asNonEmptyString = (value: unknown): string | null => {
 };
 
 export const createVariantUrlsResolver = (fields: Record<string, string>) => {
-  return (parent: VariantParent, _args?: unknown, _context?: unknown, info?: GraphQLResolveInfo) => {
+  return (parent: VariantParent, _args?: unknown, _context?: unknown, info?: GraphQLResolveInfo): VariantUrlsDomain => {
     const directVariants = Object.entries(fields).reduce<Record<string, string>>(
       (accumulator, [variantKey, fieldName]) => {
         const value = asNonEmptyString(parent[fieldName]);

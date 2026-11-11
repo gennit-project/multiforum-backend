@@ -1,7 +1,9 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
+import type { OwnedCommentProjection } from "../contracts/content.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
-import { executeGeneratedOperation } from "../../services/persistence/generatedSchemaOperations.js";
+import { executeCanonicalFixedOperation } from "../../services/persistence/canonicalFixedOperation.js";
 import {
   splitOwnedCommentInput,
   ownCommentConnections,
@@ -44,8 +46,8 @@ const getResolver = (deps: Input) => {
     const inputs = Array.isArray(args.input) ? args.input : [];
     const split = inputs.map((input) => splitOwnedCommentInput(input));
 
-    const result = await executeGeneratedOperation<{
-      createComments: { comments: Array<{ id: string }> };
+    const result = await executeCanonicalFixedOperation<{
+      createComments: { comments: OwnedCommentProjection[] };
     }>(driver, CREATE_COMMENTS, { input: split.map((entry) => entry.scalars) });
 
     const comments = result.createComments.comments ?? [];
@@ -56,7 +58,7 @@ const getResolver = (deps: Input) => {
       if (id) await ownCommentConnections(driver, id, split[index].targets);
     }
 
-    return { comments };
+    return rememberCanonicalSource({ comments });
   };
 };
 

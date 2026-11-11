@@ -14,7 +14,7 @@ type UpdateImageArgs = {
   update?: Record<string, unknown> | null;
 };
 
-export const updateImageInputIsValid = rule({ cache: "contextual" })(
+export const updateImageInputIsValid = rule({ cache: "strict" })(
   async (
     _parent: unknown,
     args: UpdateImageArgs,

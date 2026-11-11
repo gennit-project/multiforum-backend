@@ -1,6 +1,7 @@
+import { executeCanonicalFixedOperation } from "./canonicalFixedOperation.js";
+import type { CreatedEventProjection, EventUpdateSnapshot, UpdatedEventProjection } from "../../customResolvers/contracts/contentProjections.js";
 import type { Driver, ManagedTransaction } from "neo4j-driver";
 import type { EventCreateInput, EventWhere, EventUpdateInput } from "../../src/generated/graphql.js";
-import type { Event } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 import { EVENT_REVISION_DEFAULT_SELECTION } from "./eventRevisionRepository.js";
 
@@ -119,29 +120,29 @@ export const UPDATED_EVENT_SELECTION = `
       `;
 
 export interface EventWriteRepository {
-  createWithinTransaction(input: EventCreateInput, tx: ManagedTransaction): Promise<Event[]>;
-  findCreatedEvent(id: string, tx?: ManagedTransaction): Promise<Event[]>;
-  findUpdateSnapshot(where: EventWhere): Promise<Event[]>;
+  createWithinTransaction(input: EventCreateInput, tx: ManagedTransaction): Promise<CreatedEventProjection[]>;
+  findCreatedEvent(id: string, tx?: ManagedTransaction): Promise<CreatedEventProjection[]>;
+  findUpdateSnapshot(where: EventWhere): Promise<EventUpdateSnapshot[]>;
   updateWithinTransaction(where: EventWhere, update: EventUpdateInput, tx: ManagedTransaction): Promise<void>;
-  findUpdatedEvent(id: string | undefined | null): Promise<Event[]>;
+  findUpdatedEvent(id: string | undefined | null): Promise<UpdatedEventProjection[]>;
 }
 
 export function createEventWriteRepository(driver: Driver): EventWriteRepository {
   return {
     async createWithinTransaction(input, tx) {
-      const result = await executeGeneratedOperation<{createEvents: {events: Event[]}}>(driver,
+      const result = await executeCanonicalFixedOperation<{createEvents: {events: CreatedEventProjection[]}}>(driver,
         `mutation CreateEventInTransaction($input: [EventCreateInput!]!) {
           createEvents(input: $input) { events ${CREATED_EVENT_SELECTION} }
         }`, {input: [input]}, tx);
       return result.createEvents.events;
     },
     async findCreatedEvent(id, tx) {
-      const result = await executeGeneratedOperation<{events: Event[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{events: CreatedEventProjection[]}>(driver,
         `query EventAfterCustomCreate($where: EventWhere) { events(where: $where) ${CREATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}}, tx);
       return result.events;
     },
     async findUpdateSnapshot(where) {
-      const result = await executeGeneratedOperation<{events: Event[]}>(driver,
+      const result = await executeGeneratedOperation<{events: EventUpdateSnapshot[]}>(driver,
         `query EventBeforeCustomUpdate($where: EventWhere) { events(where: $where) ${EVENT_UPDATE_SNAPSHOT_SELECTION} }`, {where});
       return result.events;
     },
@@ -152,7 +153,7 @@ export function createEventWriteRepository(driver: Driver): EventWriteRepository
         }`, {where, update}, tx);
     },
     async findUpdatedEvent(id) {
-      const result = await executeGeneratedOperation<{events: Event[]}>(driver,
+      const result = await executeCanonicalFixedOperation<{events: UpdatedEventProjection[]}>(driver,
         `query EventAfterCustomUpdate($where: EventWhere) { events(where: $where) ${UPDATED_EVENT_SELECTION} }`, {where: {id: {eq: id}}});
       return result.events;
     },

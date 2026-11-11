@@ -1,3 +1,4 @@
+import {serverMembershipConfig} from '../../tests/helpers/serverMembershipSource.js';
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
@@ -11,8 +12,8 @@ const build=(overrides:Partial<ServerModeratorRepository>={})=>{
  const repo:ServerModeratorRepository={
   findModeratorProfile:async username=>{calls.push(`profile:${username}`);return [{ModerationProfile:{displayName:"ModAlice"}}];},
   findPendingInvites:async name=>{calls.push(`pending:${name}`);return [{PendingModInvites:[{username:"alice"}]}];},
-  connectModerator:async(name,profile)=>{calls.push(`connect:${name}:${profile}`);return {serverConfigs:[{}]};},
-  disconnectInvite:async(name,user)=>{calls.push(`cancel:${name}:${user}`);return {serverConfigs:[{}]};},...overrides,
+  connectModerator:async(name,profile)=>{calls.push(`connect:${name}:${profile}`);return {serverConfigs:[serverMembershipConfig()]};},
+  disconnectInvite:async(name,user)=>{calls.push(`cancel:${name}:${user}`);return {serverConfigs:[serverMembershipConfig()]};},...overrides,
  };
  const context={user:{username:"alice"},serverModeratorRepository:repo,ogm:{model:()=>{throw new Error("Unexpected OGM acquisition");}}} as unknown as GraphQLContext;
  return {context,calls,repo};

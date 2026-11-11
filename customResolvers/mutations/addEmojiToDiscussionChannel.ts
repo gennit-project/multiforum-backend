@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { updateEmoji } from "./updateEmoji.js";
 import { assertDiscussionChannelEmojiEnabled } from "./channelPreferenceGuards.js";
 import type { ReactionWriter } from "../../services/persistence/reactionWriter.js";
@@ -40,10 +41,10 @@ const getResolver = (input: Input) => {
 
       await reactionWriter.updateDiscussionChannelEmoji(discussionChannelId, updatedEmojiJSON);
 
-      return {
+      return rememberCanonicalSource({
         id: discussionChannelId,
         emoji: updatedEmojiJSON,
-      };
+      });
     } catch (e) {
       logger.error(e);
       throw e;

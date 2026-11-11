@@ -44,6 +44,12 @@ test("secret read failures retain resolver error prefix", async () => {
   });
 });
 
+const installedNode = {
+  id: "version", version: "1", repoUrl: "repo", entryPath: "index.js", tarballGsUri: null, integritySha256: null,
+  manifest: null, settingsDefaults: null, uiSchema: null, documentationPath: null, readmeMarkdown: null,
+  registryUrl: null, releaseNotesUrl: null, sourceRepoUrl: null, sourceCommit: null, minServerVersion: null, apiVersion: null,
+  Plugin: { id: "plugin", name: "scanner", displayName: null, description: null, authorName: null, authorUrl: null, homepage: null, license: null, tags: null, metadata: null },
+};
 test("installed plugins retain JSON decoding, defaults and best-effort registry comparisons", async (t) => {
   const urls: string[] = [];
   t.mock.method(globalThis, "fetch", async (url: string) => {
@@ -54,10 +60,10 @@ test("installed plugins retain JSON decoding, defaults and best-effort registry 
     ] }] }), { status: 200 });
   });
   const resolver = getInstalledPlugins(input({ listInstalledPluginConfigs: async () => [{
-    pluginRegistries: ["https://registry.example.test/index.json"],
+    serverName: null, pluginRegistries: ["https://registry.example.test/index.json"],
     InstalledVersionsConnection: { edges: [{
       properties: { enabled: true, settingsJson: '{"setting":true}' },
-      node: { version: "1.0.0", manifest: '{"name":"scanner"}', Plugin: { name: "scanner" } },
+      node: { ...installedNode, version: "1.0.0", manifest: '{"name":"scanner"}', Plugin: installedNode.Plugin },
     }] },
   }] }));
   const result = await resolver(null, {}, context, info);
@@ -74,8 +80,8 @@ test("installed plugins retain JSON decoding, defaults and best-effort registry 
 test("registry failure retains installed data while invalid stored JSON still fails", async (t) => {
   t.mock.method(globalThis, "fetch", async () => { throw new Error("registry offline"); });
   const configs = [{
-    pluginRegistries: ["https://registry.example.test/index.json"],
-    InstalledVersionsConnection: { edges: [{ properties: { settingsJson: "{}" }, node: { version: "1", Plugin: { name: "scanner" } } }] },
+    serverName: null, pluginRegistries: ["https://registry.example.test/index.json"],
+    InstalledVersionsConnection: { edges: [{ properties: { enabled: false, settingsJson: "{}" }, node: installedNode }] },
   }];
   const resolver = getInstalledPlugins(input({ listInstalledPluginConfigs: async () => configs }));
   assert.equal((await resolver(null, {}, context, info))[0].hasUpdate, false);
@@ -85,7 +91,7 @@ test("registry failure retains installed data while invalid stored JSON still fa
 
 test("empty installed configurations skip outbound registry calls", async (t) => {
   t.mock.method(globalThis, "fetch", unexpected);
-  for (const configs of [[], [{ pluginRegistries: ["https://registry.example.test/index.json"] }]]) {
+  for (const configs of [[], [{ serverName: null, pluginRegistries: ["https://registry.example.test/index.json"], InstalledVersionsConnection: { edges: [] } }]]) {
     assert.deepEqual(await getInstalledPlugins(input({ listInstalledPluginConfigs: async () => configs }))(null, {}, context, info), []);
   }
 });
@@ -101,11 +107,12 @@ test("reconciliation reads registry and requested channel state", async () => {
   const requestedChannels: string[][] = [];
   const resolver = previewReconciliation(input({
     listReconciliationConfigs: async () => [{
+      serverName: "fixture",
       pluginRegistries: ["https://plugins.example.test/core.json"],
       pluginPipelines: [],
       InstalledVersionsConnection: { edges: [{
         properties: { enabled: true, settingsJson: "{}" },
-        node: { version: "1.0.0", Plugin: { name: "scanner" } },
+        node: { version: "1.0.0", Plugin: installedNode.Plugin },
       }] },
     }],
     listReconciliationSecretStatuses: async () => [],
@@ -115,7 +122,7 @@ test("reconciliation reads registry and requested channel state", async () => {
         uniqueName: "moderation",
         EnabledPluginsConnection: { edges: [{
           properties: { enabled: true, settingsJson: '{"threshold":0.8}' },
-          node: { version: "1.0.0", Plugin: { name: "scanner" } },
+          node: { version: "1.0.0", Plugin: installedNode.Plugin },
         }] },
       }];
     },

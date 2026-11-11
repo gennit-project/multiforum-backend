@@ -202,7 +202,7 @@ test("getSiteWideIssueList returns issues and aggregate count", async () => {
   const result = await resolver(null, baseArgs, createMockContext(), mockInfo);
 
   assert.equal(result.aggregateIssueCount, 2);
-  assert.deepEqual(result.issues, [
+  assert.deepEqual(result.issues.map(({id,title,reportCount})=>({id,title,reportCount})), [
     { id: "i1", title: "First", reportCount: 3 },
     { id: "i2", title: "Second", reportCount: 1 },
   ]);

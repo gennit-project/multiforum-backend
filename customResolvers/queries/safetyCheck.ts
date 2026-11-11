@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 
@@ -7,11 +8,11 @@ const safetyCheck = async (
   context: GraphQLContext,
   info: GraphQLResolveInfo
 ) => {
-  return {
-    environment: {
+  return rememberCanonicalSource({
+    environment: rememberCanonicalSource({
       isTestEnvironment: process.env.NEO4J_URI?.includes('localhost'),
       currentDatabase: process.env.NEO4J_URI,
-    },
-  };
+    }),
+  });
 };
 export default safetyCheck;

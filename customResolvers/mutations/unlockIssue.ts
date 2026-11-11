@@ -8,7 +8,7 @@ import { logger } from "../../logger.js";
 
 type Args = {
   issueId: string;
-  reason?: string;
+  reason?: string | null;
 };
 
 type Input = {

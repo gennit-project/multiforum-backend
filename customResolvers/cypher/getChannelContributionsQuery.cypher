@@ -96,7 +96,10 @@ WITH u,
       type: 'activity',
       description: 'Activity on ' + toString(activityDate),
       Comments: comments,
-      Discussions: discussions
+      Discussions: discussions,
+      Downloads: [],
+      Events: [],
+      WikiEdits: []
     }]
   }) AS dayData
 

@@ -1,3 +1,4 @@
+import userChildIdentityMiddleware from "../../middleware/userChildIdentityMiddleware.js";
 import { registerGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
 // Builds the real application GraphQL schema with the real graphql-shield
 // permission layer applied — the same two steps index.ts performs:
@@ -58,6 +59,7 @@ export async function buildPermissionedSchema(options?: {
     schema,
     ageGateWriteValidatorMiddleware,
     sensitiveContentPolicyMiddleware,
+    userChildIdentityMiddleware,
     permissions
   );
 

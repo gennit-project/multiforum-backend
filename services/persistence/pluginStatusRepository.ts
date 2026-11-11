@@ -2,9 +2,9 @@ import type { Driver } from 'neo4j-driver'
 import { executeGeneratedOperation } from './generatedSchemaOperations.js'
 
 export interface PluginStatusRepository {
-  findVersion(pluginId: string, version: string): Promise<Array<{ Versions?: Array<{ id: string; manifest?: unknown }> }>>
-  findInstallation(versionId: string): Promise<Array<{ InstalledVersionsConnection?: { edges?: Array<{ properties?: { settingsJson?: unknown } }> } }>>
-  findSecretStatuses(pluginId: string): Promise<Array<{ key: string; isValid?: boolean | null; lastValidatedAt?: unknown; validationError?: string | null }>>
+  findVersion(pluginId: string, version: string): Promise<Array<{ Versions: Array<{ id: string; manifest: unknown }> }>>
+  findInstallation(versionId: string): Promise<Array<{ InstalledVersionsConnection: { edges: Array<{ properties: { settingsJson: unknown } }> } }>>
+  findSecretStatuses(pluginId: string): Promise<Array<{ key: string; isValid: boolean | null; lastValidatedAt: string | null; validationError: string | null }>>
 }
 
 // Values are deliberately variables: approved correction treats quotes and

@@ -1,3 +1,4 @@
+import {pipelineHistorySource} from '../contracts/internalPipelineSources.js';
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -7,6 +8,6 @@ const getResolver = ({ driver, pipelineHistoryRepository = createPipelineHistory
   driver: Driver;
   pipelineHistoryRepository?: PipelineHistoryRepository;
 }) => async (_parent: unknown, args: { targetId: string; targetType: string }, _context: GraphQLContext, _info: GraphQLResolveInfo) => {
-  return pipelineHistoryRepository.findPipelineHistory(args.targetId, args.targetType);
+  return (await pipelineHistoryRepository.findPipelineHistory(args.targetId, args.targetType)).map(pipelineHistorySource);
 };
 export default getResolver;

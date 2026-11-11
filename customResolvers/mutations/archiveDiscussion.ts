@@ -1,4 +1,6 @@
-import {createDiscussionModerationRepository, type DiscussionModerationRepository, type DiscussionModerationIssue} from "../../services/persistence/discussionModerationRepository.js";
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
+import {createDiscussionModerationRepository, type DiscussionModerationRepository} from "../../services/persistence/discussionModerationRepository.js";
 import type {
   DiscussionChannelUpdateInput,
   DiscussionChannelWhere,
@@ -72,7 +74,7 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: DiscussionModerationIssue | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const discussionData = await repository.findDiscussion({
         id: { eq: discussionId },

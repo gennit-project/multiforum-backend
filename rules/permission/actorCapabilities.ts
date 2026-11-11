@@ -15,7 +15,7 @@ import { getActiveServerSuspension } from "./getActiveServerSuspension.js";
 
 // A role is a flat map of capability name -> granted, modeled loosely so this is
 // decoupled from the generated OGM role types.
-type RoleLike = Record<string, boolean | null | undefined> | null | undefined;
+type RoleLike = Record<string, unknown> | null | undefined;
 
 // "all" means the caller holds every capability (the env break-glass root, and
 // — for mod capabilities — a non-suspended server admin). `null` means no
@@ -170,12 +170,12 @@ export async function getActorServerRoleCaps(
   const isSuperAdmin =
     !!username &&
     (serverConfig.SuperAdmins ?? []).some(
-      (member: { username?: string | null }) => member?.username === username
+      (member) => member?.username === username
     );
   const isAdmin =
     !!username &&
     (serverConfig.Admins ?? []).some(
-      (member: { username?: string | null }) => member?.username === username
+      (member) => member?.username === username
     );
 
   return resolveEffectiveServerRole({
@@ -183,10 +183,10 @@ export async function getActorServerRoleCaps(
     isSuperAdmin,
     isAdmin,
     hasActiveSuspension,
-    defaultServerRole: serverConfig.DefaultServerRole as RoleLike,
-    defaultSuspendedRole: serverConfig.DefaultSuspendedRole as RoleLike,
-    adminRole: serverConfig.DefaultAdminRole as RoleLike,
-    superAdminRole: serverConfig.DefaultSuperAdminRole as RoleLike,
+    defaultServerRole: serverConfig.DefaultServerRole,
+    defaultSuspendedRole: serverConfig.DefaultSuspendedRole,
+    adminRole: serverConfig.DefaultAdminRole,
+    superAdminRole: serverConfig.DefaultSuperAdminRole,
   });
 }
 
@@ -220,12 +220,12 @@ export async function getActorModServerRoleCaps(
   const isAdmin =
     !!username &&
     (serverConfig.Admins ?? []).some(
-      (member: { username?: string | null }) => member?.username === username
+      (member) => member?.username === username
     );
   const isModerator =
     !!modProfileName &&
     (serverConfig.Moderators ?? []).some(
-      (member: { displayName?: string | null }) =>
+      (member) =>
         member?.displayName === modProfileName
     );
 
@@ -234,8 +234,8 @@ export async function getActorModServerRoleCaps(
     isAdmin,
     isModerator,
     hasActiveSuspension,
-    defaultModRole: serverConfig.DefaultModRole as RoleLike,
-    defaultElevatedModRole: serverConfig.DefaultElevatedModRole as RoleLike,
-    defaultSuspendedModRole: serverConfig.DefaultSuspendedModRole as RoleLike,
+    defaultModRole: serverConfig.DefaultModRole,
+    defaultElevatedModRole: serverConfig.DefaultElevatedModRole,
+    defaultSuspendedModRole: serverConfig.DefaultSuspendedModRole,
   });
 }

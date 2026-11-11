@@ -1,15 +1,15 @@
 import type { Driver } from "neo4j-driver";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
 export type StickyCommentState = {
-  id?: string | null;
-  isRootComment?: boolean | null;
-  isFeedbackComment?: boolean | null;
-  deleted?: boolean | null;
-  archived?: boolean | null;
-  isSticky?: boolean | null;
+  id: string;
+  isRootComment: boolean;
+  isFeedbackComment: boolean | null;
+  deleted: boolean | null;
+  archived: boolean | null;
+  isSticky: boolean | null;
 };
 export type StickyCommentUpdate = { isSticky?: boolean; stickyAt?: string | null; stickyByUsername?: string | null };
-export type StickyCommentResult = {id: string; isSticky?: boolean | null; stickyAt?: string | null; stickyByUsername?: string | null};
+export type StickyCommentResult = {id: string; isSticky: boolean | null; stickyAt: string | null; stickyByUsername: string | null};
 export interface StickyCommentRepository {
   findState(id: string): Promise<StickyCommentState[]>;
   updateMetadata(id: string, update: StickyCommentUpdate): Promise<StickyCommentResult[]>;

@@ -25,7 +25,7 @@ type HasChannelPermissionInput = {
 
 // A channel role is a flat map of permission name -> granted, modeled loosely so
 // the decision logic is decoupled from the generated OGM role types.
-type ChannelRoleLike = Record<string, boolean | null | undefined> | null | undefined;
+type ChannelRoleLike = Record<string, unknown> | null | undefined;
 
 interface ChannelRoles {
   ElevatedChannelRole?: ChannelRoleLike;
@@ -40,7 +40,7 @@ interface ServerRoleDefaults {
 
 // True when the user is listed among the channel's owners (admins).
 export function isChannelAdmin(
-  admins: Array<{ username?: string | null }> | null | undefined,
+  admins: Array<{ username?: unknown }> | null | undefined,
   username: string | null | undefined
 ): boolean {
   return !!admins?.some((admin) => admin.username === username);
@@ -72,7 +72,7 @@ export function evaluateChannelOwnerPermission(
 export function evaluateChannelRolePermission(args: {
   permission: string;
   channelData: ChannelRoles;
-  serverDefaults: ServerRoleDefaults | undefined;
+  serverDefaults: ServerRoleDefaults | null | undefined;
   isSuspended: boolean;
 }): { role: ChannelRoleLike; allowed: boolean } {
   const { permission, channelData, serverDefaults, isSuspended } = args;
@@ -130,7 +130,7 @@ export const hasChannelPermission: (
   // Channel owners (admins) resolve the channel's elevated role (with a
   // behavior-preserving fallback to all-permissions when none is configured).
   if (isChannelAdmin(channelData.Admins, username)) {
-    const elevatedRole = (channelData as unknown as ChannelRoles).ElevatedChannelRole;
+    const elevatedRole = channelData.ElevatedChannelRole;
     return evaluateChannelOwnerPermission(elevatedRole, permission)
       ? true
       : new Error(ERROR_MESSAGES.channel.noChannelPermission);
@@ -167,8 +167,8 @@ export const hasChannelPermission: (
   // evaluateChannelRolePermission so the role matrix can be unit tested.
   const { role: roleToUse, allowed } = evaluateChannelRolePermission({
     permission,
-    channelData: channelData as unknown as ChannelRoles,
-    serverDefaults: serverConfig as unknown as ServerRoleDefaults | undefined,
+    channelData,
+    serverDefaults: serverConfig,
     isSuspended: suspensionInfo.isSuspended,
   });
 

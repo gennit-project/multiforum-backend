@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -25,7 +26,7 @@ before(async () => {
     features: { filters: { String: { MATCHES: true } } },
   }).getSchema();
   registerGeneratedSchema(env.driver, generated);
-  schema = applyMiddleware(generated, permissions);
+  schema = applyMiddleware(generated, permissions, sourceIdentity);
 }, { timeout: 240000 });
 after(async () => {
   await stopImageModEnv();
@@ -171,4 +172,13 @@ test("inventory denies anonymous users, other users and moderators requesting an
 test("review queue denies anonymous users, upload owners and moderators without the server capability", async () => {
   for (const user of [null, "alice", "bob", "unprivileged-mod"]) denied(await execute(queue, user));
   assert.equal(data(await execute(queue, "moderator")).getDownloadScanReviewQueue.length, 1);
+});
+
+test("review queue aliases preserve raw selected values, nulls and moderator authorization", async () => {
+  const query='{result:getDownloadScanReviewQueue(limit:1){discussionId:downloadableFileId downloadableFileId:discussionId name:fileName reason:scanReason at:scanCheckedAt forum:channelUniqueName}}';
+  assert.deepEqual(data(await execute(query,'moderator')).result,[{discussionId:'file',downloadableFileId:'discussion',name:'file.zip',reason:'fixture scan',at:null,forum:'forum'}]);
+  for(const user of ['alice','unprivileged-mod',null]) denied(await execute(query,user));
+  await run("MATCH(d:Discussion) SET d.hasSensitiveContent=true");
+  assert.deepEqual(data(await execute(query,'moderator')).result,[]);
+  assert.equal(data(await execute(query,'moderator',true)).result.length,1);
 });

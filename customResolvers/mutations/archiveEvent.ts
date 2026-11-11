@@ -1,3 +1,5 @@
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import {createEventModerationRepository, type EventModerationRepository} from "../../services/persistence/eventModerationRepository.js";
 import type {
   EventChannelUpdateInput,
@@ -85,7 +87,7 @@ const getResolver = (input: Input) => {
     }
 
     let existingIssueId = "";
-    let existingIssue: { id?: string; issueNumber?: number } | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
     let existingIssueFlaggedServerRuleViolation = false;
     const eventData = await repository.findEvent({
         id: { eq: eventId },

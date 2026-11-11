@@ -10,7 +10,7 @@ import { logger } from "../../logger.js";
 type Args = {
   channelUniqueName: string;
   reason: string;
-  issueId?: string;
+  issueId?: string | null;
 };
 
 type Input = {

@@ -1,4 +1,4 @@
-import type { Suspension } from "../../ogm_types.js";
+import type { ServerSuspensionCore, ServerUserSuspensionSource, ServerModSuspensionSource, ServerSuspensionSource } from "../../customResolvers/contracts/serverSuspensionSource.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { ActiveServerSuspensionResult } from "./activeServerSuspensionTypes.js";
 import { getPermissionRequestCache } from "./getPermissionRequestCache.js";
@@ -15,10 +15,11 @@ const buildCacheKey = ({
 }: Pick<ActiveServerSuspensionInput, "username" | "modProfileName">) =>
   JSON.stringify([username ?? null, modProfileName ?? null]);
 
-const normalizeValue = (value: any): any => {
+const normalizeValue = (value: unknown): unknown => {
   if (value == null) return value;
 
-  if (typeof value.toNumber === "function") {
+  if ((typeof value === "object" || typeof value === "function") &&
+      "toNumber" in value && typeof value.toNumber === "function") {
     return value.toNumber();
   }
 
@@ -38,7 +39,7 @@ const normalizeValue = (value: any): any => {
   return value;
 };
 
-const USER_SUSPENSION_QUERY = `
+export const USER_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_USER]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_USER]-(suspendedUser:User)
@@ -67,7 +68,7 @@ const USER_SUSPENSION_QUERY = `
   } AS suspension
 `;
 
-const MOD_SUSPENSION_QUERY = `
+export const MOD_SUSPENSION_QUERY = `
   MATCH (serverConfig:ServerConfig {serverName: $serverName})
   MATCH (serverConfig)-[:SUSPENDED_AS_MOD]->(suspension:Suspension)
   OPTIONAL MATCH (suspension)<-[:SUSPENDED_AS_MOD]-(suspendedMod:ModerationProfile)
@@ -96,7 +97,24 @@ const MOD_SUSPENSION_QUERY = `
   } AS suspension
 `;
 
-export const isExpiredServerSuspension = (suspension: Suspension, now: Date) => {
+const normalizeCore = (value: ServerSuspensionCore): ServerSuspensionCore => ({
+  id: normalizeValue(value.id),
+  username: normalizeValue(value.username),
+  modProfileName: normalizeValue(value.modProfileName),
+  channelUniqueName: normalizeValue(value.channelUniqueName),
+  serverName: normalizeValue(value.serverName),
+  suspendedUntil: value.suspendedUntil,
+  suspendedIndefinitely: normalizeValue(value.suspendedIndefinitely),
+  RelatedIssue: value.RelatedIssue == null ? value.RelatedIssue : {
+    id: normalizeValue(value.RelatedIssue.id),
+    issueNumber: normalizeValue(value.RelatedIssue.issueNumber),
+  },
+});
+
+export const isExpiredServerSuspension = (suspension: {
+  suspendedUntil?: string | null;
+  suspendedIndefinitely?: unknown;
+}, now: Date) => {
   if (suspension.suspendedIndefinitely) return false;
   if (!suspension.suspendedUntil) return false;
   return new Date(suspension.suspendedUntil) <= now;
@@ -115,25 +133,31 @@ async function fetchTargetedServerSuspensions(params: {
     // A moderation-profile target commonly supplies both identifiers, so run
     // those two targeted lookups in sequence.
     const userResult = username
-      ? await session.run(USER_SUSPENSION_QUERY, {
+      ? await session.run<{ suspension: ServerUserSuspensionSource }>(USER_SUSPENSION_QUERY, {
           serverName: process.env.SERVER_CONFIG_NAME,
           username,
         })
       : { records: [] };
     const modResult = modProfileName
-      ? await session.run(MOD_SUSPENSION_QUERY, {
+      ? await session.run<{ suspension: ServerModSuspensionSource }>(MOD_SUSPENSION_QUERY, {
           serverName: process.env.SERVER_CONFIG_NAME,
           modProfileName,
         })
       : { records: [] };
 
     return {
-      userSuspensions: userResult.records.map((record: { get(key: string): unknown }) =>
-        normalizeValue(record.get("suspension"))
-      ),
-      modSuspensions: modResult.records.map((record: { get(key: string): unknown }) =>
-        normalizeValue(record.get("suspension"))
-      ),
+      userSuspensions: userResult.records.map((record): ServerUserSuspensionSource => {
+        const value = record.get("suspension");
+        return { ...normalizeCore(value), SuspendedUser: value.SuspendedUser == null ? value.SuspendedUser : {
+          username: normalizeValue(value.SuspendedUser.username),
+        } };
+      }),
+      modSuspensions: modResult.records.map((record): ServerModSuspensionSource => {
+        const value = record.get("suspension");
+        return { ...normalizeCore(value), SuspendedMod: value.SuspendedMod == null ? value.SuspendedMod : {
+          displayName: normalizeValue(value.SuspendedMod.displayName),
+        } };
+      }),
     };
   } finally {
     await session.close();
@@ -146,8 +170,8 @@ async function computeActiveServerSuspension(
   const { context, username, modProfileName } = input;
 
   const now = new Date();
-  const expiredUserSuspensions: Suspension[] = [];
-  const expiredModSuspensions: Suspension[] = [];
+  const expiredUserSuspensions: ServerSuspensionSource[] = [];
+  const expiredModSuspensions: ServerSuspensionSource[] = [];
 
   const { userSuspensions, modSuspensions } = await fetchTargetedServerSuspensions({
     context,
@@ -155,7 +179,7 @@ async function computeActiveServerSuspension(
     modProfileName,
   });
 
-  const activeUserSuspension = (userSuspensions as Suspension[]).find((suspension) => {
+  const activeUserSuspension = userSuspensions.find((suspension) => {
     if (isExpiredServerSuspension(suspension, now)) {
       expiredUserSuspensions.push(suspension);
       return false;
@@ -164,7 +188,7 @@ async function computeActiveServerSuspension(
     return true;
   }) ?? null;
 
-  const activeModSuspension = (modSuspensions as Suspension[]).find((suspension) => {
+  const activeModSuspension = modSuspensions.find((suspension) => {
     if (isExpiredServerSuspension(suspension, now)) {
       expiredModSuspensions.push(suspension);
       return false;

@@ -1,6 +1,7 @@
+import {campaignSource} from '../contracts/campaignSources.js';
 import type {Driver} from "neo4j-driver";
 import {createCampaignControlRepository,type CampaignControlRepository} from "../../services/persistence/campaignControlRepository.js";
-import type {CampaignServiceRepository} from "../../services/persistence/campaignServiceRepository.js";
+import type {CampaignServiceRepository, CampaignRow} from "../../services/persistence/campaignServiceRepository.js";
 import { GraphQLError } from "graphql";
 import {
   PipelineApplicability,
@@ -73,38 +74,33 @@ export const createPluginPipelineCampaign = (models: Models) =>
         startedAt: timestamp,
         updatedAt: timestamp,
       }]);
-    return result.pluginPipelineCampaigns[0];
+    const campaign=result.pluginPipelineCampaigns[0];
+    return campaign ? campaignSource(campaign) : campaign;
   };
 
 const changeCampaignStatus = (
   models: Pick<Models, "driver" | "controlRepository">,
-  status: PluginPipelineCampaignStatus
+  status: PluginPipelineCampaignStatus.Paused | PluginPipelineCampaignStatus.Running
 ) =>
-  async (_parent: unknown, { campaignId }: { campaignId: string }) => {
+  async (_parent: unknown, { campaignId }: { campaignId: string }): Promise<CampaignRow> => {
     const repository = models.controlRepository ?? createCampaignControlRepository(models.driver!);
-    const current = await repository.findStatus(campaignId);
-    if (!current[0]) {
+    const result = await repository.transitionStatus(campaignId, status);
+    if (result.kind === "missing") {
       throw new GraphQLError("Campaign not found", {
         extensions: { code: "NOT_FOUND" },
       });
     }
-    const allowed =
-      status === PluginPipelineCampaignStatus.Paused
-        ? current[0].status === PluginPipelineCampaignStatus.Running
-        : current[0].status === PluginPipelineCampaignStatus.Paused;
-    if (!allowed) {
+    if (result.kind === "invalid") {
       throw new GraphQLError("Campaign cannot make that transition", {
         extensions: { code: "BAD_USER_INPUT" },
       });
     }
-    const timestamp = new Date().toISOString();
-    const result = await repository.updateStatus(campaignId, {
-        status: { set: status },
-        ...(status === PluginPipelineCampaignStatus.Paused
-          ? { pausedAt: { set: timestamp } }
-          : { pausedAt: { set: null } }),
+    if (result.kind === "conflict") {
+      throw new GraphQLError("Campaign changed while applying the transition; refresh and try again", {
+        extensions: { code: "CONFLICT" },
       });
-    return result.pluginPipelineCampaigns[0];
+    }
+    return campaignSource(result.campaign);
   };
 
 export const pausePluginPipelineCampaign = (models: Models) =>

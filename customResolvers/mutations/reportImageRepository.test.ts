@@ -10,8 +10,8 @@ function fixture(options:{existing?:boolean;fail?:string;missing?:string}={}) {
  const repository:ImageReportRepository={
   async findReportedImage(id){enter('image');values.image=id;return options.missing==='image'?[]:[{id:'img',url:'https://example.test/a-long-image-filename.png',Uploader:{username:'owner'}}];},
   async findPriorImageReport(where){enter('prior');values.where=where;return options.existing?[{id:'issue',issueNumber:2,flaggedServerRuleViolation:true,relatedUsername:'prior-owner'}]:[];},
-  async createImageReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7}]};},
-  async appendImageReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,relatedImageId:'img'}]};},
+  async createImageReportIssue(input){enter('create');values.create=input;return {issues:options.missing==='create'?[]:[{id:'issue',issueNumber:7,isOpen:true,flaggedServerRuleViolation:input.flaggedServerRuleViolation}]};},
+  async appendImageReport(params){enter('append');values.update=params;return {issues:options.missing==='append'?[]:[{id:'issue',issueNumber:7,isOpen:params.isOpen,flaggedServerRuleViolation:params.flaggedServerRuleViolation,relatedImageId:'img'}]};},
  };
  const driver={session:()=>{enter('session');return{executeWrite:async(fn:any)=>{enter('counter');return fn({run:async()=>({records:[{get:()=>7}]})});},close:async()=>enter('close')};}};
  return {calls,values,resolver:reportImage({driver:driver as never,imageReportRepository:repository})};

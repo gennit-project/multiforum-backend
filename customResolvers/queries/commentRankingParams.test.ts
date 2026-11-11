@@ -1,3 +1,6 @@
+import type {EventMetadataSource} from "../contracts/eventMetadataSource.js";
+import {int} from "neo4j-driver";
+import type {CustomCommentSectionChannel} from "../contracts/customCommentSources.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GraphQLContext } from "../../types/context.js";
@@ -40,14 +43,28 @@ const createDriver = () => {
             };
           }
           if (query.includes("AS DiscussionChannel")) {
-            return {
-              records: [{ get: () => ({ id: "discussion-channel-1" }) }],
-            };
+            assert.ok(typeof params.discussionId === "string");
+            assert.ok(typeof params.channelUniqueName === "string");
+            const count={count:int(0)};
+            const connection={totalCount:int(0),aggregate:{count:{nodes:int(0)}}};
+            const channel={id:"discussion-channel-1",weightedVotesCount:0,discussionId:params.discussionId,
+              channelUniqueName:params.channelUniqueName,emoji:null,archived:null,locked:null,answered:null,
+              UpvotedByUsers:[],UpvotedByUsersAggregate:count,UpvotedByUsersConnection:connection,
+              SuperUpvotedByUsers:[],CommentsAggregate:count,CommentsConnection:connection,
+              RootCommentsAggregate:count,RootCommentsConnection:connection,SubscribedToNotifications:[],
+              Answers:[],_detailAnswersHasNextPage:false,
+              Channel:{uniqueName:params.channelUniqueName,feedbackEnabled:null,imageUploadsEnabled:null,
+                markdownImagesEnabled:null,emojiEnabled:null,Bots:[],Moderators:[]},
+              Discussion:{id:params.discussionId,title:null,Author:null},
+            } satisfies CustomCommentSectionChannel;
+            return { records: [{ get: () => channel }] };
           }
           if (query.includes("AS Event")) {
-            return {
-              records: [{ get: () => ({ id: "event-1" }) }],
-            };
+            const event={id:"event-1",title:null,description:null,startTime:null,endTime:null,locationName:null,address:null,
+              virtualEventUrl:null,startTimeDayOfWeek:null,startTimeHourOfDay:null,canceled:null,isHostedByOP:null,isAllDay:null,
+              coverImageURL:null,createdAt:null,updatedAt:null,isInPrivateResidence:null,location:null,cost:null,
+              Tags:[],EventChannels:[],SubscribedToNotifications:[],SubscribedToEventUpdates:[],Poster:null} satisfies EventMetadataSource;
+            return {records:[{get:()=>event}]};
           }
           return { records: [] };
         };

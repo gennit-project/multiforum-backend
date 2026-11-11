@@ -1,3 +1,5 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
+import type { ImageUsageRow } from "../contracts/imageUsageProjections.js";
 import type { AgePolicyReader } from "../../services/persistence/instancePolicyRepository.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
@@ -15,19 +17,12 @@ type Args = {
   imageId: string;
 };
 
-type AlbumUsage = {
-  imageId: string;
-  uploaderUsername: string | null;
-  uploaderOwnedAlbums: Array<Record<string, unknown>>;
-  otherAlbums: Array<Record<string, unknown>>;
-};
-
 const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
   return async (
     _parent: unknown,
     args: Args,
     context: GraphQLContext
-  ): Promise<AlbumUsage> => {
+  ) => {
     if (!args.imageId) {
       throw new GraphQLError("You must provide an image id.");
     }
@@ -44,7 +39,7 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
     const session = driver.session({ defaultAccessMode: "READ" });
 
     try {
-      const result = await session.run(
+      const result = await session.run<ImageUsageRow>(
         `
         MATCH (image:Image { id: $imageId })
         WHERE coalesce(image.archived, false) = false
@@ -102,12 +97,24 @@ const getImageAlbumUsage = ({ driver, agePolicyRepository }: Input) => {
         { imageId: args.imageId, mayAccessSensitiveContent: canViewSensitiveContent }
       );
 
-      const usage = result.records[0]?.get("usage") as AlbumUsage | undefined;
+      const usage = result.records[0]?.get("usage");
 
       if (!usage) {
         throw new GraphQLError("Image not found.");
       }
 
+      // Owned Cypher maps use canonical keys, unlike generated response-key
+      // projections. Mark only the explicit objects this query constructs.
+      rememberCanonicalSource(usage);
+      for (const album of [...usage.uploaderOwnedAlbums, ...usage.otherAlbums]) {
+        rememberCanonicalSource(album);
+        if (album.Owner) rememberCanonicalSource(album.Owner);
+        for (const discussion of album.Discussions) {
+          rememberCanonicalSource(discussion);
+          if (discussion.Author) rememberCanonicalSource(discussion.Author);
+          for (const channel of discussion.DiscussionChannels) rememberCanonicalSource(channel);
+        }
+      }
       return usage;
     } finally {
       await session.close();

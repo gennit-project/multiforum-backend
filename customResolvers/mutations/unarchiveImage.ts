@@ -1,7 +1,8 @@
+import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type { Driver } from "neo4j-driver";
 import type {
-  Issue,
   IssueWhere,
   ImageUpdateInput,
   ImageWhere,
@@ -15,7 +16,7 @@ import { logger } from "../../logger.js";
 
 type Args = {
   imageId: string;
-  explanation?: string;
+  explanation?: string | null;
   channelUniqueName?: string | null;
 };
 
@@ -62,7 +63,7 @@ const getResolver = (input: Input) => {
     const isServerScoped = !channelUniqueName;
 
     let existingIssueId = "";
-    let existingIssue: Issue | null = null;
+    let existingIssue: ArchiveIssueSnapshot | OpenModerationIssueRow | null = null;
 
     // Check if an issue exists for this image
     const issueWhereClause: IssueWhere = {

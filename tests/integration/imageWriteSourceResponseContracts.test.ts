@@ -1,0 +1,54 @@
+import sourceIdentity from '../../middleware/userChildIdentityMiddleware.js';
+import assert from 'node:assert/strict';
+import {before,after,beforeEach,test} from 'node:test';
+import {Neo4jGraphQL} from '@neo4j/graphql';
+import {graphql,type GraphQLSchema} from 'graphql';
+import {applyMiddleware} from 'graphql-middleware';
+import type {Driver} from 'neo4j-driver';
+import typeDefs from '../../typeDefs.js';
+import getResolvers from '../helpers/getTestResolvers.js';
+import permissions from '../../permissions.js';
+import {registerGeneratedSchema} from '../../services/persistence/generatedSchemaOperations.js';
+import {createImageCreationRepository} from '../../services/persistence/imageWriteRepository.js';
+import createImage from '../../customResolvers/mutations/createImageWithUploader.js';
+import {startNeo4j,stopNeo4j,resetDatabase} from './neo4jHarness.js';
+import {denyImageExternalIo} from '../denyImageExternalIo.js';
+let driver:Driver,schema:GraphQLSchema,secured:GraphQLSchema,guard:ReturnType<typeof denyImageExternalIo>;
+const priorServerName=process.env.SERVER_CONFIG_NAME;
+let mode:''|'claimFail'|'claimLost'|'empty'|'writeFail'|'variantFail'='';let variants=0;
+before(async()=>{process.env.SERVER_CONFIG_NAME='image-source-contracts';driver=await startNeo4j();const base=createImageCreationRepository(driver);const claimDriver=new Proxy(driver,{get(target,property){if(property==='session')return (config:Parameters<Driver['session']>[0])=>{if(config?.defaultAccessMode==='WRITE'&&mode==='claimFail')throw Error('claim fixture');return target.session(config);};const value=Reflect.get(target,property);return typeof value==='function'?value.bind(target):value;}});
+ const repository={...base,createImage:async(input:Parameters<typeof base.createImage>[0])=>{if(mode==='empty')return{images:[]};if(mode==='writeFail')throw Error('write fixture');const result=await base.createImage(input);if(mode==='claimLost')await driver.executeQuery('MATCH(a:UploadedFileAudit) SET a.claimedAt=datetime(),a.claimedById="other"');return result;}};
+ const app=getResolvers(driver).resolvers;schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app,Mutation:{...app.Mutation,createImageWithUploader:createImage({driver:claimDriver,repository,generateVariants:async()=>{variants++;if(mode==='variantFail')throw Error('variant fixture');return{variantUrls:{},variantStorageObjectNames:{}};}})}},features:{filters:{String:{MATCHES:true}}}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,sourceIdentity,permissions);guard=denyImageExternalIo();
+},{timeout:240000});after(async()=>{guard.assertUnused();guard.restore();await stopNeo4j();if(priorServerName===undefined)delete process.env.SERVER_CONFIG_NAME;else process.env.SERVER_CONFIG_NAME=priorServerName;});beforeEach(async()=>{await resetDatabase(driver);mode='';variants=0;await driver.executeQuery("CREATE(:User{username:'alice',createdAt:datetime()}),(:Album{id:'album'}),(:ServerConfig{serverName:'image-source-contracts'})-[:HAS_DEFAULT_SERVER_ROLE]->(:ServerRole{name:'default',canUploadFile:true})");});
+function execute(input='{url:"https://invalid.test/image",albumId:"album"}',fields='id createdAt',secure=false,authenticated=true){return graphql({schema:secure?secured:schema,source:`mutation{createImageWithUploader(input:${input}){${fields}}}`,contextValue:{driver,req:{headers:{}},user:authenticated?{username:'alice',email:null,email_verified:true,data:{}}:undefined}});}
+function data(result:Awaited<ReturnType<typeof execute>>){assert.equal(result.errors,undefined,JSON.stringify(result.errors));return JSON.parse(JSON.stringify(result.data)).createImageWithUploader;}
+async function audit(malformed=false){await driver.executeQuery("CREATE(:UploadedFileAudit{storageBucket:'fixture',storageObjectName:'object',storageUrl:$url,uploadedAt:datetime('2026-01-01T00:00:00Z'),uploadedByUsername:'alice'})",{url:malformed?[123]:'https://invalid.test/image'});}
+async function state(){const r=(await driver.executeQuery('RETURN COUNT{(:Image)} AS images,COUNT{(a:UploadedFileAudit) WHERE a.claimedAt IS NOT NULL} AS claims')).records[0];return{images:Number(r.get('images')),claims:Number(r.get('claims'))};}
+test('URL-only image serializes generated source identity/date, uploader and album without native image IO',async()=>{const row=data(await execute(undefined,'id createdAt Uploader{username} Albums{id}'));assert.equal(typeof row.id,'string');assert.match(row.createdAt,/^\d{4}-/);assert.deepEqual(row.Uploader,{username:'alice'});assert.deepEqual(row.Albums,[{id:'album'}]);assert.equal(variants,0);assert.equal((await state()).images,1);});
+test('nullable optional input fields preserve image creation and no album connection',async()=>{const row=data(await execute('{url:null,alt:null,caption:null,albumId:null,storageObjectName:null,hasSpoiler:null}','id createdAt Albums{id}'));assert.deepEqual(row.Albums,[]);assert.equal((await state()).images,1);});
+test('upload metadata is claimed using the generated image identity',async()=>{await audit();const row=data(await execute('{storageObjectName:"object"}'));const claim=(await driver.executeQuery('MATCH(a:UploadedFileAudit) RETURN a.claimedById AS id,a.claimedByType AS type')).records[0];assert.equal(claim.get('id'),row.id);assert.equal(claim.get('type'),'Image');assert.deepEqual(await state(),{images:1,claims:1});assert.equal(variants,1);});
+test('unselected malformed storage property remains untouched; selecting it fails only after create and claim',async()=>{await audit(true);data(await execute('{storageObjectName:"object"}'));assert.deepEqual(await state(),{images:1,claims:1});await driver.executeQuery('MATCH(a:UploadedFileAudit) REMOVE a.claimedAt,a.claimedById,a.claimedByType');const result=await execute('{storageObjectName:"object"}','id storageUrl');assert.match(result.errors?.[0].message??'',/String cannot represent/);assert.deepEqual(result.errors?.[0].path,['createImageWithUploader','storageUrl']);assert.deepEqual(await state(),{images:2,claims:1});});
+test('claim failure retains already committed image and existing resolver wrapper',async()=>{await audit();mode='claimFail';const result=await execute('{storageObjectName:"object"}');assert.equal(result.data,null);assert.match(result.errors?.[0].message??'',/Failed to create image: claim fixture/);assert.deepEqual(await state(),{images:1,claims:0});});
+test('lost claim retains existing successful image behavior',async()=>{await audit();mode='claimLost';data(await execute('{storageObjectName:"object"}'));assert.deepEqual(await state(),{images:1,claims:1});assert.equal((await driver.executeQuery('MATCH(a:UploadedFileAudit) RETURN a.claimedById AS id')).records[0].get('id'),'other');});
+for(const failure of ['empty','writeFail'] as const)test(`${failure} retains no-claim error timing`,async()=>{await audit();mode=failure;const result=await execute('{storageObjectName:"object"}');assert.equal(result.data,null);assert.match(result.errors?.[0].message??'',failure==='empty'?/Failed to create image: Failed to create image/:/Failed to create image: write fixture/);assert.deepEqual(await state(),{images:0,claims:0});});
+test('variant failure keeps original fallback then claim',async()=>{await audit();mode='variantFail';data(await execute('{storageObjectName:"object"}'));assert.deepEqual(await state(),{images:1,claims:1});});
+test('missing metadata/uploader and anonymous permission failures precede image writes',async()=>{assert.ok((await execute('{storageObjectName:"missing"}')).errors);assert.ok((await execute(undefined,'id',true,false)).errors);await driver.executeQuery('MATCH(u:User) DELETE u');assert.ok((await execute()).errors);assert.deepEqual(await state(),{images:0,claims:0});});
+
+test('owned image and uploader maps preserve colliding aliases and owner checks',async()=>{
+ const row=data(await execute(undefined,'id url:alt Uploader{username:profilePicURL Email{address}}',true));
+ assert.equal(row.url,null);assert.deepEqual(row.Uploader,{username:null,Email:null});
+});
+test('owned album identities do not substitute for other requested fields',async()=>{
+ const row=data(await execute(undefined,'id Albums{id:imageOrder}',true));
+ assert.deepEqual(row.Albums,[{id:null}]);
+});
+
+test('actual image create returns only the declared uploader and album child keys',async()=>{
+ const repository=createImageCreationRepository(driver);
+ const connected=await repository.createImage({Uploader:{connect:{where:{node:{username:'alice'}}}},Albums:{connect:[{where:{node:{id:'album'}}}]}});
+ const row=connected.images[0];assert.ok(row.Uploader);
+ assert.deepEqual(Object.keys(row.Uploader),['username']);assert.equal(row.Uploader.username,'alice');
+ assert.deepEqual(row.Albums,[{id:'album'}]);
+ const absent=await repository.createImage({Uploader:{connect:{where:{node:{username:'missing'}}}},Albums:{connect:[{where:{node:{id:'missing'}}}]}});
+ assert.equal(absent.images[0].Uploader,null);assert.deepEqual(absent.images[0].Albums,[]);
+});

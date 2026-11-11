@@ -1,3 +1,5 @@
+import {serverMembershipConfig} from '../../../tests/helpers/serverMembershipSource.js';
+import {forumMembershipChannel} from "../../../tests/helpers/forumMembershipSource.js";
 import assert from "node:assert/strict";
 import test, { before, after, afterEach, mock } from "node:test";
 import sgMail from "@sendgrid/mail";
@@ -57,13 +59,13 @@ for(const [name,factory] of Object.entries({inviteForumOwner,inviteForumMod,invi
    const repository:EmailNotificationRepository={findRecipient:async()=>{order.push("recipient");return[{username:"recipient",Email:{address:"recipient@example.test"}}];},createAfterEmailNotification:async()=>{order.push("notification");return true;}};
    const resolver=factory({driver:{} as never,
     forumInvitationRepository:{
-     connectOwnerInvite:async()=>{order.push("invite");return{channels:[{}]};},
-     connectModeratorInvite:async()=>{order.push("invite");return{channels:[{}]};},
+     connectOwnerInvite:async()=>{order.push("invite");return{channels:[forumMembershipChannel()]};},
+     connectModeratorInvite:async()=>{order.push("invite");return{channels:[forumMembershipChannel()]};},
     },
     serverInvitationRepository:{
      findInvitee:async()=>{order.push("exists");return[{username:"recipient"}];},
-     connectAdminInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
-     connectModeratorInvite:async()=>{order.push("invite");return{serverConfigs:[{}]};},
+     connectAdminInvite:async()=>{order.push("invite");return{serverConfigs:[serverMembershipConfig()]};},
+     connectModeratorInvite:async()=>{order.push("invite");return{serverConfigs:[serverMembershipConfig()]};},
     },
     emailDelivery:{emailNotificationRepository:repository,sendMail:async()=>{order.push("email");return delivered;}},
    } as never);

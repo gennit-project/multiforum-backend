@@ -1,15 +1,16 @@
+import type { DownloadTriggerFile, DownloadTriggerConfig, DownloadTriggerSecret, ReturnedJob, PendingRuns } from "../../customResolvers/contracts/pluginExecutionProjections.js";
 import type {Driver} from "neo4j-driver";
-import type {DownloadableFile, DownloadableFileUpdateInput, ServerConfig, ServerSecret, PluginRun, PluginRunCreateInput, PluginRunUpdateInput, CreatePluginRunsMutationResponse} from "../../ogm_types.js";
+import type { DownloadableFileUpdateInput, PluginRunCreateInput, PluginRunUpdateInput} from "../../ogm_types.js";
 import {executeGeneratedOperation} from "./generatedSchemaOperations.js";
 import {PLUGIN_RUN_DEFAULT_SELECTION} from "./pipelineLeaseRepository.js";
 export interface DownloadExecutionRepository {
- findFile(id:string):Promise<DownloadableFile[]>;
- findConfiguration():Promise<ServerConfig[]>;
+ findFile(id:string):Promise<DownloadTriggerFile[]>;
+ findConfiguration():Promise<DownloadTriggerConfig[]>;
  writeScanState(id:string,update:Record<string,unknown>):Promise<void>;
- createPendingRuns(input:PluginRunCreateInput[]):Promise<CreatePluginRunsMutationResponse>;
+ createPendingRuns(input:PluginRunCreateInput[]):Promise<PendingRuns>;
  markSkippedRun(id:string,update:PluginRunUpdateInput):Promise<void>;
- findReturnedRun(id:string):Promise<PluginRun[]>;
- findSecrets(pluginId:string):Promise<ServerSecret[]>;
+ findReturnedRun(id:string):Promise<ReturnedJob[]>;
+ findSecrets(pluginId:string):Promise<DownloadTriggerSecret[]>;
 }
 export const FILE_SELECTION = `{
       id
@@ -113,12 +114,12 @@ const FILE_DEFAULT_SELECTION = `{
 }`;
 export function createDownloadExecutionRepository(driver:Driver):DownloadExecutionRepository {
  return {
- async findFile(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadableFile[]}>(driver,`query DownloadExecutionFile($where:DownloadableFileWhere){downloadableFiles(where:$where)${FILE_SELECTION}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
- async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:ServerConfig[]}>(driver,`query DownloadExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
+ async findFile(id){const r=await executeGeneratedOperation<{downloadableFiles:DownloadTriggerFile[]}>(driver,`query DownloadExecutionFile($where:DownloadableFileWhere){downloadableFiles(where:$where)${FILE_SELECTION}}`,{where:{id:{eq:id}}});return r.downloadableFiles;},
+ async findConfiguration(){const r=await executeGeneratedOperation<{serverConfigs:DownloadTriggerConfig[]}>(driver,`query DownloadExecutionConfiguration {serverConfigs${CONFIGURATION_SELECTION}}`,{});return r.serverConfigs;},
  async writeScanState(id,update){await executeGeneratedOperation(driver,`mutation WriteDownloadExecutionScanState($where:DownloadableFileWhere,$update:DownloadableFileUpdateInput){updateDownloadableFiles(where:$where,update:$update){downloadableFiles${FILE_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
- async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:CreatePluginRunsMutationResponse}>(driver,`mutation CreatePendingDownloadJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
+ async createPendingRuns(input){const r=await executeGeneratedOperation<{createPluginRuns:PendingRuns}>(driver,`mutation CreatePendingDownloadJobs($input:[PluginRunCreateInput!]!){createPluginRuns(input:$input){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{input});return r.createPluginRuns;},
  async markSkippedRun(id,update){await executeGeneratedOperation(driver,`mutation SkipDownloadJob($where:PluginRunWhere,$update:PluginRunUpdateInput){updatePluginRuns(where:$where,update:$update){pluginRuns${PLUGIN_RUN_DEFAULT_SELECTION}}}`,{where:{id:{eq:id}},update:Object.fromEntries(Object.entries(update).map(([k,v])=>[k,{set:v}]))});},
- async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:PluginRun[]}>(driver,`query ReturnedDownloadJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
- async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:ServerSecret[]}>(driver,`query DownloadExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
+ async findReturnedRun(id){const r=await executeGeneratedOperation<{pluginRuns:ReturnedJob[]}>(driver,`query ReturnedDownloadJob($where:PluginRunWhere){pluginRuns(where:$where)${RETURNED_RUN_SELECTION}}`,{where:{id:{eq:id}}});return r.pluginRuns;},
+ async findSecrets(pluginId){const r=await executeGeneratedOperation<{serverSecrets:DownloadTriggerSecret[]}>(driver,`query DownloadExecutionSecrets($where:ServerSecretWhere){serverSecrets(where:$where)${SECRET_SELECTION}}`,{where:{pluginId:{eq:pluginId}}});return r.serverSecrets;},
  };
 }

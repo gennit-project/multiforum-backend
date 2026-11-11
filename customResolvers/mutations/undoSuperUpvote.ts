@@ -1,3 +1,5 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
+import type {ScratchpadSuperVoter} from '../contracts/scratchpadSuperVoters.js';
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -7,7 +9,7 @@ import { createSuperVoteUndoRepository, type SuperVoteUndoRepository } from "../
 type Input = { driver: Driver; repository?: SuperVoteUndoRepository; };
 
 type Args = {
-  sourceType: 'comment' | 'discussion';
+  sourceType: string;
   sourceId: string;
 };
 
@@ -114,19 +116,19 @@ const undoSuperUpvoteResolver = (input: Input) => {
              RETURN collect({ username: u.username }) AS users`
           : `MATCH (u:User)-[:SUPER_UPVOTED_DISCUSSION]->(:DiscussionChannel { id: $sourceId })
              RETURN collect({ username: u.username }) AS users`;
-      const superUpvotersResult = await tx.run(readSuperUpvotersQuery, { sourceId });
-      const superUpvotedByUsers: Array<{ username: string }> =
+      const superUpvotersResult = await tx.run<{users:ScratchpadSuperVoter[]}>(readSuperUpvotersQuery, { sourceId });
+      const superUpvotedByUsers =
         superUpvotersResult.records[0]?.get('users') || [];
 
       await tx.commit();
 
-      return {
+      return rememberCanonicalSource({
         success: true,
         message: 'Super upvote removed successfully',
         sourceId,
         sourceType,
         superUpvotedByUsers,
-      };
+      });
     } catch (e) {
       if (tx) {
         try {
