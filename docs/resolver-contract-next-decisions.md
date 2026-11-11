@@ -1360,3 +1360,32 @@ no change. The fixture controls the URI; no configured environment values are
 inspected or disclosed. No deployment/storage/email provider is contacted by these
 regressions. Scalar coercion, skipped/unrequested values, recipients, authorization
 and existing commit/error timing remain unchanged.
+
+
+### Internal completion and final fixed-source audit
+
+Canonical key provenance is now derived at the common internal GraphQL completion
+boundary whenever the actual executed document is a single, alias-free,
+unconditional concrete-object selection. Unsupported aliased, conditional,
+fragment or abstract documents pass through unchanged. This reuses the same
+planner as the explicit fixed-document pre-write guards. JSON/scalar values are
+never traversed; context, transaction, query text, errors and returned values are
+unchanged. This establishes response keys, not caller-asserted generic result
+types, hidden identity, or whole-object validity.
+
+Six regressions exposed image-setting, scratchpad-visibility and URL-backed image
+clearing collisions. Internal image reads now derive provenance upstream; copied
+visibility and native clearing maps explicitly retain it. A further paired flair
+configuration regression covers native configuration/option maps without coercing
+unknown fields. Download-label option/group collisions pass through the same
+internal boundary. Earlier malformed-field and ownership tests remain required.
+
+The completed producer groups now include contribution/activity maps, media and
+moderation/issue sources, read/dashboard envelopes, campaigns, public/internal
+pipeline reads and execution, plugin configuration/install, account/configuration,
+content creation/update/revision, votes/reactions/subscriptions and shared result
+envelopes. The schema-aware census still distinguishes native property maps,
+raw stored diagnostic JSON, native spatial output, the delegated activity resolver
+and dynamic shared-list items. These are explicit residual boundaries, not
+additional scalar/whole-object guarantees from key metadata. Neither pending
+product policy has changed; #446's incorporated control fix remains attributed.

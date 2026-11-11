@@ -324,6 +324,8 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
+  DiscussionFlairOption: resolveCanonicalSourceField,
+  ChannelDiscussionFlairConfig: resolveCanonicalSourceField,
   SafetyCheckResponse: resolveCanonicalSourceField,
   EnvironmentInfo: resolveCanonicalSourceField,
   DropDataResponse: resolveCanonicalSourceField,

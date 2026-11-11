@@ -1,3 +1,4 @@
+import { rememberCanonicalCompletedDocument } from "../canonicalDocumentSources.js";
 import {withDelegatedSourceMetadata} from "../delegatedSourceMetadata.js";
 import { graphql, type GraphQLSchema } from "graphql";
 import type { Driver, ManagedTransaction, Transaction } from "neo4j-driver";
@@ -55,10 +56,12 @@ export async function executeGeneratedOperation<T>(
   const execute=async()=>{
     const result=await graphql({schema:registered.internalSchema,source,rootValue:null,variableValues,contextValue});
     if(result.errors?.length)throw new Error(result.errors[0].message);
+    rememberCanonicalCompletedDocument(registered.internalSchema, source, result.data);
     return result.data as T;
   };
-  // Only explicitly owned fixed collection reads transfer provenance across
-  // completion. Ordinary internal calls keep their existing query/context view.
+  // Only explicitly owned collection reads transfer private source identity.
+  // Canonical field-key provenance above is derived independently from the
+  // actual completed document, without changing the query or request context.
   return sourceRoot ? withDelegatedSourceMetadata(contextValue,sourceRoot,execute,sourceRoot) : execute();
 }
 

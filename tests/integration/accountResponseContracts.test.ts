@@ -169,6 +169,11 @@ for (const [name, args, key, urlField, sizeField] of [
   ["setProfileImage", 'username:"actor"', "username", "profilePicURL", "avatar32Url"],
   ["setChannelIcon", 'channelUniqueName:"forum"', "uniqueName", "channelIconURL", "icon32Url"],
 ] as const) {
+  test(`${name} preserves fixed image/identity collisions`,async()=>{
+    await driver.executeQuery("CREATE(:UploadedFileAudit {id:'audit',storageBucket:'fixture',storageObjectName:'uploads/avatar',storageUrl:'https://example.test/avatar',uploadedAt:datetime(),uploadedByUsername:'actor'})");
+    const result=data(await exec(`mutation{result:${name}(${args},imageUrl:"https://example.test/avatar"){${key}:${urlField} ${urlField}:${key}}}`)).result;
+    assert.deepEqual(result,{[key]:'https://example.test/avatar',[urlField]:name==='setProfileImage'?'actor':'forum'});
+  });
   test(`${name} serializes exact generated projection after claiming upload; repeat fails`, async () => {
     await driver.executeQuery("CREATE(:UploadedFileAudit {id:'audit',storageBucket:'fixture',storageObjectName:'uploads/avatar',storageUrl:'https://example.test/avatar',uploadedAt:datetime(),uploadedByUsername:'actor'})");
     const source = `mutation{result:${name}(${args},imageUrl:"https://example.test/avatar"){${key} ${urlField} ${sizeField} variantUrls}}`;
@@ -263,4 +268,10 @@ test('disposable seed response preserves colliding success/message fields',async
 });
 test('disposable drop response preserves colliding success/message fields',async()=>{
  assert.deepEqual(data(await exec('mutation{result:dropDataForCypressTests{success:message message:success}}')).result,{success:'All test data has been dropped.',message:true});
+});
+
+test('scratchpad visibility preserves root and author identity collisions',async()=>{
+ await driver.executeQuery("MATCH(u:User {username:'actor'}) CREATE(e:ScratchpadEntry {id:'entry',text:'Text',sourceType:'comment',sourceId:'comment',isPublic:false,createdAt:datetime()}),(a:User{username:'author',displayName:'Author',createdAt:datetime()}) CREATE(u)-[:HAS_SCRATCHPAD_ENTRY]->(e),(a)-[:WROTE_SCRATCHPAD_ENTRY]->(e)");
+ const result=data(await exec('mutation{result:updateScratchpadEntryVisibility(scratchpadEntryId:"entry",isPublic:true){id:text text:id Author{username:displayName displayName:username}}}')).result;
+ assert.deepEqual(result,{id:'Text',text:'entry',Author:{username:'Author',displayName:'author'}});
 });

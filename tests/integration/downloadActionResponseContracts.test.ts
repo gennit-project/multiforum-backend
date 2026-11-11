@@ -124,3 +124,8 @@ test('prepared download aliases preserve readiness and signed URL without exposi
  const response=await execute('result:prepareDownload(downloadableFileId:"f",discussionId:"d"){ready:url url:ready reason:scanReason}');
  assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(plain(response.data).result,{ready:signedUrl,url:true,reason:null});
 });
+test('download label fixed result preserves option and group collisions',async()=>{
+ const response=await execute('result:updateDownloadLabels(discussionId:"d",channelUniqueName:"forum",labelOptionIds:["b"]){key:id LabelOptions{id:value value:id group{id:key key:id}}}','owner');
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(plain(response.data).result,{key:'dc',LabelOptions:[{id:'large',value:'b',group:{id:'size',key:'g'}}]});
+ assert.deepEqual(await labelIds(),['b']);
+});

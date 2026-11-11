@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "./canonicalSourceFields.js";
 import neo4j, { type Record as Neo4jRecord } from "neo4j-driver";
 
 export type DiscussionFlairOption = {
@@ -64,14 +65,14 @@ export const findChannelDiscussionFlairConfig = async ({
     return null;
   }
 
-  return {
+  return rememberCanonicalSource({
     channelUniqueName: record.get("channelUniqueName"),
     flairRequired: record.get("flairRequired"),
     flairs: (record.get("flairs") ?? [])
       .filter(Boolean)
-      .map((flair) => ({
+      .map((flair) => rememberCanonicalSource({
         ...flair,
         order: toNumber(flair.order),
       })),
-  };
+  });
 };

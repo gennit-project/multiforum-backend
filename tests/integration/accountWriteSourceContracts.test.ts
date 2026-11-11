@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import {after,before,beforeEach,test} from "node:test";
 import {Neo4jGraphQL} from "@neo4j/graphql";
@@ -21,7 +22,7 @@ before(async()=>{
   permanentlyDeleteChannelIcon:urlDelete({driver,referenceType:'ChannelIcon',deleteObject}),
   permanentlyDeleteChannelBanner:urlDelete({driver,referenceType:'ChannelBanner',deleteObject}),
   permanentlyDeleteImage:imageDelete({driver,mediaType:'Image',deleteObject}),
- }}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);
+ }}}).getSchema();registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions,sourceIdentity);schema=applyMiddleware(schema,sourceIdentity);
 },{timeout:240000});
 after(async()=>stopNeo4j());
 beforeEach(async()=>{await resetDatabase(driver);deletes=0;fail=false;race=false;await driver.executeQuery(`CREATE(u:User {username:'alice',profilePicURL:'url'}),(b:User {username:'bob',commentKarma:0}),
@@ -39,6 +40,10 @@ for(const [name,args,identity,url] of [
  ['permanentlyDeleteChannelBanner','channelUniqueName:"forum",imageUrl:"url"','uniqueName','channelBannerURL'],
 ] as const){
  const mutation=`mutation{result:${name}(${args}){${identity} ${url}}}`;
+ test(`${name}: native clear result preserves identity/URL collisions`,async()=>{
+  assert.deepEqual(data(await exec(`mutation{result:${name}(${args}){${identity}:${url} ${url}:${identity}}}`)).result,{[identity]:null,[url]:identity==='username'?'alice':'forum'});assert.equal(deletes,1);
+ });
+
  test(`${name}: actual MATCH identity and cleared URL serialize after one deletion`,async()=>{assert.deepEqual(data(await exec(mutation)),{result:{[identity]:identity==='username'?'alice':'forum',[url]:null}});assert.equal(deletes,1);});
  test(`${name}: external failure and reference race preserve errors without counterfeit success`,async()=>{fail=true;assert.match((await exec(mutation)).errors?.[0].message??'',/storage unavailable/);fail=false;race=true;assert.match((await exec(mutation)).errors?.[0].message??'',/Image reference changed/);});
  test(`${name}: anonymous middleware denial happens before external deletion`,async()=>{assert.ok((await exec(mutation,true)).errors);assert.equal(deletes,0);});
@@ -58,4 +63,12 @@ test('flair identity is safe while malformed stored Boolean remains lazy',async(
  assert.deepEqual(data(await exec('{getChannelDiscussionFlairConfig(channelUniqueName:"forum"){channelUniqueName flairs{channelUniqueName}}}')),{getChannelDiscussionFlairConfig:{channelUniqueName:'forum',flairs:[{channelUniqueName:'forum'}]}});
  assert.ok((await exec('{getChannelDiscussionFlairConfig(channelUniqueName:"forum"){flairRequired}}')).errors);
  const result=data(await exec('mutation{setChannelDiscussionFlairConfig(channelUniqueName:"forum",flairRequired:false,flairs:[]){channelUniqueName flairs{channelUniqueName}}}'));assert.equal(result.setChannelDiscussionFlairConfig.channelUniqueName,'forum');
+});
+test('flair configuration read/write preserve root and option collisions',async()=>{
+ await driver.executeQuery("MATCH(c:Channel{uniqueName:'forum'}) SET c.discussionFlairRequired=false CREATE(c)-[:HAS_DISCUSSION_FLAIR]->(:DiscussionFlair{id:'flair',displayName:'Name',order:1,archived:false})");
+ const fields='channelUniqueName:flairRequired flairRequired:channelUniqueName flairs{id:displayName displayName:id order:archived archived:order}';
+ const before=data(await exec(`{result:getChannelDiscussionFlairConfig(channelUniqueName:"forum"){${fields}}}`)).result;
+ assert.deepEqual(before,{channelUniqueName:false,flairRequired:'forum',flairs:[{id:'Name',displayName:'flair',order:false,archived:1}]});
+ const after=data(await exec(`mutation{result:setChannelDiscussionFlairConfig(channelUniqueName:"forum",flairRequired:true,flairs:[{id:"flair",displayName:"Updated",order:2,archived:false}]){${fields}}}`)).result;
+ assert.deepEqual(after,{channelUniqueName:true,flairRequired:'forum',flairs:[{id:'Updated',displayName:'flair',order:false,archived:2}]});
 });

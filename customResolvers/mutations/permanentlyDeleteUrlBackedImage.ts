@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -203,7 +204,7 @@ const clearReference = async ({
           `, parameters);
         const record = result.records[0];
         if (!record) throw new GraphQLError("Image reference changed before deletion completed");
-        return { username: record.get("username"), profilePicURL: record.get("profilePicURL") };
+        return rememberCanonicalSource({ username: record.get("username"), profilePicURL: record.get("profilePicURL") });
       }
       if (referenceType === "ChannelIcon") {
         const result = await transaction.run<IconClearResult>(`
@@ -226,7 +227,7 @@ const clearReference = async ({
           `, parameters);
         const record = result.records[0];
         if (!record) throw new GraphQLError("Image reference changed before deletion completed");
-        return { uniqueName: record.get("uniqueName"), channelIconURL: record.get("channelIconURL") };
+        return rememberCanonicalSource({ uniqueName: record.get("uniqueName"), channelIconURL: record.get("channelIconURL") });
       }
       const result = await transaction.run<BannerClearResult>(`
           MATCH (target:Channel {uniqueName: $channelUniqueName})
@@ -246,7 +247,7 @@ const clearReference = async ({
         throw new GraphQLError("Image reference changed before deletion completed");
       }
 
-      return { uniqueName: record.get("uniqueName"), channelBannerURL: record.get("channelBannerURL") };
+      return rememberCanonicalSource({ uniqueName: record.get("uniqueName"), channelBannerURL: record.get("channelBannerURL") });
   });
 };
 
