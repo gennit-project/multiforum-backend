@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -15,7 +16,7 @@ before(async () => {
   driver = await startNeo4j();
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
-  secured = applyMiddleware(schema, permissions);
+  secured = applyMiddleware(schema, permissions, sourceIdentity);
 }, { timeout: 240000 });
 after(async () => stopNeo4j());
 beforeEach(async () => resetDatabase(driver));
@@ -161,4 +162,12 @@ test("GraphQL responses preserve numerical/string/Boolean coercion from database
   await driver.executeQuery("MATCH(n:Issue) SET n.issueNumber='42',n.title=$value", { value: 17 });
   const issue = output(await execute(cases[4]));
   assert.equal(issue.issueNumber, 42); assert.equal(issue.title, "17");
+});
+
+for(const item of cases)test(`${item.kind}: subscribed target scalar/list collisions`,async()=>{
+ await seed(item);
+ for(const undo of [false,true]){
+  const response=await graphql({schema:secured,source:`mutation{target:${operation(item,undo)}(${item.argument}:"target"){key:id id:createdAt createdAt:${item.property}{name:username}}}`,contextValue:{driver,req:{headers:{}},user:{username:'actor',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(JSON.parse(JSON.stringify(response.data)).target,{key:'target',id:time,createdAt:undo?[]:[{name:'actor'}]});
+ }
 });

@@ -1,3 +1,4 @@
+import { voteSource } from "../contracts/voteSources.js";
 import type { GraphQLResolveInfo } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { createCommentVoteRepository, type CommentVoteRepository } from "../../services/persistence/commentVoteRepository.js";
@@ -123,7 +124,7 @@ const undoUpvoteCommentResolver = (input: Input) => {
           aggregate: { count: { nodes: existingUpvotedByUsersAggregate.count - 1 } },
         },
       };
-      return returnValue;
+      return voteSource(returnValue);
     } catch (e) {
       logger.error("Error in undoUpvoteComment:", e);
       if (tx) {

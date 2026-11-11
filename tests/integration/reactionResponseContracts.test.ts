@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -23,7 +24,7 @@ before(async () => {
   schema = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers,
     features: { filters: { String: { MATCHES: true } } } }).getSchema();
   registerGeneratedSchema(driver, schema);
-  secured = applyMiddleware(schema, permissions);
+  secured = applyMiddleware(schema, permissions, sourceIdentity);
 }, { timeout: 240000 });
 after(async () => stopNeo4j());
 beforeEach(async () => {
@@ -129,4 +130,11 @@ test("discussion lock freezes both discussion and nested comment reactions", asy
     assert.match((await execute(name, name.endsWith("Comment") ? "c" : "dc", { secure: false })).errors?.[0].message ?? "", /locked/);
   }
   assert.equal(await stored("Comment"), "{}"); assert.equal(await stored("DiscussionChannel"), "{}");
+});
+
+for(const [id,argument,add,remove] of [['c','commentId','addEmojiToComment','removeEmojiFromComment'],['dc','discussionChannelId','addEmojiToDiscussionChannel','removeEmojiFromDiscussionChannel']] as const) test(`${add}/${remove}: owned emoji response collisions`,async()=>{
+ for(const [name,value] of [[add,payload],[remove,'{}']] as const){
+  const response=await graphql({schema:secured,source:`mutation{result:${name}(${argument}:"${id}",username:"actor",emojiLabel:"smile"${name===add?',unicode:"☺"':''}){id:emoji emoji:id}}`,contextValue:{driver,req:{headers:{}},user:{username:'actor',email:null,email_verified:true,data:null},mayAccessSensitiveContent:false}});
+  assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(JSON.parse(JSON.stringify(response.data)).result,{id:value,emoji:id});
+ }
 });

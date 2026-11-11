@@ -36,3 +36,9 @@ function repositorySelections(comment: CommentVoterSnapshot, discussion: Discuss
   void discussion.commentKarma;
 }
 void [valid, absent, nullable, wrongScalar, missingConnection, nullCount, wrongArgs, missingRequired, repositorySelections];
+
+import { voteSource } from "../../customResolvers/contracts/voteSources.js";
+// @ts-expect-error source provenance requires the complete selected connection projection
+voteSource({id:'c',weightedVotesCount:1,UpvotedByUsers:[],UpvotedByUsersConnection:{totalCount:1}});
+// @ts-expect-error source metadata cannot certify raw voter identities as strings
+voteSource({id:'c',weightedVotesCount:1,UpvotedByUsers:[{username:42}],UpvotedByUsersConnection:{totalCount:1,aggregate:{count:{nodes:1}}}});

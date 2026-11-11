@@ -1327,3 +1327,18 @@ rollback/failure behavior. This is not a decision on that product policy. Select
 nested histories, authors and occurrences retain their precise projections; raw
 scalar and dynamic-selection boundaries remain explicit. Anonymous Shield probes
 exercise aliased mutation responses without granting a new access path.
+
+### Pilot-family collision closure
+
+Nine paired real-schema/Shield probes reproduced colliding response-key failures
+across all four regular votes, four emoji mutations and ten subscription mutations.
+Their computed or decoded maps now record canonical provenance, including selected
+voter/subscriber names and vote connection/count children. The vote adapter accepts
+a precise complete selected result; compile-negative fixtures reject incomplete
+connections and raw numeric identities. It adds no missing identity or relation.
+
+Existing zero/repeated/missing cases, malformed values, the 25-subscriber cap,
+age filtering, authorization, write-before-read sequence and error asymmetries
+remain covered by the full focused suites. This closes these explicit fixed-source
+obligations; it does not turn the shared dynamic User/list fields into whole-object
+guarantees or change the 180/29 inventory accounting.

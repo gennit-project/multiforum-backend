@@ -1,3 +1,4 @@
+import { voteSource } from "../contracts/voteSources.js";
 import { commentIsUpvotedByUserQuery } from "../cypher/cypherQueries.js";
 import { getWeightedVoteBonus } from "./utils.js";
 import type { GraphQLResolveInfo } from "graphql";
@@ -102,7 +103,7 @@ const upvoteCommentResolver = (input: Input) => {
       const existingUpvotedByUsers = comment.UpvotedByUsers || [];
       const existingUpvotedByUsersCount = existingUpvotedByUsers.length;
 
-      return {
+      return voteSource({
         id: commentId,
         weightedVotesCount: (comment.weightedVotesCount ?? 0) + 1 + weightedVoteBonus,
         UpvotedByUsers: [
@@ -118,7 +119,7 @@ const upvoteCommentResolver = (input: Input) => {
           totalCount: existingUpvotedByUsersCount + 1,
           aggregate: { count: { nodes: existingUpvotedByUsersCount + 1 } },
         },
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

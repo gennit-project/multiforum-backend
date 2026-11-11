@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { updateEmoji } from "./updateEmoji.js";
 import { assertCommentEmojiEnabled } from "./channelPreferenceGuards.js";
 import type { ReactionWriter } from "../../services/persistence/reactionWriter.js";
@@ -37,10 +38,10 @@ const getResolver = (input: Input) => {
 
       await reactionWriter.updateCommentEmoji(commentId, updatedEmojiJSON);
 
-      return {
+      return rememberCanonicalSource({
         id: commentId,
         emoji: updatedEmojiJSON,
-      };
+      });
     } catch (e) {
       logger.error(e);
       throw e;
