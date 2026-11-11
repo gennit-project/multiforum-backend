@@ -1,3 +1,4 @@
+import { channelRuleGovernanceMutationNames, channelRuleGovernanceQueryNames } from './channelRuleGovernance.js'
 import { downloadReadSourceQueryNames } from "./downloadReadSources.js";
 import { wikiCountSourceQueryNames } from "./wikiCountSource.js";
 import { contributionReadQueryNames } from "./contributionReadSources.js";
@@ -32,6 +33,8 @@ import { checkedTypeFieldGroups, checkedTypeFieldNames } from "./typeFields.js";
 
 // Checked maps identify the actual composition variables, not parallel examples.
 export const checkedRootGroups = [
+  ["Mutation", "governanceResolvers", "ChannelRuleGovernanceMutationResolvers", channelRuleGovernanceMutationNames],
+  ["Query", "governanceResolvers", "ChannelRuleGovernanceQueryResolvers", channelRuleGovernanceQueryNames],
   ["Mutation", "votingResolvers", "VotingMutationResolvers", votingMutationNames],
   ["Mutation", "subscriptionResolvers", "SubscriptionMutationResolvers", subscriptionMutationNames],
   ["Mutation", "reactionResolvers", "ReactionMutationResolvers", reactionMutationNames],

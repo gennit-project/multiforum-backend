@@ -1,3 +1,6 @@
+import { createPluginManagementCapabilityResolver } from './queries/getPluginManagementCapability.js'
+import type { ChannelRuleGovernanceQueryResolvers } from './contracts/channelRuleGovernance.js'
+import { channelRuleGovernanceResolvers } from './channelRuleGovernance.js'
 import type { ImageUsageSourceResolver } from "./contracts/imageUsageSource.js";
 import type { DownloadReadSourceQueryResolvers } from "./contracts/downloadReadSources.js";
 import type { WikiCountSourceQueryResolvers } from "./contracts/wikiCountSource.js";
@@ -256,7 +259,13 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
     getDownloadScanReviewQueue: getDownloadScanReviewQueue({ driver, agePolicyRepository: instancePolicyRepository }),
   } satisfies DownloadReadSourceQueryResolvers;
 
+  const governanceResolvers = {
+    getPluginManagementCapability: createPluginManagementCapabilityResolver(),
+    getChannelRuleGovernance: channelRuleGovernanceResolvers(driver).getChannelRuleGovernance,
+  } satisfies ChannelRuleGovernanceQueryResolvers
+
   return {
+    ...governanceResolvers,
     ...contentPageResolvers,
     ...accountResolvers,
     ...accountWriteSourceResolvers,

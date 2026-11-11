@@ -1,3 +1,6 @@
+import { isChannelRuleEligible } from './moderationGovernance.js'
+import { compareVersions } from './pipelineUtils.js'
+import { preserveModerationGovernance } from './reconcileModerationGovernance.js'
 import type { EventPipeline } from './types.js'
 
 export const PLUGIN_CONFIGURATION_API_VERSION = 'multiforum.gennit.dev/v1alpha1'
@@ -337,13 +340,17 @@ export const buildPluginConfigurationReconciliationPlan = ({
     }
 
     if (plugin.settingsJson !== undefined && plugin.settingsJson !== null) {
-      if (!installed || !sameValue(installed.settingsJson, plugin.settingsJson)) {
+      const desiredSettings = plugin.pluginId === 'llm-moderation'
+        ? preserveModerationGovernance(
+            live.plugins.filter(candidate => candidate.pluginId === plugin.pluginId && candidate.enabled).sort((a,b) => compareVersions(b.version,a.version))[0]?.settingsJson ?? installed?.settingsJson,
+            plugin.settingsJson) : plugin.settingsJson
+      if (!installed || !sameValue(installed.settingsJson, desiredSettings)) {
         changes.push({
           kind: 'UPDATE_SETTINGS',
           path: `${path}.settingsJson`,
           message: `Reconcile settings for ${plugin.pluginId} version ${plugin.version}`,
           current: installed ? parseStoredJson(installed.settingsJson) : null,
-          desired: plugin.settingsJson,
+          desired: desiredSettings,
           blocked: false,
         })
       }
@@ -419,6 +426,20 @@ export const buildPluginConfigurationReconciliationPlan = ({
         blocked: true,
       })
       continue
+    }
+    if (plugin.enabled && plugin.pluginId === 'llm-moderation') {
+      const effective = new Map(live.plugins.filter(candidate => candidate.pluginId === plugin.pluginId).map(candidate => [candidate.version, candidate]))
+      for (const candidate of desired.plugins.filter(candidate => candidate.pluginId === plugin.pluginId)) {
+        // Read the immutable live governor, not prior desired entries: a
+        // disable-old-first manifest must not erase the upgrade's grant source.
+        const currentSettings = live.plugins.filter(entry => entry.pluginId === plugin.pluginId && entry.enabled).sort((a,b) => compareVersions(b.version,a.version))[0]?.settingsJson ?? live.plugins.find(entry => entry.pluginId === plugin.pluginId && entry.version === candidate.version)?.settingsJson
+        effective.set(candidate.version, { ...candidate, settingsJson: candidate.settingsJson == null ? currentSettings : preserveModerationGovernance(currentSettings, candidate.settingsJson) })
+      }
+      const governing = [...effective.values()].filter(candidate => candidate.enabled).sort((a,b) => compareVersions(b.version,a.version))[0]
+      if (!governing || governing.version !== plugin.version || !isChannelRuleEligible(governing.settingsJson, plugin.channelUniqueName)) {
+        changes.push({ kind: 'ENABLE_CHANNEL_PLUGIN', path: `${path}.enabled`, message: 'Channel moderation requires the current server-enabled version and an eligible channel.', current: null, desired: true, blocked: true })
+        continue
+      }
     }
     const current = channel.plugins.find(candidate =>
       candidate.pluginId === plugin.pluginId && candidate.version === plugin.version

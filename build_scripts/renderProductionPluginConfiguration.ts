@@ -6,12 +6,14 @@ const TOKENS = {
   scanServiceUrl: '__SCAN_SERVICE_URL__',
   moderationServiceUrl: '__LLM_MODERATION_SERVICE_URL__',
   trialForum: '__LLM_MODERATION_TRIAL_FORUM__',
+  serverRuleEnforcement: '__SERVER_RULE_ENFORCEMENT__',
 } as const
 
 export type ProductionPluginConfigurationValues = {
   scanServiceUrl: string
   moderationServiceUrl: string
   trialForum: string
+  serverRuleEnforcement?: 'on' | 'off'
 }
 
 const normalizeHttpsOrigin = (name: string, value: string): string => {
@@ -52,10 +54,15 @@ export const renderProductionPluginConfiguration = (
   template: unknown,
   values: ProductionPluginConfigurationValues
 ): Record<string, unknown> => {
+  if (JSON.stringify(template).includes(TOKENS.serverRuleEnforcement) &&
+      !['on', 'off'].includes(values.serverRuleEnforcement ?? '')) {
+    throw new Error('Explicit server-rule enforcement on/off is required; the legacy trial allowlist has no equivalent global setting')
+  }
   const replacements = new Map([
     [TOKENS.scanServiceUrl, normalizeHttpsOrigin('scanServiceUrl', values.scanServiceUrl)],
     [TOKENS.moderationServiceUrl, normalizeHttpsOrigin('moderationServiceUrl', values.moderationServiceUrl)],
     [TOKENS.trialForum, normalizeTrialForum(values.trialForum)],
+    [TOKENS.serverRuleEnforcement, values.serverRuleEnforcement ?? ''],
   ])
   const rendered = replaceTokens(template, replacements)
   if (!rendered || typeof rendered !== 'object' || Array.isArray(rendered)) {
@@ -83,6 +90,7 @@ export const main = async (args = process.argv.slice(2)): Promise<void> => {
     scanServiceUrl: argument(args, '--scan-service-url'),
     moderationServiceUrl: argument(args, '--moderation-service-url'),
     trialForum: argument(args, '--trial-forum'),
+    serverRuleEnforcement: argument(args, '--server-rule-enforcement') as 'on' | 'off',
   })
   await writeFile(outputPath, `${JSON.stringify(rendered, null, 2)}\n`, 'utf8')
 }

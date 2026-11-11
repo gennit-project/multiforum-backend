@@ -64,6 +64,7 @@ jobs:
           --scan-service-url https://scanner.validation.invalid
           --moderation-service-url https://moderation.validation.invalid
           --trial-forum moderation_validation
+          --server-rule-enforcement off
 
       - name: Record validation summary
         run: |
@@ -102,6 +103,7 @@ jobs:
           SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
           LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
+          LLM_MODERATION_SERVER_RULE_ENFORCEMENT: ${{ vars.LLM_MODERATION_SERVER_RULE_ENFORCEMENT }}
           SCAN_API_KEY: ${{ inputs.operation == 'apply' && secrets.SCAN_API_KEY || '' }}
           MOD_API_KEY: ${{ inputs.operation == 'apply' && secrets.MOD_API_KEY || '' }}
         run: |
@@ -115,6 +117,7 @@ jobs:
             SCAN_SERVICE_URL
             LLM_MODERATION_SERVICE_URL
             LLM_MODERATION_TRIAL_FORUM
+            LLM_MODERATION_SERVER_RULE_ENFORCEMENT
           )
           if [[ "${{ inputs.operation }}" == "apply" ]]; then
             required+=(SCAN_API_KEY MOD_API_KEY)
@@ -142,6 +145,7 @@ jobs:
           SCAN_SERVICE_URL: ${{ inputs.scan_service_url || vars.SCAN_SERVICE_URL }}
           LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
+          LLM_MODERATION_SERVER_RULE_ENFORCEMENT: ${{ vars.LLM_MODERATION_SERVER_RULE_ENFORCEMENT }}
         run: >-
           pnpm plugin-config:render-production
           --template deployment/plugin-configuration/production.template.json
@@ -149,6 +153,7 @@ jobs:
           --scan-service-url "${SCAN_SERVICE_URL}"
           --moderation-service-url "${LLM_MODERATION_SERVICE_URL}"
           --trial-forum "${LLM_MODERATION_TRIAL_FORUM}"
+          --server-rule-enforcement "${LLM_MODERATION_SERVER_RULE_ENFORCEMENT}"
 
       - name: Reconcile production desired state
         id: reconcile

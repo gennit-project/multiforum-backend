@@ -46,6 +46,21 @@
       "decision": "Wire the generated signature. Preserve existing partial application and read-back behavior; no transaction or semantics change."
     },
     {
+      "field": "Mutation.approveChannelRuleEnforcement",
+      "status": "selected-response",
+      "selectedPaths": [
+        "all scalar fields of the generated response"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/channelRuleGovernance.ts",
+        "customResolvers/channelRuleGovernance.ts",
+        "services/persistence/channelRuleGovernanceRepository.ts"
+      ],
+      "reason": "Actual registered resolver signatures are checked against the generated GraphQL contract. All response fields are scalar and produced by the typed governance repository.",
+      "decision": null
+    },
+    {
       "field": "Mutation.clearDownloadableFileScan",
       "status": "selected-response",
       "selectedPaths": [
@@ -449,6 +464,21 @@
       "decision": "No behavior change. Fetched metadata/input casts remain unclaimed. Metadata and remaining version fields are absent in some fallback paths and excluded from this narrow selection; do not count this as full Plugin/PluginVersion response validation."
     },
     {
+      "field": "Mutation.requestChannelRuleEnforcement",
+      "status": "selected-response",
+      "selectedPaths": [
+        "all scalar fields of the generated response"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/channelRuleGovernance.ts",
+        "customResolvers/channelRuleGovernance.ts",
+        "services/persistence/channelRuleGovernanceRepository.ts"
+      ],
+      "reason": "Actual registered resolver signatures are checked against the generated GraphQL contract. All response fields are scalar and produced by the typed governance repository.",
+      "decision": null
+    },
+    {
       "field": "Mutation.requestDownloadableFileReview",
       "status": "selected-response",
       "selectedPaths": [
@@ -628,6 +658,21 @@
       ],
       "reason": "Generated selective factory signature and exact fixed generated-operation projections replace full-entity assertions. Selection drift checks bind projected fields to executed queries. Existing guards prevent absent attempts/jobs from entering successful responses; GraphQL witnesses cover nullable fields, enums, missing records, auth, repeated operations and failure ordering.",
       "decision": "Wire selected job response; preserve no-plugin/held/skipped branches and returned-run guards. Do not expand validation or change provider execution."
+    },
+    {
+      "field": "Mutation.setChannelRuleEnforcement",
+      "status": "selected-response",
+      "selectedPaths": [
+        "Boolean result"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/channelRuleGovernance.ts",
+        "customResolvers/channelRuleGovernance.ts",
+        "services/persistence/channelRuleGovernanceRepository.ts"
+      ],
+      "reason": "Actual registered resolver signatures are checked against the generated GraphQL contract. All response fields are scalar and produced by the typed governance repository.",
+      "decision": null
     },
     {
       "field": "Mutation.setServerPluginSecret",
@@ -921,6 +966,21 @@
       ],
       "reason": "Computed fields and schema-executed selected plugin name/version values are checked. Explicit null eventType can succeed when only computed fields are selected and fails when non-null eventType is selected; malformed stored applicability enum similarly fails only on selection. Remaining persisted policy JSON is parsed without structural validation.",
       "decision": "Preserve lazy field serialization and existing visibility/read order; eager stored-policy decoding or rejecting explicit nullable event requires a separate behavior decision."
+    },
+    {
+      "field": "Query.getChannelRuleGovernance",
+      "status": "selected-response",
+      "selectedPaths": [
+        "all scalar fields of the generated response"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/contracts/channelRuleGovernance.ts",
+        "customResolvers/channelRuleGovernance.ts",
+        "services/persistence/channelRuleGovernanceRepository.ts"
+      ],
+      "reason": "Actual registered resolver signatures are checked against the generated GraphQL contract. All response fields are scalar and produced by the typed governance repository.",
+      "decision": null
     },
     {
       "field": "Query.getDownloadScanReviewQueue",
@@ -1241,6 +1301,21 @@
         "Promote full constructed config-status response.",
         "Preserve existing manifest/settings interpretation, wrapped errors, and auth/managePlugins middleware."
       ]
+    },
+    {
+      "field": "Query.getPluginManagementCapability",
+      "status": "selected-response",
+      "selectedPaths": [
+        "Boolean result"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getPluginManagementCapability.ts",
+        "customResolvers/queries/getPluginManagementCapability.test.ts",
+        "customResolvers/contracts/channelRuleGovernance.ts"
+      ],
+      "reason": "Generated scalar signature at registration; resolves the same effective canManagePlugins check as the approval mutation.",
+      "decision": null
     },
     {
       "field": "Query.getPluginPipelineCampaignFailures",

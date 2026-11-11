@@ -1,3 +1,4 @@
+import { createChannelRuleGovernanceRepository } from '../../services/persistence/channelRuleGovernanceRepository.js'
 import {configurationApplySource} from '../contracts/pluginConfigurationSources.js'
 import type { ConfigurationApplyResponse } from "../contracts/pluginConfiguration.js";
 import type { GraphQLResolveInfo } from 'graphql'
@@ -83,9 +84,20 @@ export const buildDefaultOperations = ({
     preview: manifest => preview({}, { manifest }, context, info),
     install: args => install({}, args, context, info),
     setSecret: args => setSecret({}, args, context, info),
-    configure: args => configure({}, args, context, info),
+    configure: args => configure({}, { ...args, preserveModerationAllowlist: true }, context, info),
     updateRegistries: urls => writeRepository.setRegistries(urls),
-    configureChannelPlugin: args => writeRepository.configureChannelPlugin(args),
+    configureChannelPlugin: async args => {
+      if (args.pluginId === 'llm-moderation') {
+        const governance = createChannelRuleGovernanceRepository(context.driver)
+        if (args.enabled) {
+          const current = await governance.status(args.channelUniqueName, args.pluginId)
+          if (current.version !== args.version) throw new Error('Channel moderation must use the current server governance version.')
+        }
+        await governance.setEnabled(args.channelUniqueName, args.pluginId, args.enabled, args.settingsJson)
+        return
+      }
+      return writeRepository.configureChannelPlugin(args)
+    },
     updatePipelines: pipelines =>
       updatePipelines({}, { pipelines }, context, info),
   }
@@ -211,7 +223,14 @@ export const createApplyPluginConfigurationResolver = (
         })
       }
 
-      for (const plugin of desired.plugins) {
+      // Install/configure replacements before retiring moderation governors,
+      // regardless of manifest order. Each activation rereads live approvals
+      // under the server lock; a failed activation must leave the old one active.
+      const pluginsInApplyOrder = [
+        ...desired.plugins.filter(plugin => plugin.pluginId !== 'llm-moderation' || plugin.enabled),
+        ...desired.plugins.filter(plugin => plugin.pluginId === 'llm-moderation' && !plugin.enabled),
+      ]
+      for (const plugin of pluginsInApplyOrder) {
         const pluginPath = `plugins.${plugin.pluginId}@${plugin.version}`
         const installChange = planBefore.changes.find(
           change => change.path === pluginPath && change.kind === 'INSTALL_VERSION'
@@ -276,7 +295,7 @@ export const createApplyPluginConfigurationResolver = (
             version: plugin.version,
             enabled: plugin.enabled,
             ...(plugin.settingsJson !== undefined && plugin.settingsJson !== null
-              ? { settingsJson: plugin.settingsJson }
+              ? { settingsJson: (plugin.pluginId === 'llm-moderation' ? configurationChanges.find(change => change.kind === 'UPDATE_SETTINGS')?.desired ?? plugin.settingsJson : plugin.settingsJson) as Record<string, unknown> }
               : {}),
           })
           operationResults.push(

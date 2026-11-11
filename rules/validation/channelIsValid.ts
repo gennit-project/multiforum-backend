@@ -157,7 +157,7 @@ export const validateChannelInput = (input: ChannelInput): true | string => {
 };
 
 type CreateChannelInput = { input: ChannelCreateInput[] };
-export const createChannelInputIsValid = rule({ cache: "contextual" })(
+export const createChannelInputIsValid = rule({ cache: "no_cache" })(
   async (parent: unknown, args: CreateChannelInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     if (!args.input || !args.input[0]) {
       return "Missing or empty input in args.";
@@ -170,7 +170,7 @@ export const createChannelInputIsValid = rule({ cache: "contextual" })(
 );
 
 type UpdateChannelInput = { update: ChannelUpdateInput };
-export const updateChannelInputIsValid = rule({ cache: "contextual" })(
+export const updateChannelInputIsValid = rule({ cache: "no_cache" })(
   async (parent: unknown, args: UpdateChannelInput, ctx: GraphQLContext, info: GraphQLResolveInfo) => {
     logger.info("checking if update channel input is valid", args);
     if (!args.update) {

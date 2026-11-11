@@ -20,12 +20,13 @@
     },
     {
       "pluginId": "llm-moderation",
-      "version": "0.7.1",
+      "version": "0.8.0",
       "enabled": true,
       "settingsJson": {
         "serviceUrl": "__LLM_MODERATION_SERVICE_URL__",
-        "serverRuleCheckMode": "allowlist",
-        "serverRuleForumAllowlist": ["__LLM_MODERATION_TRIAL_FORUM__"],
+        "serverRuleEnforcement": "__SERVER_RULE_ENFORCEMENT__",
+        "channelRuleEligibility": "allowlist",
+        "channelRuleAllowlist": ["__LLM_MODERATION_TRIAL_FORUM__"],
         "model": "gpt-4o",
         "temperature": 0,
         "maxTokens": 800,
@@ -45,7 +46,7 @@
     {
       "channelUniqueName": "__LLM_MODERATION_TRIAL_FORUM__",
       "pluginId": "llm-moderation",
-      "version": "0.7.1",
+      "version": "0.8.0",
       "enabled": true
     }
   ],
@@ -70,22 +71,22 @@
     },
     {
       "event": "comment.created",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.8.0" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "comment.edited",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.8.0" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "discussionChannel.created",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.8.0" }],
       "stopOnFirstFailure": true
     },
     {
       "event": "discussionChannel.edited",
-      "steps": [{ "pluginId": "llm-moderation", "version": "0.7.1" }],
+      "steps": [{ "pluginId": "llm-moderation", "version": "0.8.0" }],
       "stopOnFirstFailure": true
     }
   ]

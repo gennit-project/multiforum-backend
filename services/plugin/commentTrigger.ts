@@ -1,3 +1,5 @@
+import { hasActiveServerBotSuspension, mandatoryServerReport } from './moderationReportAuthority.js'
+import { applyServerModerationPolicy, getModerationOwnerStateVersionId, getServerModerationSettings, isChannelRuleEligible, MODERATION_PLUGIN_ID, protectServerModerationStep, supportsModerationPolicy } from './moderationGovernance.js'
 import { createBotThreadRepository } from "../persistence/botThreadRepository.js"
 import {createCommentExecutionRepository, type CommentExecutionRepository} from "../persistence/commentExecutionRepository.js";
 import type { PipelineAttemptRepository } from "../persistence/pipelineAttemptRepository.js";
@@ -71,6 +73,7 @@ export const triggerPluginRunsForComment = async (
     attemptRepository,
     commentRepository,
     getSuspension = getActiveSuspension,
+    getServerBotSuspension = hasActiveServerBotSuspension,
     reportAsBot = createBotReport,
     execution = {},
   }: {
@@ -79,6 +82,7 @@ export const triggerPluginRunsForComment = async (
     attemptRepository?: PipelineAttemptRepository
     commentRepository?: CommentExecutionRepository
     getSuspension?: typeof getActiveSuspension
+    getServerBotSuspension?: typeof hasActiveServerBotSuspension
     reportAsBot?: typeof createBotReport
     execution?: EventTriggerExecutionOptions
   } = {}
@@ -259,6 +263,12 @@ export const triggerPluginRunsForComment = async (
         }
       }
     }
+  }
+
+  if (!execution.resume) {
+    pluginsToRun = protectServerModerationStep({
+      pluginsToRun, pluginVersionsMap, serverPipeline: serverPipelines.find(pipeline => pipeline.event === event), event,
+    })
   }
 
   if (pluginsToRun.length === 0) {
@@ -453,6 +463,20 @@ export const triggerPluginRunsForComment = async (
       continue
     }
 
+    if (pluginId === MODERATION_PLUGIN_ID && !supportsModerationPolicy(
+      edgeData.node.version, getServerModerationSettings(pluginVersionsMap)
+    )) {
+      await repository.markSkippedRun(pluginRunId, {
+        status: 'SKIPPED',
+        skippedReason: 'Installed moderation version does not support server governance policy',
+        message: 'Skipped: moderation requires version 0.8.0 or newer',
+        finishedAt: new Date().toISOString(),
+        timeoutAt: null,
+      } as PluginRunUpdateInput)
+      jobStatuses[order] = 'SKIPPED'
+      continue
+    }
+
     if (pipelineStopped) {
       await repository.markSkippedRun(pluginRunId, ({
           status: 'SKIPPED',
@@ -553,11 +577,18 @@ export const triggerPluginRunsForComment = async (
       // Merge settings: defaults < server < channel (channel takes highest precedence)
       const settingsDefaults = parseIfString(pluginVersionData.settingsDefaults)
       const serverSettingsJson = parseIfString(edgeData.properties?.settingsJson)
+      const channelStateVersionId = pluginId === MODERATION_PLUGIN_ID
+        ? getModerationOwnerStateVersionId(pluginVersionsMap, pluginVersionData.id)
+        : pluginVersionData.id
       const channelPluginState =
-        channelPluginStatesByVersionId.get(pluginVersionData.id) ||
+        channelPluginStatesByVersionId.get(channelStateVersionId) ||
         channelPluginStatesByName.get(pluginId) ||
         { enabled: false, settingsJson: null }
-      const channelSettingsJsonRaw = channelPluginState.enabled
+      const channelPluginEnabled = channelPluginState.enabled && (
+        pluginId !== MODERATION_PLUGIN_ID ||
+        isChannelRuleEligible(getServerModerationSettings(pluginVersionsMap, serverPipelines.find(pipeline => pipeline.event === event)), channelUniqueName)
+      )
+      const channelSettingsJsonRaw = channelPluginEnabled
         ? parseIfString(channelPluginState.settingsJson)
         : {}
 
@@ -567,10 +598,13 @@ export const triggerPluginRunsForComment = async (
         ? { channel: channelSettingsJsonRaw }
         : {}
 
-      const runtimeSettings = mergeSettings(
+      const mergedRuntimeSettings = mergeSettings(
         mergeSettings(settingsDefaults, serverSettingsJson),
         channelSettingsJson
       )
+      const runtimeSettings = pluginId === MODERATION_PLUGIN_ID
+        ? applyServerModerationPolicy(mergedRuntimeSettings, getServerModerationSettings(pluginVersionsMap))
+        : mergedRuntimeSettings
       const diagnosticCollector = createPublicDiagnosticCollector({
         secrets: Object.values(decryptedSecrets),
       })
@@ -647,12 +681,19 @@ export const triggerPluginRunsForComment = async (
 
           // Check if the bot is suspended before allowing it to report
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
+          const serverReport = mandatoryServerReport(
+            pluginId, getServerModerationSettings(pluginVersionsMap), serverRules, input
+          )
+          if (serverReport && await getServerBotSuspension(driver, serverConfig.serverName || '', botUsername)) {
+            logs.push(`Bot "${botUsername}" has a server suspension - report blocked`)
+            return null
+          }
           const suspensionInfo = await getSuspension({
             repository: createChannelPermissionRepository(driver),
             channelUniqueName,
             username: botUsername,
           })
-          if (suspensionInfo.isSuspended) {
+          if (suspensionInfo.isSuspended && !serverReport) {
             logs.push(`Bot "${botUsername}" is suspended - action blocked`)
             return null
           }
@@ -667,7 +708,7 @@ export const triggerPluginRunsForComment = async (
           return reportAsBot({
             driver,
             channelUniqueName,
-            reportInput: input,
+            reportInput: suspensionInfo.isSuspended && serverReport ? serverReport : input,
             idempotencyKey: createReportIdempotencyKey({
               channelUniqueName,
               contentType: input.contentType,
@@ -767,7 +808,7 @@ export const triggerPluginRunsForComment = async (
                 comment.Channel?.description ||
                 null,
               rules: channel?.rules,
-              pluginEnabled: channelPluginState.enabled,
+              pluginEnabled: channelPluginEnabled,
             },
             discussion: discussionChannel?.Discussion
               ? {

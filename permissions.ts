@@ -1,3 +1,4 @@
+import { guardChannelPluginMutationRules } from './rules/validation/channelPluginGovernance.js'
 import { isIntrospectionType, isObjectType } from "graphql";
 import { middleware } from "graphql-middleware";
 import {
@@ -96,6 +97,8 @@ export const PUBLIC_READ_TYPES = [
   "AgePolicy",
   "Album",
   "ApplicablePluginPipeline",
+  "ChannelRuleGovernance",
+  "ChannelRuleEnforcementRequest",
   "Channel",
   "ChannelDiscussionFlairConfig",
   "ChannelHealthRow",
@@ -241,6 +244,8 @@ const permissionRules: IRules = {
       getUploadedDownloadableFiles: and(isAuthenticated, allow),
       getServerHealthDashboard: and(isAuthenticated, canManageMods),
       getDownloadScanReviewQueue: and(isAuthenticated, canPermanentlyRemoveImage),
+      getPluginManagementCapability: chain(isAuthenticated, allow),
+      getChannelRuleGovernance: chain(isAuthenticated, isChannelOwner),
       getPluginConfigStatus: and(isAuthenticated, canManagePlugins),
       // race evaluates sequentially, so a verified workload identity does not
       // fall through to user authentication and its UserInfo lookup.
@@ -684,6 +689,9 @@ const permissionRules: IRules = {
 
       refreshPlugins: and(isAuthenticated, canManagePlugins),
       installPluginVersion: and(isAuthenticated, canManagePlugins),
+      setChannelRuleEnforcement: chain(isAuthenticated, isChannelOwner),
+      requestChannelRuleEnforcement: chain(isAuthenticated, isChannelOwner),
+      approveChannelRuleEnforcement: chain(isAuthenticated, canManagePlugins),
       enableServerPlugin: and(isAuthenticated, canManagePlugins),
       setServerPluginSecret: and(isAuthenticated, canManagePlugins),
       deletePluginVersions: and(isAuthenticated, canManagePlugins),
@@ -717,6 +725,7 @@ const permissionList = middleware((schema) => {
     {
       ...generatedTypeRules,
       ...permissionRules,
+      Mutation: guardChannelPluginMutationRules(permissionRules.Mutation as Parameters<typeof guardChannelPluginMutationRules>[0]),
     },
     {
       debug: true,

@@ -1313,6 +1313,10 @@ const typeDefinitions = gql`
     relatedChannelBannerName: String @settable(onCreate: true, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
+    requestKind: String @settable(onCreate: false, onUpdate: false)
+    requestedPluginId: String @settable(onCreate: false, onUpdate: false)
+    channelRuleApprovedAt: DateTime @settable(onCreate: false, onUpdate: false)
+    channelRuleApprovedBy: String @settable(onCreate: false, onUpdate: false)
     flaggedServerRuleViolation: Boolean
     ActivityFeed: [ModerationAction!]!
       @relationship(type: "ACTIVITY_ON_ISSUE", direction: OUT)
@@ -2006,6 +2010,9 @@ const typeDefinitions = gql`
       downloadableFileId: ID!
       reason: String
     ): DownloadableFile!
+    setChannelRuleEnforcement(channelUniqueName: String!, pluginId: String!, enabled: Boolean!): Boolean!
+    requestChannelRuleEnforcement(channelUniqueName: String!, pluginId: String!): ChannelRuleEnforcementRequest!
+    approveChannelRuleEnforcement(issueId: ID!): ChannelRuleEnforcementRequest!
     enableServerPlugin(
       pluginId: String!
       version: String!
@@ -3259,7 +3266,30 @@ const typeDefinitions = gql`
     plugins: InstanceCapabilityStatus!
   }
 
+  type ChannelRuleGovernance {
+    pluginId: String!
+    version: String
+    serverRuleEnforcement: String!
+    channelRuleEligibility: String!
+    channelRuleAllowlist: [String!]!
+    eligible: Boolean!
+    ownerEnabled: Boolean!
+    canRequest: Boolean!
+    pendingRequestId: ID
+    pendingRequestNumber: Int
+    migrationRequired: Boolean!
+  }
+  type ChannelRuleEnforcementRequest {
+    id: ID!
+    issueNumber: Int!
+    channelUniqueName: String!
+    pluginId: String!
+    isOpen: Boolean!
+  }
   type Query {
+    getPluginManagementCapability: Boolean!
+    getChannelRuleGovernance(channelUniqueName: String!, pluginId: String!): ChannelRuleGovernance!
+
     # Discovery
     """
     Return public collections that include the specified item (e.g. downloads are Discussions with hasDownload=true).
