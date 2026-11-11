@@ -111,6 +111,10 @@ jobs:
         if: needs.changes.outputs.code == 'true'
         run: pnpm run lint:circular
 
+      # Run even for docs-only changes: the reviewed source ledger lives in docs/.
+      - name: Check resolver source census
+        run: pnpm run contracts:source-census
+
       - name: Run unit tests with coverage
         run: pnpm run coverage
 

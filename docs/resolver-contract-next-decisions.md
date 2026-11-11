@@ -1389,3 +1389,43 @@ raw stored diagnostic JSON, native spatial output, the delegated activity resolv
 and dynamic shared-list items. These are explicit residual boundaries, not
 additional scalar/whole-object guarantees from key metadata. Neither pending
 product policy has changed; #446's incorporated control fix remains attributed.
+
+
+### Source census closure and remaining guarantees
+
+`pnpm run contracts:source-census` walks the inferred return types of the actual
+resolver composition against the executable public schema. CI runs it even on
+documentation-only changes. `resolver-source-exceptions.json` records each exact
+opaque object, open property map or delegated list path with its reason and
+follow-up. New or stale paths fail; there is no automatic acceptance command.
+Fixture tests prove detection of nested unknown objects, incorrect object/list
+sources and index signatures, while preserving intersections and raw scalars.
+
+The reviewed census has 49 paths: 18 dynamic shared-list items, 25 native open
+property maps, four stored diagnostic arrays, one native spatial value and one
+activity delegation. These are source paths, not additional inventory entries.
+The walk inspects declared fields only; absent/unselected fields, scalar validity,
+abstract unions and runtime selections remain separate obligations. It does not
+prove generic upstream assertions or every possible custom child resolver.
+
+The finite named fixed-producer census is closed by the contribution, media,
+moderation/issue, read/dashboard, campaign, pipeline, plugin/account configuration,
+content, pilot-family and shared-envelope batches above. There is no remaining
+named shared wrapper awaiting implementation in that census. The 180 selected /
+29 deferred inventory remains unchanged; this is completion of those audited
+engineering obligations, not 209 fully enforced response contracts.
+
+| Remaining boundary | Evidence and closure limit | Ownership / next decision |
+| --- | --- | --- |
+| 18 dynamic shared-list entries | Actual registrations and source fixtures are drift-checked; alias/fragment/skip, authorization and protected-child identity regressions cover the audited producers. A caller-dependent item is not a whole generated object. | Backend #413: a future selection-indexed type system or additional concrete producer evidence is required before promoting the item guarantees. |
+| Four raw-source/scalar entries | Native selected scalar values preserve GraphQL coercion and nullable/error behavior; fixed relationship maps are separately typed. | Backend #413: stronger stored-property validation requires an explicit compatibility policy; do not replace unknown values with assertions. |
+| Six JSON/schema entries | The public JSON contract intentionally allows unrestricted values; domain-owned maps have separate contracts. | Schema owners: narrowing the public contract requires a schema/product decision. |
+| One activity-delegation entry | Real execution covers selected fields, aliases/fragments, auth and failure propagation through the generated resolver. | Backend #413: dynamic upstream selection remains an intentional static limit. |
+| Native property maps, diagnostic children and Point in selected operations | Exact paths are in the source ledger. Diagnostic children are typed in the public schema despite raw JSON storage; requested malformed values still fail and unrequested values remain lazy. | Backend #413: no claim of whole-operation validity; any stricter eager validation needs compatibility review. |
+| Event omitted/null channel input | Existing behavior and regression witnesses are unchanged. | Catherine / product: choose whether omission and explicit null should differ. |
+| Worker batch already underway when paused | #446 control-transition fix is incorporated with original attribution; its existing worker behavior remains tested. | Catherine / product: choose whether the in-flight batch should finish or stop. |
+
+The two policy questions do not block the independent fixed-source engineering
+above. Neither was resolved implicitly. Public schema, CI thresholds and production
+state are unchanged. PR #419 remains draft for combined review and any further
+intended changes; no merge or deployment is part of this work.

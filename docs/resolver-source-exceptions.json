@@ -1,0 +1,397 @@
+{
+  "formatVersion": 1,
+  "exceptions": [
+    {
+      "path": "Album.Images[]",
+      "kind": "opaque-object",
+      "schema": "Image",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.Admins[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.Bots[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.Comments[]",
+      "kind": "opaque-object",
+      "schema": "Comment",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.DiscussionChannels[]",
+      "kind": "opaque-object",
+      "schema": "DiscussionChannel",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.EventChannels[]",
+      "kind": "opaque-object",
+      "schema": "EventChannel",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.InCollections[]",
+      "kind": "opaque-object",
+      "schema": "Collection",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.Moderators[]",
+      "kind": "opaque-object",
+      "schema": "ModerationProfile",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.PendingModInvites[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.PendingOwnerInvites[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.PinnedDiscussionChannels[]",
+      "kind": "opaque-object",
+      "schema": "DiscussionChannel",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.PinnedWikiPages[]",
+      "kind": "opaque-object",
+      "schema": "WikiPage",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.RelatedChannels[]",
+      "kind": "opaque-object",
+      "schema": "Channel",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.SuspendedMods[]",
+      "kind": "opaque-object",
+      "schema": "Suspension",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.SuspendedUsers[]",
+      "kind": "opaque-object",
+      "schema": "Suspension",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Channel.Tags[]",
+      "kind": "opaque-object",
+      "schema": "Tag",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Comment.SuperUpvotedByUsers[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "DiscussionChannel.SuperUpvotedByUsers[]",
+      "kind": "opaque-object",
+      "schema": "User",
+      "sourceType": "unknown",
+      "reason": "Dynamic generated relationship item selection. Container, source provenance and protected-child identity paths have executable tests; arbitrary caller-selected child values are not statically certified as whole objects.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.addIssueActivityFeedItem.issues",
+      "kind": "delegated-source",
+      "schema": "Issue",
+      "sourceType": "(_args: unknown, _context: GraphQLContext, payloadInfo: GraphQLResolveInfo) => unknown",
+      "reason": "Selection-aware generated activity delegation returns the caller-requested Issue selection through GraphQL, including permissions, aliases and fragments. Its dynamic child values are not a statically complete Issue list.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.archiveComment",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.archiveDiscussion",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.archiveEvent",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.archiveImage",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.createImageWithUploader",
+      "kind": "open-map",
+      "schema": "Image",
+      "sourceType": "CreatedImageSource",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.lockIssue",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "IssueLockResult",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.permanentlyRemoveImage",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportChannel",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportChannelImage",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportComment",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportDiscussion",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportEvent",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportImage",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportProfilePicture",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.reportWikiEdit",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "ReportModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.suspendMod",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.suspendUser",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unarchiveComment",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unarchiveDiscussion",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unarchiveEvent",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unarchiveImage",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unlockIssue",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "IssueLockResult",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unsuspendMod",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Mutation.unsuspendUser",
+      "kind": "open-map",
+      "schema": "Issue",
+      "sourceType": "OpenModerationIssueRow",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getEventComments.Event.location",
+      "kind": "opaque-object",
+      "schema": "Point",
+      "sourceType": "unknown",
+      "reason": "Native Neo4j spatial value is completed by the existing Point field adapter. This source is not asserted to be a public GraphQL Point object.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getPipelineRunPage.run.jobs[].diagnostics[]",
+      "kind": "opaque-object",
+      "schema": "PublicPluginDiagnostic",
+      "sourceType": "unknown",
+      "reason": "Stored diagnostic JSON is decoded as unknown items. The public child type is typed, not a JSON scalar: selected fields retain GraphQL completion and errors; unrequested malformed fields must not eagerly reject the operation.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getPipelineSummary.attempts[].jobs[].diagnostics[]",
+      "kind": "opaque-object",
+      "schema": "PublicPluginDiagnostic",
+      "sourceType": "unknown",
+      "reason": "Stored diagnostic JSON is decoded as unknown items. The public child type is typed, not a JSON scalar: selected fields retain GraphQL completion and errors; unrequested malformed fields must not eagerly reject the operation.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getPipelineSummaryPage.attempts[].run.jobs[].diagnostics[]",
+      "kind": "opaque-object",
+      "schema": "PublicPluginDiagnostic",
+      "sourceType": "unknown",
+      "reason": "Stored diagnostic JSON is decoded as unknown items. The public child type is typed, not a JSON scalar: selected fields retain GraphQL completion and errors; unrequested malformed fields must not eagerly reject the operation.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getPublicPipelineRun.jobs[].diagnostics[]",
+      "kind": "opaque-object",
+      "schema": "PublicPluginDiagnostic",
+      "sourceType": "unknown",
+      "reason": "Stored diagnostic JSON is decoded as unknown items. The public child type is typed, not a JSON scalar: selected fields retain GraphQL completion and errors; unrequested malformed fields must not eagerly reject the operation.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    },
+    {
+      "path": "Query.getUploadedDownloadableFiles[].files[]",
+      "kind": "open-map",
+      "schema": "DownloadableFile",
+      "sourceType": "UploadedFileSource",
+      "reason": "Native persisted property map: fixed computed and relationship fields have separate precise projections and regressions; arbitrary stored scalar properties retain GraphQL selected-field coercion. An index signature is not whole-object certification.",
+      "followUp": "docs/resolver-contract-next-decisions.md#source-census-closure-and-remaining-guarantees"
+    }
+  ]
+}
