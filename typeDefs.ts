@@ -1313,10 +1313,10 @@ const typeDefinitions = gql`
     relatedChannelBannerName: String @settable(onCreate: true, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
     updatedAt: DateTime @timestamp(operations: [UPDATE])
-    requestKind: String @settable(onCreate: false, onUpdate: false)
-    requestedPluginId: String @settable(onCreate: false, onUpdate: false)
-    channelRuleApprovedAt: DateTime @settable(onCreate: false, onUpdate: false)
-    channelRuleApprovedBy: String @settable(onCreate: false, onUpdate: false)
+    requestKind: String @settable(onCreate: false, onUpdate: false) @filterable(byValue: false, byAggregate: false) @sortable(byValue: false)
+    requestedPluginId: String @settable(onCreate: false, onUpdate: false) @filterable(byValue: false, byAggregate: false) @sortable(byValue: false)
+    channelRuleApprovedAt: DateTime @settable(onCreate: false, onUpdate: false) @filterable(byValue: false, byAggregate: false) @sortable(byValue: false)
+    channelRuleApprovedBy: String @settable(onCreate: false, onUpdate: false) @filterable(byValue: false, byAggregate: false) @sortable(byValue: false)
     flaggedServerRuleViolation: Boolean
     ActivityFeed: [ModerationAction!]!
       @relationship(type: "ACTIVITY_ON_ISSUE", direction: OUT)

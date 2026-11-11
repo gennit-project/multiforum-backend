@@ -102,3 +102,14 @@ test('all generated channel-plugin mutation input kinds are explicitly covered',
   const kinds=Object.values(sourceSchema.getTypeMap()).filter(type=>isInputObjectType(type)&&/^ChannelEnabledPlugins.*(?:FieldInput|ConnectionInput)$/.test(type.name)).map(type=>type.name).sort()
   assert.deepEqual(kinds,['ChannelEnabledPluginsConnectFieldInput','ChannelEnabledPluginsCreateFieldInput','ChannelEnabledPluginsDeleteFieldInput','ChannelEnabledPluginsDisconnectFieldInput','ChannelEnabledPluginsFieldInput','ChannelEnabledPluginsUpdateConnectionInput','ChannelEnabledPluginsUpdateFieldInput'])
 })
+
+
+test('governance issue metadata is output-only, without widening existing input contracts',()=>{
+  const keys=['requestKind','requestedPluginId','channelRuleApprovedAt','channelRuleApprovedBy']
+  for(const type of Object.values(sourceSchema.getTypeMap()).filter(isInputObjectType)) {
+    for(const field of Object.keys(type.getFields())) {
+      assert.ok(!keys.some(key=>field===key||field.startsWith(`${key}_`)),`${type.name}.${field} must not be exposed as an input`)
+    }
+  }
+  for(const key of keys) assert.ok((sourceSchema.getType('Issue') as GraphQLObjectType).getFields()[key])
+})
