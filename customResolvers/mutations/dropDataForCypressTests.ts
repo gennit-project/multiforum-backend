@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
 
@@ -137,7 +138,7 @@ const dropDataForCypressTestsResolver = (input: Input) => {
         await runDeleteWithRetry(driver, label);
       }
 
-      return { success: true, message: "All test data has been dropped." };
+      return rememberCanonicalSource({ success: true, message: "All test data has been dropped." });
     };
   };
 

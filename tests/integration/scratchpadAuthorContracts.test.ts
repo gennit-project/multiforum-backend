@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { graphql, type GraphQLSchema } from "graphql";
@@ -21,7 +22,7 @@ before(async () => {
   driver = await startNeo4j();
   const generated = await new Neo4jGraphQL({ driver, typeDefs, resolvers: getResolvers(driver).resolvers }).getSchema();
   registerGeneratedSchema(driver, generated);
-  schema = applyMiddleware(generated, permissions);
+  schema = applyMiddleware(generated, permissions, sourceIdentity);
 }, { timeout: 240000 });
 after(async () => stopNeo4j());
 beforeEach(async () => {
@@ -224,4 +225,9 @@ test('discussion scratchpad voter response preserves its selected username under
   assert.deepEqual(JSON.parse(JSON.stringify(result.data)).result,{sourceId:'post',people:[{name:'alice'}]});
   const row=(await driver.executeQuery('RETURN COUNT {(:ScratchpadEntry)} AS entries, COUNT {(:User)-[:SUPER_UPVOTED_DISCUSSION]->()} AS votes')).records[0];
   assert.equal(Number(row.get('entries')),1);assert.equal(Number(row.get('votes')),1);
+});
+
+test('scratchpad creation preserves colliding source keys without changing moderator anonymity',async()=>{
+ const result=await execute('alice','mutation{result:createScratchpadEntry(recipientUsername:"bob",text:"Thanks!",sourceType:"comment",sourceId:"comment"){id:text sourceType:sourceId sourceId:sourceType author:Author{username}}}');
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(JSON.parse(JSON.stringify(result.data)).result,{id:'Thanks!',sourceType:'comment',sourceId:'comment',author:{username:'alice'}});
 });

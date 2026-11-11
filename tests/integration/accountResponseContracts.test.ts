@@ -255,3 +255,12 @@ test("instance setup aliases preserve capability differences, nested fragments a
   assert.equal(result.result.events.enabled,false); assert.equal(result.result.events.url,"/admin/setup#authentication");
   assert.equal(result.result.mail,undefined);
 });
+
+test('disposable seed response preserves colliding success/message fields',async()=>{
+ const seed='mutation{result:seedDataForCypressTests(channels:[],users:[],tags:[],discussions:[],events:[],comments:[],channelRoles:[],modChannelRoles:[],serverRoles:[],modServerRoles:[],serverConfigs:[]){success:message message:success}}';
+ const populated=seed.replace('discussions:[]','discussions:[{discussionCreateInput:{title:"Seed discussion"},channelConnections:["forum"]}]').replace('events:[]','events:[{eventCreateInput:{title:"Seed event",startTime:"2026-01-01T00:00:00Z",endTime:"2026-01-02T00:00:00Z",canceled:false},channelConnections:["forum"]}]');
+ assert.deepEqual(data(await exec(populated)).result,{success:'All test data has been created.',message:true});
+});
+test('disposable drop response preserves colliding success/message fields',async()=>{
+ assert.deepEqual(data(await exec('mutation{result:dropDataForCypressTests{success:message message:success}}')).result,{success:'All test data has been dropped.',message:true});
+});

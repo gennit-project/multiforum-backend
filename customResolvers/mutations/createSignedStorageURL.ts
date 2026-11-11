@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { Storage, GetSignedUrlConfig } from "@google-cloud/storage";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLContext } from "../../types/context.js";
@@ -208,7 +209,7 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
 
     if (!url) {
       logger.error("No URL returned from getSignedUrl method");
-      return { url: "" };
+      return rememberCanonicalSource({ url: "" });
     }
 
     await createUploadAuditRecord({
@@ -224,13 +225,13 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
     });
 
     // Return the Signed URL
-    return {
+    return rememberCanonicalSource({
       url,
       storageBucket: bucketName,
       storageObjectName,
       storageUrl,
       uploadedAt,
-    };
+    });
   };
 };
 

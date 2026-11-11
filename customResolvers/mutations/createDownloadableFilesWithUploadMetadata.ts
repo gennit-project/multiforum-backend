@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { GraphQLError } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { logger } from "../../logger.js";
@@ -225,7 +226,8 @@ const createDownloadableFilesWithUploadMetadata = ({ driver }: Input) => {
         })
       );
 
-      return { downloadableFiles, info };
+      for (const file of downloadableFiles) rememberCanonicalSource(file);
+      return rememberCanonicalSource({ downloadableFiles, info: rememberCanonicalSource(info) });
     } catch (error: unknown) {
       logger.error("Error creating downloadable files:", error);
       const message = error instanceof Error ? error.message : String(error);

@@ -1,3 +1,5 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
+import { applyMiddleware } from "graphql-middleware";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -45,6 +47,7 @@ before(async () => {
     features: { filters: { String: { MATCHES: true } } },
   }).getSchema();
   registerGeneratedSchema(env.driver, schema);
+  schema=applyMiddleware(schema,sourceIdentity);
 }, { timeout: 240000 });
 after(async () => stopImageModEnv());
 beforeEach(async () => {
@@ -232,4 +235,16 @@ test("legacy download without storage metadata retains the existing skip-and-mar
   assert.equal((result.data?.permanentlyDeleteDownloadableFile as { permanentlyRemoved: boolean }).permanentlyRemoved, true);
   assert.deepEqual(deletedObjects, []);
   assert.deepEqual(await run("MATCH (f:DownloadableFile {id:'file'}) RETURN f.permanentlyRemoved AS removed"), [{ removed: true }]);
+});
+
+test('download create envelope, counters and file identity preserve collisions',async()=>{
+ const response=await execute(create('info:downloadableFiles{id:fileName fileName:id} downloadableFiles:info{nodesCreated:relationshipsCreated relationshipsCreated:nodesCreated}'));
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));
+ const result=JSON.parse(JSON.stringify(response.data)).createDownloadableFiles;
+ assert.equal(result.info[0].id,'file.zip');assert.equal(typeof result.info[0].fileName,'string');
+ assert.deepEqual(result.downloadableFiles,{nodesCreated:0,relationshipsCreated:1});await assertCreatedAndClaimed();
+});
+test('stored download deletion preserves colliding native identity fields',async()=>{
+ await seedFile();const response=await execute(remove('id:fileName fileName:id'));
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(plain(response.data),{permanentlyDeleteDownloadableFile:{id:'file.zip',fileName:'file'}});await assertDeleted();
 });

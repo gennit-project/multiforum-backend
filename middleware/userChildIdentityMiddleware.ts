@@ -324,6 +324,17 @@ export const resolveUpdatedCommentsWithChildIdentity: typeof resolveUsersWithChi
 };
 
 export default {
+  SafetyCheckResponse: resolveCanonicalSourceField,
+  EnvironmentInfo: resolveCanonicalSourceField,
+  DropDataResponse: resolveCanonicalSourceField,
+  SeedDataResponse: resolveCanonicalSourceField,
+  DeleteEventInSeriesResult: resolveCanonicalSourceField,
+  CreateDownloadableFilesMutationResponse: resolveCanonicalSourceField,
+  CreateInfo: resolveCanonicalSourceField,
+  SignedURL: resolveCanonicalSourceField,
+  PrepareDownloadResult: resolveCanonicalSourceField,
+  ScratchpadEntry: resolveCanonicalSourceField,
+  UndoSuperUpvoteResult: resolveCanonicalSourceField,
   EventSeries: resolveCanonicalSourceField,
   RepeatPattern: resolveCanonicalSourceField,
   CreateCommentsWithOwnedConnectionsResponse: resolveCanonicalSourceField,

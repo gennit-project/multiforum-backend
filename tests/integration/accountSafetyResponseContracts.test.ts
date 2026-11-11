@@ -206,11 +206,16 @@ test("age policy and gate aliases retain distinct thresholds and every viewer st
 
 test("safety environment aliases preserve optional values using only a fixture URI", async () => {
   const previous=process.env.NEO4J_URI;
-  const query='{result:safetyCheck{value:environment{database:currentDatabase local:isTestEnvironment}}}';
+  const query='{result:safetyCheck{value:environment{isTestEnvironment:currentDatabase currentDatabase:isTestEnvironment}}}';
   try {
     process.env.NEO4J_URI='bolt://localhost:1234';
-    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{database:'bolt://localhost:1234',local:true}}});
+    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{isTestEnvironment:'bolt://localhost:1234',currentDatabase:true}}});
     delete process.env.NEO4J_URI;
-    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{database:null,local:null}}});
+    assert.deepEqual(data(await exec(query,null,false)),{result:{value:{isTestEnvironment:null,currentDatabase:null}}});
   } finally {if(previous===undefined)delete process.env.NEO4J_URI;else process.env.NEO4J_URI=previous;}
+});
+
+test('signed upload response preserves colliding URL and bucket aliases',async()=>{
+ const result=data(await exec('mutation{result:createSignedStorageURL(filename:"image.png",contentType:"image/png"){url:storageBucket storageBucket:url}}')).result;
+ assert.deepEqual(result,{url:'fixture-public',storageBucket:'https://example.test/signed'});
 });

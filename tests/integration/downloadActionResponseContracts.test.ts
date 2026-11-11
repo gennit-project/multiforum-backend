@@ -1,3 +1,4 @@
+import sourceIdentity from "../../middleware/userChildIdentityMiddleware.js";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, mock, test } from "node:test";
 import { Neo4jGraphQL } from "@neo4j/graphql";
@@ -42,7 +43,7 @@ before(async()=>{
   const labelResolver=updateDownloadLabels({driver,downloadLabelRepository:{...labels,createHistory:async input=>{calls.push("history");if(failure==="history")throw new Error("injected history failure");await labels.createHistory(input);}}});
   const app=getResolvers(driver);
   schema=await new Neo4jGraphQL({driver,typeDefs,resolvers:{...app.resolvers,Mutation:{...app.resolvers.Mutation,prepareDownload:prepare,updateDownloadLabels:labelResolver}},features:{filters:{String:{MATCHES:true}}}}).getSchema();
-  registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions);guard=denyExternalHttp();
+  registerGeneratedSchema(driver,schema);secured=applyMiddleware(schema,permissions,sourceIdentity);guard=denyExternalHttp();
 },{timeout:240000});
 after(async()=>{guard?.assertUnused();guard?.restore();mock.restoreAll();await stopNeo4j();});
 beforeEach(async()=>{
@@ -117,4 +118,9 @@ test("label nullable group and selected-field failure retain post-write serializ
  try {
   const result=await execute(labelSource(["b"]),"owner");assert.match(result.errors?.[0].message??"",/injected label projection failure/);assert.deepEqual(await labelIds(),["b"]);assert.deepEqual(calls,[]);
  } finally {field.resolve=original;}
+});
+
+test('prepared download aliases preserve readiness and signed URL without exposing scan reason',async()=>{
+ const response=await execute('result:prepareDownload(downloadableFileId:"f",discussionId:"d"){ready:url url:ready reason:scanReason}');
+ assert.equal(response.errors,undefined,JSON.stringify(response.errors));assert.deepEqual(plain(response.data).result,{ready:signedUrl,url:true,reason:null});
 });

@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
@@ -104,11 +105,11 @@ const getResolver = (input: Input) => {
       );
       deletedEventIds.length = 0;
 
-      return {
+      return rememberCanonicalSource({
         success: true,
         deletedCount,
         message: `Successfully deleted ${deletedCount} event(s)`,
-      };
+      });
     } catch (error: unknown) {
       if (deletedEventIds.length > 0) {
         try {

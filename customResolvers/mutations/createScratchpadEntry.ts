@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { readScratchpadSuperVoters } from "../../services/persistence/scratchpadSuperVoters.js";
 import type { Driver } from 'neo4j-driver';
 import type { GraphQLResolveInfo } from 'graphql';
@@ -231,7 +232,7 @@ const createScratchpadEntryResolver = (input: Input) => {
       await tx.commit();
 
       // Return the created entry with author info and updated super upvoted users
-      return {
+      return rememberCanonicalSource({
         id: entryId,
         createdAt: entryRecord.get('createdAt'),
         text: entryRecord.get('text'),
@@ -247,7 +248,7 @@ const createScratchpadEntryResolver = (input: Input) => {
           username: recipientUsername,
         },
         superUpvotedByUsers,
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

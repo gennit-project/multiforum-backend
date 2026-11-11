@@ -58,6 +58,10 @@ for (const [name,label,edge,authorEdge] of [
    assert.equal((await driver.executeQuery("MATCH(v:TextVersion {id:'v'}) RETURN v.body AS body")).records[0].get('body'),'[deleted]');
   }
  });
+ test(`${name}: revision response preserves body/id collisions`,async()=>{
+  await seed();const result=data(await run(`mutation{value:${name}(textVersionId:"v"){id:body body:id Author{name:username}}}`)).value;
+  assert.deepEqual(result,{id:'[deleted]',body:'v',Author:{name:'alice'}});
+ });
  test(`${name}: missing and unauthorized revisions return nullable errors without redacting`,async()=>{
   await seed();
   for(const [id,actor] of [['missing','alice'],['v','bob']]) {
@@ -243,4 +247,10 @@ test('content collision selections cannot bypass anonymous mutation authorizatio
   assert.ok(result.errors?.length,operation);assert.match(result.errors[0].message,/logged in|authenticated|Not Authori[sz]ed|permission/i);
  }
  assert.equal((await driver.executeQuery('MATCH(n) WHERE n:Comment OR n:WikiPage RETURN count(n) AS count')).records[0].get('count').toNumber(),0);
+});
+
+test('event deletion response preserves colliding success/message fields',async()=>{
+ await driver.executeQuery("CREATE(:Event{id:'e',title:'Before',createdAt:datetime(),startTime:datetime('2030-01-01T00:00:00Z'),endTime:datetime('2030-01-01T01:00:00Z'),canceled:false})");
+ const result=data(await run('mutation{result:deleteEventInSeries(eventId:"e",scope:THIS_ONLY){success:message message:success count:deletedCount}}')).result;
+ assert.deepEqual(result,{success:'Successfully deleted 1 event(s)',message:true,count:1});
 });

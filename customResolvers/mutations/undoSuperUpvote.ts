@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import type {ScratchpadSuperVoter} from '../contracts/scratchpadSuperVoters.js';
 import type { Driver } from "neo4j-driver";
 import type { GraphQLResolveInfo } from "graphql";
@@ -121,13 +122,13 @@ const undoSuperUpvoteResolver = (input: Input) => {
 
       await tx.commit();
 
-      return {
+      return rememberCanonicalSource({
         success: true,
         message: 'Super upvote removed successfully',
         sourceId,
         sourceType,
         superUpvotedByUsers,
-      };
+      });
     } catch (e) {
       if (tx) {
         try {

@@ -1,3 +1,4 @@
+import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { createEventWriteRepository } from "../../services/persistence/eventWriteRepository.js";
 import {createDiscussionCreationRepository} from "../../services/persistence/discussionCreationRepository.js";
 import {createSeedDataRepository,type SeedDataRepository} from "../../services/persistence/seedDataRepository.js";
@@ -132,7 +133,7 @@ const seedDataForCypressTestsResolver = (input: Input) => {
     await createDiscussionsFromInput(createDiscussionCreationRepository(driver), driver, discussions, context);
     await createEventsFromInput(createEventWriteRepository(driver), driver, events, context);
     await repository.createComments(comments);
-    return { success: true, message: "All test data has been created." };
+    return rememberCanonicalSource({ success: true, message: "All test data has been created." });
   };
 };
 

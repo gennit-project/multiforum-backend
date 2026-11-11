@@ -1342,3 +1342,21 @@ age filtering, authorization, write-before-read sequence and error asymmetries
 remain covered by the full focused suites. This closes these explicit fixed-source
 obligations; it does not turn the shared dynamic User/list fields into whole-object
 guarantees or change the 180/29 inventory accounting.
+
+
+### Shared result-envelope closure
+
+Collision probes now cover signed upload URLs, all download-preparation result
+branches, scratchpad creation, super-vote undo, four revision-redaction mutations,
+download creation/counters, event deletion and the two disposable test-data
+responses. These owned maps retain canonical provenance; redaction's two fixed
+completed documents use the guarded adapter. Stored-download deletion already
+passed its new collision regression and needed no runtime change.
+
+The initial safety-environment test used fresh alias names and passed. Swapping
+its two existing field names exposed a further collision, now fixed with explicit
+owned-map metadata. This supersedes the earlier statement that this source needed
+no change. The fixture controls the URI; no configured environment values are
+inspected or disclosed. No deployment/storage/email provider is contacted by these
+regressions. Scalar coercion, skipped/unrequested values, recipients, authorization
+and existing commit/error timing remain unchanged.

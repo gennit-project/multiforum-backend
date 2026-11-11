@@ -85,3 +85,8 @@ for(const type of ['comment','discussion'])test(`${type} fixed remaining voters 
  assert.equal(result.errors,undefined,JSON.stringify(result.errors));
  assert.deepEqual(plain(result.data).undoSuperUpvote,{success:true,people:[{person:'remaining'}]});
 });
+
+test('super vote undo wrapper preserves colliding source identifiers',async()=>{
+ const result=await execute('comment','c','sourceId:sourceType sourceType:sourceId success message');
+ assert.equal(result.errors,undefined,JSON.stringify(result.errors));assert.deepEqual(plain(result.data).undoSuperUpvote,{sourceId:'comment',sourceType:'c',success:true,message:'Super upvote removed successfully'});
+});
