@@ -97,11 +97,19 @@ for(const item of [
  assert.equal(rows.records[0].get('title'),'custom edit');
 });
 
-test('event update retains its existing omitted/null channel-list rejection and rolls back',async()=>{
- for(const fields of ['',',channelConnections:null,channelDisconnections:null',',channelConnections:[]']){
-  const result=await execute(`mutation {updateEventWithChannelConnections(where:{id:{eq:"allowed"}},eventUpdateInput:{title:{set:"must roll back"}}${fields}){id title}}`);
-  assert.match(result.errors?.[0]?.message ?? '',/channel(?:Connections|Disconnections) is not iterable/);
-  const rows=await driver.executeQuery("MATCH(e:Event{id:'allowed'}) RETURN e.title AS title,COUNT {(:TextVersion)} AS versions");
-  assert.equal(rows.records[0].get('title'),'original');assert.equal(Number(rows.records[0].get('versions')),0);
+test('moderator event updates preserve links for omitted/null lists and record successful revisions',async()=>{
+ const cases=['',',channelConnections:null,channelDisconnections:null',',channelConnections:[]'];
+ for(const [index,fields] of cases.entries()){
+  const title=`edit ${index}`;
+  const result=await execute(`mutation {updateEventWithChannelConnections(where:{id:{eq:"allowed"}},eventUpdateInput:{title:{set:"${title}"}}${fields}){id title}}`);
+  assert.equal(result.errors,undefined,JSON.stringify(result));
+  const rows=await driver.executeQuery("MATCH(e:Event{id:'allowed'}) RETURN e.title AS title,COUNT {(:TextVersion)} AS versions,[(e)<-[:POSTED_IN_CHANNEL]-(ec:EventChannel) | ec.id] AS channels");
+  assert.equal(rows.records[0].get('title'),title);
+  assert.equal(Number(rows.records[0].get('versions')),index+1);
+  assert.deepEqual(rows.records[0].get('channels'),['allowed']);
  }
+ const denied=await execute(`mutation {updateEventWithChannelConnections(where:{id:{eq:"denied"}},eventUpdateInput:{title:{set:"denied edit"}},channelConnections:null,channelDisconnections:null){id}}`);
+ assert.ok(denied.errors?.length);
+ const row=(await driver.executeQuery("MATCH(e:Event{id:'denied'}) RETURN e.title AS title")).records[0];
+ assert.equal(row.get('title'),'original');
 });
