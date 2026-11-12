@@ -56,7 +56,6 @@ try {
      CREATE (userIssue:Issue {
        id: 'e2e-server-user-issue',
        issueNumber: 9101,
-       channelUniqueName: '',
        relatedDiscussionId: discussion.id,
        relatedUsername: target.username,
        title: 'Server report against e2e_suspended_user',
@@ -122,7 +121,6 @@ try {
      CREATE (modIssue:Issue {
        id: 'e2e-server-mod-issue',
        issueNumber: 9102,
-       channelUniqueName: '',
        relatedCommentId: modComment.id,
        relatedModProfileName: modProfile.displayName,
        title: 'Server report against E2E Suspended Mod',
@@ -251,6 +249,27 @@ try {
      })`,
     { adminUsername, serverName }
   );
+
+  // Server issues use an absent property (GraphQL null), not an empty channel
+  // name. Verify the seeded scopes before the browser starts so fixture drift
+  // fails here rather than appearing as a misleading issue-detail 404.
+  const scopes = await session.run(
+    `MATCH (issue:Issue { e2eAdminModerationScenario: true })
+     WHERE issue.id IN ['e2e-server-user-issue', 'e2e-server-mod-issue']
+       AND issue.channelUniqueName IS NULL
+     WITH count(issue) AS serverIssues
+     MATCH (channelIssue:Issue { id: 'e2e-target-mod-issue' })
+     WHERE channelIssue.channelUniqueName = 'e2e_admin_moderation'
+     RETURN serverIssues, count(channelIssue) AS channelIssues`
+  );
+  const scope = scopes.records[0];
+  if (
+    !scope ||
+    scope.get("serverIssues").toNumber() !== 2 ||
+    scope.get("channelIssues").toNumber() !== 1
+  ) {
+    throw new Error("Admin moderation fixtures have invalid issue scopes");
+  }
 
   console.log(`Seeded admin moderation scenario for ${serverName}.`);
 } finally {
