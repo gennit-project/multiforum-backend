@@ -59,3 +59,48 @@ test('closed approved retry is idempotent; ordinary closed request is not approv
     fixture.done()
   }
 })
+
+test('unsupported plugins fail before database access',async()=>{
+  const fixture=scripted([])
+  await assert.rejects(fixture.repo.status('cats','other'),/only supported/)
+  await assert.rejects(fixture.repo.setEnabled('cats','other',true),/only supported/)
+  await assert.rejects(fixture.repo.request('cats','other','owner'),/only supported/)
+  assert.deepEqual(fixture.calls,[])
+})
+test('ambiguous server or missing channel fail closed and close the transaction session',async()=>{
+  for(const count of [0,2]) {
+    const fixture=scripted([[{count}]])
+    await assert.rejects(fixture.repo.setEnabled('cats','llm-moderation',true),/Exactly one server/);fixture.done()
+  }
+  const missing=scripted([[{count:0}]])
+  await assert.rejects(missing.repo.status('cats','llm-moderation'),/Channel not found/);missing.done()
+})
+test('absent installation is reported disabled and permits opt-out cleanup',async()=>{
+  const status=scripted([[{count:1}],[],[]])
+  const result=await status.repo.status('cats','llm-moderation')
+  assert.equal(result.version,null);assert.equal(result.ownerEnabled,false);assert.equal(result.eligible,false);status.done()
+  const disable=scripted([[{count:1}],[{count:1}],[],[]])
+  assert.equal(await disable.repo.setEnabled('cats','llm-moderation',false),true)
+  assert.match(disable.calls[3].query,/SET e.enabled = false/);disable.done()
+})
+test('eligible owner opt-in preserves channel configuration only on the governing version',async()=>{
+  const fixture=scripted([[{count:1}],[{count:1}],[{id:'v',version:'0.8.0',settings:JSON.stringify({channelRuleEligibility:'all'})}],[],[],[]])
+  assert.equal(await fixture.repo.setEnabled('cats','llm-moderation',true,{model:'saved'}),true)
+  assert.deepEqual(fixture.calls[5].params,{channel:'cats',id:'v',settings:'{"model":"saved"}'});fixture.done()
+})
+test('ineligible requests and missing authors cannot create approval issues',async()=>{
+  const ineligible=scripted([[{count:1}],[{count:1}],[],[{id:'v',version:'0.8.0',settings:'{"channelRuleEligibility":"none"}'}]])
+  await assert.rejects(ineligible.repo.request('cats','llm-moderation','owner'),/cannot request/);ineligible.done()
+  const absentAuthor=scripted([[{count:1}],[{count:1}],[],[{id:'v',version:'0.8.0',settings:'{"channelRuleEligibility":"allowlist","channelRuleAllowlist":[]}'}],[{count:0}]])
+  await assert.rejects(absentAuthor.repo.request('cats','llm-moderation','missing'),/author not found/);absentAuthor.done()
+})
+test('approval rejects missing requests or malformed lists and initializes an absent allowlist',async()=>{
+  const raw={id:'i',issueNumber:3,relatedChannelUniqueName:'cats',requestedPluginId:'llm-moderation',isOpen:true}
+  const missing=scripted([[{count:1}],[]])
+  await assert.rejects(missing.repo.approve('missing','admin'),/request not found/);missing.done()
+  const malformed=scripted([[{count:1}],[{issue:raw}],[{count:1}],[{id:'v',version:'0.8.0',settings:'{"channelRuleEligibility":"allowlist","channelRuleAllowlist":[1]}'}]])
+  await assert.rejects(malformed.repo.approve('i','admin'),/allowlist is invalid/);malformed.done()
+  const absent=scripted([[{count:1}],[{issue:raw}],[{count:1}],[{id:'v',version:'0.8.0',settings:'{"channelRuleEligibility":"allowlist"}'}],[],[]])
+  assert.equal((await absent.repo.approve('i','admin')).isOpen,false)
+  assert.deepEqual(JSON.parse(String(absent.calls[4].params.settings)).channelRuleAllowlist,['cats']);absent.done()
+})
