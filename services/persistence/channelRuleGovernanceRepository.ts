@@ -2,14 +2,14 @@ import { randomUUID } from 'node:crypto'
 import { int, type Driver, type ManagedTransaction } from 'neo4j-driver'
 import { executeManagedWrite } from '../neo4jTransactions.js'
 import { compareVersions } from '../plugin/pipelineUtils.js'
-import { isChannelRuleEligible, parseModerationSettings } from '../plugin/moderationGovernance.js'
+import { isChannelRuleEligible, parseModerationSettings, serverRuleScope, serverRulesApply } from '../plugin/moderationGovernance.js'
 
 export const MODERATION_PLUGIN = 'llm-moderation'
 export const CHANNEL_RULE_REQUEST = 'CHANNEL_RULE_ENFORCEMENT'
 export type GovernanceInstallation = { id: string; version: string; settings: Record<string, unknown> }
 export type ChannelRuleEnforcementRequest = { id: string; issueNumber: number; channelUniqueName: string; pluginId: string; isOpen: boolean }
 export type ChannelRuleGovernance = {
-  pluginId: string; version: string | null; serverRuleEnforcement: string
+  pluginId: string; version: string | null; serverRuleEnforcement: string; serverRulesApply: boolean
   channelRuleEligibility: string; channelRuleAllowlist: string[]; eligible: boolean
   ownerEnabled: boolean; canRequest: boolean; pendingRequestId: string | null
   pendingRequestNumber: number | null; migrationRequired: boolean
@@ -24,20 +24,18 @@ const settingsPolicy = (settings: Record<string, unknown>) => {
 export const governanceStatus = (installation: GovernanceInstallation | null, channelUniqueName: string,
   ownerEnabled: boolean, pending: ChannelRuleEnforcementRequest | null): ChannelRuleGovernance => {
   const settings = settingsPolicy(installation?.settings ?? {})
-  const legacy = !Object.prototype.hasOwnProperty.call(settings, 'serverRuleEnforcement') && settings.serverRuleCheckMode === 'allowlist'
   const mode = Object.prototype.hasOwnProperty.call(settings, 'channelRuleEligibility') ? settings.channelRuleEligibility : 'all'
   const eligibility = ['all', 'none', 'allowlist'].includes(String(mode)) ? String(mode) : 'none'
   const eligible = Boolean(installation) && isChannelRuleEligible(settings, channelUniqueName)
   return {
     pluginId: MODERATION_PLUGIN, version: installation?.version ?? null,
-    serverRuleEnforcement: !installation ? 'off' : legacy ? 'legacy_allowlist'
-      : Object.prototype.hasOwnProperty.call(settings, 'serverRuleEnforcement') ? (settings.serverRuleEnforcement === 'on' ? 'on' : 'off')
-      : settings.serverRuleCheckMode === 'all_forums' ? 'on' : 'off',
+    serverRuleEnforcement: installation ? serverRuleScope(settings) : 'off',
+    serverRulesApply: Boolean(installation) && serverRulesApply(settings, channelUniqueName),
     channelRuleEligibility: installation ? eligibility : 'none',
     channelRuleAllowlist: Array.isArray(settings.channelRuleAllowlist) && settings.channelRuleAllowlist.every(v => typeof v === 'string')
       ? settings.channelRuleAllowlist.map(v => v.trim()).filter(Boolean) : [],
     eligible, ownerEnabled, canRequest: Boolean(installation) && eligibility === 'allowlist' && !eligible && !pending,
-    pendingRequestId: pending?.id ?? null, pendingRequestNumber: pending?.issueNumber ?? null, migrationRequired: legacy,
+    pendingRequestId: pending?.id ?? null, pendingRequestNumber: pending?.issueNumber ?? null, migrationRequired: false,
   }
 }
 async function installation(tx: ManagedTransaction): Promise<GovernanceInstallation | null> {

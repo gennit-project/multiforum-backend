@@ -4,9 +4,10 @@
 
 `llm-moderation` version 0.8.0 adds flat server settings:
 
-- `serverRuleEnforcement`: `on` or `off`. When on, every supported content event
+- `serverRuleEnforcement`: `on`, `off` or `allowlist`. Inside the selected scope, every supported content event
   retains a mandatory server-selected moderation step, regardless of a channel
   pipeline's omission, condition, failure order or older version pin.
+- `serverRuleForumAllowlist`: server-rule scope only; an empty list covers no forums.
 - `channelRuleEligibility`: `all`, `none` or `allowlist`.
 - `channelRuleAllowlist`: an array of case-sensitive channel unique names.
 
@@ -18,7 +19,7 @@ this change.
 
 Owner API: `getChannelRuleGovernance`, `setChannelRuleEnforcement` and
 `requestChannelRuleEnforcement`, all scoped to an owned channel. Owner opt-in is
-stored on the channel's ENABLED relationship. It does not enable global rules.
+stored on the channel's ENABLED relationship. It does not change server-rule scope.
 Generated mutation paths, including deeply nested Channel inputs beneath other
 roots, cannot alter moderation opt-in. The schema-aware guard rechecks each
 aliased mutation separately, and leaves JSON scalar data opaque;
@@ -52,33 +53,38 @@ lower successor in the same transaction, covering approvals during a fallback. E
 manifest omission does not revoke it. No legacy server-rule allowlist is reused
 as a channel-rule allowlist.
 
-## Migration decision and rollout gate
+## Migration and rollout gate
 
-Legacy `off`, `all_forums` and `allowlist` retain their exact runtime behavior
-through upgrade. Settings carry-over retains the legacy keys rather than
-silently introducing new defaults. After installation, an admin explicitly
-selects the new global toggle and channel eligibility policy. In particular,
-legacy `allowlist` cannot be mapped to either new global choice without changing
-scope. The status API exposes `migrationRequired` and `legacy_allowlist` so the
-frontend asks for that decision.
+Legacy `off`, `all_forums` and `allowlist` retain their scope through upgrade.
+Carry-over retains legacy keys without introducing defaults. The admin UI maps
+these modes to `off`, `on` and `allowlist` respectively and retains the existing
+`serverRuleForumAllowlist` (normalizing legacy JSON/comma-separated lists). It
+never copies this list into `channelRuleAllowlist`. Absent forum eligibility
+continues to mean `all`; existing owner ENABLED relationships stay unchanged.
+The status API reports canonical scope plus `serverRulesApply` for this forum;
+`migrationRequired` remains false because no global-policy decision is needed.
 
-The production template targets 0.8.0 and requires
-`--server-rule-enforcement on|off` when rendering; it does not choose for an
-operator. The trial channel list is explicitly channel eligibility only.
+The production renderer accepts `--server-rule-enforcement on|off|allowlist`
+and a separate JSON `--server-rule-forum-allowlist`. For an allowlisted scope,
+supply the existing server rollout list, independently of `--trial-forum`.
+The trial forum (including `bad_advice`) remains eligible and explicitly enabled
+for its own rules. No live configuration was inspected or changed.
 
-Before enabling the new global toggle, finish or cancel/drain moderation jobs
-queued under the old pipeline topology. Existing jobs keep their persisted run
-ordering/version for identity consistency; incompatible old plugin versions are
-skipped rather than run with new settings. Fresh queues always retain the new
-mandatory global step. Real Neo4j concurrency and end-to-end browser validation
-remain rollout gates, not implied by unit tests.
+Before changing pipeline topology, finish or drain jobs queued under the old
+topology. Existing jobs keep their persisted ordering/version for identity;
+incompatible versions are skipped, never silently executed with new policy.
+Fresh queues retain a mandatory server step inside the selected server scope.
+Queued execution rechecks authoritative settings and owner eligibility. This
+change does not create missing steps in jobs already queued under old topology.
+Release the coordinated backend, plugin 0.8.0 and frontend after review; none
+is deployed by this PR.
 
 ## Mandatory reports and bot suspensions
 
 A channel-local suspension cannot veto reports citing the canonical server rules
-when global enforcement is on. Mixed reports are reduced to their server-rule
+inside the admin-selected server scope. Mixed reports are reduced to their server-rule
 citations with a neutral review request; channel judgments and recommendations
 are not carried through that exception. Channel-only reports, ordinary bots,
-legacy/off policy and bot comments keep their existing local suspension behavior.
+out-of-scope/off policy and bot comments keep their existing local suspension behavior.
 Server-scoped bot suspensions still block mandatory reports, including indefinite
 suspensions. Missing server identity or failed suspension lookups fail closed.

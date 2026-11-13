@@ -14,7 +14,6 @@ export const preserveModerationGovernance = (current: unknown, desired: Record<s
   }
   if (Object.prototype.hasOwnProperty.call(result,'serverRuleEnforcement')) {
     delete result.serverRuleCheckMode
-    delete result.serverRuleForumAllowlist
   }
   return result
 }

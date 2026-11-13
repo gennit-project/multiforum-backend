@@ -169,7 +169,7 @@ export const reconcileSettings = (params: {
   }
 
   // Installing a governance-capable version must preserve a legacy trial's
-  // exact scope. Only an explicit later admin setting can choose global on/off.
+  // exact scope. Server scope and forum eligibility are independent policies.
   if (params.scope === 'server' && fields.some(field => field.key === 'serverRuleEnforcement') &&
       hasOwn(oldSettings, 'serverRuleCheckMode') && !hasOwn(oldSettings, 'serverRuleEnforcement')) {
     for (const key of ['serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist']) {

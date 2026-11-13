@@ -22,6 +22,31 @@ const policyValue = (settings: Record<string, unknown>, key: string): unknown =>
     ? settings[key]
     : parseModerationSettings(settings.server)[key]
 
+/** Server scope is independent of owner opt-in and forum-rule eligibility. */
+export const serverRuleScope = (settings: unknown): 'on' | 'off' | 'allowlist' => {
+  const parsed = parseModerationSettings(settings)
+  const mode = hasPolicyValue(parsed, 'serverRuleEnforcement')
+    ? policyValue(parsed, 'serverRuleEnforcement')
+    : policyValue(parsed, 'serverRuleCheckMode') === 'all_forums' ? 'on'
+      : policyValue(parsed, 'serverRuleCheckMode') === 'allowlist' ? 'allowlist' : 'off'
+  return mode === 'on' || mode === 'allowlist' ? mode : 'off'
+}
+export const serverRulesApply = (settings: unknown, channelUniqueName: string): boolean => {
+  const mode = serverRuleScope(settings)
+  if (mode === 'on') return true
+  if (mode !== 'allowlist' || !channelUniqueName) return false
+  const parsed = parseModerationSettings(settings)
+  let list = policyValue(parsed, 'serverRuleForumAllowlist')
+  // Retain the legacy plugin's JSON/comma-separated list representation.
+  if (!hasPolicyValue(parsed, 'serverRuleEnforcement') && typeof list === 'string') {
+    const encoded = list
+    try { list = JSON.parse(encoded) } catch { list = encoded.split(',') }
+  }
+  if (!Array.isArray(list)) return false
+  if (hasPolicyValue(parsed, 'serverRuleEnforcement') && !list.every(name => typeof name === 'string')) return false
+  return list.filter((name): name is string => typeof name === 'string').map(name => name.trim()).filter(Boolean).includes(channelUniqueName)
+}
+
 export const isChannelRuleEligible = (settings: unknown, channelUniqueName: string): boolean => {
   const parsed = parseModerationSettings(settings)
   const mode = policyValue(parsed, 'channelRuleEligibility')
@@ -63,12 +88,13 @@ export const supportsModerationPolicy = (version: string, settings: unknown): bo
 
 /** Resolve mandatory moderation from server configuration, never channel pins. */
 export const protectServerModerationStep = ({
-  pluginsToRun, pluginVersionsMap, serverPipeline, event,
+  pluginsToRun, pluginVersionsMap, serverPipeline, event, channelUniqueName = '',
 }: {
   pluginsToRun: PluginToRun[]
   pluginVersionsMap: Map<string, Array<{ version: string; edgeData: PluginEdgeData }>>
   serverPipeline: EventPipeline | undefined
   event: string
+  channelUniqueName?: string
 }): PluginToRun[] => {
   const serverStep = serverPipeline?.steps.find(step => step.pluginId === MODERATION_PLUGIN_ID)
   const settings = parseModerationSettings(getServerModerationSettings(pluginVersionsMap))
@@ -79,9 +105,9 @@ export const protectServerModerationStep = ({
   }).map((plugin, order) => ({ ...plugin, order }))
   let match = getPluginForStep(pluginVersionsMap, MODERATION_PLUGIN_ID, serverStep?.version)
   if (match && !supportsModerationPolicy(match.version, settings)) match = compatible ?? null
-  if (!match && policyValue(settings, 'serverRuleEnforcement') === 'on') match = compatible ?? null
+  if (!match && serverRulesApply(settings, channelUniqueName)) match = compatible ?? null
   if (!match) return pluginsToRun
-  if (policyValue(settings, 'serverRuleEnforcement') !== 'on') return pluginsToRun
+  if (!serverRulesApply(settings, channelUniqueName)) return pluginsToRun
   const events = parseManifest(match.edgeData.node.manifest).events
   if (!Array.isArray(events) || !events.includes(event)) return pluginsToRun
   // Run first and unconditionally: a channel-owned prior failure/condition must
@@ -103,7 +129,7 @@ export const applyServerModerationPolicy = (runtimeSettings: unknown, authoritat
     ? { ...parseModerationSettings(runtime.server) }
     : null
   if (nested) runtime.server = nested
-  for (const key of ['serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist']) {
+  for (const key of ['serverRuleEnforcement', 'serverRuleCheckMode', 'serverRuleForumAllowlist', 'channelRuleEligibility', 'channelRuleAllowlist']) {
     delete runtime[key]
     if (nested) delete nested[key]
     if (hasPolicyValue(authority, key)) runtime[key] = policyValue(authority, key)

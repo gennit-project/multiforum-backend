@@ -267,7 +267,7 @@ export const triggerPluginRunsForComment = async (
 
   if (!execution.resume) {
     pluginsToRun = protectServerModerationStep({
-      pluginsToRun, pluginVersionsMap, serverPipeline: serverPipelines.find(pipeline => pipeline.event === event), event,
+      pluginsToRun, pluginVersionsMap, serverPipeline: serverPipelines.find(pipeline => pipeline.event === event), event, channelUniqueName,
     })
   }
 
@@ -682,7 +682,7 @@ export const triggerPluginRunsForComment = async (
           // Check if the bot is suspended before allowing it to report
           const botUsername = buildBotUsername(channelUniqueName, input.botName, input.profileId)
           const serverReport = mandatoryServerReport(
-            pluginId, getServerModerationSettings(pluginVersionsMap), serverRules, input
+            pluginId, getServerModerationSettings(pluginVersionsMap), serverRules, input, channelUniqueName
           )
           if (serverReport && await getServerBotSuspension(driver, serverConfig.serverName || '', botUsername)) {
             logs.push(`Bot "${botUsername}" has a server suspension - report blocked`)

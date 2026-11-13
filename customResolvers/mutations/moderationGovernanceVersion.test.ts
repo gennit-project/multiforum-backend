@@ -10,10 +10,12 @@ test('new policy rejects incompatible plugin version and malformed settings befo
     {version:'0.7.1',settings:{channelRuleAllowlist:[]},enabled:true,error:/0.8.0/},
     {version:'0.8.0',settings:{server:{serverRuleEnforcement:'on',channelRuleEligibility:'all',channelRuleAllowlist:[]}},enabled:true,error:null},
     {version:'0.7.1',settings:{serverRuleEnforcement:'on',channelRuleEligibility:'all',channelRuleAllowlist:[]},enabled:true,error:/0.8.0/},
-    {version:'0.8.0',settings:{serverRuleEnforcement:'invalid',channelRuleEligibility:'all',channelRuleAllowlist:[]},enabled:true,error:/on or off/},
+    {version:'0.8.0',settings:{serverRuleEnforcement:'invalid',channelRuleEligibility:'all',channelRuleAllowlist:[]},enabled:true,error:/on, off, or allowlist/},
     {version:'0.8.0',settings:{serverRuleEnforcement:'on',channelRuleEligibility:'bogus',channelRuleAllowlist:[]},enabled:true,error:/all, none, or allowlist/},
     {version:'0.8.0',settings:{serverRuleEnforcement:'on',channelRuleEligibility:'all',channelRuleAllowlist:[1]},enabled:true,error:/string array/},
     {version:'0.8.0',settings:{serverRuleEnforcement:'on',channelRuleEligibility:'all',channelRuleAllowlist:[]},enabled:true,error:null},
+    {version:'0.7.1',settings:{serverRuleEnforcement:'allowlist',serverRuleForumAllowlist:['cats'],channelRuleEligibility:'none',channelRuleAllowlist:[]},enabled:true,error:/0.8.0/},
+    {version:'0.8.0',settings:{serverRuleEnforcement:'allowlist',serverRuleForumAllowlist:[],channelRuleEligibility:'all',channelRuleAllowlist:[]},enabled:true,error:null},
     {version:'0.7.1',settings:{serverRuleEnforcement:'invalid'},enabled:false,error:null},
   ]) {
     let writes=0

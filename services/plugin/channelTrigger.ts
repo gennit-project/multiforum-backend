@@ -303,7 +303,7 @@ export const triggerChannelPluginPipeline = async (
 
   if (!execution?.resume) {
     pluginsToRun = protectServerModerationStep({
-      pluginsToRun, pluginVersionsMap, serverPipeline: serverEventPipeline, event,
+      pluginsToRun, pluginVersionsMap, serverPipeline: serverEventPipeline, event, channelUniqueName,
     })
   }
 
@@ -757,7 +757,7 @@ export const triggerChannelPluginPipeline = async (
             input.profileId
           )
           const serverReport = mandatoryServerReport(
-            pluginId, getServerModerationSettings(pluginVersionsMap), serverRules, input
+            pluginId, getServerModerationSettings(pluginVersionsMap), serverRules, input, channelUniqueName
           )
           if (serverReport && await getServerBotSuspension(driver, serverConfig.serverName || '', botUsername)) {
             logs.push(`Bot "${botUsername}" has a server suspension - report blocked`)

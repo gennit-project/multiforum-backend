@@ -25,6 +25,7 @@
       "settingsJson": {
         "serviceUrl": "__LLM_MODERATION_SERVICE_URL__",
         "serverRuleEnforcement": "__SERVER_RULE_ENFORCEMENT__",
+        "serverRuleForumAllowlist": "__SERVER_RULE_FORUM_ALLOWLIST__",
         "channelRuleEligibility": "allowlist",
         "channelRuleAllowlist": ["__LLM_MODERATION_TRIAL_FORUM__"],
         "model": "gpt-4o",

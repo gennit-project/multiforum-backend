@@ -5,7 +5,7 @@ import { reconcileSettings } from './reconcileSettings.js'
 test('stale declarative allowlist preserves approvals and explicit new mode removes legacy server gate',()=>{
   const actual=preserveModerationGovernance({serverRuleCheckMode:'allowlist',serverRuleForumAllowlist:['old'],channelRuleAllowlist:['approved']},
     {serverRuleEnforcement:'off',channelRuleEligibility:'allowlist',channelRuleAllowlist:['trial']})
-  assert.deepEqual(actual,{serverRuleEnforcement:'off',channelRuleEligibility:'allowlist',channelRuleAllowlist:['trial','approved']})
+  assert.deepEqual(actual,{serverRuleEnforcement:'off',serverRuleForumAllowlist:['old'],channelRuleEligibility:'allowlist',channelRuleAllowlist:['trial','approved']})
 })
 test('omitted governance fields stay unchanged by reconciliation',()=>{
   const actual=preserveModerationGovernance('{"serverRuleEnforcement":"on","channelRuleEligibility":"none","channelRuleAllowlist":["approved"]}',{model:'new'})

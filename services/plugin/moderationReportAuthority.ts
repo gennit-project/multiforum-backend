@@ -2,16 +2,13 @@ import type { Driver } from 'neo4j-driver'
 import type { ReportContentAsBotInput } from '../botReportService.js'
 import { resolveNeo4jDatabase } from '../neo4jDatabase.js'
 import { USER_SUSPENSION_QUERY, isExpiredServerSuspension } from '../../rules/permission/getActiveServerSuspension.js'
-import { MODERATION_PLUGIN_ID, parseModerationSettings } from './moderationGovernance.js'
+import { MODERATION_PLUGIN_ID, serverRulesApply } from './moderationGovernance.js'
 
 /** Return only the mandatory server portion, never channel-owned enforcement. */
 export const mandatoryServerReport = (
-  pluginId: string, settings: unknown, serverRules: string[], input: ReportContentAsBotInput,
+  pluginId: string, settings: unknown, serverRules: string[], input: ReportContentAsBotInput, channelUniqueName = '',
 ): ReportContentAsBotInput | null => {
-  const parsed = parseModerationSettings(settings)
-  const enforcement = Object.prototype.hasOwnProperty.call(parsed, 'serverRuleEnforcement')
-    ? parsed.serverRuleEnforcement : parseModerationSettings(parsed.server).serverRuleEnforcement
-  if (pluginId !== MODERATION_PLUGIN_ID || enforcement !== 'on') return null
+  if (pluginId !== MODERATION_PLUGIN_ID || !serverRulesApply(settings, channelUniqueName)) return null
   const canonical = new Set(serverRules.filter(rule => typeof rule === 'string').map(rule => rule.trim()).filter(Boolean))
   const selectedServerRules = [...new Set((input.selectedServerRules || []).filter(rule => canonical.has(rule)))]
   if (!selectedServerRules.length) return null

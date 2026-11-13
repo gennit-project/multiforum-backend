@@ -64,7 +64,7 @@ test('absent authority cannot inherit governance from an older pinned version or
   const { applyServerModerationPolicy } = await import('./moderationGovernance.js')
   assert.equal(isChannelRuleEligible({ channelRuleEligibility: undefined }, 'cats'), false)
   const runtime = { serverRuleEnforcement: 'on', channelRuleEligibility: 'all', server: { serverRuleEnforcement: 'on', serverRuleCheckMode: 'allowlist' } }
-  assert.deepEqual(applyServerModerationPolicy(runtime, {}), { server: { serverRuleCheckMode: 'allowlist' } })
+  assert.deepEqual(applyServerModerationPolicy(runtime, {}), { server: {} })
   assert.equal(runtime.server.serverRuleEnforcement, 'on', 'do not mutate shared defaults')
 })
 
@@ -98,4 +98,29 @@ test('modern owner state belongs to the authority version while legacy state sta
   assert.equal(getModerationOwnerStateVersionId(versions, 'pinned'), 'latest')
   edgeData.properties.settingsJson = { serverRuleCheckMode: 'all_forums' }
   assert.equal(getModerationOwnerStateVersionId(versions, 'pinned'), 'pinned')
+})
+
+test('server scope is independent of eligibility and preserves legacy staged lists', async () => {
+  const { serverRulesApply, serverRuleScope, applyServerModerationPolicy } = await import('./moderationGovernance.js')
+  for (const eligibility of ['all', 'none', 'allowlist']) {
+    for (const mode of ['on', 'off', 'allowlist']) {
+      const settings = {serverRuleEnforcement: mode, serverRuleForumAllowlist: [' cats '], channelRuleEligibility: eligibility, channelRuleAllowlist: ['dogs']}
+      assert.equal(serverRulesApply(settings, 'cats'), mode !== 'off')
+      assert.equal(serverRulesApply(settings, 'dogs'), mode === 'on')
+      assert.equal(serverRulesApply(settings, ''), mode === 'on')
+    }
+  }
+  for (const list of [['cats'], '["cats"]', 'cats,dogs']) {
+    const settings = {server: {serverRuleCheckMode: 'allowlist', serverRuleForumAllowlist: list}}
+    assert.equal(serverRuleScope(settings), 'allowlist')
+    assert.equal(serverRulesApply(settings, 'cats'), true)
+    assert.equal(serverRulesApply(settings, 'other'), false)
+  }
+  assert.equal(serverRulesApply({serverRuleCheckMode:'on'},'cats'),false)
+  assert.equal(serverRulesApply({serverRuleCheckMode:'allowlist',serverRuleForumAllowlist:['cats',1]},'cats'),true)
+  assert.equal(serverRulesApply({serverRuleEnforcement:'allowlist',serverRuleForumAllowlist:['cats',1]},'cats'),false)
+  const authority = {serverRuleEnforcement:'allowlist',serverRuleForumAllowlist:['cats'],channelRuleEligibility:'none'}
+  const effective = applyServerModerationPolicy({serverRuleEnforcement:'on',serverRuleForumAllowlist:['dogs'],server:{serverRuleCheckMode:'all_forums'}},authority)
+  assert.equal(serverRulesApply(effective,'dogs'),false)
+  assert.equal(serverRulesApply(effective,'cats'),true)
 })

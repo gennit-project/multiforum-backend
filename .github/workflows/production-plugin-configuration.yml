@@ -104,6 +104,7 @@ jobs:
           LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
           LLM_MODERATION_SERVER_RULE_ENFORCEMENT: ${{ vars.LLM_MODERATION_SERVER_RULE_ENFORCEMENT }}
+          LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST: ${{ vars.LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST }}
           SCAN_API_KEY: ${{ inputs.operation == 'apply' && secrets.SCAN_API_KEY || '' }}
           MOD_API_KEY: ${{ inputs.operation == 'apply' && secrets.MOD_API_KEY || '' }}
         run: |
@@ -146,6 +147,7 @@ jobs:
           LLM_MODERATION_SERVICE_URL: ${{ inputs.llm_moderation_service_url || vars.LLM_MODERATION_SERVICE_URL }}
           LLM_MODERATION_TRIAL_FORUM: ${{ vars.LLM_MODERATION_TRIAL_FORUM }}
           LLM_MODERATION_SERVER_RULE_ENFORCEMENT: ${{ vars.LLM_MODERATION_SERVER_RULE_ENFORCEMENT }}
+          LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST: ${{ vars.LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST }}
         run: >-
           pnpm plugin-config:render-production
           --template deployment/plugin-configuration/production.template.json
@@ -154,6 +156,7 @@ jobs:
           --moderation-service-url "${LLM_MODERATION_SERVICE_URL}"
           --trial-forum "${LLM_MODERATION_TRIAL_FORUM}"
           --server-rule-enforcement "${LLM_MODERATION_SERVER_RULE_ENFORCEMENT}"
+          --server-rule-forum-allowlist "${LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST:-[]}"
 
       - name: Reconcile production desired state
         id: reconcile

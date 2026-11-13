@@ -6,7 +6,7 @@ const installed = (settings:Record<string,unknown>) => ({id:'v',version:'0.8.0',
 test('governance status distinguishes off, legacy migration, eligibility, opt-in and pending request', () => {
   assert.equal(governanceStatus(null,'cats',false,null).canRequest,false)
   const legacy=governanceStatus(installed({serverRuleCheckMode:'allowlist',serverRuleForumAllowlist:['dogs']}),'cats',true,null)
-  assert.equal(legacy.migrationRequired,true);assert.equal(legacy.serverRuleEnforcement,'legacy_allowlist');assert.equal(legacy.eligible,true)
+  assert.equal(legacy.migrationRequired,false);assert.equal(legacy.serverRuleEnforcement,'allowlist');assert.equal(legacy.eligible,true)
   const settings={serverRuleEnforcement:'on',channelRuleEligibility:'allowlist',channelRuleAllowlist:['dogs']}
   const denied=governanceStatus(installed(settings),'cats',true,null)
   assert.equal(denied.eligible,false);assert.equal(denied.ownerEnabled,true);assert.equal(denied.canRequest,true)

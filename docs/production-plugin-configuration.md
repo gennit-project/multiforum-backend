@@ -24,7 +24,8 @@ Configure these GitHub environment variables:
 - `SCAN_SERVICE_URL`
 - `LLM_MODERATION_SERVICE_URL`
 - `LLM_MODERATION_TRIAL_FORUM`
-- `LLM_MODERATION_SERVER_RULE_ENFORCEMENT` (`on` or `off`, an explicit admin migration decision)
+- `LLM_MODERATION_SERVER_RULE_ENFORCEMENT` (`on`, `off` or `allowlist`; preserve the existing server scope)
+- `LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST` (JSON string array; existing server-rule rollout list, independent of `LLM_MODERATION_TRIAL_FORUM`)
 
 Configure these GitHub environment secrets:
 

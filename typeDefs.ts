@@ -3270,6 +3270,7 @@ const typeDefinitions = gql`
     pluginId: String!
     version: String
     serverRuleEnforcement: String!
+    serverRulesApply: Boolean!
     channelRuleEligibility: String!
     channelRuleAllowlist: [String!]!
     eligible: Boolean!

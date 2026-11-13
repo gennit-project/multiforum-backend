@@ -189,3 +189,18 @@ for (const disableFirst of [true, false]) {
     assert.deepEqual(enabled.records.map(row=>row.get('version')),['0.9.0'])
   })
 }
+
+test('GraphQL status and approval keep staged server scope separate from forum eligibility', async () => {
+  await seed()
+  await changePolicy({...policy, serverRuleEnforcement:'allowlist', serverRuleForumAllowlist:['dogs']})
+  const request = await repo().request('cats',pluginId,'owner')
+  await repo().approve(request.id,'admin')
+  const result = await graphql({schema,source:`query { getChannelRuleGovernance(channelUniqueName:"cats",pluginId:"llm-moderation") { serverRuleEnforcement serverRulesApply eligible ownerEnabled migrationRequired } }`,contextValue:{driver}})
+  assert.equal(result.errors,undefined)
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)),{getChannelRuleGovernance:{serverRuleEnforcement:'allowlist',serverRulesApply:false,eligible:true,ownerEnabled:false,migrationRequired:false}})
+  assert.equal((await repo().status('dogs',pluginId)).serverRulesApply,true)
+  const stored = (await driver.executeQuery('MATCH (:ServerConfig)-[e:INSTALLED]->() RETURN e.settingsJson AS settings')).records[0].get('settings')
+  assert.deepEqual(JSON.parse(stored).serverRuleForumAllowlist,['dogs'])
+  await repo().setEnabled('cats',pluginId,true)
+  assert.equal((await repo().status('cats',pluginId)).serverRulesApply,false)
+})

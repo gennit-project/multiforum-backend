@@ -86,8 +86,10 @@ const getResolver = (input: Input) => {
       if (enabled && pluginId === 'llm-moderation' &&
           ['serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist'].some(key => Object.prototype.hasOwnProperty.call(governanceSettings, key))) {
         if (compareVersions(version, '0.8.0') < 0) throw new Error('Moderation governance requires plugin version 0.8.0 or later.')
-        if (!['on','off'].includes(String(governanceSettings.serverRuleEnforcement))) throw new Error('serverRuleEnforcement must be on or off.')
+        if (!['on','off','allowlist'].includes(String(governanceSettings.serverRuleEnforcement))) throw new Error('serverRuleEnforcement must be on, off, or allowlist.')
         if (!['all','none','allowlist'].includes(String(governanceSettings.channelRuleEligibility))) throw new Error('channelRuleEligibility must be all, none, or allowlist.')
+        if (governanceSettings.serverRuleEnforcement === 'allowlist' &&
+            (!Array.isArray(governanceSettings.serverRuleForumAllowlist) || !governanceSettings.serverRuleForumAllowlist.every(value => typeof value === 'string'))) throw new Error('serverRuleForumAllowlist must be a string array.')
         const allowlist = governanceSettings.channelRuleAllowlist
         if (!Array.isArray(allowlist) || !allowlist.every(value => typeof value === 'string')) throw new Error('channelRuleAllowlist must be a string array.')
       }
