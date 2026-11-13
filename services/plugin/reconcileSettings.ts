@@ -121,8 +121,15 @@ export const reconcileSettings = (params: {
 }): ReconciledSettings => {
   const manifest = parseRecord(params.newManifest)
   const defaults = parseRecord(asRecord(manifest.settingsDefaults)[params.scope])
-  const oldSettings = parseRecord(params.oldSettings)
+  const oldSettings = { ...parseRecord(params.oldSettings) }
   const fields = getFields(manifest, params.scope)
+  if (params.scope === 'server' && fields.some(field => field.key === 'serverRuleEnforcement')) {
+    const nested = parseRecord(oldSettings.server)
+    for (const key of ['serverRuleCheckMode', 'serverRuleForumAllowlist', 'serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist']) {
+      if (!hasOwn(oldSettings, key) && hasOwn(nested, key)) oldSettings[key] = nested[key]
+    }
+  }
+
   const oldFields = getFields(parseRecord(params.oldManifest), params.scope)
   const fieldsByKey = new Map(fields.map(field => [String(field.key), field]))
   const renames = getRenameMap({ newFields: fields, oldFields, oldSettings, defaults })
@@ -161,8 +168,24 @@ export const reconcileSettings = (params: {
     carried.push(key)
   }
 
+  // Installing a governance-capable version must preserve a legacy trial's
+  // exact scope. Server scope and forum eligibility are independent policies.
+  if (params.scope === 'server' && fields.some(field => field.key === 'serverRuleEnforcement') &&
+      hasOwn(oldSettings, 'serverRuleCheckMode') && !hasOwn(oldSettings, 'serverRuleEnforcement')) {
+    for (const key of ['serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist']) {
+      if (!hasOwn(oldSettings, key)) delete settings[key]
+    }
+    for (const key of ['serverRuleCheckMode', 'serverRuleForumAllowlist']) {
+      if (!hasOwn(oldSettings, key)) continue
+      settings[key] = oldSettings[key]
+      const droppedIndex = dropped.indexOf(key)
+      if (droppedIndex >= 0) dropped.splice(droppedIndex, 1)
+      if (!carried.includes(key)) carried.push(key)
+    }
+  }
+
   const newDefaults = Object.keys(defaults).filter(
-    key => !hasOwn(oldSettings, key) && !hasOwn(oldSettings, renames.get(key) || '')
+    key => hasOwn(settings, key) && !hasOwn(oldSettings, key) && !hasOwn(oldSettings, renames.get(key) || '')
   )
   return {
     settings,

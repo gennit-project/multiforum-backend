@@ -93,3 +93,17 @@ test('preserves installed settings when enablement omits settingsJson', async ()
     },
   })
 })
+
+test('server allowlist validation is independent of forum eligibility', async () => {
+  for (const serverList of [[], ['cats'], null, ['cats', 1], 'cats']) {
+    let writes = 0
+    const resolver = getResolver({repository:{
+      findPlugin:async()=>[{id:'p',name:'llm-moderation',tags:[],displayName:null,description:null,authorName:null,authorUrl:null,homepage:null,license:null,metadata:null,Versions:[{id:'v',version:'0.8.0',manifest:{},settingsDefaults:null,uiSchema:null,documentationPath:null,readmeMarkdown:null,registryUrl:null,releaseNotesUrl:null,sourceRepoUrl:null,sourceCommit:null,minServerVersion:null,apiVersion:null}]}],
+      findInstallations:async()=>[{serverName:'s',InstalledVersions:[{id:'v',version:'0.8.0'}],InstalledVersionsConnection:{edges:[]}}],
+      findSecrets:async()=>[],setInstallation:async()=>{writes++},
+    }})
+    const run = resolver({}, {pluginId:'llm-moderation',version:'0.8.0',enabled:true,settingsJson:{serverRuleEnforcement:'allowlist',serverRuleForumAllowlist:serverList,channelRuleEligibility:'none',channelRuleAllowlist:[]}}, {} as GraphQLContext, {} as GraphQLResolveInfo)
+    if (Array.isArray(serverList) && serverList.every(v=>typeof v==='string')) {await run;assert.equal(writes,1)}
+    else {await assert.rejects(run,/serverRuleForumAllowlist must be a string array/);assert.equal(writes,0)}
+  }
+})

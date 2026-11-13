@@ -77,8 +77,9 @@ export function evaluateServerPermission(input: EvaluateServerPermissionInput) {
 
 export const hasServerPermission: (
   permission: keyof ServerRole,
-  context: GraphQLContext
-) => Promise<Error | boolean> = async (permission, context) => {
+  context: GraphQLContext,
+  options?: { readOnly?: boolean }
+) => Promise<Error | boolean> = async (permission, context, options) => {
   // 1. Check for server roles on the user object.
   if (!context.user?.data) {
     context.user = await setUserDataOnContext({
@@ -99,8 +100,8 @@ export const hasServerPermission: (
     hasActiveSuspension = suspensionInfo.isSuspended;
 
     if (
-      suspensionInfo.expiredUserSuspensions.length > 0 ||
-      suspensionInfo.expiredModSuspensions.length > 0
+      !options?.readOnly && (suspensionInfo.expiredUserSuspensions.length > 0 ||
+      suspensionInfo.expiredModSuspensions.length > 0)
     ) {
       disconnectExpiredServerSuspensions({
         context,
@@ -151,7 +152,7 @@ export const hasServerPermission: (
     adminRole: serverConfig.DefaultAdminRole,
   });
 
-  if (result instanceof Error && hasActiveSuspension && username) {
+  if (!options?.readOnly && result instanceof Error && hasActiveSuspension && username) {
     try {
       await createSuspensionNotification({
         repository:

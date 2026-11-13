@@ -10,6 +10,7 @@ export async function productionManifest(): Promise<PluginConfigurationDesiredSt
     scanServiceUrl: 'https://scan.example.test',
     moderationServiceUrl: 'https://moderation.example.test',
     trialForum: 'trial',
+    serverRuleEnforcement: 'off',
   }) as PluginConfigurationDesiredStateInput;
 }
 

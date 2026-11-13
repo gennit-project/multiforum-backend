@@ -11,6 +11,7 @@ const template = JSON.parse(
 const render = () => renderProductionPluginConfiguration(template, {
   scanServiceUrl: 'https://scanner.example.test',
   moderationServiceUrl: 'https://moderation.example.test/',
+  serverRuleEnforcement: 'off',
   trialForum: 'moderation_trial',
 })
 
@@ -50,13 +51,15 @@ test('rejects unsafe service URLs and invalid forum names', () => {
     assert.throws(() => renderProductionPluginConfiguration(template, {
       scanServiceUrl,
       moderationServiceUrl: 'https://moderation.example.test',
-      trialForum: 'moderation_trial',
+      serverRuleEnforcement: 'off',
+  trialForum: 'moderation_trial',
     }), /HTTPS origin/)
   }
   assert.throws(() => renderProductionPluginConfiguration(template, {
     scanServiceUrl: 'https://scanner.example.test',
     moderationServiceUrl: 'https://moderation.example.test',
-    trialForum: 'not a channel',
+    serverRuleEnforcement: 'off',
+  trialForum: 'not a channel',
   }), /channel unique name/)
 })
 
@@ -64,6 +67,29 @@ test('rejects unresolved template tokens', () => {
   assert.throws(() => renderProductionPluginConfiguration({ value: '__UNKNOWN__' }, {
     scanServiceUrl: 'https://scanner.example.test',
     moderationServiceUrl: 'https://moderation.example.test',
-    trialForum: 'moderation_trial',
+    serverRuleEnforcement: 'off',
+  trialForum: 'moderation_trial',
   }), /unresolved template token/)
 })
+
+test('requires an explicit legacy migration decision', () => {
+  assert.throws(() => renderProductionPluginConfiguration(template, {
+    scanServiceUrl: 'https://scanner.example.test', moderationServiceUrl: 'https://moderation.example.test', trialForum: 'trial',
+  }), /Explicit server-rule enforcement/)
+  const rendered = render() as {plugins: Array<{settingsJson:Record<string,unknown>}>}
+  assert.equal(rendered.plugins[1].settingsJson.serverRuleEnforcement,'off')
+  assert.equal(rendered.plugins[1].settingsJson.channelRuleEligibility,'allowlist')
+  assert.deepEqual(rendered.plugins[1].settingsJson.channelRuleAllowlist,['moderation_trial'])
+  assert.deepEqual(rendered.plugins[1].settingsJson.serverRuleForumAllowlist,[])
+})
+
+ test('server rollout and bad_advice forum-rule pilot stay independent', () => {
+   const rendered = renderProductionPluginConfiguration(template, {
+     scanServiceUrl: 'https://scanner.example.test', moderationServiceUrl: 'https://moderation.example.test',
+     trialForum: 'bad_advice', serverRuleEnforcement: 'allowlist', serverRuleForumAllowlist: ['server_trial'],
+   }) as {plugins: Array<{settingsJson:Record<string,unknown>}>;channelPlugins:Array<{channelUniqueName:string;enabled:boolean}>}
+   assert.deepEqual(rendered.plugins[1].settingsJson.serverRuleForumAllowlist, ['server_trial'])
+   assert.deepEqual(rendered.plugins[1].settingsJson.channelRuleAllowlist, ['bad_advice'])
+   assert.equal(rendered.channelPlugins[0].channelUniqueName, 'bad_advice')
+   assert.equal(rendered.channelPlugins[0].enabled, true)
+ })

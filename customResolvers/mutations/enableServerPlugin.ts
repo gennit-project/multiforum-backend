@@ -1,3 +1,4 @@
+import { compareVersions } from '../../services/plugin/pipelineUtils.js'
 import {rememberCanonicalSource} from '../../services/canonicalSourceFields.js'
 import type { GraphQLResolveInfo } from 'graphql'
 import type { Driver } from 'neo4j-driver'
@@ -17,6 +18,7 @@ type Args = {
   version: string
   enabled: boolean
   settingsJson?: Record<string, unknown>
+  preserveModerationAllowlist?: boolean
 }
 
 export const parsePluginSettings = (value: unknown): Record<string, unknown> => {
@@ -76,9 +78,21 @@ const getResolver = (input: Input) => {
 
       const installationEdge = serverConfig.InstalledVersionsConnection
         ?.edges?.[0]
-      const settingsToApply = settingsJson ?? parsePluginSettings(
+      let settingsToApply = settingsJson ?? parsePluginSettings(
         installationEdge?.properties?.settingsJson
       )
+
+      const governanceSettings = { ...parsePluginSettings(settingsToApply.server), ...settingsToApply }
+      if (enabled && pluginId === 'llm-moderation' &&
+          ['serverRuleEnforcement', 'channelRuleEligibility', 'channelRuleAllowlist'].some(key => Object.prototype.hasOwnProperty.call(governanceSettings, key))) {
+        if (compareVersions(version, '0.8.0') < 0) throw new Error('Moderation governance requires plugin version 0.8.0 or later.')
+        if (!['on','off','allowlist'].includes(String(governanceSettings.serverRuleEnforcement))) throw new Error('serverRuleEnforcement must be on, off, or allowlist.')
+        if (!['all','none','allowlist'].includes(String(governanceSettings.channelRuleEligibility))) throw new Error('channelRuleEligibility must be all, none, or allowlist.')
+        if (governanceSettings.serverRuleEnforcement === 'allowlist' &&
+            (!Array.isArray(governanceSettings.serverRuleForumAllowlist) || !governanceSettings.serverRuleForumAllowlist.every(value => typeof value === 'string'))) throw new Error('serverRuleForumAllowlist must be a string array.')
+        const allowlist = governanceSettings.channelRuleAllowlist
+        if (!Array.isArray(allowlist) || !allowlist.every(value => typeof value === 'string')) throw new Error('channelRuleAllowlist must be a string array.')
+      }
 
       // 3. If enabling, validate all required server-scoped configuration.
       if (enabled) {
@@ -108,7 +122,12 @@ const getResolver = (input: Input) => {
           ? JSON.stringify(settingsToApply)
           : null
 
-      await repository.setInstallation(serverConfig.serverName, pluginVersion.id, enabled, settingsJsonValue)
+      if (pluginId === 'llm-moderation') {
+        const stored = await repository.setInstallation(serverConfig.serverName, pluginVersion.id, enabled, settingsJsonValue, args.preserveModerationAllowlist ? true : 'upgrade')
+        if (stored) settingsToApply = stored
+      } else {
+        await repository.setInstallation(serverConfig.serverName, pluginVersion.id, enabled, settingsJsonValue)
+      }
 
 
 

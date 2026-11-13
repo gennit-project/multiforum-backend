@@ -6,12 +6,16 @@ const TOKENS = {
   scanServiceUrl: '__SCAN_SERVICE_URL__',
   moderationServiceUrl: '__LLM_MODERATION_SERVICE_URL__',
   trialForum: '__LLM_MODERATION_TRIAL_FORUM__',
+  serverRuleEnforcement: '__SERVER_RULE_ENFORCEMENT__',
+  serverRuleForumAllowlist: '__SERVER_RULE_FORUM_ALLOWLIST__',
 } as const
 
 export type ProductionPluginConfigurationValues = {
   scanServiceUrl: string
   moderationServiceUrl: string
   trialForum: string
+  serverRuleEnforcement?: 'on' | 'off' | 'allowlist'
+  serverRuleForumAllowlist?: string[]
 }
 
 const normalizeHttpsOrigin = (name: string, value: string): string => {
@@ -35,7 +39,7 @@ const normalizeTrialForum = (value: string): string => {
 
 const replaceTokens = (
   value: unknown,
-  replacements: ReadonlyMap<string, string>
+  replacements: ReadonlyMap<string, unknown>
 ): unknown => {
   if (Array.isArray(value)) {
     return value.map(entry => replaceTokens(entry, replacements))
@@ -52,10 +56,21 @@ export const renderProductionPluginConfiguration = (
   template: unknown,
   values: ProductionPluginConfigurationValues
 ): Record<string, unknown> => {
-  const replacements = new Map([
+  if (JSON.stringify(template).includes(TOKENS.serverRuleEnforcement) &&
+      !['on', 'off', 'allowlist'].includes(values.serverRuleEnforcement ?? '')) {
+    throw new Error('Explicit server-rule enforcement on/off/allowlist is required; retain the existing server scope')
+  }
+  if (values.serverRuleEnforcement === 'allowlist' && !Array.isArray(values.serverRuleForumAllowlist)) {
+    throw new Error('Explicit server-rule forum allowlist is required; do not reuse the forum-rule pilot list')
+  }
+  const serverList = values.serverRuleForumAllowlist ?? []
+  if (!serverList.every(value => typeof value === 'string')) throw new Error('Server-rule forum allowlist must be a string array')
+  const replacements = new Map<string, unknown>([
     [TOKENS.scanServiceUrl, normalizeHttpsOrigin('scanServiceUrl', values.scanServiceUrl)],
     [TOKENS.moderationServiceUrl, normalizeHttpsOrigin('moderationServiceUrl', values.moderationServiceUrl)],
     [TOKENS.trialForum, normalizeTrialForum(values.trialForum)],
+    [TOKENS.serverRuleEnforcement, values.serverRuleEnforcement ?? ''],
+    [TOKENS.serverRuleForumAllowlist, serverList.map(normalizeTrialForum)],
   ])
   const rendered = replaceTokens(template, replacements)
   if (!rendered || typeof rendered !== 'object' || Array.isArray(rendered)) {
@@ -83,6 +98,8 @@ export const main = async (args = process.argv.slice(2)): Promise<void> => {
     scanServiceUrl: argument(args, '--scan-service-url'),
     moderationServiceUrl: argument(args, '--moderation-service-url'),
     trialForum: argument(args, '--trial-forum'),
+    serverRuleEnforcement: argument(args, '--server-rule-enforcement') as 'on' | 'off' | 'allowlist',
+    serverRuleForumAllowlist: args.includes('--server-rule-forum-allowlist') ? JSON.parse(argument(args, '--server-rule-forum-allowlist')) : undefined,
   })
   await writeFile(outputPath, `${JSON.stringify(rendered, null, 2)}\n`, 'utf8')
 }

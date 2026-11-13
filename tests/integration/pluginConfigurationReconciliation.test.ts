@@ -129,7 +129,7 @@ test('production template plans, applies real writes, reads back and converges o
   }
   assert.ok(reads.listReconciliationChannels);
   assert.equal((await reads.listReconciliationChannels(['trial']))[0].uniqueName, 'trial');
-  assert.deepEqual(await channelEdges(), [{ channel: 'trial', plugin: 'llm-moderation', version: '0.7.1', enabled: true, settings: null }]);
+  assert.deepEqual(await channelEdges(), [{ channel: 'trial', plugin: 'llm-moderation', version: '0.8.0', enabled: true, settings: null }]);
   const secretRows = await driver.executeQuery('MATCH (s:ServerSecret) RETURN s.key AS key, s.ciphertext AS ciphertext');
   assert.equal(secretRows.records.length, 2);
   for (const row of secretRows.records) {

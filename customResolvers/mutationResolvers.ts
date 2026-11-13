@@ -1,3 +1,5 @@
+import type { ChannelRuleGovernanceMutationResolvers } from './contracts/channelRuleGovernance.js'
+import { channelRuleGovernanceResolvers } from './channelRuleGovernance.js'
 import type { DelegatedActivitySource } from "./contracts/deferredSources.js";
 import type { ImageWriteSourceMutationResolvers } from "./contracts/imageWriteSources.js";
 import type { ModerationArchiveMutationResolvers } from "./contracts/moderationArchives.js";
@@ -572,7 +574,14 @@ export default function buildMutationResolvers(deps: ResolverDeps) {
     }),
   } satisfies ImageWriteSourceMutationResolvers;
 
+  const governanceResolvers = {
+    setChannelRuleEnforcement: channelRuleGovernanceResolvers(driver).setChannelRuleEnforcement,
+    requestChannelRuleEnforcement: channelRuleGovernanceResolvers(driver).requestChannelRuleEnforcement,
+    approveChannelRuleEnforcement: channelRuleGovernanceResolvers(driver).approveChannelRuleEnforcement,
+  } satisfies ChannelRuleGovernanceMutationResolvers
+
   return {
+    ...governanceResolvers,
     ...accountWriteSourceResolvers,
     ...contentResolvers,
     ...moderationResolvers,

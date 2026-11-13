@@ -162,6 +162,10 @@
       "status": "selected-response"
     },
     {
+      "field": "Mutation.approveChannelRuleEnforcement",
+      "status": "selected-response"
+    },
+    {
       "field": "Mutation.archiveComment",
       "status": "selected-response"
     },
@@ -410,6 +414,10 @@
       "status": "selected-response"
     },
     {
+      "field": "Mutation.requestChannelRuleEnforcement",
+      "status": "selected-response"
+    },
+    {
       "field": "Mutation.requestDownloadableFileReview",
       "status": "selected-response"
     },
@@ -439,6 +447,10 @@
     },
     {
       "field": "Mutation.setChannelIcon",
+      "status": "selected-response"
+    },
+    {
+      "field": "Mutation.setChannelRuleEnforcement",
       "status": "selected-response"
     },
     {
@@ -654,6 +666,10 @@
       "status": "selected-response"
     },
     {
+      "field": "Query.getChannelRuleGovernance",
+      "status": "selected-response"
+    },
+    {
       "field": "Query.getCommentReplies",
       "status": "selected-response"
     },
@@ -739,6 +755,10 @@
     },
     {
       "field": "Query.getPluginConfigStatus",
+      "status": "selected-response"
+    },
+    {
+      "field": "Query.getPluginManagementCapability",
       "status": "selected-response"
     },
     {

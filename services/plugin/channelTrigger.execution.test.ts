@@ -635,3 +635,191 @@ test("skips later steps after a failure (stopOnFirstFailure)", async () => {
 });
 
 const triggerChannelPluginPipeline = (args: Parameters<typeof actualTrigger>[0] & { models: Models }, options?: Parameters<typeof actualTrigger>[1]) => {const {models, ...rest} = args; return actualTrigger(rest,{...options,channelRepository:channelExecutionRepositoryStub(models),leaseRepository:pipelineLeaseRepositoryStub(models),attemptRepository:pipelineAttemptRepositoryStub(models.PluginPipelineRun)});};
+
+test("server moderation cannot be downgraded or skipped by a channel pipeline", async () => {
+  const current = installedEdge("llm-moderation");
+  const old = installedEdge("llm-moderation");
+  current.node.version = "2.0.0";
+  current.node.id = "pv-current";
+  const edges = [
+    { ...current, properties: { enabled: true, settingsJson: { serverRuleEnforcement: "on", channelRuleEligibility: "none" } } },
+    old,
+    installedEdge("mybot"),
+  ];
+  const { models, creates } = makeExecModels(
+    [{ pluginId: "mybot" }, { pluginId: "llm-moderation", version: "1.0.0", condition: "PREVIOUS_FAILED" }],
+    edges,
+    [{ event: EVENT, steps: [{ pluginId: "llm-moderation", version: "2.0.0" }] }],
+    { channelPluginEdges: [{ properties: { enabled: true }, node: { id: "pv-current", Plugin: { name: "llm-moderation" } } }] }
+  );
+  const contexts: Array<{ channel?: { pluginEnabled?: boolean } }> = [];
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      contexts.push((envelope as { payload: { context: { channel?: { pluginEnabled?: boolean } } } }).payload.context);
+      return { success: true };
+    }
+  };
+  await execRun(models, loaderFor(CapturingPlugin));
+  assert.equal(creates[0].input[0].pluginId, "llm-moderation");
+  assert.equal(creates[0].input[0].version, "2.0.0");
+  assert.equal(creates.filter(create => create.input[0].pluginId === "llm-moderation").length, 1);
+  assert.equal(contexts[0].channel?.pluginEnabled, false);
+});
+
+test("allowlisted server moderation cannot be downgraded or skipped by a channel pipeline", async () => {
+  const current = installedEdge("llm-moderation");
+  const old = installedEdge("llm-moderation");
+  current.node.version = "2.0.0";
+  current.node.id = "pv-current";
+  const edges = [
+    { ...current, properties: { enabled: true, settingsJson: { serverRuleEnforcement: "allowlist", serverRuleForumAllowlist: ["cats"], channelRuleEligibility: "none" } } },
+    old,
+    installedEdge("mybot"),
+  ];
+  const { models, creates } = makeExecModels(
+    [{ pluginId: "mybot" }, { pluginId: "llm-moderation", version: "1.0.0", condition: "PREVIOUS_FAILED" }],
+    edges,
+    [{ event: EVENT, steps: [{ pluginId: "llm-moderation", version: "2.0.0" }] }],
+    { channelPluginEdges: [{ properties: { enabled: true }, node: { id: "pv-current", Plugin: { name: "llm-moderation" } } }] }
+  );
+  const contexts: Array<{ channel?: { pluginEnabled?: boolean } }> = [];
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      contexts.push((envelope as { payload: { context: { channel?: { pluginEnabled?: boolean } } } }).payload.context);
+      return { success: true };
+    }
+  };
+  await execRun(models, loaderFor(CapturingPlugin));
+  assert.equal(creates[0].input[0].pluginId, "llm-moderation");
+  assert.equal(creates[0].input[0].version, "2.0.0");
+  assert.equal(creates.filter(create => create.input[0].pluginId === "llm-moderation").length, 1);
+  assert.equal(contexts[0].channel?.pluginEnabled, false);
+});
+
+for (const ownerEnabled of [true, false]) test(`modern moderation reads latest owner opt-in with an older server pin: ${ownerEnabled}`, async () => {
+  const current = installedEdge("llm-moderation");
+  current.node.id = "pv-latest";
+  current.node.version = "0.9.0";
+  const old = installedEdge("llm-moderation");
+  old.node.id = "pv-pinned";
+  old.node.version = "0.8.0";
+  const edges = [{ ...current, properties: { enabled: true, settingsJson: { serverRuleEnforcement: "on", channelRuleEligibility: "all" } } }, old];
+  const channelPluginEdges = [
+    { node: { id: "pv-latest", Plugin: { name: "llm-moderation" } }, properties: { enabled: ownerEnabled } },
+    { node: { id: "pv-pinned", Plugin: { name: "llm-moderation" } }, properties: { enabled: !ownerEnabled } },
+  ];
+  const { models, creates } = makeExecModels([], edges,
+      [{ event: EVENT, steps: [{ pluginId: "llm-moderation", version: "0.8.0" }] }],
+      { channelPluginEdges });
+  let enabled: boolean | undefined;
+  const CapturingPlugin: PluginConstructor = class {
+    constructor(..._args: unknown[]) {}
+    async handleEvent(envelope: unknown) {
+      enabled = (envelope as { payload: { context: { channel: { pluginEnabled: boolean } } } }).payload.context.channel.pluginEnabled;
+      return { success: true };
+    }
+  };
+  await execRun(models, loaderFor(CapturingPlugin));
+  assert.equal(creates[0].input[0].version, "0.8.0", "server execution pin is retained");
+  assert.equal(enabled, ownerEnabled, "latest version owns opt-in, regardless of pinned version's edge");
+});
+
+for (const scenario of [
+  { name: "allowlisted server report survives local suspension", plugin: "llm-moderation", mode: "allowlist", serverList: ["cats"], serverRules: ["No spam"], forumRules: [], local: true, global: false, reports: 1 },
+  { name: "outside server allowlist cannot bypass local suspension", plugin: "llm-moderation", mode: "allowlist", serverList: ["dogs"], serverRules: ["No spam"], forumRules: [], local: true, global: false, reports: 0 },
+  { name: "mandatory server report survives local suspension", plugin: "llm-moderation", mode: "on", serverRules: ["No spam"], forumRules: [], local: true, global: false, reports: 1 },
+  { name: "mixed report is restricted to server citations", plugin: "llm-moderation", mode: "on", serverRules: ["No spam"], forumRules: ["Be kind"], local: true, global: false, reports: 1 },
+  { name: "channel-only report respects local suspension", plugin: "llm-moderation", mode: "on", serverRules: [], forumRules: ["Be kind"], local: true, global: false, reports: 0 },
+  { name: "ordinary bot respects local suspension", plugin: "mybot", mode: "on", serverRules: ["No spam"], forumRules: [], local: true, global: false, reports: 0 },
+  { name: "global off cannot bypass local suspension", plugin: "llm-moderation", mode: "off", serverRules: ["No spam"], forumRules: [], local: true, global: false, reports: 0 },
+  { name: "invented server citation cannot bypass local suspension", plugin: "llm-moderation", mode: "on", serverRules: ["Invented"], forumRules: [], local: true, global: false, reports: 0 },
+  { name: "server suspension overrides mandatory reporting", plugin: "llm-moderation", mode: "on", serverRules: ["No spam"], forumRules: [], local: true, global: true, reports: 0 },
+  { name: "server suspension applies without local suspension", plugin: "llm-moderation", mode: "on", serverRules: ["No spam"], forumRules: [], local: false, global: true, reports: 0 },
+]) test(scenario.name, async () => {
+  const installed = installedEdge(scenario.plugin);
+  const edges = [{ ...installed, properties: { enabled: true, settingsJson: { serverRuleEnforcement: scenario.mode, serverRuleForumAllowlist: scenario.serverList, channelRuleEligibility: "all" } } }];
+  const { models } = makeExecModels([], edges, [], { serverRules: ["No spam", "No threats"] });
+  const reports: Array<Record<string, any>> = [];
+  const Plugin: PluginConstructor = class {
+    private readonly context: Record<string, any>;
+    constructor(context: unknown) { this.context = context as Record<string, any>; }
+    async handleEvent() {
+      await this.context.reportContentAsBot({
+        contentType: "discussion", contentId: "d-1", botName: "llm-moderator",
+        reportText: "Mixed model rationale", selectedServerRules: scenario.serverRules,
+        selectedForumRules: scenario.forumRules, recommendedAction: "remove", recommendationRationale: "Mixed rationale",
+      });
+      return { success: true };
+    }
+  };
+  const options: Omit<TriggerOptions, "loadPlugin"> = {
+    getSuspension: async () => ({activeSuspension: null, isSuspended: scenario.local, relatedIssueId: null, relatedIssueNumber: null, expiredUserSuspensions: [], expiredModSuspensions: [], suspendedEntity: null}),
+    getServerBotSuspension: async (_driver, serverName, username) => {
+      assert.equal(serverName, "s");
+      assert.match(username, /llm-moderator/);
+      return scenario.global;
+    },
+    reportAsBot: async input => { reports.push(input as unknown as Record<string, any>); return {issueId: "issue", issueNumber: 1}; },
+  };
+  await execRun(models, loaderFor(Plugin), options);
+  assert.equal(reports.length, scenario.reports);
+  if (scenario.reports && scenario.forumRules.length) {
+    assert.deepEqual(reports[0].reportInput.selectedForumRules, []);
+    assert.deepEqual(reports[0].reportInput.selectedServerRules, ["No spam"]);
+    assert.equal(reports[0].reportInput.recommendedAction, null);
+    assert.equal(reports[0].reportInput.recommendationRationale, null);
+    assert.equal(reports[0].reportInput.reportText, "Server-rule review requested: No spam");
+  }
+});
+
+
+test("queued discussion rejects old code after staged governance activation", async () => {
+  const installed = installedEdge("llm-moderation");
+  installed.node.version = "0.7.1";
+  const { models, updates, creates, attemptCreates } = makeExecModels(
+    [{ pluginId: "llm-moderation", condition: "ALWAYS" }],
+    [installed]
+  );
+  const loader = loaderFor(pluginReturning({ success: true, result: { message: "ok" } }));
+  await execRun(models, loader, { execution: { deferExecution: true } });
+
+  const queued = creates[0].input[0];
+  installed.properties.settingsJson = {serverRuleEnforcement:"allowlist",serverRuleForumAllowlist:["cats"],channelRuleEligibility:"none",channelRuleAllowlist:[]};
+  await execRun(models, loader, {
+    execution: {
+      resume: {
+        pipelineId: String(queued.pipelineId),
+        targetVersion: String(queued.targetVersion),
+        configurationSnapshot: attemptCreates[0].input[0].configurationSnapshot,
+        maxRuns: 1,
+        runs: [{
+          id: "run-1",
+          pluginId: String(queued.pluginId),
+          order: Number(queued.executionOrder),
+          status: "PENDING",
+          version: String(queued.version),
+          ruleSetVersion: String(queued.ruleSetVersion),
+          targetVersion: String(queued.targetVersion),
+        }],
+      },
+    },
+  });
+
+  assert.deepEqual(
+    {
+      attemptsCreated: attemptCreates.length,
+      jobsCreated: creates.length,
+      ran: statusesOf(updates).includes("RUNNING"),
+      succeeded: statusesOf(updates).includes("SUCCEEDED"),
+    },
+    {
+      attemptsCreated: 1,
+      jobsCreated: 1,
+      ran: false,
+      succeeded: false,
+    }
+  );
+  assert.ok(statusesOf(updates).includes("SKIPPED"));
+});

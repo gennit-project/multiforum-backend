@@ -24,6 +24,8 @@ Configure these GitHub environment variables:
 - `SCAN_SERVICE_URL`
 - `LLM_MODERATION_SERVICE_URL`
 - `LLM_MODERATION_TRIAL_FORUM`
+- `LLM_MODERATION_SERVER_RULE_ENFORCEMENT` (`on`, `off` or `allowlist`; preserve the existing server scope)
+- `LLM_MODERATION_SERVER_RULE_FORUM_ALLOWLIST` (JSON string array; existing server-rule rollout list, independent of `LLM_MODERATION_TRIAL_FORUM`)
 
 Configure these GitHub environment secrets:
 
@@ -94,3 +96,5 @@ llm-moderation plugin implementation, model accuracy, write authorization,
 process-crash recovery or live deployment. Public read permissions are real;
 write authorization has separate suites. CI discovers this file automatically
 in the existing integration shards.
+
+See [moderation governance](moderation-governance.md) for the 0.8.0 coordinated release, legacy migration decision, approval-preserving reconciliation and queue-draining rollout gate.
