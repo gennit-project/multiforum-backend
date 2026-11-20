@@ -34,11 +34,21 @@ test("content feature policy reads are parameterized and leader-routed", async (
                   imageUploadsEnabled: true,
                   wikiEnabled: false,
                   allowedFileTypes: ["zip", ".stl"],
+                  imageMaxUploadBytes: neo4j.int(500000),
+                  fileMaxUploadBytes: neo4j.int(2000000),
                 }),
               ],
             };
           }
-          return { records: [record({ allowedFileTypes: ["png"] })] };
+          return {
+            records: [
+              record({
+                allowedFileTypes: ["png"],
+                imageMaxUploadBytes: neo4j.int(1000000),
+                fileMaxUploadBytes: neo4j.int(5000000),
+              }),
+            ],
+          };
         },
         async close() {
           closeCalls += 1;
@@ -60,10 +70,14 @@ test("content feature policy reads are parameterized and leader-routed", async (
     imageUploadsEnabled: true,
     wikiEnabled: false,
     allowedFileTypes: ["zip", ".stl"],
+    imageMaxUploadBytes: 500000,
+    fileMaxUploadBytes: 2000000,
   });
   assert.deepEqual(await repository.findServerFileTypePolicy(), {
     found: true,
     allowedFileTypes: ["png"],
+    imageMaxUploadBytes: 1000000,
+    fileMaxUploadBytes: 5000000,
   });
   assert.deepEqual(
     sessionConfigs,
@@ -122,6 +136,8 @@ test("content feature policies distinguish missing rows and normalize values", a
     imageUploadsEnabled: null,
     wikiEnabled: null,
     allowedFileTypes: [],
+    imageMaxUploadBytes: null,
+    fileMaxUploadBytes: null,
   });
   assert.deepEqual(await repository.findChannelPolicy("legacy"), {
     found: true,
@@ -132,10 +148,14 @@ test("content feature policies distinguish missing rows and normalize values", a
     imageUploadsEnabled: null,
     wikiEnabled: true,
     allowedFileTypes: ["zip"],
+    imageMaxUploadBytes: null,
+    fileMaxUploadBytes: null,
   });
   assert.deepEqual(await repository.findServerFileTypePolicy(), {
     found: true,
     allowedFileTypes: [],
+    imageMaxUploadBytes: null,
+    fileMaxUploadBytes: null,
   });
 });
 

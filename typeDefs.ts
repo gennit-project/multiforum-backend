@@ -725,6 +725,10 @@ const typeDefinitions = gql`
       @settable(onCreate: false, onUpdate: false)
 
     allowedFileTypes: [String!]
+    # Per-channel overrides of the server-wide upload size ceilings (in bytes).
+    # Null means "inherit the ServerConfig default". Enforced at signed-URL time.
+    imageMaxUploadBytes: Int
+    fileMaxUploadBytes: Int
     payoutPercent: Int @default(value: 98)
 
     # tags & relationships (unchanged)
@@ -2702,6 +2706,12 @@ const typeDefinitions = gql`
       @selectable(onRead: false, onAggregate: false)
       @settable(onCreate: false, onUpdate: false)
     allowedFileTypes: [String!]
+    # Server-wide upload size ceilings (in bytes), enforced at signed-URL time
+    # via a signed x-goog-content-length-range header so GCS rejects oversized
+    # objects. Defaults: 10 MiB for images, 100 MiB for other files. Int caps at
+    # ~2 GiB, which is sufficient for these limits.
+    imageMaxUploadBytes: Int @default(value: 10485760)
+    fileMaxUploadBytes: Int @default(value: 104857600)
     featuredWikiPageIds: [ID!]
     enableDownloads: Boolean
     enableEvents: Boolean

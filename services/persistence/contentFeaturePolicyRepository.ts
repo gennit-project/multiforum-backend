@@ -10,11 +10,16 @@ export type ChannelContentFeaturePolicy = {
   imageUploadsEnabled: boolean | null;
   wikiEnabled: boolean | null;
   allowedFileTypes: string[];
+  // Null means "inherit the server-wide default".
+  imageMaxUploadBytes: number | null;
+  fileMaxUploadBytes: number | null;
 };
 
 export type ServerFileTypePolicy = {
   found: boolean;
   allowedFileTypes: string[];
+  imageMaxUploadBytes: number | null;
+  fileMaxUploadBytes: number | null;
 };
 
 export interface ContentFeaturePolicyRepository {
@@ -30,13 +35,17 @@ export const FIND_CHANNEL_CONTENT_FEATURE_POLICY_QUERY = `
          channel.downloadsEnabled AS downloadsEnabled,
          channel.imageUploadsEnabled AS imageUploadsEnabled,
          channel.wikiEnabled AS wikiEnabled,
-         channel.allowedFileTypes AS allowedFileTypes
+         channel.allowedFileTypes AS allowedFileTypes,
+         channel.imageMaxUploadBytes AS imageMaxUploadBytes,
+         channel.fileMaxUploadBytes AS fileMaxUploadBytes
   LIMIT 1
 `;
 
 export const FIND_SERVER_FILE_TYPE_POLICY_QUERY = `
   MATCH (serverConfig:ServerConfig)
-  RETURN serverConfig.allowedFileTypes AS allowedFileTypes
+  RETURN serverConfig.allowedFileTypes AS allowedFileTypes,
+         serverConfig.imageMaxUploadBytes AS imageMaxUploadBytes,
+         serverConfig.fileMaxUploadBytes AS fileMaxUploadBytes
   LIMIT 1
 `;
 
@@ -45,6 +54,14 @@ const normalizeBoolean = (value: unknown): boolean | null =>
 
 const normalizeString = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
+
+const normalizeNullableInteger = (value: unknown): number | null => {
+  if (value == null) return null;
+  if (neo4j.isInt(value)) return value.toNumber();
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "bigint") return Number(value);
+  return null;
+};
 
 const normalizeAllowedFileTypes = (value: unknown): string[] =>
   Array.isArray(value)
@@ -60,6 +77,8 @@ const missingChannelPolicy = (): ChannelContentFeaturePolicy => ({
   imageUploadsEnabled: null,
   wikiEnabled: null,
   allowedFileTypes: [],
+  imageMaxUploadBytes: null,
+  fileMaxUploadBytes: null,
 });
 
 export const createContentFeaturePolicyRepository = (
@@ -106,6 +125,12 @@ export const createContentFeaturePolicyRepository = (
           allowedFileTypes: normalizeAllowedFileTypes(
             record.get("allowedFileTypes")
           ),
+          imageMaxUploadBytes: normalizeNullableInteger(
+            record.get("imageMaxUploadBytes")
+          ),
+          fileMaxUploadBytes: normalizeNullableInteger(
+            record.get("fileMaxUploadBytes")
+          ),
         })
       );
     },
@@ -114,11 +139,22 @@ export const createContentFeaturePolicyRepository = (
       return runSingleLookup(
         FIND_SERVER_FILE_TYPE_POLICY_QUERY,
         {},
-        { found: false, allowedFileTypes: [] },
+        {
+          found: false,
+          allowedFileTypes: [],
+          imageMaxUploadBytes: null,
+          fileMaxUploadBytes: null,
+        },
         (record): ServerFileTypePolicy => ({
           found: true,
           allowedFileTypes: normalizeAllowedFileTypes(
             record.get("allowedFileTypes")
+          ),
+          imageMaxUploadBytes: normalizeNullableInteger(
+            record.get("imageMaxUploadBytes")
+          ),
+          fileMaxUploadBytes: normalizeNullableInteger(
+            record.get("fileMaxUploadBytes")
           ),
         })
       );

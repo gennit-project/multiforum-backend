@@ -135,6 +135,63 @@ export const validateFile = async (
   await validateFileType(filename, channelConnections, ctx);
 };
 
+// Fallback ceilings (bytes) used only when neither the channel override nor the
+// ServerConfig default is set. 10 MiB for images, 100 MiB for other files.
+export const DEFAULT_IMAGE_MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+export const DEFAULT_FILE_MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
+
+export const isImageContentType = (contentType: string): boolean =>
+  contentType.toLowerCase().startsWith("image/");
+
+/**
+ * Resolve the effective upload size ceiling (in bytes) for this request.
+ *
+ * Precedence per channel: channel override -> ServerConfig default -> hard
+ * fallback. When several channels are targeted, the most restrictive (minimum)
+ * limit wins. The returned value is signed into the upload URL as an
+ * x-goog-content-length-range header so GCS itself rejects oversized objects.
+ */
+export const resolveMaxUploadBytes = async (
+  contentType: string,
+  channelConnections: string[] | null = [],
+  ctx: ValidationContext
+): Promise<number> => {
+  const repository = resolveContentFeaturePolicyRepository(ctx);
+  const image = isImageContentType(contentType);
+  const hardDefault = image
+    ? DEFAULT_IMAGE_MAX_UPLOAD_BYTES
+    : DEFAULT_FILE_MAX_UPLOAD_BYTES;
+
+  const serverConfig = await repository.findServerFileTypePolicy();
+  const serverLimit = image
+    ? serverConfig.imageMaxUploadBytes
+    : serverConfig.fileMaxUploadBytes;
+  const serverEffective = positiveOrNull(serverLimit) ?? hardDefault;
+
+  const channels = channelConnections ?? [];
+  if (channels.length === 0) {
+    return serverEffective;
+  }
+
+  let effective = Number.POSITIVE_INFINITY;
+  for (const channelName of channels) {
+    const channel = await repository.findChannelPolicy(channelName);
+    const channelOverride = channel.found
+      ? positiveOrNull(
+          image ? channel.imageMaxUploadBytes : channel.fileMaxUploadBytes
+        )
+      : null;
+    effective = Math.min(effective, channelOverride ?? serverEffective);
+  }
+
+  return Number.isFinite(effective) ? effective : serverEffective;
+};
+
+const positiveOrNull = (value: number | null | undefined): number | null =>
+  typeof value === "number" && Number.isInteger(value) && value > 0
+    ? value
+    : null;
+
 export const resolveUploadBucketName = ({
   uploadTarget,
   env = process.env,
@@ -184,6 +241,13 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
     // Validate file against server and channel configurations
     await validateFile(filename, contentType, channelConnections, ctx);
 
+    // Resolve the size ceiling so GCS can reject oversized uploads directly.
+    const maxUploadBytes = await resolveMaxUploadBytes(
+      contentType,
+      channelConnections,
+      ctx
+    );
+
     const storage = new Storage();
     const bucketName = resolveUploadBucketName({ uploadTarget });
 
@@ -202,6 +266,11 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
       action: "write",
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       contentType,
+      // Signed into the URL: the client must replay this exact header on the
+      // PUT, and GCS rejects any object whose size falls outside the range.
+      extensionHeaders: {
+        "x-goog-content-length-range": `0,${maxUploadBytes}`,
+      },
     };
 
     // Generate the Signed URL
