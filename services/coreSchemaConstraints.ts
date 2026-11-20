@@ -104,6 +104,23 @@ export const coreSchemaConstraints = [
       REQUIRE (page.channelUniqueName, page.slug) IS UNIQUE`,
   },
   {
+    // Per-user sequential image number that backs short URLs (/u/alice/images/12).
+    // Allocated by UserImageCounter, scoped by the uploader. IS UNIQUE (not NODE
+    // KEY) because owner-less images carry a null uploadedByUsername.
+    name: "image_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT image_user_number_unique IF NOT EXISTS FOR (img:Image)
+      REQUIRE (img.uploadedByUsername, img.imageNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT image_user_number_unique IF NOT EXISTS FOR (img:Image)
+      REQUIRE (img.uploadedByUsername, img.imageNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_image_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_image_counter_unique IF NOT EXISTS FOR (counter:UserImageCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_image_counter_unique IF NOT EXISTS FOR (counter:UserImageCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
     name: "channel_role_channel_name_unique",
     enterpriseStatement: `CREATE CONSTRAINT channel_role_channel_name_unique IF NOT EXISTS FOR (role:ChannelRole)
       REQUIRE (role.channelUniqueName, role.name) IS NODE KEY`,

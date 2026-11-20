@@ -116,6 +116,11 @@ const typeDefinitions = gql`
     storageUrl: String
     uploadedAt: DateTime
     uploadedByUsername: String
+    # Per-user sequential number that gives images short, human-friendly URLs
+    # (/u/alice/images/12). Server-allocated at create time from a
+    # UserImageCounter, scoped by uploadedByUsername; immutable and not
+    # client-settable. Backs the (uploadedByUsername, imageNumber) constraint.
+    imageNumber: Int @settable(onCreate: false, onUpdate: false)
     uploadedByIp: String
     alt: String
     caption: String
@@ -3427,6 +3432,15 @@ const typeDefinitions = gql`
     """
     getCommentIdByShortId(
       shortId: String!
+    ): ID
+    """
+    Translate a per-user image number (the short URL id) into the global Image
+    id, for routes like /u/alice/images/12. Returns null when no image carries
+    that number for the user.
+    """
+    getImageIdByNumber(
+      username: String!
+      imageNumber: Int!
     ): ID
     getCommentReplies(
       commentId: ID!

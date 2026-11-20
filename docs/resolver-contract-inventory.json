@@ -722,6 +722,10 @@
       "status": "deferred"
     },
     {
+      "field": "Query.getImageIdByNumber",
+      "status": "selected-response"
+    },
+    {
       "field": "Query.getInstalledPlugins",
       "status": "selected-response"
     },

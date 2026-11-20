@@ -457,6 +457,21 @@
       ],
       "reason": "Fixed Cypher lookup returns a single comment id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
       "decision": "No behavior change required for the public scalar output; the route lookup is a thin shortId-to-id translation with no entity projection."
+    },
+    {
+      "field": "Query.getImageIdByNumber",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getImageIdByNumber.ts",
+        "services/perUserNumber.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/libraryNumbering.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single image id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin per-user-number-to-id translation with no entity projection."
     }
   ]
 }

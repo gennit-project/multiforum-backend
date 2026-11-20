@@ -8,7 +8,7 @@ import type { Selection, SelectedResolver } from "./selection.js";
 // their complete public result types can be checked against existing codegen.
 export const contentScalarQueryNames = [
   "getUserFavoriteComment", "getUserWikiEditsCount", "isOriginalPosterSuspended",
-  "getEventIdByNumber", "getCommentIdByShortId",
+  "getEventIdByNumber", "getCommentIdByShortId", "getImageIdByNumber",
 ] as const;
 export type ContentScalarQueryName = typeof contentScalarQueryNames[number];
 export type ContentScalarQueryResolvers = {

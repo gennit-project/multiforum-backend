@@ -49,6 +49,7 @@ import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js
 import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBackfill.js";
 import { backfillEventChannelNumbers } from "./services/eventNumberBackfill.js";
 import { backfillCommentShortIds } from "./services/commentShortIdBackfill.js";
+import { backfillImageNumbers } from "./services/imageNumberBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -235,6 +236,12 @@ async function initializeServer() {
     if (commentShortIdBackfill.commentsAssigned > 0) {
       logger.info(
         `✅ Backfilled ${commentShortIdBackfill.commentsAssigned} comment shortId(s)`
+      );
+    }
+    const imageNumberBackfill = await backfillImageNumbers(driver);
+    if (imageNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${imageNumberBackfill.nodesNumbered} image number(s) across ${imageNumberBackfill.ownersUpdated} user(s)`
       );
     }
 

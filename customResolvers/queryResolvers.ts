@@ -29,6 +29,7 @@ import getCommentSection from "./queries/getCommentSection.js";
 import getEventComments from "./queries/getEventComments.js";
 import getEventIdByNumber from "./queries/getEventIdByNumber.js";
 import getCommentIdByShortId from "./queries/getCommentIdByShortId.js";
+import getImageIdByNumber from "./queries/getImageIdByNumber.js";
 import getCommentReplies from "./queries/getCommentReplies.js";
 import getDiscussionsInChannel from "./queries/getDiscussionsInChannel.js";
 import getDiscussionDetail from "./queries/getDiscussionDetail.js";
@@ -132,6 +133,9 @@ export default function buildQueryResolvers(deps: ResolverDeps) {
       driver,
     }),
     getCommentIdByShortId: getCommentIdByShortId({
+      driver,
+    }),
+    getImageIdByNumber: getImageIdByNumber({
       driver,
     }),
   } satisfies ContentScalarQueryResolvers;

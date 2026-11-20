@@ -1,4 +1,5 @@
 import type { Driver, ManagedTransaction } from "neo4j-driver";
+import { allocatePerUserNumberSnippet, IMAGE_NUMBER } from "../perUserNumber.js";
 
 /**
  * FAMILY-3 / v7 (campaign #284). Album ownership for discussions.
@@ -46,7 +47,9 @@ const CREATE_IMAGES_TAIL = `
  OPTIONAL MATCH (owner:User {username: $username})
  FOREACH (_ IN CASE WHEN owner IS NULL THEN [] ELSE [1] END |
   MERGE (owner)-[:UPLOADED_IMAGE]->(image)
+  SET image.uploadedByUsername = coalesce(image.uploadedByUsername, owner.username)
  )
+ WITH a, image${allocatePerUserNumberSnippet("image", IMAGE_NUMBER)}
 `;
 
 const CREATE_ALBUM = `
@@ -80,7 +83,9 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
  OPTIONAL MATCH (a)-[:HAS_IMAGE]->(img:Image)
  FOREACH (_ IN CASE WHEN (owner IS NULL OR img IS NULL OR img.id IN $reusedImageIds OR EXISTS { MATCH (:User)-[:UPLOADED_IMAGE]->(img) }) THEN [] ELSE [1] END |
   MERGE (owner)-[:UPLOADED_IMAGE]->(img)
+  SET img.uploadedByUsername = coalesce(img.uploadedByUsername, owner.username)
  )
+ WITH img WHERE img IS NOT NULL${allocatePerUserNumberSnippet("img", IMAGE_NUMBER)}
 `;
 
 // Callers creating an item pass their transaction so ownership commits with it.
