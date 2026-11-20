@@ -12,8 +12,13 @@ import {
 } from "../../customResolvers/cypher/cypherQueries.js";
 import { backfillEventChannelNumbers } from "../../services/eventNumberBackfill.js";
 import { resolveEventIdByNumber } from "../../services/eventRouteLookup.js";
-import { ensureCoreSchemaConstraints } from "../../services/coreSchemaConstraints.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
+
+// Create only the constraint under test (not the whole core set), so this file
+// never leaves pollinating constraints like Tag.text that other tests sharing a
+// reused Testcontainers container do not expect.
+const CONSTRAINT =
+  "CREATE CONSTRAINT event_channel_number_unique IF NOT EXISTS FOR (ec:EventChannel) REQUIRE (ec.channelUniqueName, ec.eventNumber) IS UNIQUE";
 
 let driver: Driver;
 
@@ -118,7 +123,7 @@ test("the update (MERGE) path allocates a number for a newly connected channel",
 
 test("(channelUniqueName, eventNumber) is unique", async () => {
   await seed();
-  await ensureCoreSchemaConstraints(driver, "community");
+  await driver.executeQuery(CONSTRAINT);
   await makeEvent("e1");
   await connect("e1", "forum");
   await assert.rejects(

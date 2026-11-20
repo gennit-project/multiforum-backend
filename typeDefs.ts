@@ -1111,6 +1111,10 @@ const typeDefinitions = gql`
 
   type Comment @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
     id: ID! @id
+    # Short, URL-friendly public handle (12 hex chars) that gives comments short
+    # permalinks (/forums/cats/discussions/42-.../comments/4f3a9b2e1c7d). Server-
+    # allocated at create time; immutable and not client-settable. Unique.
+    shortId: String @settable(onCreate: false, onUpdate: false)
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -3415,6 +3419,14 @@ const typeDefinitions = gql`
     getEventIdByNumber(
       channelUniqueName: String!
       eventNumber: Int!
+    ): ID
+    """
+    Translate a comment shortId (the public URL handle) into the global Comment
+    id, for permalinks like /forums/cats/discussions/42-.../comments/4f3a9b2e1c7d.
+    Returns null when no comment carries that shortId.
+    """
+    getCommentIdByShortId(
+      shortId: String!
     ): ID
     getCommentReplies(
       commentId: ID!

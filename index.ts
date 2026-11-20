@@ -48,6 +48,7 @@ import { backfillFilterGroupUploadSelection } from "./services/filterGroupUpload
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
 import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBackfill.js";
 import { backfillEventChannelNumbers } from "./services/eventNumberBackfill.js";
+import { backfillCommentShortIds } from "./services/commentShortIdBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -228,6 +229,12 @@ async function initializeServer() {
     if (eventNumberBackfill.eventChannelsNumbered > 0) {
       logger.info(
         `✅ Backfilled ${eventNumberBackfill.eventChannelsNumbered} event number(s) across ${eventNumberBackfill.channelsUpdated} channel(s)`
+      );
+    }
+    const commentShortIdBackfill = await backfillCommentShortIds(driver);
+    if (commentShortIdBackfill.commentsAssigned > 0) {
+      logger.info(
+        `✅ Backfilled ${commentShortIdBackfill.commentsAssigned} comment shortId(s)`
       );
     }
 

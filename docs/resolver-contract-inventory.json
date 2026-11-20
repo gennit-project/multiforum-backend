@@ -670,6 +670,10 @@
       "status": "selected-response"
     },
     {
+      "field": "Query.getCommentIdByShortId",
+      "status": "selected-response"
+    },
+    {
       "field": "Query.getCommentReplies",
       "status": "selected-response"
     },

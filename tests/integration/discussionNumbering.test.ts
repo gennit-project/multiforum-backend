@@ -14,8 +14,13 @@ import { createDiscussionCreationRepository } from "../../services/persistence/d
 import { createDiscussionsFromInput } from "../../customResolvers/mutations/createDiscussionWithChannelConnections.js";
 import { backfillDiscussionChannelNumbers } from "../../services/discussionNumberBackfill.js";
 import { resolveDiscussionIdByNumber } from "../../services/discussionRouteLookup.js";
-import { ensureCoreSchemaConstraints } from "../../services/coreSchemaConstraints.js";
 import { resetDatabase, startNeo4j, stopNeo4j } from "./neo4jHarness.js";
+
+// Create only the constraint under test (not the whole core set), so this file
+// never leaves pollinating constraints like Tag.text that other tests sharing a
+// reused Testcontainers container do not expect.
+const CONSTRAINT =
+  "CREATE CONSTRAINT discussion_channel_number_unique IF NOT EXISTS FOR (dc:DiscussionChannel) REQUIRE (dc.channelUniqueName, dc.discussionNumber) IS UNIQUE";
 
 let driver: Driver;
 
@@ -111,7 +116,7 @@ test("a crosspost gets each forum's own next number", async () => {
 
 test("(channelUniqueName, discussionNumber) is unique", async () => {
   await seed();
-  await ensureCoreSchemaConstraints(driver, "community");
+  await driver.executeQuery(CONSTRAINT);
   await create("First");
   await assert.rejects(
     driver.executeQuery(

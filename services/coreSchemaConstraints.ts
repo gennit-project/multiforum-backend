@@ -157,6 +157,7 @@ const singleFieldUniqueConstraints: ReadonlyArray<
   ["RecurringEvent", "id"],
   ["Event", "id"],
   ["Comment", "id"],
+  ["Comment", "shortId"],
   ["Emoji", "id"],
   ["Emoji", "name"],
   ["Email", "address"],
