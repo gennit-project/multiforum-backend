@@ -46,6 +46,7 @@ import { ensurePipelineSummaryIndexes } from "./services/pipelineSummaryIndexes.
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
+import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -211,6 +212,16 @@ async function initializeServer() {
       logger.info(`✅ Connected to Neo4j Edition: ${edition}`);
     } finally {
       await session.close();
+    }
+
+    // Assign per-forum discussion numbers (short URL ids) before the
+    // (channelUniqueName, discussionNumber) constraint is created, so the
+    // NODE KEY does not reject pre-existing, not-yet-numbered DiscussionChannels.
+    const discussionNumberBackfill = await backfillDiscussionChannelNumbers(driver);
+    if (discussionNumberBackfill.discussionChannelsNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${discussionNumberBackfill.discussionChannelsNumbered} discussion number(s) across ${discussionNumberBackfill.channelsUpdated} channel(s)`
+      );
     }
 
     await ensureCoreSchemaConstraints(driver, edition);

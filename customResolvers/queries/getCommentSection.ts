@@ -9,6 +9,7 @@ import {
   getCommentsQuery,
 } from '../cypher/cypherQueries.js'
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { resolveDiscussionIdArgWithDriver } from "../../services/discussionRouteLookup.js";
 import type { GraphQLContext } from "../../types/context.js";
 
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
@@ -27,7 +28,9 @@ const ANSWER_LIMIT = 5
 
 type Args = {
   channelUniqueName: string
-  discussionId: string
+  // Supply discussionId (global) or discussionNumber (per-forum short URL id).
+  discussionId?: string | null
+  discussionNumber?: number | null
   modName?: string | null
   offset?: string | number | null
   limit?: string | number | null
@@ -37,13 +40,23 @@ type Args = {
 const getResolver = (input: Input) => {
   const { driver, agePolicyRepository, serverName } = input
   return async (_parent: unknown, args: Args, context: GraphQLContext, _info: GraphQLResolveInfo) => {
-    const { channelUniqueName, discussionId, modName = null, sort } =
-      args
+    const { channelUniqueName, modName = null, sort } = args
     const { offset, limit } = normalizePagination(args)
     context.user = await setUserDataOnContext({
       context,
     });
     const loggedInUsername = context.user?.username || null;
+
+    // Accept either the global discussionId or the per-forum discussionNumber
+    // (short URL id); translate to the id the downstream queries key on.
+    const discussionId = await resolveDiscussionIdArgWithDriver(driver, {
+      channelUniqueName,
+      discussionId: args.discussionId,
+      discussionNumber: args.discussionNumber,
+    });
+    if (!discussionId) {
+      return rememberCanonicalSource({ DiscussionChannel: null, Comments: [] });
+    }
 
     const canViewSensitiveContent = await mayAccessSensitiveContent({
       context,

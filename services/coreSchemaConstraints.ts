@@ -9,6 +9,22 @@ export const coreSchemaConstraints = [
       REQUIRE (dc.discussionId, dc.channelUniqueName) IS UNIQUE`,
   },
   {
+    // Per-forum sequential discussion number that backs short URLs
+    // (/forums/cats/discussions/42-...). Allocated by ChannelDiscussionCounter.
+    name: "discussion_channel_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT discussion_channel_number_unique IF NOT EXISTS FOR (dc:DiscussionChannel)
+      REQUIRE (dc.channelUniqueName, dc.discussionNumber) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT discussion_channel_number_unique IF NOT EXISTS FOR (dc:DiscussionChannel)
+      REQUIRE (dc.channelUniqueName, dc.discussionNumber) IS UNIQUE`,
+  },
+  {
+    name: "channel_discussion_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT channel_discussion_counter_unique IF NOT EXISTS FOR (counter:ChannelDiscussionCounter)
+      REQUIRE counter.channelUniqueName IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT channel_discussion_counter_unique IF NOT EXISTS FOR (counter:ChannelDiscussionCounter)
+      REQUIRE counter.channelUniqueName IS UNIQUE`,
+  },
+  {
     name: "event_channel_unique",
     enterpriseStatement: `CREATE CONSTRAINT event_channel_unique IF NOT EXISTS FOR (ec:EventChannel)
       REQUIRE (ec.eventId, ec.channelUniqueName) IS NODE KEY`,

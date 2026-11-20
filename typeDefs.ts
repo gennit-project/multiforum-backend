@@ -796,6 +796,11 @@ const typeDefinitions = gql`
     locked: Boolean
     discussionId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    # Per-forum sequential number that gives discussions short, human-friendly
+    # URLs (e.g. /forums/cats/discussions/42-trail-conditions). Server-allocated
+    # at create time from a ChannelDiscussionCounter; immutable and not
+    # client-settable. Backs the (channelUniqueName, discussionNumber) constraint.
+    discussionNumber: Int @settable(onCreate: false, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
       @settable(onCreate: false, onUpdate: false)
     weightedVotesCount: Float
@@ -3322,7 +3327,10 @@ const typeDefinitions = gql`
     render, scoped to the channel in the route.
     """
     getDiscussionDetail(
-      discussionId: ID!
+      "Global discussion id. Supply this or discussionNumber (the per-forum short URL id)."
+      discussionId: ID
+      "Per-forum short URL number, resolved to a discussion within channelUniqueName."
+      discussionNumber: Int
       channelUniqueName: String!
     ): [Discussion!]!
     getDiscussionDetailAnswers(
@@ -3379,7 +3387,10 @@ const typeDefinitions = gql`
     ): SiteWideWikiListFormat
     getCommentSection(
       channelUniqueName: String!
-      discussionId: ID!
+      "Global discussion id. Supply this or discussionNumber (the per-forum short URL id)."
+      discussionId: ID
+      "Per-forum short URL number, resolved to a discussion within channelUniqueName."
+      discussionNumber: Int
       modName: String
       offset: Int
       limit: Int
