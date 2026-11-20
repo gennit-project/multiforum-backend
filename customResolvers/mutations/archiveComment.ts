@@ -6,6 +6,7 @@ import type {
   CommentWhere,
 } from "../../ogm_types.js";
 import type { Driver } from "neo4j-driver";
+import { buildDiscussionCommentUrl, buildEventCommentUrl } from "../../services/contentUrlBuilder.js";
 import type { GraphQLContext } from "../../types/context.js";
 import type { GraphQLResolveInfo } from "graphql";
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
@@ -73,27 +74,29 @@ const getCommentAuthorUsername = (
   return author.User?.username || null;
 };
 
-const buildArchivedCommentUrl = ({
+const buildArchivedCommentUrl = async ({
+  driver,
   baseUrl,
   channelUniqueName,
   commentId,
   comment,
 }: {
+  driver: Driver;
   baseUrl: string;
   channelUniqueName: string;
   commentId: string;
   comment: ArchivedCommentContext;
-}): string => {
+}): Promise<string> => {
   const discussionId =
     comment.DiscussionChannel?.discussionId ||
     comment.ParentComment?.DiscussionChannel?.discussionId;
   if (discussionId) {
-    return `${baseUrl}/forums/${channelUniqueName}/discussions/${discussionId}/comments/${commentId}`;
+    return buildDiscussionCommentUrl(driver, baseUrl, channelUniqueName, discussionId, commentId);
   }
 
   const eventId = comment.Event?.id || comment.ParentComment?.Event?.id;
   if (eventId) {
-    return `${baseUrl}/forums/${channelUniqueName}/events/${eventId}/comments/${commentId}`;
+    return buildEventCommentUrl(driver, baseUrl, channelUniqueName, eventId, commentId);
   }
 
   return "";
@@ -291,7 +294,8 @@ const getResolver = (input: Input) => {
       const issueNumber = existingIssue?.issueNumber;
 
       if (commentAuthorUsername && issueNumber) {
-        const contentUrl = buildArchivedCommentUrl({
+        const contentUrl = await buildArchivedCommentUrl({
+          driver: context.driver,
           baseUrl: process.env.FRONTEND_URL || "",
           channelUniqueName,
           commentId,

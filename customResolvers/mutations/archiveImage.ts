@@ -1,4 +1,5 @@
 import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import { buildImageUrl } from "../../services/contentUrlBuilder.js";
 import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import { createImageModerationRepository, type ImageModerationRepository } from "../../services/persistence/imageModerationRepository.js";
 import type {
@@ -265,10 +266,8 @@ const getResolver = (input: Input) => {
       const issueNumber = existingIssue?.issueNumber;
       if (uploaderUsername && issueNumber) {
         const baseUrl = process.env.FRONTEND_URL || '';
-        // Image URLs vary - use the image ID as the content reference
-        const contentUrl = channelUniqueName
-          ? `${baseUrl}/forums/${channelUniqueName}/images/${imageId}`
-          : `${baseUrl}/images/${imageId}`;
+        // Images are linked under the uploader's library (/u/<user>/images/<n>).
+        const contentUrl = await buildImageUrl(context.driver, baseUrl, uploaderUsername, imageId);
 
         await notifyArchivedContentAuthor({
           context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },
