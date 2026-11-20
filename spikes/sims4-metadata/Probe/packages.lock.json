@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net9.0": {
+      "LlamaLogic.Protobuf": {
+        "type": "Direct",
+        "requested": "[1.126.58, )",
+        "resolved": "1.126.58",
+        "contentHash": "phDe5cA42sG3iGNs+LldEoRSqrGmKUf1If1V1bahtzLzQBuy0HGAw6p0iMoPyOOxhLormRXWdI/f3EVfzQ1JTg==",
+        "dependencies": {
+          "System.Collections.Immutable": "8.0.0",
+          "protobuf-net": "3.2.56"
+        }
+      },
+      "protobuf-net": {
+        "type": "Transitive",
+        "resolved": "3.2.56",
+        "contentHash": "4IPJeTYAMNewlN8MDaFkcmR/9hLhJeo9eARnTh104zh7mf+vXT2gu5MUfUnkSQU+CH578Q6vcdU7LQDQPG6eaw==",
+        "dependencies": {
+          "protobuf-net.Core": "3.2.56"
+        }
+      },
+      "protobuf-net.Core": {
+        "type": "Transitive",
+        "resolved": "3.2.56",
+        "contentHash": "d6QOukTpDzs7zZv9tPnBZMtvHDNeHJQXUhMx54g4urUQsXK3oo9U70H9HvklYq7hlQ4A7AHJl7EVEqyCXXIl8Q=="
+      },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg=="
+      }
+    }
+  }
+}
