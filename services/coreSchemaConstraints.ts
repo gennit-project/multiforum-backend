@@ -32,6 +32,22 @@ export const coreSchemaConstraints = [
       REQUIRE (ec.eventId, ec.channelUniqueName) IS UNIQUE`,
   },
   {
+    // Per-forum sequential event number that backs short URLs
+    // (/forums/cats/events/7-...). Allocated by ChannelEventCounter.
+    name: "event_channel_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT event_channel_number_unique IF NOT EXISTS FOR (ec:EventChannel)
+      REQUIRE (ec.channelUniqueName, ec.eventNumber) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT event_channel_number_unique IF NOT EXISTS FOR (ec:EventChannel)
+      REQUIRE (ec.channelUniqueName, ec.eventNumber) IS UNIQUE`,
+  },
+  {
+    name: "channel_event_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT channel_event_counter_unique IF NOT EXISTS FOR (counter:ChannelEventCounter)
+      REQUIRE counter.channelUniqueName IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT channel_event_counter_unique IF NOT EXISTS FOR (counter:ChannelEventCounter)
+      REQUIRE counter.channelUniqueName IS UNIQUE`,
+  },
+  {
     name: "issue_channel_issueNumber_unique",
     enterpriseStatement: `CREATE CONSTRAINT issue_channel_issueNumber_unique IF NOT EXISTS FOR (i:Issue)
       REQUIRE (i.channelUniqueName, i.issueNumber) IS NODE KEY`,

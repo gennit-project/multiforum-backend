@@ -47,6 +47,7 @@ import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
 import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBackfill.js";
+import { backfillEventChannelNumbers } from "./services/eventNumberBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -221,6 +222,12 @@ async function initializeServer() {
     if (discussionNumberBackfill.discussionChannelsNumbered > 0) {
       logger.info(
         `✅ Backfilled ${discussionNumberBackfill.discussionChannelsNumbered} discussion number(s) across ${discussionNumberBackfill.channelsUpdated} channel(s)`
+      );
+    }
+    const eventNumberBackfill = await backfillEventChannelNumbers(driver);
+    if (eventNumberBackfill.eventChannelsNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${eventNumberBackfill.eventChannelsNumbered} event number(s) across ${eventNumberBackfill.channelsUpdated} channel(s)`
       );
     }
 

@@ -9,12 +9,12 @@ import {
 
 test("Enterprise uses node keys where property existence can be enforced", () => {
   const statements = getCoreSchemaConstraintStatements("enterprise");
-  // 14 composite core constraints (10 NODE KEY + 4 UNIQUE) plus the 47
+  // 16 composite core constraints (12 NODE KEY + 4 UNIQUE) plus the 47
   // single-field uniqueness constraints that replaced the removed `@unique`
-  // directive (always IS UNIQUE, never NODE KEY). The two added NODE KEYs are
-  // the per-forum discussion number and its ChannelDiscussionCounter.
-  assert.equal(statements.length, 61);
-  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 10);
+  // directive (always IS UNIQUE, never NODE KEY). The four added NODE KEYs are
+  // the per-forum discussion/event numbers and their channel counters.
+  assert.equal(statements.length, 63);
+  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 12);
   assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 51);
 });
 

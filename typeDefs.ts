@@ -916,6 +916,11 @@ const typeDefinitions = gql`
     locked: Boolean
     eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    # Per-forum sequential number that gives events short, human-friendly URLs
+    # (e.g. /forums/cats/events/7-saturday-cleanup). Server-allocated at create
+    # time from a ChannelEventCounter; immutable and not client-settable. Backs
+    # the (channelUniqueName, eventNumber) constraint.
+    eventNumber: Int @settable(onCreate: false, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
       @settable(onCreate: false, onUpdate: false)
     Event: Event
@@ -3402,6 +3407,15 @@ const typeDefinitions = gql`
       limit: Int
       sort: SortType
     ): EventCommentsFormat
+    """
+    Translate a per-forum event number (the short URL id) into the global Event
+    id, for routes like /forums/cats/events/7-saturday-cleanup. Returns null when
+    no event carries that number in the channel.
+    """
+    getEventIdByNumber(
+      channelUniqueName: String!
+      eventNumber: Int!
+    ): ID
     getCommentReplies(
       commentId: ID!
       modName: String
