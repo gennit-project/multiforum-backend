@@ -1354,6 +1354,11 @@ const typeDefinitions = gql`
     storageObjectName: String
     storageUrl: String
     uploadedAt: DateTime
+    # The exact value the client MUST send as the x-goog-content-length-range
+    # header on the upload PUT (e.g. "0,10485760"). It is signed into the URL,
+    # so the upload fails signature validation unless this value is replayed
+    # verbatim. Reflects the effective per-request size ceiling.
+    contentLengthRange: String
   }
 
   type PrepareDownloadResult {

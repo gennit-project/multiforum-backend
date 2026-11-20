@@ -261,15 +261,17 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
       storageObjectName,
     });
 
+    // Signed into the URL: the client must replay this exact header value on
+    // the PUT, and GCS rejects any object whose size falls outside the range.
+    const contentLengthRange = `0,${maxUploadBytes}`;
+
     const options: GetSignedUrlConfig = {
       version: "v4",
       action: "write",
       expires: Date.now() + 15 * 60 * 1000, // 15 minutes
       contentType,
-      // Signed into the URL: the client must replay this exact header on the
-      // PUT, and GCS rejects any object whose size falls outside the range.
       extensionHeaders: {
-        "x-goog-content-length-range": `0,${maxUploadBytes}`,
+        "x-goog-content-length-range": contentLengthRange,
       },
     };
 
@@ -300,6 +302,7 @@ const createSignedStorageURL = ({ signUrl = signUploadUrl }: { signUrl?: SignUpl
       storageObjectName,
       storageUrl,
       uploadedAt,
+      contentLengthRange,
     });
   };
 };
