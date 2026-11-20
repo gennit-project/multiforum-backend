@@ -1,5 +1,5 @@
 import type { Driver, ManagedTransaction } from "neo4j-driver";
-import { allocatePerUserNumberSnippet, IMAGE_NUMBER } from "../perUserNumber.js";
+import { allocatePerUserNumberSnippet, IMAGE_NUMBER, ALBUM_NUMBER } from "../perUserNumber.js";
 
 /**
  * FAMILY-3 / v7 (campaign #284). Album ownership for discussions.
@@ -61,7 +61,9 @@ const CREATE_ALBUM = `
  OPTIONAL MATCH (owner:User {username: $username})
  FOREACH (_ IN CASE WHEN owner IS NULL THEN [] ELSE [1] END |
   MERGE (owner)-[:HAS_ALBUM]->(a)
+  SET a.ownerUsername = coalesce(a.ownerUsername, owner.username)
  )
+ WITH a${allocatePerUserNumberSnippet("a", ALBUM_NUMBER)}
 ${CREATE_IMAGES_TAIL}
 `;
 
@@ -78,7 +80,9 @@ const CONNECT_CREATED_ALBUM_OWNERSHIP = `
  OPTIONAL MATCH (owner:User {username: $username})
  FOREACH (_ IN CASE WHEN owner IS NULL THEN [] ELSE [1] END |
   MERGE (owner)-[:HAS_ALBUM]->(a)
+  SET a.ownerUsername = coalesce(a.ownerUsername, owner.username)
  )
+ WITH a, owner${allocatePerUserNumberSnippet("a", ALBUM_NUMBER)}
  WITH a, owner
  OPTIONAL MATCH (a)-[:HAS_IMAGE]->(img:Image)
  FOREACH (_ IN CASE WHEN (owner IS NULL OR img IS NULL OR img.id IN $reusedImageIds OR EXISTS { MATCH (:User)-[:UPLOADED_IMAGE]->(img) }) THEN [] ELSE [1] END |

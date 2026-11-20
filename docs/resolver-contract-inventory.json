@@ -654,6 +654,10 @@
       "status": "selected-response"
     },
     {
+      "field": "Query.getAlbumIdByNumber",
+      "status": "selected-response"
+    },
+    {
       "field": "Query.getApplicablePluginPipeline",
       "status": "selected-response"
     },
@@ -667,6 +671,10 @@
     },
     {
       "field": "Query.getChannelRuleGovernance",
+      "status": "selected-response"
+    },
+    {
+      "field": "Query.getCollectionIdByNumber",
       "status": "selected-response"
     },
     {

@@ -9,6 +9,7 @@ import type { Selection, SelectedResolver } from "./selection.js";
 export const contentScalarQueryNames = [
   "getUserFavoriteComment", "getUserWikiEditsCount", "isOriginalPosterSuspended",
   "getEventIdByNumber", "getCommentIdByShortId", "getImageIdByNumber",
+  "getAlbumIdByNumber", "getCollectionIdByNumber",
 ] as const;
 export type ContentScalarQueryName = typeof contentScalarQueryNames[number];
 export type ContentScalarQueryResolvers = {

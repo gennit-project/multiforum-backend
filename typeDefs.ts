@@ -222,6 +222,13 @@ const typeDefinitions = gql`
     }]) {
     id: ID! @id
     name: String!
+    # Denormalized creator username (the User on the CREATED_BY edge) and
+    # per-user sequential number that give collections short URLs
+    # (/u/alice/collections/5-nature). Server-allocated at create time from a
+    # UserCollectionCounter; immutable and not client-settable. Back the
+    # (ownerUsername, collectionNumber) constraint.
+    ownerUsername: String @settable(onCreate: false, onUpdate: false)
+    collectionNumber: Int @settable(onCreate: false, onUpdate: false)
     description: String
     visibility: CollectionVisibility!
     collectionType: CollectionType!
@@ -256,6 +263,12 @@ const typeDefinitions = gql`
 
   type Album @node {
     id: ID! @id
+    # Denormalized owner username (the User on the HAS_ALBUM edge) and per-user
+    # sequential number that give albums short URLs (/u/alice/albums/3).
+    # Server-allocated at create time from a UserAlbumCounter; immutable and not
+    # client-settable. Back the (ownerUsername, albumNumber) constraint.
+    ownerUsername: String @settable(onCreate: false, onUpdate: false)
+    albumNumber: Int @settable(onCreate: false, onUpdate: false)
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
     imageOrder: [ID!]
@@ -3441,6 +3454,23 @@ const typeDefinitions = gql`
     getImageIdByNumber(
       username: String!
       imageNumber: Int!
+    ): ID
+    """
+    Translate a per-user album number (the short URL id) into the global Album
+    id, for routes like /u/alice/albums/3. Null when none matches for the user.
+    """
+    getAlbumIdByNumber(
+      username: String!
+      albumNumber: Int!
+    ): ID
+    """
+    Translate a per-user collection number (the short URL id) into the global
+    Collection id, for routes like /u/alice/collections/5-nature. Null when none
+    matches for the user.
+    """
+    getCollectionIdByNumber(
+      username: String!
+      collectionNumber: Int!
     ): ID
     getCommentReplies(
       commentId: ID!

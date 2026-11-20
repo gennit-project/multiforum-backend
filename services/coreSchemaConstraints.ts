@@ -121,6 +121,38 @@ export const coreSchemaConstraints = [
       REQUIRE counter.username IS UNIQUE`,
   },
   {
+    // Per-user sequential album number (/u/alice/albums/3), allocated by
+    // UserAlbumCounter. IS UNIQUE because albums not owned by a User are null.
+    name: "album_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT album_user_number_unique IF NOT EXISTS FOR (a:Album)
+      REQUIRE (a.ownerUsername, a.albumNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT album_user_number_unique IF NOT EXISTS FOR (a:Album)
+      REQUIRE (a.ownerUsername, a.albumNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_album_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_album_counter_unique IF NOT EXISTS FOR (counter:UserAlbumCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_album_counter_unique IF NOT EXISTS FOR (counter:UserAlbumCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
+    // Per-user sequential collection number (/u/alice/collections/5-nature),
+    // allocated by UserCollectionCounter. IS UNIQUE (creator-less are null).
+    name: "collection_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT collection_user_number_unique IF NOT EXISTS FOR (c:Collection)
+      REQUIRE (c.ownerUsername, c.collectionNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT collection_user_number_unique IF NOT EXISTS FOR (c:Collection)
+      REQUIRE (c.ownerUsername, c.collectionNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_collection_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_collection_counter_unique IF NOT EXISTS FOR (counter:UserCollectionCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_collection_counter_unique IF NOT EXISTS FOR (counter:UserCollectionCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
     name: "channel_role_channel_name_unique",
     enterpriseStatement: `CREATE CONSTRAINT channel_role_channel_name_unique IF NOT EXISTS FOR (role:ChannelRole)
       REQUIRE (role.channelUniqueName, role.name) IS NODE KEY`,

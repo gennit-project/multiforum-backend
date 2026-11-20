@@ -50,6 +50,7 @@ import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBac
 import { backfillEventChannelNumbers } from "./services/eventNumberBackfill.js";
 import { backfillCommentShortIds } from "./services/commentShortIdBackfill.js";
 import { backfillImageNumbers } from "./services/imageNumberBackfill.js";
+import { backfillAlbumNumbers, backfillCollectionNumbers } from "./services/albumCollectionNumberBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -242,6 +243,18 @@ async function initializeServer() {
     if (imageNumberBackfill.nodesNumbered > 0) {
       logger.info(
         `✅ Backfilled ${imageNumberBackfill.nodesNumbered} image number(s) across ${imageNumberBackfill.ownersUpdated} user(s)`
+      );
+    }
+    const albumNumberBackfill = await backfillAlbumNumbers(driver);
+    if (albumNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${albumNumberBackfill.nodesNumbered} album number(s) across ${albumNumberBackfill.ownersUpdated} user(s)`
+      );
+    }
+    const collectionNumberBackfill = await backfillCollectionNumbers(driver);
+    if (collectionNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${collectionNumberBackfill.nodesNumbered} collection number(s) across ${collectionNumberBackfill.ownersUpdated} user(s)`
       );
     }
 
