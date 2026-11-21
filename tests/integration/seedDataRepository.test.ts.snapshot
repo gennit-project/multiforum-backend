@@ -165,6 +165,14 @@ exports[`createServerConfigs preserves default projection, persisted state and n
       "properties": {
         "accountAgeGateEnabled": false,
         "brandingShowUpstreamLinks": true,
+        "fileMaxUploadBytes": {
+          "high": 0,
+          "low": 104857600
+        },
+        "imageMaxUploadBytes": {
+          "high": 0,
+          "low": 10485760
+        },
         "minimumAccountAge": {
           "high": 0,
           "low": 13
@@ -248,6 +256,14 @@ exports[`default role connection retains existing roles, relationship events and
       "properties": {
         "accountAgeGateEnabled": false,
         "brandingShowUpstreamLinks": true,
+        "fileMaxUploadBytes": {
+          "high": 0,
+          "low": 104857600
+        },
+        "imageMaxUploadBytes": {
+          "high": 0,
+          "low": 10485760
+        },
         "minimumAccountAge": {
           "high": 0,
           "low": 13

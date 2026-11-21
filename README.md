@@ -123,8 +123,19 @@ breakdown, request lifecycle, data model, and the testing strategy.
 ## Common Commands
 
 This repo uses **pnpm** (pinned via the `packageManager` field) on **Node 26.x**.
-Run `nvm use` to select the version in `.nvmrc`, enable pnpm once with
-`corepack enable`, then run `pnpm install`.
+Run `nvm use` to select the version in `.nvmrc`, then make pnpm available and
+install:
+
+```bash
+nvm use                          # selects Node 26.x from .nvmrc
+npm install -g corepack@latest   # Node 25+ no longer bundles corepack
+corepack enable                  # adds a pnpm shim honoring packageManager
+pnpm install
+```
+
+Node 26 dropped the bundled `corepack`, so a plain `corepack enable` fails with
+`command not found` until you install it. The `npm install -g corepack` step is
+per Node version, so repeat it whenever you install a new Node 26.x via nvm.
 
 | Command | Description |
 | --- | --- |
