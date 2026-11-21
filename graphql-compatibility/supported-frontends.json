@@ -3,10 +3,10 @@
   "repository": "gennit-project/multiforum-nuxt",
   "clients": [
     {
-      "revision": "1ae36cd49e0836a714ba3bcf2491a426239ea918",
-      "operationsSha256": "f688b1ccf47e1fbfc91cec910ab80a4e50226e6e08eb3d63256074c6ff1e7859",
-      "documents": 360,
-      "purpose": "Advanced from 9a1ebada to re-pin backend schema 6cd52f17 (PR #463: admin-configurable image/file upload size limits — ServerConfig/Channel imageMaxUploadBytes/fileMaxUploadBytes and SignedURL.contentLengthRange, enforced via a signed x-goog-content-length-range header). Frontend PR #730 replays that signed header on uploads and re-pins the additive schema; 360-operation contract re-validated against it."
+      "revision": "0aa78899206abd8575d8672d7759b641bcd1bd83",
+      "operationsSha256": "bd1895d9dbd0ade7bb477817e38acf6d30b2027a878921818510e4e1532c97f0",
+      "documents": 366,
+      "purpose": "Advanced from 1ae36cd4 to re-pin the short, human-friendly URL schema (backend PR #464 / frontend PR #732): per-forum discussion/event numbers, comment shortId, per-user image/album/collection numbers, their getXIdByNumber lookups, and the secondary-projection number fields (contribution feeds, ScratchpadEntry, Issue related event/comment, download-scan and campaign-failure items). Frontend #732 parses the number/shortId from route params, resolves it to the id, and builds links from these fields. Pinned to backend 2a2d2102 (clean export, schema SHA-256 f31b6fdc…); the additive 366-operation contract re-validated against it."
     }
   ]
 }
