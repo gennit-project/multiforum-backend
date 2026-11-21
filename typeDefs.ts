@@ -454,6 +454,13 @@ const typeDefinitions = gql`
         OPTIONAL MATCH (dc:DiscussionChannel {discussionId: this.discussionId, channelUniqueName: this.sourceChannelUniqueName})
         RETURN dc.discussionNumber AS discussionNumber
       """, columnName: "discussionNumber")
+    # Short URL handle of the linked comment (when sourceType = "comment", sourceId
+    # is the Comment id). Lets comment scratchpad links use the shortId permalink.
+    sourceCommentShortId: String
+      @cypher(statement: """
+        OPTIONAL MATCH (c:Comment {id: this.sourceId})
+        RETURN c.shortId AS sourceCommentShortId
+      """, columnName: "sourceCommentShortId")
 
     # Relationships
     Author: User @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
@@ -3303,12 +3310,21 @@ const typeDefinitions = gql`
     mayAccessSensitiveContent: Boolean!
   }
 
+ type UploadedDownloadableFileChannel {
+    channelUniqueName: String!
+    # Per-forum short URL number of this download in the channel. Null if unnumbered.
+    discussionNumber: Int
+  }
+
  type UploadedDownloadableFileDiscussion  {
     id: ID!
     title: String!
     createdAt: DateTime
     updatedAt: DateTime
     channelUniqueNames: [String!]!
+    # Per-channel short URL numbers (a download can live in several forums, each
+    # with its own number). Pairs with channelUniqueNames for link building.
+    channels: [UploadedDownloadableFileChannel!]!
   }
 
  type UploadedDownloadableFileGroup  {
