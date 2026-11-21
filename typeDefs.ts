@@ -116,6 +116,11 @@ const typeDefinitions = gql`
     storageUrl: String
     uploadedAt: DateTime
     uploadedByUsername: String
+    # Per-user sequential number that gives images short, human-friendly URLs
+    # (/u/alice/images/12). Server-allocated at create time from a
+    # UserImageCounter, scoped by uploadedByUsername; immutable and not
+    # client-settable. Backs the (uploadedByUsername, imageNumber) constraint.
+    imageNumber: Int @settable(onCreate: false, onUpdate: false)
     uploadedByIp: String
     alt: String
     caption: String
@@ -217,6 +222,13 @@ const typeDefinitions = gql`
     }]) {
     id: ID! @id
     name: String!
+    # Denormalized creator username (the User on the CREATED_BY edge) and
+    # per-user sequential number that give collections short URLs
+    # (/u/alice/collections/5-nature). Server-allocated at create time from a
+    # UserCollectionCounter; immutable and not client-settable. Back the
+    # (ownerUsername, collectionNumber) constraint.
+    ownerUsername: String @settable(onCreate: false, onUpdate: false)
+    collectionNumber: Int @settable(onCreate: false, onUpdate: false)
     description: String
     visibility: CollectionVisibility!
     collectionType: CollectionType!
@@ -251,6 +263,12 @@ const typeDefinitions = gql`
 
   type Album @node {
     id: ID! @id
+    # Denormalized owner username (the User on the HAS_ALBUM edge) and per-user
+    # sequential number that give albums short URLs (/u/alice/albums/3).
+    # Server-allocated at create time from a UserAlbumCounter; immutable and not
+    # client-settable. Back the (ownerUsername, albumNumber) constraint.
+    ownerUsername: String @settable(onCreate: false, onUpdate: false)
+    albumNumber: Int @settable(onCreate: false, onUpdate: false)
     Owner: User @relationship(type: "HAS_ALBUM", direction: IN)
     Images: [Image!]! @relationship(type: "HAS_IMAGE", direction: OUT)
     imageOrder: [ID!]
@@ -800,6 +818,11 @@ const typeDefinitions = gql`
     locked: Boolean
     discussionId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    # Per-forum sequential number that gives discussions short, human-friendly
+    # URLs (e.g. /forums/cats/discussions/42-trail-conditions). Server-allocated
+    # at create time from a ChannelDiscussionCounter; immutable and not
+    # client-settable. Backs the (channelUniqueName, discussionNumber) constraint.
+    discussionNumber: Int @settable(onCreate: false, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
       @settable(onCreate: false, onUpdate: false)
     weightedVotesCount: Float
@@ -915,6 +938,11 @@ const typeDefinitions = gql`
     locked: Boolean
     eventId: ID! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
     channelUniqueName: String! @settable(onCreate: true, onUpdate: false) # used for uniqueness constraint
+    # Per-forum sequential number that gives events short, human-friendly URLs
+    # (e.g. /forums/cats/events/7-saturday-cleanup). Server-allocated at create
+    # time from a ChannelEventCounter; immutable and not client-settable. Backs
+    # the (channelUniqueName, eventNumber) constraint.
+    eventNumber: Int @settable(onCreate: false, onUpdate: false)
     createdAt: DateTime! @timestamp(operations: [CREATE])
       @settable(onCreate: false, onUpdate: false)
     Event: Event
@@ -1105,6 +1133,10 @@ const typeDefinitions = gql`
 
   type Comment @node @limit(default: 25, max: 100) @authorization(filter: [{ operations: [READ, AGGREGATE], requireAuthentication: false, where: { OR: [{ node: { ageGateRestricted: { eq: false } } }, { node: { ageGateRestricted: { eq: null } } }, { jwt: { mayAccessSensitiveContent: { eq: true } } }] } }]) @subscriptionsAuthorization(filter: [{ requireAuthentication: false, where: { jwt: { mayAccessSensitiveContent: { eq: true } } } }]) {
     id: ID! @id
+    # Short, URL-friendly public handle (12 hex chars) that gives comments short
+    # permalinks (/forums/cats/discussions/42-.../comments/4f3a9b2e1c7d). Server-
+    # allocated at create time; immutable and not client-settable. Unique.
+    shortId: String @settable(onCreate: false, onUpdate: false)
     # Stamped whenever this node is created or updated, so the age-gate
     # reconcile step can find what changed in the current transaction
     # (docs/age-gate-materialization-design.md). Server-only.
@@ -3337,7 +3369,10 @@ const typeDefinitions = gql`
     render, scoped to the channel in the route.
     """
     getDiscussionDetail(
-      discussionId: ID!
+      "Global discussion id. Supply this or discussionNumber (the per-forum short URL id)."
+      discussionId: ID
+      "Per-forum short URL number, resolved to a discussion within channelUniqueName."
+      discussionNumber: Int
       channelUniqueName: String!
     ): [Discussion!]!
     getDiscussionDetailAnswers(
@@ -3394,7 +3429,10 @@ const typeDefinitions = gql`
     ): SiteWideWikiListFormat
     getCommentSection(
       channelUniqueName: String!
-      discussionId: ID!
+      "Global discussion id. Supply this or discussionNumber (the per-forum short URL id)."
+      discussionId: ID
+      "Per-forum short URL number, resolved to a discussion within channelUniqueName."
+      discussionNumber: Int
       modName: String
       offset: Int
       limit: Int
@@ -3406,6 +3444,49 @@ const typeDefinitions = gql`
       limit: Int
       sort: SortType
     ): EventCommentsFormat
+    """
+    Translate a per-forum event number (the short URL id) into the global Event
+    id, for routes like /forums/cats/events/7-saturday-cleanup. Returns null when
+    no event carries that number in the channel.
+    """
+    getEventIdByNumber(
+      channelUniqueName: String!
+      eventNumber: Int!
+    ): ID
+    """
+    Translate a comment shortId (the public URL handle) into the global Comment
+    id, for permalinks like /forums/cats/discussions/42-.../comments/4f3a9b2e1c7d.
+    Returns null when no comment carries that shortId.
+    """
+    getCommentIdByShortId(
+      shortId: String!
+    ): ID
+    """
+    Translate a per-user image number (the short URL id) into the global Image
+    id, for routes like /u/alice/images/12. Returns null when no image carries
+    that number for the user.
+    """
+    getImageIdByNumber(
+      username: String!
+      imageNumber: Int!
+    ): ID
+    """
+    Translate a per-user album number (the short URL id) into the global Album
+    id, for routes like /u/alice/albums/3. Null when none matches for the user.
+    """
+    getAlbumIdByNumber(
+      username: String!
+      albumNumber: Int!
+    ): ID
+    """
+    Translate a per-user collection number (the short URL id) into the global
+    Collection id, for routes like /u/alice/collections/5-nature. Null when none
+    matches for the user.
+    """
+    getCollectionIdByNumber(
+      username: String!
+      collectionNumber: Int!
+    ): ID
     getCommentReplies(
       commentId: ID!
       modName: String

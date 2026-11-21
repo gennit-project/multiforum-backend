@@ -4,6 +4,7 @@ import type { ProfileImageProjection, ChannelIconProjection } from "../../custom
 import neo4j, { type Driver, type Node, type EagerResult } from "neo4j-driver";
 import type { UserUpdateInput, ChannelUpdateInput } from "../../ogm_types.js";
 import { executeGeneratedOperation } from "./generatedSchemaOperations.js";
+import { allocatePerUserNumberSnippet, IMAGE_NUMBER } from "../perUserNumber.js";
 export const CREATED_IMAGE_SELECTION = `
   {
     id
@@ -129,7 +130,9 @@ const CREATE_IMAGE = `
  OPTIONAL MATCH (uploader:User {username: $uploaderUsername})
  FOREACH (_ IN CASE WHEN uploader IS NULL THEN [] ELSE [1] END |
   MERGE (uploader)-[:UPLOADED_IMAGE]->(img)
+  SET img.uploadedByUsername = coalesce(img.uploadedByUsername, uploader.username)
  )
+ WITH img${allocatePerUserNumberSnippet("img", IMAGE_NUMBER)}
  WITH img
  UNWIND (CASE WHEN size($albumIds) = 0 THEN [null] ELSE $albumIds END) AS albumId
  OPTIONAL MATCH (album:Album {id: albumId})

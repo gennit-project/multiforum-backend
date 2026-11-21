@@ -427,6 +427,81 @@
       ],
       "reason": "The returned suspension helpers compute an explicit Boolean; underlying issue/suspension projections are not certified as full entities by this scalar boundary.",
       "decision": "No behavior change required for the public scalar output; keep internal repository validation as a separate boundary."
+    },
+    {
+      "field": "Query.getEventIdByNumber",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getEventIdByNumber.ts",
+        "services/eventRouteLookup.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/eventNumbering.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single eventId string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin number-to-id translation with no entity projection."
+    },
+    {
+      "field": "Query.getCommentIdByShortId",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getCommentIdByShortId.ts",
+        "services/commentShortId.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/commentShortId.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single comment id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin shortId-to-id translation with no entity projection."
+    },
+    {
+      "field": "Query.getImageIdByNumber",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getImageIdByNumber.ts",
+        "services/perUserNumber.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/libraryNumbering.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single image id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin per-user-number-to-id translation with no entity projection."
+    },
+    {
+      "field": "Query.getAlbumIdByNumber",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getAlbumIdByNumber.ts",
+        "services/perUserNumber.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/libraryNumbering.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single album id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin per-user-number-to-id translation with no entity projection."
+    },
+    {
+      "field": "Query.getCollectionIdByNumber",
+      "selectedPaths": [
+        "$"
+      ],
+      "residualPaths": [],
+      "evidence": [
+        "customResolvers/queries/getCollectionIdByNumber.ts",
+        "services/perUserNumber.ts",
+        "customResolvers/contracts/contentQueries.ts",
+        "tests/integration/libraryNumbering.test.ts"
+      ],
+      "reason": "Fixed Cypher lookup returns a single collection id string narrowed to string-or-null; the executable schema types the field as nullable ID, so no raw row can escape as a non-ID value.",
+      "decision": "No behavior change required for the public scalar output; the route lookup is a thin per-user-number-to-id translation with no entity projection."
     }
   ]
 }

@@ -29,12 +29,12 @@ exports[`archive/rearchive/unarchive preserve graph, effects and events scope=fo
   "notifications": [
     {
       "notificationType": "moderation",
-      "text": "Your [image](/forums/forum/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/forum/issues/1). If you need additional help, contact support@example.com.",
+      "text": "Your [image](/u/author/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/forum/issues/1). If you need additional help, contact support@example.com.",
       "username": "author"
     },
     {
       "notificationType": "moderation",
-      "text": "Your [image](/forums/forum/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/forum/issues/1). If you need additional help, contact support@example.com.",
+      "text": "Your [image](/u/author/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/forum/issues/1). If you need additional help, contact support@example.com.",
       "username": "author"
     }
   ],
@@ -126,12 +126,12 @@ exports[`archive/rearchive/unarchive preserve graph, effects and events scope=se
   "notifications": [
     {
       "notificationType": "moderation",
-      "text": "Your [image](/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
+      "text": "Your [image](/u/author/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
       "username": "author"
     },
     {
       "notificationType": "moderation",
-      "text": "Your [image](/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
+      "text": "Your [image](/u/author/images/c) was archived for violating community guidelines.\\n\\nYou can request a review by commenting on [Issue #1](/forums/server/issues/1). If you need additional help, contact support@example.com.",
       "username": "author"
     }
   ],

@@ -6,6 +6,12 @@ import {
   sanitizeCollectionCreateInput,
 } from "../customResolvers/mutations/utils/ownershipSanitizers.js";
 import { resolveRequestIdentityRepository } from "../services/persistence/requestIdentityRepository.js";
+import {
+  allocatePerUserNumberSnippet,
+  ALBUM_NUMBER,
+  COLLECTION_NUMBER,
+  IMAGE_NUMBER,
+} from "../services/perUserNumber.js";
 
 /**
  * Forces the owner of albums and collections created through the public API
@@ -92,18 +98,30 @@ const ALBUM_OWNER_CYPHER = `
  UNWIND $ids AS albumId
  MATCH (a:Album {id: albumId})
  OPTIONAL MATCH (u:User {username: $username})
- FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (u)-[:HAS_ALBUM]->(a))
+ FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END |
+  MERGE (u)-[:HAS_ALBUM]->(a)
+  SET a.ownerUsername = coalesce(a.ownerUsername, u.username)
+ )
+ WITH a, u${allocatePerUserNumberSnippet("a", ALBUM_NUMBER)}
  WITH a, u
  OPTIONAL MATCH (a)-[:HAS_IMAGE]->(img:Image)
  FOREACH (_ IN CASE WHEN (u IS NULL OR img IS NULL) THEN [] ELSE [1] END |
   MERGE (u)-[:UPLOADED_IMAGE]->(img)
+  SET img.uploadedByUsername = coalesce(img.uploadedByUsername, u.username)
  )
+ WITH a, collect(img) AS imgs
+ UNWIND (CASE WHEN size(imgs) = 0 THEN [null] ELSE imgs END) AS img
+ WITH a, img WHERE img IS NOT NULL${allocatePerUserNumberSnippet("img", IMAGE_NUMBER)}
 `;
 const COLLECTION_OWNER_CYPHER = `
  UNWIND $ids AS collectionId
  MATCH (c:Collection {id: collectionId})
  OPTIONAL MATCH (u:User {username: $username})
- FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (c)-[:CREATED_BY]->(u))
+ FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END |
+  MERGE (c)-[:CREATED_BY]->(u)
+  SET c.ownerUsername = coalesce(c.ownerUsername, u.username)
+ )
+ WITH c, u${allocatePerUserNumberSnippet("c", COLLECTION_NUMBER)}
 `;
 
 type ForceOwnerParams = {

@@ -2,6 +2,7 @@ import { rememberCanonicalSource } from '../canonicalSourceFields.js';
 import neo4j, { type Driver, type ManagedTransaction, type Node, type EagerResult } from "neo4j-driver";
 import { DateTime } from "luxon";
 import { issueTargetDefinitions } from "../issueTargetIdentity.js";
+import { COMMENT_SHORT_ID_CYPHER } from "../commentShortId.js";
 
 /**
  * FAMILY-3 / v7 owned moderation writes (campaign #284 — "recordModerationAction").
@@ -233,7 +234,7 @@ const buildAppendActionCypher = (action: ModerationActionParams): string => {
  CREATE (a:ModerationAction {id: randomUUID(), actionType: $actionType, actionDescription: $actionDescription, createdAt: datetime()})
  SET a += $extras
  CREATE (i)-[:ACTIVITY_ON_ISSUE]->(a)
- CREATE (c:Comment {id: randomUUID(), text: $text, isRootComment: true, createdAt: datetime(), ageGateTouchedAt: datetime()})
+ CREATE (c:Comment {id: randomUUID(), shortId: ${COMMENT_SHORT_ID_CYPHER}, text: $text, isRootComment: true, createdAt: datetime(), ageGateTouchedAt: datetime()})
  CREATE (a)-[:MODERATED_COMMENT]->(c)
  CREATE (c)-[:ACTIVITY_ON_ISSUE]->(i)
  WITH a, c

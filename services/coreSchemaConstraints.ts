@@ -9,11 +9,43 @@ export const coreSchemaConstraints = [
       REQUIRE (dc.discussionId, dc.channelUniqueName) IS UNIQUE`,
   },
   {
+    // Per-forum sequential discussion number that backs short URLs
+    // (/forums/cats/discussions/42-...). Allocated by ChannelDiscussionCounter.
+    name: "discussion_channel_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT discussion_channel_number_unique IF NOT EXISTS FOR (dc:DiscussionChannel)
+      REQUIRE (dc.channelUniqueName, dc.discussionNumber) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT discussion_channel_number_unique IF NOT EXISTS FOR (dc:DiscussionChannel)
+      REQUIRE (dc.channelUniqueName, dc.discussionNumber) IS UNIQUE`,
+  },
+  {
+    name: "channel_discussion_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT channel_discussion_counter_unique IF NOT EXISTS FOR (counter:ChannelDiscussionCounter)
+      REQUIRE counter.channelUniqueName IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT channel_discussion_counter_unique IF NOT EXISTS FOR (counter:ChannelDiscussionCounter)
+      REQUIRE counter.channelUniqueName IS UNIQUE`,
+  },
+  {
     name: "event_channel_unique",
     enterpriseStatement: `CREATE CONSTRAINT event_channel_unique IF NOT EXISTS FOR (ec:EventChannel)
       REQUIRE (ec.eventId, ec.channelUniqueName) IS NODE KEY`,
     communityStatement: `CREATE CONSTRAINT event_channel_unique IF NOT EXISTS FOR (ec:EventChannel)
       REQUIRE (ec.eventId, ec.channelUniqueName) IS UNIQUE`,
+  },
+  {
+    // Per-forum sequential event number that backs short URLs
+    // (/forums/cats/events/7-...). Allocated by ChannelEventCounter.
+    name: "event_channel_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT event_channel_number_unique IF NOT EXISTS FOR (ec:EventChannel)
+      REQUIRE (ec.channelUniqueName, ec.eventNumber) IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT event_channel_number_unique IF NOT EXISTS FOR (ec:EventChannel)
+      REQUIRE (ec.channelUniqueName, ec.eventNumber) IS UNIQUE`,
+  },
+  {
+    name: "channel_event_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT channel_event_counter_unique IF NOT EXISTS FOR (counter:ChannelEventCounter)
+      REQUIRE counter.channelUniqueName IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT channel_event_counter_unique IF NOT EXISTS FOR (counter:ChannelEventCounter)
+      REQUIRE counter.channelUniqueName IS UNIQUE`,
   },
   {
     name: "issue_channel_issueNumber_unique",
@@ -72,6 +104,55 @@ export const coreSchemaConstraints = [
       REQUIRE (page.channelUniqueName, page.slug) IS UNIQUE`,
   },
   {
+    // Per-user sequential image number that backs short URLs (/u/alice/images/12).
+    // Allocated by UserImageCounter, scoped by the uploader. IS UNIQUE (not NODE
+    // KEY) because owner-less images carry a null uploadedByUsername.
+    name: "image_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT image_user_number_unique IF NOT EXISTS FOR (img:Image)
+      REQUIRE (img.uploadedByUsername, img.imageNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT image_user_number_unique IF NOT EXISTS FOR (img:Image)
+      REQUIRE (img.uploadedByUsername, img.imageNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_image_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_image_counter_unique IF NOT EXISTS FOR (counter:UserImageCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_image_counter_unique IF NOT EXISTS FOR (counter:UserImageCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
+    // Per-user sequential album number (/u/alice/albums/3), allocated by
+    // UserAlbumCounter. IS UNIQUE because albums not owned by a User are null.
+    name: "album_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT album_user_number_unique IF NOT EXISTS FOR (a:Album)
+      REQUIRE (a.ownerUsername, a.albumNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT album_user_number_unique IF NOT EXISTS FOR (a:Album)
+      REQUIRE (a.ownerUsername, a.albumNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_album_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_album_counter_unique IF NOT EXISTS FOR (counter:UserAlbumCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_album_counter_unique IF NOT EXISTS FOR (counter:UserAlbumCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
+    // Per-user sequential collection number (/u/alice/collections/5-nature),
+    // allocated by UserCollectionCounter. IS UNIQUE (creator-less are null).
+    name: "collection_user_number_unique",
+    enterpriseStatement: `CREATE CONSTRAINT collection_user_number_unique IF NOT EXISTS FOR (c:Collection)
+      REQUIRE (c.ownerUsername, c.collectionNumber) IS UNIQUE`,
+    communityStatement: `CREATE CONSTRAINT collection_user_number_unique IF NOT EXISTS FOR (c:Collection)
+      REQUIRE (c.ownerUsername, c.collectionNumber) IS UNIQUE`,
+  },
+  {
+    name: "user_collection_counter_unique",
+    enterpriseStatement: `CREATE CONSTRAINT user_collection_counter_unique IF NOT EXISTS FOR (counter:UserCollectionCounter)
+      REQUIRE counter.username IS NODE KEY`,
+    communityStatement: `CREATE CONSTRAINT user_collection_counter_unique IF NOT EXISTS FOR (counter:UserCollectionCounter)
+      REQUIRE counter.username IS UNIQUE`,
+  },
+  {
     name: "channel_role_channel_name_unique",
     enterpriseStatement: `CREATE CONSTRAINT channel_role_channel_name_unique IF NOT EXISTS FOR (role:ChannelRole)
       REQUIRE (role.channelUniqueName, role.name) IS NODE KEY`,
@@ -125,6 +206,7 @@ const singleFieldUniqueConstraints: ReadonlyArray<
   ["RecurringEvent", "id"],
   ["Event", "id"],
   ["Comment", "id"],
+  ["Comment", "shortId"],
   ["Emoji", "id"],
   ["Emoji", "name"],
   ["Email", "address"],

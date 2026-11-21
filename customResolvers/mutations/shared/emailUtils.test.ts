@@ -20,17 +20,20 @@ process.env.FRONTEND_URL = "https://app.example.test";
 const hasAll = (s: string, ...parts: string[]) => parts.every((p) => s.includes(p));
 
 test("createCommentNotificationEmail includes the discussion title, commenter, text and permalink", () => {
-  const e = createCommentNotificationEmail("hello world", "My Discussion", "bob", "cats", "d-1", "c-9");
+  const url = "https://app.test/forums/cats/discussions/42-trail/comments/abc123abc123";
+  const e = createCommentNotificationEmail("hello world", "My Discussion", "bob", url);
   assert.match(e.subject, /My Discussion/);
   assert.ok(hasAll(e.plainText, "bob", "My Discussion", "hello world"));
-  assert.ok(e.plainText.includes("/forums/cats/discussions/d-1/comments/c-9"));
-  assert.ok(e.html.includes("/forums/cats/discussions/d-1/comments/c-9"));
+  assert.ok(e.plainText.includes(url));
+  assert.ok(e.html.includes(url));
 });
 
 test("createEventCommentNotificationEmail references the event and comment", () => {
-  const e = createEventCommentNotificationEmail("nice event", "Launch Party", "bob", "cats", "e-1", "c-2");
+  const url = "https://app.test/forums/cats/events/7-party/comments/def456def456";
+  const e = createEventCommentNotificationEmail("nice event", "Launch Party", "bob", url);
   assert.match(e.subject, /Launch Party/);
   assert.ok(hasAll(e.plainText, "bob", "Launch Party", "nice event"));
+  assert.ok(e.plainText.includes(url));
 });
 
 test("createCommentReplyNotificationEmail uses the provided content URL", () => {

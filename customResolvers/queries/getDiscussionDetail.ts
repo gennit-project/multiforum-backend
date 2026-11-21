@@ -6,6 +6,7 @@ import type { Driver } from "neo4j-driver";
 import neo4j from "neo4j-driver";
 
 import { setUserDataOnContext } from "../../rules/permission/userDataHelperFunctions.js";
+import { resolveDiscussionIdArg } from "../../services/discussionRouteLookup.js";
 import { mayAccessSensitiveContent } from "../../services/sensitiveContentAccess.js";
 import type { GraphQLContext } from "../../types/context.js";
 import {
@@ -20,7 +21,9 @@ type Input = {
 };
 
 type Args = {
-  discussionId: string;
+  // Supply discussionId (global) or discussionNumber (per-forum short URL id).
+  discussionId?: string | null;
+  discussionNumber?: number | null;
   channelUniqueName: string;
 };
 
@@ -53,7 +56,7 @@ const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
       defaultAccessMode: neo4j.session.READ,
     });
     const sharedParams = {
-      discussionId: args.discussionId,
+      discussionId: args.discussionId ?? null,
       channelUniqueName: args.channelUniqueName,
       viewerUsername,
       viewerModName,
@@ -66,16 +69,27 @@ const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
 
     try {
       return await session.executeRead(async (transaction) => {
+        // Accept either the global discussionId or the per-forum discussionNumber
+        // (the short URL id); translate the number to an id up front so every
+        // downstream query keeps keying on $discussionId unchanged.
+        const resolvedDiscussionId = await resolveDiscussionIdArg(transaction, {
+          channelUniqueName: args.channelUniqueName,
+          discussionId: args.discussionId,
+          discussionNumber: args.discussionNumber,
+        });
+        if (!resolvedDiscussionId) return [];
+        const params = { ...sharedParams, discussionId: resolvedDiscussionId };
+
         const coreResult = await transaction.run<{Discussion: DiscussionViewerCore}>(
           getDiscussionDetailCoreQuery,
-          sharedParams
+          params
         );
         const discussion = coreResult.records[0]?.get("Discussion");
         if (!discussion) return [];
 
         const channelResult = await transaction.run<{DiscussionChannel: DiscussionViewerChannel}>(
           getDiscussionDetailChannelQuery,
-          sharedParams
+          params
         );
         const discussionChannel =
           channelResult.records[0]?.get("DiscussionChannel");
@@ -83,7 +97,7 @@ const getDiscussionDetail = ({ driver, agePolicyRepository }: Input) => {
 
         const filesResult = await transaction.run<{DownloadableFiles: DetailFile[]; detailFilesHasNextPage: boolean}>(
           getDiscussionDetailFilesQuery,
-          sharedParams
+          params
         );
         const downloadableFiles =
           filesResult.records[0]?.get("DownloadableFiles") || [];

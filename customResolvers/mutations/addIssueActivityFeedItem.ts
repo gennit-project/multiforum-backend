@@ -4,6 +4,7 @@ import type { Driver } from "neo4j-driver";
 import { GraphQLError, type GraphQLResolveInfo } from "graphql";
 import type { GraphQLContext } from "../../types/context.js";
 import { getSourceAwareGeneratedSchema } from "../../services/persistence/generatedSchemaOperations.js";
+import { COMMENT_SHORT_ID_CYPHER } from "../../services/commentShortId.js";
 
 // v7 (campaign #284): the frontend used to add a moderation activity-feed item by
 // calling updateIssues with a nested `create: { ActivityFeed: [...] }` (and, for
@@ -34,7 +35,7 @@ const CREATE_ACTION = `
 const CREATE_MODERATED_COMMENT = `
  MATCH (i:Issue {id: $issueId})
  MATCH (a:ModerationAction {id: $actionId})
- CREATE (c:Comment {id: randomUUID(), text: $commentText, isRootComment: false, createdAt: datetime()})
+ CREATE (c:Comment {id: randomUUID(), shortId: ${COMMENT_SHORT_ID_CYPHER}, text: $commentText, isRootComment: false, createdAt: datetime()})
  CREATE (a)-[:MODERATED_COMMENT]->(c)
  CREATE (c)-[:ACTIVITY_ON_ISSUE]->(i)
  WITH c

@@ -1,5 +1,6 @@
 import type {Driver, EagerResult} from 'neo4j-driver';
 import {executeGeneratedOperation} from './generatedSchemaOperations.js';
+import {COMMENT_SHORT_ID_CYPHER} from '../commentShortId.js';
 
 // Generated snapshot is independently validated; the write result leaves stored
 // display names unknown. Other write scalars follow MATCH/SET/toString below.
@@ -37,7 +38,7 @@ const RECORD_ACTION = `
  MATCH (i:Issue {id:$issueId})
  CREATE (a:ModerationAction {id:randomUUID(),actionType:$actionType,actionDescription:$actionDescription,createdAt:datetime()})
  CREATE (i)-[:ACTIVITY_ON_ISSUE]->(a)
- CREATE (c:Comment {id:randomUUID(),text:$commentText,isRootComment:true,createdAt:datetime(),ageGateTouchedAt:datetime()})
+ CREATE (c:Comment {id:randomUUID(),shortId:${COMMENT_SHORT_ID_CYPHER},text:$commentText,isRootComment:true,createdAt:datetime(),ageGateTouchedAt:datetime()})
  CREATE (a)-[:MODERATED_COMMENT]->(c)
  CREATE (c)-[:ACTIVITY_ON_ISSUE]->(i)
  SET i.isOpen=$isOpen, i.ageGateTouchedAt=datetime()

@@ -102,7 +102,7 @@ CALL {
     CASE WHEN $sortOption = 'hot' THEN hotRank END DESC,
     child.createdAt DESC
   RETURN collect(child {
-    .id, .text, .emoji, .weightedVotesCount, .createdAt, .updatedAt,
+    .id, .shortId, .text, .emoji, .weightedVotesCount, .createdAt, .updatedAt,
     .textLastEdited, .archived,
     isSticky: coalesce(child.isSticky, false),
     .stickyAt, .stickyByUsername,

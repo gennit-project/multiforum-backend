@@ -1,4 +1,10 @@
 import type {NotificationComment} from "../customResolvers/contracts/notificationProjections.js";
+import {
+  buildDiscussionUrl,
+  buildDiscussionCommentUrl,
+  buildEventUrl,
+  buildEventCommentUrl,
+} from "./contentUrlBuilder.js";
 import type { NotificationWriter } from "./persistence/notificationWriter.js";
 import type { NotificationSnapshotRepository } from "./persistence/notificationSnapshotRepository.js";
 export { FULL_COMMENT_SELECTION_SET } from "./persistence/notificationSnapshotRepository.js";
@@ -192,9 +198,15 @@ export const processDiscussionCommentNotification = async (
   }
 
   const channelName = fullComment.Channel?.uniqueName;
-  const discussionUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion.id}`;
+  if (!deps.driver) {
+    logger.error("Driver not available for batch notifications");
+    return;
+  }
+  const baseUrl = process.env.FRONTEND_URL || "";
+  const discussionUrl = await buildDiscussionUrl(deps.driver, baseUrl, channelName || "", discussion.id);
+  const commentUrl = await buildDiscussionCommentUrl(deps.driver, baseUrl, channelName || "", discussion.id, commentId);
 
-  const baseNotificationText = `${commenterUsername} commented on the discussion [${discussion.title}](${discussionUrl}/comments/${commentId})`;
+  const baseNotificationText = `${commenterUsername} commented on the discussion [${discussion.title}](${commentUrl})`;
   const notificationText = appendNotificationFooter(baseNotificationText, {
     contentType: "discussion",
     contentUrl: discussionUrl,
@@ -204,15 +216,8 @@ export const processDiscussionCommentNotification = async (
     fullComment.text ?? "",
     discussion.title,
     commenterUsername,
-    channelName || "",
-    discussion.id,
-    commentId
+    commentUrl
   );
-
-  if (!deps.driver) {
-    logger.error("Driver not available for batch notifications");
-    return;
-  }
 
   await createBatchNotifications(
     deps,
@@ -243,10 +248,16 @@ export const processEventCommentNotification = async (
   if (!channelName) {
     return;
   }
+  if (!deps.driver) {
+    logger.error("Driver not available for batch notifications");
+    return;
+  }
 
-  const eventUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event.id}`;
+  const baseUrl = process.env.FRONTEND_URL || "";
+  const eventUrl = await buildEventUrl(deps.driver, baseUrl, channelName, event.id);
+  const commentUrl = await buildEventCommentUrl(deps.driver, baseUrl, channelName, event.id, commentId);
 
-  const baseNotificationText = `${commenterUsername} commented on the event [${event.title}](${eventUrl}/comments/${commentId})`;
+  const baseNotificationText = `${commenterUsername} commented on the event [${event.title}](${commentUrl})`;
   const notificationText = appendNotificationFooter(baseNotificationText, {
     contentType: "event",
     contentUrl: eventUrl,
@@ -256,15 +267,8 @@ export const processEventCommentNotification = async (
     fullComment.text ?? "",
     event.title,
     commenterUsername,
-    channelName,
-    event.id,
-    commentId
+    commentUrl
   );
-
-  if (!deps.driver) {
-    logger.error("Driver not available for batch notifications");
-    return;
-  }
 
   await createBatchNotifications(
     deps,
@@ -299,18 +303,24 @@ export const processCommentReplyNotification = async (
   let commentPermalinkUrl: string;
   let channelName: string | undefined;
 
+  if (!deps.driver) {
+    logger.error("Driver not available for batch notifications");
+    return;
+  }
+  const baseUrl = process.env.FRONTEND_URL || "";
+
   if (fullComment.DiscussionChannel) {
     const discussion = fullComment.DiscussionChannel.Discussion;
     contentTitle = discussion?.title || "a discussion";
     channelName = fullComment.Channel?.uniqueName;
-    contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussion?.id}`;
-    commentPermalinkUrl = `${contentUrl}/comments/${parentCommentId}`;
+    contentUrl = await buildDiscussionUrl(deps.driver, baseUrl, channelName || "", discussion?.id || "");
+    commentPermalinkUrl = await buildDiscussionCommentUrl(deps.driver, baseUrl, channelName || "", discussion?.id || "", parentCommentId);
   } else if (fullComment.Event) {
     const event = fullComment.Event;
     contentTitle = event?.title || "an event";
     channelName = fullComment.Channel?.uniqueName;
-    contentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${event?.id}`;
-    commentPermalinkUrl = `${contentUrl}/comments/${parentCommentId}`;
+    contentUrl = await buildEventUrl(deps.driver, baseUrl, channelName || "", event?.id || "");
+    commentPermalinkUrl = await buildEventCommentUrl(deps.driver, baseUrl, channelName || "", event?.id || "", parentCommentId);
   } else {
     logger.info("No content reference found for comment reply");
     return;

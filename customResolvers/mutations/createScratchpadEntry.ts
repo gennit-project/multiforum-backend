@@ -1,6 +1,7 @@
 import { rememberCanonicalSource } from "../../services/canonicalSourceFields.js";
 import { readScratchpadSuperVoters } from "../../services/persistence/scratchpadSuperVoters.js";
 import type { Driver } from 'neo4j-driver';
+import { buildDiscussionUrl, buildDiscussionCommentUrl } from '../../services/contentUrlBuilder.js';
 import type { GraphQLResolveInfo } from 'graphql';
 import type { GraphQLContext } from '../../types/context.js';
 import { logger } from "../../logger.js";
@@ -195,8 +196,8 @@ const createScratchpadEntryResolver = (input: Input) => {
       if (postDiscussionId && postChannelUniqueName) {
         postUrl =
           sourceType === 'comment'
-            ? `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}/comments/${sourceId}`
-            : `/forums/${postChannelUniqueName}/discussions/${postDiscussionId}`;
+            ? await buildDiscussionCommentUrl(driver, '', postChannelUniqueName, postDiscussionId, sourceId)
+            : await buildDiscussionUrl(driver, '', postChannelUniqueName, postDiscussionId);
       }
       const notificationText =
         `[@${loggedInUsername}](/u/${loggedInUsername}) super upvoted your ` +
