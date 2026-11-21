@@ -447,6 +447,13 @@ const typeDefinitions = gql`
     # link back to the post/comment from the recipient's Kudos page. (sourceId is
     # the DiscussionChannel/Comment id, which the discussion route cannot use.)
     discussionId: String
+    # Per-forum short URL number of the linked discussion, resolved from its
+    # DiscussionChannel. Null when the discussion has no number yet.
+    discussionNumber: Int
+      @cypher(statement: """
+        OPTIONAL MATCH (dc:DiscussionChannel {discussionId: this.discussionId, channelUniqueName: this.sourceChannelUniqueName})
+        RETURN dc.discussionNumber AS discussionNumber
+      """, columnName: "discussionNumber")
 
     # Relationships
     Author: User @relationship(type: "WROTE_SCRATCHPAD_ENTRY", direction: IN)
@@ -1308,6 +1315,18 @@ const typeDefinitions = gql`
     TargetEvent: Event
       @relationship(type: "TARGETS_EVENT", direction: OUT, nestedOperations: [CONNECT])
       @settable(onCreate: true, onUpdate: false)
+    # Short URL ids of the related event/comment, resolved from the per-forum
+    # EventChannel number and the Comment shortId. Null when absent or unnumbered.
+    relatedEventNumber: Int
+      @cypher(statement: """
+        OPTIONAL MATCH (ec:EventChannel {eventId: this.relatedEventId, channelUniqueName: this.channelUniqueName})
+        RETURN ec.eventNumber AS relatedEventNumber
+      """, columnName: "relatedEventNumber")
+    relatedCommentShortId: String
+      @cypher(statement: """
+        OPTIONAL MATCH (c:Comment {id: this.relatedCommentId})
+        RETURN c.shortId AS relatedCommentShortId
+      """, columnName: "relatedCommentShortId")
     relatedWikiPageId: ID @settable(onCreate: true, onUpdate: false)
     TargetWikiPage: WikiPage
       @relationship(type: "TARGETS_WIKI_PAGE", direction: OUT, nestedOperations: [CONNECT])
@@ -2558,6 +2577,8 @@ const typeDefinitions = gql`
     pipelineId: ID!
     targetId: ID!
     discussionId: ID!
+    # Per-forum short URL number of the download's discussion in channelId.
+    discussionNumber: Int
     channelId: String!
     status: PluginPipelineRunStatus!
     attemptNumber: Int!
@@ -3006,6 +3027,8 @@ const typeDefinitions = gql`
   type EventChannelInfo {
     id: ID
     eventId: String
+    # Per-forum short URL number (/forums/cats/events/7-...). Null for legacy rows.
+    eventNumber: Int
     channelUniqueName: String
     Channel: ChannelInfo
   }
@@ -3013,12 +3036,16 @@ const typeDefinitions = gql`
   type DiscussionChannelInfo {
     id: ID
     discussionId: String
+    # Per-forum short URL number (/forums/cats/discussions/42-...). Null for legacy rows.
+    discussionNumber: Int
     channelUniqueName: String
     Channel: ChannelInfo
   }
 
   type CommentInfo {
     id: ID!
+    # Short URL handle for the comment permalink (.../comments/<shortId>).
+    shortId: String
     text: String
     createdAt: DateTime
     Channel: ChannelInfo
@@ -3201,6 +3228,8 @@ const typeDefinitions = gql`
     reviewRequestReason: String
     uploaderUsername: String
     discussionId: ID!
+    # Per-forum short URL number of the download's discussion. Null if unnumbered.
+    discussionNumber: Int
     discussionTitle: String
     channelUniqueName: String
   }

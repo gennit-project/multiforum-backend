@@ -20,6 +20,7 @@ CALL {
     RETURN head([entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber,
       channelUniqueName: channel.uniqueName
     } END) WHERE entry IS NOT NULL]) AS discussionChannel
   }
@@ -31,6 +32,7 @@ CALL {
 
   RETURN collect({
     id: comment.id,
+    shortId: comment.shortId,
     text: coalesce(comment.text, ''),
     createdAt: toString(comment.createdAt),
     CommentAuthor: {
@@ -60,7 +62,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       channelUniqueName: channel.uniqueName,
-      discussionId: dc.discussionId
+      discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber
     } END) WHERE entry IS NOT NULL] AS discussionChannels
   }
 
@@ -89,7 +92,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
       id: ec.id,
       channelUniqueName: channel.uniqueName,
-      eventId: ec.eventId
+      eventId: ec.eventId,
+      eventNumber: ec.eventNumber
     } END) WHERE entry IS NOT NULL] AS eventChannels
   }
 

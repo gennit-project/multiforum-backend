@@ -39,14 +39,16 @@ export const getPluginPipelineCampaignFailures = ({
     for (const attempt of attempts) {
       const files = await repository.findDestination(attempt.targetId);
       const discussion = files[0]?.Discussion;
-      const channel = discussion?.DiscussionChannels?.find(
+      const discussionChannel = discussion?.DiscussionChannels?.find(
         item => item.archived !== true
-      )?.channelUniqueName;
+      );
+      const channel = discussionChannel?.channelUniqueName;
       if (!discussion?.id || !channel) continue;
       failures.push(rememberCanonicalSource({
         pipelineId: attempt.pipelineId,
         targetId: attempt.targetId,
         discussionId: discussion.id,
+        discussionNumber: discussionChannel?.discussionNumber ?? null,
         channelId: channel,
         status: attempt.status,
         attemptNumber: attempt.attemptNumber,
