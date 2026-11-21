@@ -1,4 +1,5 @@
 import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import { buildEventUrl } from "../../services/contentUrlBuilder.js";
 import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import {createEventModerationRepository, type EventModerationRepository} from "../../services/persistence/eventModerationRepository.js";
 import type {
@@ -221,7 +222,7 @@ const getResolver = (input: Input) => {
 
       if (eventPosterUsername && issueNumber) {
         const baseUrl = process.env.FRONTEND_URL || '';
-        const contentUrl = `${baseUrl}/forums/${channelUniqueName}/events/${eventId}`;
+        const contentUrl = await buildEventUrl(context.driver, baseUrl, channelUniqueName, eventId);
 
         await notifyArchivedContentAuthor({
           context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },

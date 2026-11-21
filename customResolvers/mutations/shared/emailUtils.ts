@@ -88,13 +88,8 @@ export const createCommentNotificationEmail = (
   commentText: string,
   discussionTitle: string,
   commenterUsername: string,
-  channelName: string,
-  discussionId: string,
-  commentId: string
+  commentUrl: string
 ): EmailContent => {
-  // Create URL to the comment using permalink format
-  const commentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/discussions/${discussionId}/comments/${commentId}`;
-
   // Create subject line
   const subject = `New comment on your discussion: ${discussionTitle}`;
   
@@ -141,12 +136,8 @@ export const createEventCommentNotificationEmail = (
   commentText: string,
   eventTitle: string,
   commenterUsername: string,
-  channelName: string,
-  eventId: string,
-  commentId: string
+  commentUrl: string
 ): EmailContent => {
-  // Create URL to the comment using permalink format
-  const commentUrl = `${process.env.FRONTEND_URL}/forums/${channelName}/events/${eventId}/comments/${commentId}`;
 
   // Create subject line
   const subject = `New comment on event: ${eventTitle}`;

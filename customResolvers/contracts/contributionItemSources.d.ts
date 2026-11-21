@@ -1,11 +1,11 @@
 import type { Integer } from 'neo4j-driver';
 /** Fixed Cypher maps, not completed GraphQL objects. Persisted leaves remain raw. */
 export type ContributionActor<Name = unknown> = { username: Name; profilePicURL: unknown };
-export type ContributionDiscussionChannel = { id: unknown; discussionId: unknown; channelUniqueName: unknown };
-export type ContributionEventChannel = { id: unknown; eventId: unknown; channelUniqueName: unknown };
+export type ContributionDiscussionChannel = { id: unknown; discussionId: unknown; discussionNumber: unknown; channelUniqueName: unknown };
+export type ContributionEventChannel = { id: unknown; eventId: unknown; eventNumber: unknown; channelUniqueName: unknown };
 export type ContributionEventSummary = { id: unknown; title: unknown; createdAt: string | null };
 export type ContributionComment<Name = unknown> = {
-  id: unknown; text: unknown; createdAt: string | null; CommentAuthor: ContributionActor<Name>;
+  id: unknown; shortId: unknown; text: unknown; createdAt: string | null; CommentAuthor: ContributionActor<Name>;
   Channel: null; DiscussionChannel: ContributionDiscussionChannel | null;
 };
 export type ContributionDiscussion<Name = unknown> = {

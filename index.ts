@@ -46,6 +46,11 @@ import { ensurePipelineSummaryIndexes } from "./services/pipelineSummaryIndexes.
 import { ensureDiscussionListIndexes } from "./services/discussionListIndexes.js";
 import { backfillFilterGroupUploadSelection } from "./services/filterGroupUploadSelection.js";
 import { ensureCoreSchemaConstraints } from "./services/coreSchemaConstraints.js";
+import { backfillDiscussionChannelNumbers } from "./services/discussionNumberBackfill.js";
+import { backfillEventChannelNumbers } from "./services/eventNumberBackfill.js";
+import { backfillCommentShortIds } from "./services/commentShortIdBackfill.js";
+import { backfillImageNumbers } from "./services/imageNumberBackfill.js";
+import { backfillAlbumNumbers, backfillCollectionNumbers } from "./services/albumCollectionNumberBackfill.js";
 import { ensureCriticalPropertyConstraints } from "./services/criticalPropertyConstraints.js";
 import { installAgeGateReconcile } from "./services/ageGate/reconcile.js";
 import path from "path";
@@ -211,6 +216,46 @@ async function initializeServer() {
       logger.info(`✅ Connected to Neo4j Edition: ${edition}`);
     } finally {
       await session.close();
+    }
+
+    // Assign per-forum discussion numbers (short URL ids) before the
+    // (channelUniqueName, discussionNumber) constraint is created, so the
+    // NODE KEY does not reject pre-existing, not-yet-numbered DiscussionChannels.
+    const discussionNumberBackfill = await backfillDiscussionChannelNumbers(driver);
+    if (discussionNumberBackfill.discussionChannelsNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${discussionNumberBackfill.discussionChannelsNumbered} discussion number(s) across ${discussionNumberBackfill.channelsUpdated} channel(s)`
+      );
+    }
+    const eventNumberBackfill = await backfillEventChannelNumbers(driver);
+    if (eventNumberBackfill.eventChannelsNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${eventNumberBackfill.eventChannelsNumbered} event number(s) across ${eventNumberBackfill.channelsUpdated} channel(s)`
+      );
+    }
+    const commentShortIdBackfill = await backfillCommentShortIds(driver);
+    if (commentShortIdBackfill.commentsAssigned > 0) {
+      logger.info(
+        `✅ Backfilled ${commentShortIdBackfill.commentsAssigned} comment shortId(s)`
+      );
+    }
+    const imageNumberBackfill = await backfillImageNumbers(driver);
+    if (imageNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${imageNumberBackfill.nodesNumbered} image number(s) across ${imageNumberBackfill.ownersUpdated} user(s)`
+      );
+    }
+    const albumNumberBackfill = await backfillAlbumNumbers(driver);
+    if (albumNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${albumNumberBackfill.nodesNumbered} album number(s) across ${albumNumberBackfill.ownersUpdated} user(s)`
+      );
+    }
+    const collectionNumberBackfill = await backfillCollectionNumbers(driver);
+    if (collectionNumberBackfill.nodesNumbered > 0) {
+      logger.info(
+        `✅ Backfilled ${collectionNumberBackfill.nodesNumbered} collection number(s) across ${collectionNumberBackfill.ownersUpdated} user(s)`
+      );
     }
 
     await ensureCoreSchemaConstraints(driver, edition);

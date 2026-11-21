@@ -3,7 +3,7 @@ import type {PluginPipelineRun} from "../../ogm_types.js";
 import {executeGeneratedOperation} from "./generatedSchemaOperations.js";
 import type {CampaignRow} from './campaignServiceRepository.js';
 export type CampaignFailureRow = Pick<PluginPipelineRun,'pipelineId'|'targetId'|'status'|'attemptNumber'>;
-export type CampaignDestinationRow = {id:string;Discussion:{id:string;DiscussionChannels:{channelUniqueName:string;archived:boolean|null}[]}|null};
+export type CampaignDestinationRow = {id:string;Discussion:{id:string;DiscussionChannels:{channelUniqueName:string;discussionNumber:number|null;archived:boolean|null}[]}|null};
 export interface CampaignQueryRepository {
  findCampaigns():Promise<CampaignRow[]>;
  findFailures(campaignId:string):Promise<CampaignFailureRow[]>;
@@ -21,7 +21,7 @@ export const CAMPAIGN_QUERY_SELECTION_2 = `{
           id
           Discussion {
             id
-            DiscussionChannels { channelUniqueName archived }
+            DiscussionChannels { channelUniqueName discussionNumber archived }
           }
         }`;
 export function createCampaignQueryRepository(driver:Driver):CampaignQueryRepository {return {

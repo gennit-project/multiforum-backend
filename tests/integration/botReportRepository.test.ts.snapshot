@@ -69,6 +69,7 @@ exports[`actual bot report parity comment/existing/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -228,6 +229,7 @@ exports[`actual bot report parity comment/new/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -347,6 +349,7 @@ exports[`actual bot report parity discussion/existing/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -504,6 +507,7 @@ exports[`actual bot report parity discussion/new/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -630,6 +634,7 @@ exports[`actual bot report parity event/existing/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -787,6 +792,7 @@ exports[`actual bot report parity event/new/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -929,6 +935,7 @@ exports[`actual bot report parity missing/new/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },
@@ -1090,6 +1097,7 @@ exports[`actual bot report parity mod-comment/new/success 1`] = `
         "createdAt": "<time>",
         "id": "Comment:\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n",
         "isRootComment": true,
+        "shortId": "<shortId>",
         "text": "\\n\\nForum rule violations: Kindness\\n\\n\\nPlease review\\n\\n\\n\\n"
       }
     },

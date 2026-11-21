@@ -81,7 +81,7 @@ CALL {
 }
 
 RETURN comment {
-  .id, .text, .emoji, .weightedVotesCount, .createdAt, .updatedAt,
+  .id, .shortId, .text, .emoji, .weightedVotesCount, .createdAt, .updatedAt,
   .textLastEdited, .archived,
   isSticky: coalesce(comment.isSticky, false),
   .stickyAt, .stickyByUsername,

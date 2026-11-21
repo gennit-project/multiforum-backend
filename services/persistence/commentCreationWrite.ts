@@ -1,4 +1,5 @@
 import type { Driver } from "neo4j-driver";
+import { COMMENT_SHORT_ID_CYPHER } from "../commentShortId.js";
 
 /**
  * FAMILY-3 / v7 (campaign #284). Comment creation.
@@ -111,7 +112,8 @@ export function splitOwnedCommentInput(input: unknown): {
 // endpoint is absent, mirroring the tolerance of the removed nested connects.
 const OWN_COMMENT_EDGES = `
  MATCH (c:Comment {id: $commentId})
- SET c.ageGateTouchedAt = datetime()
+ SET c.ageGateTouchedAt = datetime(),
+     c.shortId = coalesce(c.shortId, ${COMMENT_SHORT_ID_CYPHER})
  WITH c
  CALL { WITH c OPTIONAL MATCH (u:User {username: $authorUsername}) FOREACH (_ IN CASE WHEN u IS NULL THEN [] ELSE [1] END | MERGE (u)-[:AUTHORED_COMMENT]->(c)) }
  CALL { WITH c OPTIONAL MATCH (m:ModerationProfile {displayName: $authorModProfileName}) FOREACH (_ IN CASE WHEN m IS NULL THEN [] ELSE [1] END | MERGE (m)-[:AUTHORED_COMMENT]->(c)) }

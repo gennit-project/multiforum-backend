@@ -101,7 +101,7 @@ test('answer source retains the existing five-item cap',async()=>{
 });
 
 function keys<T extends object>(value:T,expected:Record<keyof T,true>){assert.deepEqual(Object.keys(value).sort(),Object.keys(expected).sort());}
-const commentKeys={id:true,text:true,emoji:true,weightedVotesCount:true,createdAt:true,updatedAt:true,textLastEdited:true,
+const commentKeys={id:true,shortId:true,text:true,emoji:true,weightedVotesCount:true,createdAt:true,updatedAt:true,textLastEdited:true,
  archived:true,isSticky:true,stickyAt:true,stickyByUsername:true,CommentAuthor:true,isFavoritedByUser:true,
  UpvotedByUsers:true,UpvotedByUsersAggregate:true,UpvotedByUsersConnection:true,SuperUpvotedByUsers:true,
  ChildCommentsAggregate:true,ChildCommentsConnection:true,PastVersions:true,SubscribedToNotifications:true} as const satisfies Record<keyof CustomViewerComment,true>;

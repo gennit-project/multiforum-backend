@@ -22,7 +22,7 @@ export type RemovedFileColumns = FixedRawSelectedSource<DownloadableFile,typeof 
 /** The shared factory can return either explicit query projection. This union
  * does not pretend that the image query selects file-only fields. */
 export type RemovedUploadColumns = RemovedImageColumns | RemovedFileColumns;
-export const uploadedDiscussionSelection = {id:true,title:true,createdAt:true,updatedAt:true,channelUniqueNames:true} as const;
+export const uploadedDiscussionSelection = {id:true,title:true,createdAt:true,updatedAt:true,channelUniqueNames:true,channels:true} as const;
 export type UploadedItemSource = RawSelectedResolver<QueryResolvers<GraphQLContext>['getUploadedDownloadableFiles'],{
   discussion:typeof uploadedDiscussionSelection;
   files:{uploadedByUsername:true;createdAt:true;uploadedAt:true;permanentlyRemovedAt:true};

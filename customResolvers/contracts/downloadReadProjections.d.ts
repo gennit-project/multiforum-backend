@@ -14,6 +14,7 @@ export type UploadedGroupRow = {
       createdAt: string | null;
       updatedAt: string | null;
       channelUniqueNames: unknown[];
+      channels: { channelUniqueName: unknown; discussionNumber: unknown }[];
     };
     files: UploadedFileSource[];
   };

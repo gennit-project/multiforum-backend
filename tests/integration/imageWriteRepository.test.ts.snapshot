@@ -44,8 +44,10 @@ exports[`image create preserves selected response, generated defaults and relati
         "createdAt": "<time>",
         "hasSensitiveContent": false,
         "id": "domain-0",
+        "imageNumber": 1,
         "permanentlyRemoved": false,
         "scanStatus": "PENDING",
+        "uploadedByUsername": "alice",
         "url": "https://example.test/image"
       }
     ]

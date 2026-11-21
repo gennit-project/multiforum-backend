@@ -98,11 +98,13 @@ exports[`failure and destination reads preserve status filter and real relations
       "DiscussionChannels": [
         {
           "archived": false,
-          "channelUniqueName": "public"
+          "channelUniqueName": "public",
+          "discussionNumber": null
         },
         {
           "archived": true,
-          "channelUniqueName": "archive"
+          "channelUniqueName": "archive",
+          "discussionNumber": null
         }
       ],
       "id": "discussion"
@@ -303,6 +305,7 @@ exports[`query resolves public destinations sequentially and skips orphaned file
     "attemptNumber": 1,
     "channelId": "public",
     "discussionId": "discussion",
+    "discussionNumber": null,
     "pipelineId": "CANCELLED",
     "status": "CANCELLED",
     "targetId": "file"
@@ -311,6 +314,7 @@ exports[`query resolves public destinations sequentially and skips orphaned file
     "attemptNumber": 1,
     "channelId": "public",
     "discussionId": "discussion",
+    "discussionNumber": null,
     "pipelineId": "FAILED",
     "status": "FAILED",
     "targetId": "file"
@@ -319,6 +323,7 @@ exports[`query resolves public destinations sequentially and skips orphaned file
     "attemptNumber": 1,
     "channelId": "public",
     "discussionId": "discussion",
+    "discussionNumber": null,
     "pipelineId": "TIMED_OUT",
     "status": "TIMED_OUT",
     "targetId": "file"

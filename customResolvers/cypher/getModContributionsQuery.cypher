@@ -30,7 +30,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       channelUniqueName: channel.uniqueName,
-      discussionId: dc.discussionId
+      discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber
     } END) WHERE entry IS NOT NULL] AS relatedDiscussionChannels
   }
   CALL {
@@ -39,7 +40,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
       id: ec.id,
       channelUniqueName: channel.uniqueName,
-      eventId: ec.eventId
+      eventId: ec.eventId,
+      eventNumber: ec.eventNumber
     } END) WHERE entry IS NOT NULL] AS relatedEventChannels
   }
   CALL {
@@ -48,6 +50,7 @@ CALL {
     RETURN head([entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber,
       channelUniqueName: channel.uniqueName
     } END) WHERE entry IS NOT NULL]) AS relatedCommentDiscussionChannel
   }
@@ -58,7 +61,8 @@ CALL {
     WITH event, [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
       id: ec.id,
       channelUniqueName: channel.uniqueName,
-      eventId: ec.eventId
+      eventId: ec.eventId,
+      eventNumber: ec.eventNumber
     } END) WHERE entry IS NOT NULL] AS eventChannels
     RETURN head(collect(CASE WHEN event IS NULL THEN null ELSE {
       id: event.id,
@@ -87,6 +91,7 @@ CALL {
       createdAt: toString(action.createdAt),
       Comment: CASE WHEN actionComment IS NULL THEN null ELSE {
         id: actionComment.id,
+        shortId: actionComment.shortId,
         text: coalesce(actionComment.text, ''),
         createdAt: toString(actionComment.createdAt)
       } END,
@@ -114,6 +119,7 @@ CALL {
       } END,
       RelatedComment: CASE WHEN relatedComment IS NULL THEN null ELSE {
         id: relatedComment.id,
+        shortId: relatedComment.shortId,
         text: coalesce(relatedComment.text, ''),
         createdAt: toString(relatedComment.createdAt),
         DiscussionChannel: relatedCommentDiscussionChannel,
@@ -139,7 +145,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       channelUniqueName: channel.uniqueName,
-      discussionId: dc.discussionId
+      discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber
     } END) WHERE entry IS NOT NULL] AS feedbackDiscussionChannels
   }
   CALL {
@@ -148,7 +155,8 @@ CALL {
     RETURN [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
       id: ec.id,
       channelUniqueName: channel.uniqueName,
-      eventId: ec.eventId
+      eventId: ec.eventId,
+      eventNumber: ec.eventNumber
     } END) WHERE entry IS NOT NULL] AS feedbackEventChannels
   }
   CALL {
@@ -157,6 +165,7 @@ CALL {
     RETURN head([entry IN collect(DISTINCT CASE WHEN dc IS NULL THEN null ELSE {
       id: dc.id,
       discussionId: dc.discussionId,
+      discussionNumber: dc.discussionNumber,
       channelUniqueName: channel.uniqueName
     } END) WHERE entry IS NOT NULL]) AS feedbackCommentDiscussionChannel
   }
@@ -167,7 +176,8 @@ CALL {
     WITH event, [entry IN collect(DISTINCT CASE WHEN ec IS NULL THEN null ELSE {
       id: ec.id,
       channelUniqueName: channel.uniqueName,
-      eventId: ec.eventId
+      eventId: ec.eventId,
+      eventNumber: ec.eventNumber
     } END) WHERE entry IS NOT NULL] AS eventChannels
     RETURN head(collect(CASE WHEN event IS NULL THEN null ELSE {
       id: event.id,
@@ -196,6 +206,7 @@ CALL {
       createdAt: toString(feedbackComment.createdAt),
       Comment: {
         id: feedbackComment.id,
+        shortId: feedbackComment.shortId,
         text: coalesce(feedbackComment.text, ''),
         createdAt: toString(feedbackComment.createdAt)
       },
@@ -214,6 +225,7 @@ CALL {
       } END,
       RelatedComment: CASE WHEN feedbackOnComment IS NULL THEN null ELSE {
         id: feedbackOnComment.id,
+        shortId: feedbackOnComment.shortId,
         text: coalesce(feedbackOnComment.text, ''),
         createdAt: toString(feedbackOnComment.createdAt),
         DiscussionChannel: feedbackCommentDiscussionChannel,

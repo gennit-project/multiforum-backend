@@ -1,7 +1,7 @@
 import type { Integer } from 'neo4j-driver';
 import type { ContributionDiscussionChannel, ContributionEventChannel, ContributionEventSummary } from './contributionItemSources.js';
 /** Explicit maps shared by action and feedback branches of the owned query. */
-export type ModContributionComment = { id: unknown; text: unknown; createdAt: string | null };
+export type ModContributionComment = { id: unknown; shortId: unknown; text: unknown; createdAt: string | null };
 export type ModContributionEvent = ContributionEventSummary & { EventChannels: ContributionEventChannel[] };
 export type ModContributionDiscussion = { id: unknown; title: unknown; createdAt: string | null; DiscussionChannels: ContributionDiscussionChannel[] };
 export type ModContributionIssue = {

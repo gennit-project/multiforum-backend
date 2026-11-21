@@ -9,12 +9,15 @@ import {
 
 test("Enterprise uses node keys where property existence can be enforced", () => {
   const statements = getCoreSchemaConstraintStatements("enterprise");
-  // 12 composite core constraints (8 NODE KEY + 4 UNIQUE) plus the 47
+  // 22 composite core constraints (15 NODE KEY + 7 UNIQUE) plus the 48
   // single-field uniqueness constraints that replaced the removed `@unique`
-  // directive (always IS UNIQUE, never NODE KEY).
-  assert.equal(statements.length, 59);
-  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 8);
-  assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 51);
+  // directive (always IS UNIQUE, never NODE KEY). Added since the base: the
+  // per-forum discussion/event number constraints and channel counters, the
+  // per-user image/album/collection numbers (IS UNIQUE, owner-less are null) and
+  // their User*Counter NODE KEYs; the extra single-field UNIQUE is Comment.shortId.
+  assert.equal(statements.length, 70);
+  assert.equal(statements.filter((item) => item.includes("IS NODE KEY")).length, 15);
+  assert.equal(statements.filter((item) => item.includes("IS UNIQUE")).length, 55);
 });
 
 test("Community uses supported uniqueness constraints for every identity", () => {

@@ -54,9 +54,14 @@ const getUploadedDownloadableFiles = ({
           AND coalesce(file.permanentlyRemoved, false) = false
           AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
         OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(discussionChannel:DiscussionChannel)
-        WITH discussion, file, collect(DISTINCT discussionChannel.channelUniqueName) AS channelUniqueNames
+        WITH discussion, file,
+          collect(DISTINCT discussionChannel.channelUniqueName) AS channelUniqueNames,
+          [entry IN collect(DISTINCT CASE WHEN discussionChannel IS NULL THEN null ELSE {
+            channelUniqueName: discussionChannel.channelUniqueName,
+            discussionNumber: discussionChannel.discussionNumber
+          } END) WHERE entry IS NOT NULL] AS channels
         ORDER BY coalesce(file.createdAt, file.uploadedAt) DESC, file.fileName ASC
-        WITH discussion, channelUniqueNames, collect(file {
+        WITH discussion, channelUniqueNames, channels, collect(file {
           .*,
           createdAt: toString(file.createdAt),
           uploadedAt: toString(file.uploadedAt),
@@ -69,7 +74,8 @@ const getUploadedDownloadableFiles = ({
             title: discussion.title,
             createdAt: toString(discussion.createdAt),
             updatedAt: toString(discussion.updatedAt),
-            channelUniqueNames: channelUniqueNames
+            channelUniqueNames: channelUniqueNames,
+            channels: channels
           },
           files: files
         } AS group

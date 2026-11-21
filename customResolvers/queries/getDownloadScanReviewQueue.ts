@@ -22,7 +22,7 @@ const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
           AND ($mayAccessSensitiveContent OR coalesce(discussion.hasSensitiveContent, false) = false)
         OPTIONAL MATCH (author:User)-[:POSTED_DISCUSSION]->(discussion)
         OPTIONAL MATCH (discussion)<-[:POSTED_IN_CHANNEL]-(dc:DiscussionChannel)
-        WITH file, discussion, author, head(collect(dc.channelUniqueName)) AS channelUniqueName
+        WITH file, discussion, author, head(collect(dc)) AS dc
         ORDER BY
           CASE WHEN file.reviewRequestedAt IS NULL THEN 1 ELSE 0 END,
           file.reviewRequestedAt DESC,
@@ -43,8 +43,9 @@ const getDownloadScanReviewQueue = ({ driver, agePolicyRepository }: Input) => {
           reviewRequestReason: file.reviewRequestReason,
           uploaderUsername: coalesce(file.uploadedByUsername, author.username),
           discussionId: discussion.id,
+          discussionNumber: dc.discussionNumber,
           discussionTitle: discussion.title,
-          channelUniqueName: channelUniqueName
+          channelUniqueName: dc.channelUniqueName
         } AS review
         `,
         { limit, mayAccessSensitiveContent: canViewSensitiveContent }

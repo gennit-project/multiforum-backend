@@ -1,4 +1,5 @@
 import type {OpenModerationIssueRow} from "../../services/persistence/moderationIssueWrites.js";
+import { buildDiscussionUrl } from "../../services/contentUrlBuilder.js";
 import type {ArchiveIssueSnapshot} from "../../services/persistence/archiveProjections.js";
 import {createDiscussionModerationRepository, type DiscussionModerationRepository} from "../../services/persistence/discussionModerationRepository.js";
 import type {
@@ -208,7 +209,7 @@ const getResolver = (input: Input) => {
 
       if (discussionAuthorUsername && issueNumber) {
         const baseUrl = process.env.FRONTEND_URL || '';
-        const contentUrl = `${baseUrl}/forums/${channelUniqueName}/discussions/${discussionId}`;
+        const contentUrl = await buildDiscussionUrl(context.driver, baseUrl, channelUniqueName, discussionId);
 
         await notifyArchivedContentAuthor({
           context: { driver: context.driver, notificationSnapshotRepository: context.notificationSnapshotRepository, notificationWriter: context.notificationWriter },

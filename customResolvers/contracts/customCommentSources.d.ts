@@ -9,7 +9,7 @@ export type RawUsername={username:unknown};
 export type RawCountConnection={totalCount:Integer;aggregate:{count:{nodes:Integer}}};
 export type CustomTextVersion={id:unknown;body:unknown;editReason:unknown;createdAt:unknown;Author:RawUsername|null};
 export type CustomViewerComment={
- id:unknown;text:unknown;emoji:unknown;weightedVotesCount:unknown;createdAt:unknown;updatedAt:unknown;
+ id:unknown;shortId:unknown;text:unknown;emoji:unknown;weightedVotesCount:unknown;createdAt:unknown;updatedAt:unknown;
  textLastEdited:unknown;archived:unknown;isSticky:unknown;stickyAt:unknown;stickyByUsername:unknown;
  CommentAuthor:CustomCommentAuthor|null;isFavoritedByUser:boolean;
  UpvotedByUsers:RawUsername[];UpvotedByUsersAggregate:{count:Integer};UpvotedByUsersConnection:RawCountConnection;

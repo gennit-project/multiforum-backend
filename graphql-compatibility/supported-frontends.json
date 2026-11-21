@@ -3,10 +3,10 @@
   "repository": "gennit-project/multiforum-nuxt",
   "clients": [
     {
-      "revision": "1ae36cd49e0836a714ba3bcf2491a426239ea918",
-      "operationsSha256": "f688b1ccf47e1fbfc91cec910ab80a4e50226e6e08eb3d63256074c6ff1e7859",
-      "documents": 360,
-      "purpose": "Advanced from 9a1ebada to re-pin backend schema 6cd52f17 (PR #463: admin-configurable image/file upload size limits — ServerConfig/Channel imageMaxUploadBytes/fileMaxUploadBytes and SignedURL.contentLengthRange, enforced via a signed x-goog-content-length-range header). Frontend PR #730 replays that signed header on uploads and re-pins the additive schema; 360-operation contract re-validated against it."
+      "revision": "d1a833e54c6e2990e1063eb13e97c0086e61a639",
+      "operationsSha256": "dd0629268820b5423c13bf5b3451574303558a81e8cdfb4b5e69e887e1877c9d",
+      "documents": 366,
+      "purpose": "Advanced from 0aa78899 to re-pin the short, human-friendly URL schema (backend PR #464 / frontend PR #732) after the last two raw-id fallbacks were closed: it adds UploadedDownloadableFileDiscussion.channels {channelUniqueName, discussionNumber} for the uploads page and ScratchpadEntry.sourceCommentShortId for scratchpad comment permalinks, on top of the per-forum discussion/event numbers, comment shortId, per-user image/album/collection numbers, their getXIdByNumber lookups, and the secondary-projection number fields (contribution feeds, ScratchpadEntry, Issue related event/comment, download-scan and campaign-failure items). Frontend #732 parses the number/shortId from route params, resolves it to the id, and builds links from these fields. Pinned to backend 9c549bd3 (clean export, schema SHA-256 9b0e713b…); the additive 366-operation contract re-validated against it."
     }
   ]
 }

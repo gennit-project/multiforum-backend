@@ -46,7 +46,8 @@ WITH u,
         DiscussionChannels: [{
           id: dc.id,
           channelUniqueName: dc.channelUniqueName,
-          discussionId: dc.discussionId
+          discussionId: dc.discussionId,
+          discussionNumber: dc.discussionNumber
         }]
       }
       ELSE null
@@ -54,6 +55,7 @@ WITH u,
     comment: CASE WHEN type = 'comment'
       THEN {
         id: item.id,
+        shortId: item.shortId,
         text: item.text,
         createdAt: toString(item.createdAt),
         CommentAuthor: {
@@ -64,6 +66,7 @@ WITH u,
         DiscussionChannel: {
           id: dc.id,
           discussionId: dc.discussionId,
+          discussionNumber: dc.discussionNumber,
           channelUniqueName: dc.channelUniqueName
         }
       }

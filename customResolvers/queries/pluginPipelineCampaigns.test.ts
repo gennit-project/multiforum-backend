@@ -84,7 +84,7 @@ test("failure query returns stable public destinations and skips orphaned files"
               Discussion: {
                 id: "discussion-1",
                 DiscussionChannels: [
-                  { channelUniqueName: "cats", archived: false },
+                  { channelUniqueName: "cats", discussionNumber: 7, archived: false },
                 ],
               },
             }]
@@ -104,6 +104,7 @@ test("failure query returns stable public destinations and skips orphaned files"
     pipelineId: "failed-1",
     targetId: "file-1",
     discussionId: "discussion-1",
+    discussionNumber: 7,
     channelId: "cats",
     status: "FAILED",
     attemptNumber: 2,
