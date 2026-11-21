@@ -30,9 +30,15 @@ test("reads channel and server content feature policies", async () => {
       feedbackEnabled: false,
       downloadsEnabled: true,
       imageUploadsEnabled: false,
-      allowedFileTypes: ["zip", ".stl"]
+      allowedFileTypes: ["zip", ".stl"],
+      imageMaxUploadBytes: 1048576,
+      fileMaxUploadBytes: 5242880
     })
-    CREATE (:ServerConfig {allowedFileTypes: ["zip", "png"]})
+    CREATE (:ServerConfig {
+      allowedFileTypes: ["zip", "png"],
+      imageMaxUploadBytes: 2097152,
+      fileMaxUploadBytes: 10485760
+    })
   `);
   const repository = createContentFeaturePolicyRepository(driver, "neo4j");
 
@@ -45,10 +51,14 @@ test("reads channel and server content feature policies", async () => {
     imageUploadsEnabled: false,
     wikiEnabled: null,
     allowedFileTypes: ["zip", ".stl"],
+    imageMaxUploadBytes: 1048576,
+    fileMaxUploadBytes: 5242880,
   });
   assert.deepEqual(await repository.findServerFileTypePolicy(), {
     found: true,
     allowedFileTypes: ["zip", "png"],
+    imageMaxUploadBytes: 2097152,
+    fileMaxUploadBytes: 10485760,
   });
 });
 
@@ -64,9 +74,13 @@ test("returns explicit missing policy states", async () => {
     imageUploadsEnabled: null,
     wikiEnabled: null,
     allowedFileTypes: [],
+    imageMaxUploadBytes: null,
+    fileMaxUploadBytes: null,
   });
   assert.deepEqual(await repository.findServerFileTypePolicy(), {
     found: false,
     allowedFileTypes: [],
+    imageMaxUploadBytes: null,
+    fileMaxUploadBytes: null,
   });
 });
