@@ -3,10 +3,10 @@
   "repository": "gennit-project/multiforum-nuxt",
   "clients": [
     {
-      "revision": "0aa78899206abd8575d8672d7759b641bcd1bd83",
-      "operationsSha256": "bd1895d9dbd0ade7bb477817e38acf6d30b2027a878921818510e4e1532c97f0",
+      "revision": "d1a833e54c6e2990e1063eb13e97c0086e61a639",
+      "operationsSha256": "dd0629268820b5423c13bf5b3451574303558a81e8cdfb4b5e69e887e1877c9d",
       "documents": 366,
-      "purpose": "Advanced from 1ae36cd4 to re-pin the short, human-friendly URL schema (backend PR #464 / frontend PR #732): per-forum discussion/event numbers, comment shortId, per-user image/album/collection numbers, their getXIdByNumber lookups, and the secondary-projection number fields (contribution feeds, ScratchpadEntry, Issue related event/comment, download-scan and campaign-failure items). Frontend #732 parses the number/shortId from route params, resolves it to the id, and builds links from these fields. Pinned to backend 2a2d2102 (clean export, schema SHA-256 f31b6fdc…); the additive 366-operation contract re-validated against it."
+      "purpose": "Advanced from 0aa78899 to re-pin the short, human-friendly URL schema (backend PR #464 / frontend PR #732) after the last two raw-id fallbacks were closed: it adds UploadedDownloadableFileDiscussion.channels {channelUniqueName, discussionNumber} for the uploads page and ScratchpadEntry.sourceCommentShortId for scratchpad comment permalinks, on top of the per-forum discussion/event numbers, comment shortId, per-user image/album/collection numbers, their getXIdByNumber lookups, and the secondary-projection number fields (contribution feeds, ScratchpadEntry, Issue related event/comment, download-scan and campaign-failure items). Frontend #732 parses the number/shortId from route params, resolves it to the id, and builds links from these fields. Pinned to backend 9c549bd3 (clean export, schema SHA-256 9b0e713b…); the additive 366-operation contract re-validated against it."
     }
   ]
 }
