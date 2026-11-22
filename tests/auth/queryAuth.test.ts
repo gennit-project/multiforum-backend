@@ -33,6 +33,16 @@ const publicProfileConnectionFields = [
   "ModOfChannelsConnection",
 ] as const;
 
+// The mod profile page (getMod in multiforum-nuxt) selects these
+// `*Connection` fields on ModerationProfile for tab counts and "load more"
+// paging. They must be anonymously readable or the whole getMod query is
+// rejected by the shield's `fallbackRule: deny`. See issue #465.
+const publicModProfileConnectionFields = [
+  "AuthoredCommentsConnection",
+  "AuthoredIssuesConnection",
+  "ActivityFeedConnection",
+] as const;
+
 before(
   async () => {
     ({ schema, driver } = await buildPermissionedSchema({
@@ -51,8 +61,10 @@ before(
           `)
         );
         const userType = transformedSchema.getType("User");
+        const modProfileType = transformedSchema.getType("ModerationProfile");
         const queryFields = transformedSchema.getQueryType()!.getFields();
         assert.ok(isObjectType(userType));
+        assert.ok(isObjectType(modProfileType));
 
         queryFields.users.resolve = () => [
           {
@@ -66,6 +78,30 @@ before(
             ),
           },
         ];
+
+        queryFields.moderationProfiles.resolve = () => [
+          {
+            displayName: "public-mod",
+            ...Object.fromEntries(
+              publicModProfileConnectionFields.map((field) => [
+                field,
+                { totalCount: 1 },
+              ])
+            ),
+          },
+        ];
+        // Mock each mod-profile connection (and its totalCount resolver) to a
+        // plain source read so the deny/allow decision is the only thing under
+        // test — the real resolvers would otherwise hit Neo4j.
+        for (const field of publicModProfileConnectionFields) {
+          const connField = modProfileType.getFields()[field];
+          connField.resolve = (source) => source[field];
+          const connType = getNamedType(connField.type);
+          if (isObjectType(connType)) {
+            connType.getFields().totalCount.resolve = (source) =>
+              source.totalCount;
+          }
+        }
         queryFields.getSiteWideDiscussionList.resolve = () => ({
           aggregateDiscussionCount: 1,
           discussions: [],
@@ -224,6 +260,36 @@ test("public user profile aggregate counters are readable anonymously", async ()
         AuthoredWikiPageVersionsConnection: { totalCount: 1 },
         AdminOfChannelsConnection: { totalCount: 1 },
         ModOfChannelsConnection: { totalCount: 1 },
+      },
+    ],
+  });
+});
+
+test("public mod profile connection counters are readable anonymously", async () => {
+  const result = await graphql({
+    schema,
+    source: `
+      query getMod($displayName: String!) {
+        moderationProfiles(where: { displayName: { eq: $displayName } }) {
+          displayName
+          AuthoredCommentsConnection { totalCount }
+          AuthoredIssuesConnection { totalCount }
+          ActivityFeedConnection { totalCount }
+        }
+      }
+    `,
+    variableValues: { displayName: "public-mod" },
+    contextValue: makeRequestContext({ driver }),
+  });
+
+  assert.deepEqual(result.errors, undefined);
+  assert.deepEqual(JSON.parse(JSON.stringify(result.data)), {
+    moderationProfiles: [
+      {
+        displayName: "public-mod",
+        AuthoredCommentsConnection: { totalCount: 1 },
+        AuthoredIssuesConnection: { totalCount: 1 },
+        ActivityFeedConnection: { totalCount: 1 },
       },
     ],
   });
