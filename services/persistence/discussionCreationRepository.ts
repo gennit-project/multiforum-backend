@@ -16,6 +16,7 @@ export const DISCUSSION_CREATE_SELECTION = `
       createdAt
       channelUniqueName
       discussionId
+      discussionNumber
       archived
       Flairs {
         id

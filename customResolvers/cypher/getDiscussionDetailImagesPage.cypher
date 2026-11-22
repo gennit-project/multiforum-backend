@@ -20,6 +20,7 @@ ORDER BY image.createdAt DESC, image.id ASC
 LIMIT toInteger($pageLimit)
 RETURN image {
   .id,
+  .imageNumber,
   .createdAt,
   .url,
   .alt,

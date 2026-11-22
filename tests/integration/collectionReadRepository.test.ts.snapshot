@@ -7,6 +7,7 @@ exports[`collections remain unbounded at root and public downloads retain limit 
       "username": "owner"
     },
     "Downloads": 5,
+    "collectionNumber": null,
     "collectionType": "DOWNLOADS",
     "createdAt": "<time>",
     "description": null,
@@ -60,6 +61,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -87,6 +89,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -121,6 +124,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -155,6 +159,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -195,6 +200,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -229,6 +235,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -269,6 +276,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -303,6 +311,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -332,6 +341,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -359,6 +369,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -393,6 +404,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -416,6 +428,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -443,6 +456,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -466,6 +480,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -493,6 +508,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -527,6 +543,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -550,6 +567,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -577,6 +595,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -600,6 +619,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
       "Discussions": [],
       "Downloads": [],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -627,6 +647,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -661,6 +682,7 @@ exports[`profile collections preserve arbitrary filters, options and computed co
         }
       ],
       "Images": [],
+      "collectionNumber": null,
       "collectionType": "DOWNLOADS",
       "createdAt": "<time>",
       "description": null,
@@ -712,6 +734,7 @@ exports[`public collections preserve explicit sensitive filtering and anonymous 
         "title": "Clear"
       }
     ],
+    "collectionNumber": null,
     "collectionType": "DOWNLOADS",
     "createdAt": "<time>",
     "description": null,
@@ -785,6 +808,7 @@ exports[`public collections preserve explicit sensitive filtering and anonymous 
         "title": "Clear"
       }
     ],
+    "collectionNumber": null,
     "collectionType": "DOWNLOADS",
     "createdAt": "<time>",
     "description": null,

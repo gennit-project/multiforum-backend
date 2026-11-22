@@ -3,7 +3,7 @@ import type { DiscussionListAuthor,DiscussionListAlbum,DiscussionListFlair } fro
 import type { SiteWideDownloadFile } from './siteWideDownloadFiles.js';
 /** Exact owned hydration document, not completed GraphQL entities. */
 export type SiteWideDiscussionChannelSource={
- id:unknown; createdAt:unknown; channelUniqueName:unknown; discussionId:unknown;
+ id:unknown; createdAt:unknown; channelUniqueName:unknown; discussionId:unknown; discussionNumber:unknown;
  weightedVotesCount:unknown; archived:unknown; answered:unknown; locked:unknown;
  Flairs:DiscussionListFlair[];
  Channel:{uniqueName:unknown;displayName:unknown;channelIconURL:unknown};

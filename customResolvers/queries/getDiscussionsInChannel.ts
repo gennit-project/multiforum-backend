@@ -160,6 +160,7 @@ const getResolver = (input: Input) => {
             channel.UpvotedByUsers.forEach(rememberCanonicalSource);
             channel.SuperUpvotedByUsers.forEach(rememberCanonicalSource);
             const discussion = rememberCanonicalSource(channel.Discussion);
+            discussion.DiscussionChannels.forEach(rememberCanonicalSource);
             if (discussion.Author) rememberCanonicalSource(discussion.Author);
             if (discussion.Album) {
               rememberCanonicalSource(discussion.Album);

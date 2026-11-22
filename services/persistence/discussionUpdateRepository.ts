@@ -26,6 +26,7 @@ export const UPDATED_DISCUSSION_SELECTION = `
             id
             channelUniqueName
             discussionId
+            discussionNumber
             Flairs {
               id
               channelUniqueName

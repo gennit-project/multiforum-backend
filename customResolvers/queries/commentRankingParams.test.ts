@@ -47,7 +47,7 @@ const createDriver = () => {
             assert.ok(typeof params.channelUniqueName === "string");
             const count={count:int(0)};
             const connection={totalCount:int(0),aggregate:{count:{nodes:int(0)}}};
-            const channel={id:"discussion-channel-1",weightedVotesCount:0,discussionId:params.discussionId,
+            const channel={id:"discussion-channel-1",weightedVotesCount:0,discussionId:params.discussionId,discussionNumber:1,
               channelUniqueName:params.channelUniqueName,emoji:null,archived:null,locked:null,answered:null,
               UpvotedByUsers:[],UpvotedByUsersAggregate:count,UpvotedByUsersConnection:connection,
               SuperUpvotedByUsers:[],CommentsAggregate:count,CommentsConnection:connection,

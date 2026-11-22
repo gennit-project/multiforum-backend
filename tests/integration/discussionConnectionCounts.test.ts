@@ -149,11 +149,11 @@ test('actual sitewide hydration retains every declared nested map key',async()=>
   Author:true,DiscussionChannels:true,Tags:true,Album:true,DownloadableFiles:true,isFavorited:true});
  assert.ok(d.Author);exactKeys(d.Author,{username:true,displayName:true,profilePicURL:true,createdAt:true,discussionKarma:true,commentKarma:true});
  assert.ok(d.Album);exactKeys(d.Album,{id:true,imageOrder:true,Images:true});
- assert.equal(d.Album.Images.length,1);exactKeys(d.Album.Images[0]!,{id:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
+ assert.equal(d.Album.Images.length,1);exactKeys(d.Album.Images[0]!,{id:true,imageNumber:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
  assert.equal(d.Tags.length,1);exactKeys(d.Tags[0]!,{text:true});
  assert.equal(d.DownloadableFiles.length,1);exactKeys(d.DownloadableFiles[0]!,siteWideDownloadFileSelection);
  assert.equal(d.DiscussionChannels.length,1);const c=d.DiscussionChannels[0]!;
- exactKeys(c,{id:true,createdAt:true,channelUniqueName:true,discussionId:true,weightedVotesCount:true,archived:true,
+ exactKeys(c,{id:true,createdAt:true,channelUniqueName:true,discussionId:true,discussionNumber:true,weightedVotesCount:true,archived:true,
   answered:true,locked:true,Flairs:true,Channel:true,UpvotedByUsers:true,SuperUpvotedByUsers:true,CommentsConnection:true});
  exactKeys(c.Channel,{uniqueName:true,displayName:true,channelIconURL:true});
  assert.equal(c.Flairs.length,1);exactKeys(c.Flairs[0]!,discussionListFlairSelection);

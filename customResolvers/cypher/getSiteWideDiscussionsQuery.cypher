@@ -54,6 +54,7 @@ CALL {
     createdAt: dc.createdAt,
     channelUniqueName: dc.channelUniqueName,
     discussionId: d.id,
+    discussionNumber: dc.discussionNumber,
     weightedVotesCount: dc.weightedVotesCount,
     archived: dc.archived,
     answered: dc.answered,
@@ -94,6 +95,7 @@ CALL {
   RETURN head(collect(DISTINCT album)) AS album,
          [img IN collect(DISTINCT image) WHERE img IS NOT NULL | {
            id: img.id,
+           imageNumber: img.imageNumber,
            url: img.url,
            alt: img.alt,
            caption: img.caption,

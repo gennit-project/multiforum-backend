@@ -146,13 +146,13 @@ test('all actual custom comment hydration documents retain their exact source pr
   assert.equal(root.FeedbackComments.length,1);keys(root.FeedbackComments[0]!,{id:true});
   const reply=(await session.run<{ChildComments:CustomReplyComment[]}>(getCommentRepliesQuery,parameters)).records[0]!.get('ChildComments')[0]!;
   keys(reply,{...commentKeys,ParentComment:true,FeedbackComments:true,Event:true,DiscussionChannel:true});commonKeys(reply);
-  assert.ok(reply.Event);keys(reply.Event,{id:true});assert.ok(reply.DiscussionChannel);keys(reply.DiscussionChannel,{id:true,discussionId:true,channelUniqueName:true});
-  keys(reply.ParentComment,{id:true});assert.equal(reply.FeedbackComments.length,1);keys(reply.FeedbackComments[0]!,{id:true});
+  assert.ok(reply.Event);keys(reply.Event,{id:true,EventChannels:true});assert.ok(reply.DiscussionChannel);keys(reply.DiscussionChannel,{id:true,discussionId:true,discussionNumber:true,channelUniqueName:true});
+  keys(reply.ParentComment,{id:true,shortId:true});assert.equal(reply.FeedbackComments.length,1);keys(reply.FeedbackComments[0]!,{id:true});
   const event=(await session.run<{comment:CustomEventComment}>(getEventCommentsQuery,parameters)).records[0]!.get('comment');
   keys(event,{...commentKeys,ParentComment:true,ChildComments:true,Event:true,DiscussionChannel:true});commonKeys(event);
-  keys(event.Event,{id:true});assert.equal(event.ChildComments.length,1);keys(event.ChildComments[0]!,{id:true,text:true});
+  keys(event.Event,{id:true,EventChannels:true});assert.equal(event.ChildComments.length,1);keys(event.ChildComments[0]!,{id:true,shortId:true,text:true});
   const channel=(await session.run<{DiscussionChannel:CustomCommentSectionChannel}>(getCommentSectionChannelQuery,parameters)).records[0]!.get('DiscussionChannel');
-  keys(channel,{id:true,weightedVotesCount:true,discussionId:true,channelUniqueName:true,emoji:true,archived:true,locked:true,answered:true,
+  keys(channel,{id:true,weightedVotesCount:true,discussionId:true,discussionNumber:true,channelUniqueName:true,emoji:true,archived:true,locked:true,answered:true,
    UpvotedByUsers:true,UpvotedByUsersAggregate:true,UpvotedByUsersConnection:true,SuperUpvotedByUsers:true,CommentsAggregate:true,
    CommentsConnection:true,RootCommentsAggregate:true,RootCommentsConnection:true,SubscribedToNotifications:true,Answers:true,
    _detailAnswersHasNextPage:true,Channel:true,Discussion:true});
@@ -161,7 +161,7 @@ test('all actual custom comment hydration documents retain their exact source pr
   assert.equal(channel.Channel.Moderators.length,1);keys(channel.Channel.Moderators[0]!,{displayName:true});
   keys(channel.Discussion,{id:true,title:true,Author:true});assert.ok(channel.Discussion.Author);
   keys(channel.Discussion.Author,{username:true,displayName:true,profilePicURL:true,commentKarma:true,createdAt:true,discussionKarma:true});
-  assert.equal(channel.Answers.length,1);const answer=channel.Answers[0]!;keys(answer,{id:true,text:true,createdAt:true,CommentAuthor:true});
+  assert.equal(channel.Answers.length,1);const answer=channel.Answers[0]!;keys(answer,{id:true,shortId:true,text:true,createdAt:true,CommentAuthor:true});
   assert.ok(answer.CommentAuthor);keys(answer.CommentAuthor,{username:true,displayName:true,__sourceAuthorType:true});
   assert.equal(answer.CommentAuthor.__sourceAuthorType,'ModerationProfile');
   for(const users of [channel.UpvotedByUsers,channel.SuperUpvotedByUsers,channel.SubscribedToNotifications]){assert.equal(users.length,1);keys(users[0]!,{username:true});}

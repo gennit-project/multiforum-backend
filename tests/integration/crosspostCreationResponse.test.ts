@@ -77,9 +77,9 @@ beforeEach(async()=>{
 const item=(title='Crosspost')=>({discussionCreateInput:{title,
   Album:{create:{node:{imageOrder:[],Images:{create:[{node:{url:'new.jpg'}}],connect:[{where:{node:{id:{eq:'reused'}}}}]}}}}},
   channelConnections:['forum','second'],crosspostedDiscussionId:'source'});
-const SOURCE=`mutation($input:[DiscussionCreateInputWithChannels!]!){createDiscussionWithChannelConnections(input:$input){id title Author{username} DiscussionChannels{channelUniqueName}}}`;
+const SOURCE=`mutation($input:[DiscussionCreateInputWithChannels!]!){createDiscussionWithChannelConnections(input:$input){id title Author{username} DiscussionChannels{channelUniqueName discussionNumber}}}`;
 const execute=(input:ReturnType<typeof item>[],username='alice',sensitive=false)=>graphql({schema,source:SOURCE,variableValues:{input},contextValue:{driver,req:{headers:{}},user:{username,email:null,email_verified:true,data:null},mayAccessSensitiveContent:sensitive}});
-const ok=(r:Awaited<ReturnType<typeof execute>>)=>{assert.equal(r.errors,undefined,JSON.stringify(r.errors));return (r.data as any).createDiscussionWithChannelConnections as Array<{id:string;title:string;Author:{username:string}}>;};
+const ok=(r:Awaited<ReturnType<typeof execute>>)=>{assert.equal(r.errors,undefined,JSON.stringify(r.errors));return (r.data as any).createDiscussionWithChannelConnections as Array<{id:string;title:string;Author:{username:string};DiscussionChannels:Array<{channelUniqueName:string;discussionNumber:number|null}>}>;};
 async function titles(){return (await driver.executeQuery('MATCH(d:Discussion) WHERE d.id<>"source" RETURN d.title AS title ORDER BY title')).records.map(r=>r.get('title'));}
 async function assertRolledBack(){
   assert.deepEqual(await titles(),[]);
@@ -91,6 +91,8 @@ async function assertRolledBack(){
 test('crosspost success retains ownership and dispatches only after all links commit',async()=>{
   const [created]=ok(await execute([item()]));
   assert.equal(created.Author.username,'alice');
+  // The client builds the post-create redirect from each forum's short URL number.
+  assert.ok(created.DiscussionChannels.length===2&&created.DiscussionChannels.every(link=>Number.isInteger(link.discussionNumber)));
   assert.deepEqual(dispatched,[{id:created.id,links:2}]);
   const owners=await driver.executeQuery(`MATCH(:Discussion {id:$id})-[:HAS_ALBUM]->(a:Album)<-[:HAS_ALBUM]-(:User {username:'alice'})
     MATCH(a)-[:HAS_IMAGE]->(i:Image)<-[:UPLOADED_IMAGE]-(u:User) RETURN i.url AS url,u.username AS owner ORDER BY url`,{id:created.id});

@@ -26,6 +26,7 @@ export const createdEventSelection = {
     "createdAt": true,
     "channelUniqueName": true,
     "eventId": true,
+    "eventNumber": true,
     "archived": true,
     "Channel": {
       "uniqueName": true
@@ -103,6 +104,7 @@ export const updatedEventSelection = {
     "id": true,
     "channelUniqueName": true,
     "eventId": true,
+    "eventNumber": true,
     "Channel": {
       "uniqueName": true
     },
@@ -165,6 +167,7 @@ export const createdEventSeriesSelection = {
     "EventChannels": {
       "id": true,
       "channelUniqueName": true,
+      "eventNumber": true,
       "Channel": {
         "uniqueName": true
       }
@@ -173,6 +176,7 @@ export const createdEventSeriesSelection = {
   "EventChannels": {
     "id": true,
     "channelUniqueName": true,
+    "eventNumber": true,
     "Channel": {
       "uniqueName": true
     }
@@ -229,6 +233,7 @@ export const updatedSeriesOccurrenceSelection = {
     "id": true,
     "channelUniqueName": true,
     "eventId": true,
+    "eventNumber": true,
     "Channel": {
       "uniqueName": true
     }
@@ -259,6 +264,7 @@ export const createdDiscussionSelection = {
     "createdAt": true,
     "channelUniqueName": true,
     "discussionId": true,
+    "discussionNumber": true,
     "archived": true,
     "Flairs": {
       "id": true,
@@ -323,6 +329,7 @@ export const updatedDiscussionSelection = {
     "id": true,
     "channelUniqueName": true,
     "discussionId": true,
+    "discussionNumber": true,
     "Flairs": {
       "id": true,
       "channelUniqueName": true,

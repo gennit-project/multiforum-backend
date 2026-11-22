@@ -83,14 +83,20 @@ CALL {
   CALL {
     WITH child
     OPTIONAL MATCH (event:Event)-[:HAS_COMMENT]->(child)
-    RETURN CASE WHEN event IS NULL THEN null ELSE {id: event.id} END AS event
+    // Permalinks to event comments need each forum's short URL number.
+    RETURN CASE WHEN event IS NULL THEN null ELSE {
+      id: event.id,
+      EventChannels: [(eventChannel:EventChannel)-[:POSTED_IN_CHANNEL]->(event) | eventChannel {
+        .channelUniqueName, .eventNumber
+      }]
+    } END AS event
   }
 
   CALL {
     WITH child
     OPTIONAL MATCH (entry:DiscussionChannel)-[:CONTAINS_COMMENT]->(child)
     RETURN CASE WHEN entry IS NULL THEN null ELSE entry {
-      .id, .channelUniqueName, .discussionId
+      .id, .channelUniqueName, .discussionId, .discussionNumber
     } END AS discussionChannel
   }
 
@@ -106,7 +112,10 @@ CALL {
     .textLastEdited, .archived,
     isSticky: coalesce(child.isSticky, false),
     .stickyAt, .stickyByUsername,
-    ParentComment: {id: $commentId},
+    ParentComment: {
+      id: $commentId,
+      shortId: head([(child)-[:IS_REPLY_TO]->(parentComment:Comment) | parentComment.shortId])
+    },
     CommentAuthor: CASE WHEN author IS NULL THEN null ELSE author {
       __sourceAuthorType: CASE
         WHEN author:User AND NOT (author:ModerationProfile) THEN 'User'

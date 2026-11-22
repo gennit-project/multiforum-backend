@@ -75,6 +75,17 @@ test("createEventSeries returns the series with one occurrence per date, indexed
   );
 });
 
+test("createEventSeries returns each occurrence's per-forum short URL number", async () => {
+  const series = await createSeries();
+
+  assert.deepEqual(
+    series.Occurrences.flatMap((occurrence: { EventChannels: { eventNumber: number | null }[] }) =>
+      occurrence.EventChannels.map((eventChannel) => eventChannel.eventNumber)
+    ).sort(),
+    [1, 2, 3]
+  );
+});
+
 test("createEventSeries persists the series and its occurrences in the graph", async () => {
   await createSeries();
 

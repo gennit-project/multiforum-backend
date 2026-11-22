@@ -102,7 +102,7 @@ test('detail image and file pages retain nested source aliases',async()=>{
 });
 const keys=(value:object,expected:readonly string[])=>assert.deepEqual(Object.keys(value).sort(),[...expected].sort());
 const authorKeys=['username','displayName','__sourceAuthorType'];
-const imageKeys=['id','createdAt','url','alt','caption','copyright','Uploader'];
+const imageKeys=['id','imageNumber','createdAt','url','alt','caption','copyright','Uploader'];
 const fileKeys=['id','createdAt','fileName','url','kind','size','priceModel','priceCents','priceCurrency','downloadCountTotal','downloadCountUnique','attributionOverride','supportPatreonUrl','supportBuyMeACoffeeUrl','supportKoFiUrl','supportPayPalMeUrl','scanStatus','scanCheckedAt','scanReason','uploadedByUsername','license'];
 test('all six actual detail queries preserve exact nested owned projections',async()=>{
  await seedAssets();
@@ -120,18 +120,18 @@ test('all six actual detail queries preserve exact nested owned projections',asy
   assert.ok(core.CrosspostedDiscussion);keys(core.CrosspostedDiscussion,['id','title','body','createdAt','Author','Album','DiscussionChannels']);
   const cross=core.CrosspostedDiscussion;assert.ok(cross.Author);keys(cross.Author,['username','displayName','profilePicURL']);
   assert.ok(cross.Album);keys(cross.Album,['id','imageOrder','Images']);keys(cross.Album.Images[0],imageKeys.filter(key=>key!=='createdAt'));
-  keys(cross.DiscussionChannels[0],['channelUniqueName','Channel']);assert.ok(cross.DiscussionChannels[0].Channel);keys(cross.DiscussionChannels[0].Channel,['uniqueName','displayName']);
-  assert.ok(core.SharedCollection);keys(core.SharedCollection,['id','name','description','collectionType','visibility','itemCount','CreatedBy']);
+  keys(cross.DiscussionChannels[0],['channelUniqueName','discussionNumber','Channel']);assert.ok(cross.DiscussionChannels[0].Channel);keys(cross.DiscussionChannels[0].Channel,['uniqueName','displayName']);
+  assert.ok(core.SharedCollection);keys(core.SharedCollection,['id','collectionNumber','ownerUsername','name','description','collectionType','visibility','itemCount','CreatedBy']);
   assert.ok(core.SharedCollection.CreatedBy);keys(core.SharedCollection.CreatedBy,['username','displayName','profilePicURL']);
   const channel=(await session.run<{DiscussionChannel:DetailChannel}>(getDiscussionDetailChannelQuery,params)).records[0].get('DiscussionChannel');
-  keys(channel,['id','discussionId','channelUniqueName','weightedVotesCount','archived','answered','locked','emoji','Flairs','UpvotedByUsers','UpvotedByUsersAggregate','UpvotedByUsersConnection','SuperUpvotedByUsers','CommentsAggregate','CommentsConnection','Answers','_detailAnswersHasNextPage','LabelOptions','Discussion','Channel']);
+  keys(channel,['id','discussionId','discussionNumber','channelUniqueName','weightedVotesCount','archived','answered','locked','emoji','Flairs','UpvotedByUsers','UpvotedByUsersAggregate','UpvotedByUsersConnection','SuperUpvotedByUsers','CommentsAggregate','CommentsConnection','Answers','_detailAnswersHasNextPage','LabelOptions','Discussion','Channel']);
   keys(channel.Channel,['uniqueName','channelIconURL','displayName','feedbackEnabled','imageUploadsEnabled','markdownImagesEnabled','emojiEnabled']);keys(channel.Discussion,['id']);
-  keys(channel.Answers[0],['id','text','createdAt','CommentAuthor']);assert.ok(channel.Answers[0].CommentAuthor);keys(channel.Answers[0].CommentAuthor,authorKeys);assert.equal(channel.Answers[0].CommentAuthor.__sourceAuthorType,'ModerationProfile');
+  keys(channel.Answers[0],['id','shortId','text','createdAt','CommentAuthor']);assert.ok(channel.Answers[0].CommentAuthor);keys(channel.Answers[0].CommentAuthor,authorKeys);assert.equal(channel.Answers[0].CommentAuthor.__sourceAuthorType,'ModerationProfile');
   keys(channel.Flairs[0],['id','channelUniqueName','displayName','color','order','archived']);keys(channel.LabelOptions[0],['id','value','displayName','order','group']);assert.ok(channel.LabelOptions[0].group);keys(channel.LabelOptions[0].group,['id','key','displayName']);
   for(const count of [core.FeedbackCommentsConnection,channel.UpvotedByUsersConnection,channel.CommentsConnection]){keys(count,['totalCount','aggregate']);keys(count.aggregate,['count']);keys(count.aggregate.count,['nodes']);assert.equal(count.totalCount.toNumber(),0);}
   const files=(await session.run<{DownloadableFiles:DetailFile[];detailFilesHasNextPage:boolean}>(getDiscussionDetailFilesQuery,params)).records[0];
   keys(files.get('DownloadableFiles')[0],fileKeys);assert.equal(files.get('detailFilesHasNextPage'),false);
-  const answer=(await session.run<{item:CustomChannelAnswer}>(getDiscussionDetailAnswersPageQuery,params)).records[0].get('item');keys(answer,['id','text','createdAt','CommentAuthor']);assert.ok(answer.CommentAuthor);keys(answer.CommentAuthor,authorKeys);
+  const answer=(await session.run<{item:CustomChannelAnswer}>(getDiscussionDetailAnswersPageQuery,params)).records[0].get('item');keys(answer,['id','shortId','text','createdAt','CommentAuthor']);assert.ok(answer.CommentAuthor);keys(answer.CommentAuthor,authorKeys);
   const file=(await session.run<{item:DetailFile}>(getDiscussionDetailFilesPageQuery,params)).records[0].get('item');keys(file,fileKeys);assert.ok(file.license);keys(file.license,['id','name']);
   const image=(await session.run<{item:DetailImage}>(getDiscussionDetailImagesPageQuery,params)).records[0].get('item');keys(image,imageKeys);assert.ok(image.Uploader);keys(image.Uploader,['username','displayName']);
  }finally{await session.close();}

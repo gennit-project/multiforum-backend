@@ -44,6 +44,7 @@ CALL {
   LIMIT toInteger($answerLimit) + 1
   WITH [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
     .id,
+    .shortId,
     .text,
     .createdAt,
     CommentAuthor: CASE WHEN answerAuthor IS NULL THEN null ELSE answerAuthor {
@@ -95,6 +96,7 @@ CALL {
 RETURN entry {
   .id,
   .discussionId,
+  .discussionNumber,
   .channelUniqueName,
   .weightedVotesCount,
   .archived,

@@ -224,10 +224,11 @@ test('actual discussion hydration document retains its exact declared map projec
   }
   const d=row.Discussion;
   assertKeys(d,{id:true,title:true,body:true,createdAt:true,updatedAt:true,hasSensitiveContent:true,hasSpoiler:true,
-    Author:true,Album:true,Tags:true,DownloadableFiles:true,authorIsChannelModerator:true});
+    Author:true,Album:true,Tags:true,DownloadableFiles:true,authorIsChannelModerator:true,DiscussionChannels:true});
+  assert.equal(d.DiscussionChannels.length,1);assertKeys(d.DiscussionChannels[0]!,{id:true,discussionId:true,discussionNumber:true,channelUniqueName:true});
   assert.ok(d.Author);assertKeys(d.Author,{username:true,displayName:true,profilePicURL:true,createdAt:true,discussionKarma:true,commentKarma:true});
   assert.ok(d.Album);assertKeys(d.Album,{id:true,imageOrder:true,Images:true});
-  assert.equal(d.Album.Images.length,1);assertKeys(d.Album.Images[0]!,{id:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
+  assert.equal(d.Album.Images.length,1);assertKeys(d.Album.Images[0]!,{id:true,imageNumber:true,url:true,alt:true,caption:true,archived:true,permanentlyRemoved:true});
   assert.equal(d.Tags.length,1);assertKeys(d.Tags[0]!,{text:true});
   assert.equal(d.DownloadableFiles.length,1);assertKeys(d.DownloadableFiles[0]!,{id:true,scanStatus:true});
   assert.equal(row.Flairs.length,1);assertKeys(row.Flairs[0]!,discussionListFlairSelection);

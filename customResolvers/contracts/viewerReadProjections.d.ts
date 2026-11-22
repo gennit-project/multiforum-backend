@@ -20,13 +20,18 @@ export type DiscussionListAuthor = {
   createdAt: unknown; discussionKarma: unknown; commentKarma: unknown;
 };
 export type DiscussionListImage = {
-  id: unknown; url: unknown; alt: unknown; caption: unknown;
+  id: unknown; imageNumber: unknown; url: unknown; alt: unknown; caption: unknown;
   archived: unknown; permanentlyRemoved: unknown;
 };
 export type DiscussionListAlbum = {id: unknown; imageOrder: unknown; Images: DiscussionListImage[]};
+/** The listed forum's own entry, so list links can use its short URL number. */
+export type DiscussionListDiscussionChannel = {
+  id: unknown; discussionId: unknown; discussionNumber: unknown; channelUniqueName: unknown;
+};
 export type DiscussionListDiscussion = {
   id: unknown; title: unknown; body: unknown; createdAt: unknown; updatedAt: unknown;
   hasSensitiveContent: unknown; hasSpoiler: unknown;
+  DiscussionChannels: DiscussionListDiscussionChannel[];
   Author: DiscussionListAuthor | null; Album: DiscussionListAlbum | null;
   Tags: {text: unknown}[]; DownloadableFiles: {id: unknown; scanStatus: unknown}[];
   authorIsChannelModerator: boolean;

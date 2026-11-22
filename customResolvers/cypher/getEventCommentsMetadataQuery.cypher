@@ -12,7 +12,7 @@ CALL {
   OPTIONAL MATCH (entry:EventChannel)-[:POSTED_IN_CHANNEL]->(event)
   OPTIONAL MATCH (entry)-[:POSTED_IN_CHANNEL]->(channel:Channel)
   RETURN [value IN collect(CASE WHEN entry IS NULL THEN null ELSE entry {
-    .id, .eventId, .channelUniqueName,
+    .id, .eventId, .eventNumber, .channelUniqueName,
     Channel: CASE WHEN channel IS NULL THEN null ELSE channel {
       .uniqueName, .displayName, .channelIconURL
     } END
