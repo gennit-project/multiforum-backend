@@ -28,6 +28,7 @@ CALL {
     LIMIT toInteger($imageLimit) + 1
     WITH [entry IN collect(CASE WHEN image IS NULL THEN null ELSE image {
       .id,
+      .imageNumber,
       .createdAt,
       .url,
       .alt,
@@ -70,6 +71,7 @@ CALL {
     LIMIT toInteger($previewImageLimit)
     RETURN [entry IN collect(CASE WHEN image IS NULL THEN null ELSE image {
       .id,
+      .imageNumber,
       .url,
       .alt,
       .caption,
@@ -86,6 +88,7 @@ CALL {
     OPTIONAL MATCH (entry)-[:POSTED_IN_CHANNEL]->(channel:Channel)
     RETURN [item IN collect(DISTINCT CASE WHEN entry IS NULL THEN null ELSE {
       channelUniqueName: entry.channelUniqueName,
+      discussionNumber: entry.discussionNumber,
       Channel: CASE WHEN channel IS NULL THEN null ELSE channel {
         .uniqueName,
         .displayName
@@ -122,6 +125,8 @@ CALL {
   }
   RETURN CASE WHEN collection IS NULL THEN null ELSE collection {
     .id,
+    .collectionNumber,
+    .ownerUsername,
     .name,
     .description,
     .collectionType,

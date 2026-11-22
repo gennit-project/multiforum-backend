@@ -42,7 +42,7 @@ CALL {
   WITH comment
   OPTIONAL MATCH (child:Comment)-[:IS_REPLY_TO]->(comment)
   RETURN count(child) AS childCount,
-    [value IN collect(CASE WHEN child IS NULL THEN null ELSE child {.id, .text} END)
+    [value IN collect(CASE WHEN child IS NULL THEN null ELSE child {.id, .shortId, .text} END)
       WHERE value IS NOT NULL] AS children
 }
 
@@ -100,7 +100,12 @@ RETURN comment {
   },
   PastVersions: pastVersions,
   SubscribedToNotifications: viewerSubscription,
-  Event: {id: event.id},
+  Event: {
+    id: event.id,
+    EventChannels: [(eventChannel:EventChannel)-[:POSTED_IN_CHANNEL]->(event) | eventChannel {
+      .channelUniqueName, .eventNumber
+    }]
+  },
   DiscussionChannel: null
 } AS comment, rankingVotes, hotRank
 

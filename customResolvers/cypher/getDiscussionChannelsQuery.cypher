@@ -51,6 +51,7 @@ WITH pagePosition, dc, d, author, tagsText, loggedInUserUpvote, loggedInUserSupe
          AND ($mayAccessSensitiveContent OR coalesce(image.hasSensitiveContent, false) = false)
        THEN {
          id: image.id,
+         imageNumber: image.imageNumber,
          url: image.url,
          alt: image.alt,
          caption: image.caption,
@@ -126,6 +127,15 @@ RETURN {
         updatedAt: d.updatedAt,
         hasSensitiveContent: d.hasSensitiveContent,
         hasSpoiler: d.hasSpoiler,
+        // DiscussionChannelListItem has no discussionNumber of its own, so
+        // clients read the short URL number through the nested Discussion.
+        // Only the entry for the forum being listed is projected.
+        DiscussionChannels: [{
+            id: dc.id,
+            discussionId: d.id,
+            discussionNumber: dc.discussionNumber,
+            channelUniqueName: dc.channelUniqueName
+        }],
         Author: CASE
                   WHEN author IS NULL THEN null
                   ELSE {

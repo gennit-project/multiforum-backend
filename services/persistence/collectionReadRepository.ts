@@ -21,6 +21,7 @@ export interface CollectionReadRepository {
 const PROFILE_COLLECTIONS = `query ProfileCollections($where: CollectionWhere, $sort: [CollectionSort!], $limit: Int, $offset: Int) {
   collections(where: $where, sort: $sort, limit: $limit, offset: $offset) {
         id
+        collectionNumber
         name
         description
         visibility
@@ -56,6 +57,7 @@ const PROFILE_COLLECTIONS = `query ProfileCollections($where: CollectionWhere, $
 const selectionSetTemplate = `
 {
   id
+  collectionNumber
   name
   description
   visibility
@@ -87,6 +89,7 @@ const selectionSetTemplate = `
     DiscussionChannels {
       id
       channelUniqueName
+      discussionNumber
       CommentsConnection {
         aggregate {
           count {

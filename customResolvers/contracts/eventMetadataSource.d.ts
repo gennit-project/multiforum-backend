@@ -5,7 +5,7 @@ export type EventMetadataSource={
  virtualEventUrl:unknown;startTimeDayOfWeek:unknown;startTimeHourOfDay:unknown;canceled:unknown;isHostedByOP:unknown;isAllDay:unknown;
  coverImageURL:unknown;createdAt:unknown;updatedAt:unknown;isInPrivateResidence:unknown;location:unknown;cost:unknown;
  Tags:{text:unknown}[];
- EventChannels:{id:unknown;eventId:unknown;channelUniqueName:unknown;Channel:{uniqueName:unknown;displayName:unknown;channelIconURL:unknown}|null}[];
+ EventChannels:{id:unknown;eventId:unknown;eventNumber:unknown;channelUniqueName:unknown;Channel:{uniqueName:unknown;displayName:unknown;channelIconURL:unknown}|null}[];
  SubscribedToNotifications:{username:string}[];SubscribedToEventUpdates:{username:string}[];
  Poster:{username:unknown;createdAt:unknown;discussionKarma:unknown;commentKarma:unknown}|null;
 };
@@ -14,7 +14,7 @@ export type EventMetadataSelection={
  id:true;title:true;description:true;startTime:true;endTime:true;locationName:true;address:true;
  virtualEventUrl:true;startTimeDayOfWeek:true;startTimeHourOfDay:true;canceled:true;isHostedByOP:true;isAllDay:true;
  coverImageURL:true;createdAt:true;updatedAt:true;isInPrivateResidence:true;cost:true;
- Tags:{text:true};EventChannels:{id:true;eventId:true;channelUniqueName:true;Channel:{uniqueName:true;displayName:true;channelIconURL:true}};
+ Tags:{text:true};EventChannels:{id:true;eventId:true;eventNumber:true;channelUniqueName:true;Channel:{uniqueName:true;displayName:true;channelIconURL:true}};
  SubscribedToNotifications:{username:true};SubscribedToEventUpdates:{username:true};
  Poster:{username:true;createdAt:true;discussionKarma:true;commentKarma:true};
 };

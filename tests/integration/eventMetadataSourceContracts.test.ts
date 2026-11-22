@@ -74,7 +74,7 @@ test('event metadata uses the actual fixed query projection',async()=>{
   const source=result.records[0].get('Event');
   assert.deepEqual(Object.keys(source).sort(),['id','title','description','startTime','endTime','locationName','address','virtualEventUrl','startTimeDayOfWeek','startTimeHourOfDay','canceled','isHostedByOP','isAllDay','coverImageURL','createdAt','updatedAt','isInPrivateResidence','location','cost','Tags','EventChannels','SubscribedToNotifications','SubscribedToEventUpdates','Poster'].sort());
   assert.deepEqual(Object.keys(source.Tags[0]),['text']);
-  assert.deepEqual(Object.keys(source.EventChannels[0]).sort(),['id','eventId','channelUniqueName','Channel'].sort());
+  assert.deepEqual(Object.keys(source.EventChannels[0]).sort(),['id','eventId','eventNumber','channelUniqueName','Channel'].sort());
   assert.ok(source.EventChannels[0].Channel);assert.deepEqual(Object.keys(source.EventChannels[0].Channel).sort(),['uniqueName','displayName','channelIconURL'].sort());
   assert.ok(source.Poster);assert.deepEqual(Object.keys(source.Poster).sort(),['username','createdAt','discussionKarma','commentKarma'].sort());
   assert.deepEqual(source.SubscribedToNotifications,[{username:'alice'}]);assert.deepEqual(source.SubscribedToEventUpdates,[]);

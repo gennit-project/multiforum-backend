@@ -35,7 +35,7 @@ CALL {
   ORDER BY answer.createdAt DESC, answer.id ASC
   LIMIT toInteger($answerLimit) + 1
   WITH [value IN collect(CASE WHEN answer IS NULL THEN null ELSE answer {
-    .id, .text, .createdAt,
+    .id, .shortId, .text, .createdAt,
     CommentAuthor: CASE WHEN answerAuthor IS NULL THEN null ELSE answerAuthor {
       __sourceAuthorType: CASE
         WHEN answerAuthor:User AND NOT (answerAuthor:ModerationProfile) THEN 'User'
@@ -71,7 +71,7 @@ CALL {
 }
 
 RETURN entry {
-  .id, .weightedVotesCount, .discussionId, .channelUniqueName, .emoji,
+  .id, .weightedVotesCount, .discussionId, .discussionNumber, .channelUniqueName, .emoji,
   .archived, .locked, .answered,
   UpvotedByUsers: upvoters,
   UpvotedByUsersAggregate: {count: upvoteCount},

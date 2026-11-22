@@ -31,6 +31,7 @@ export const CREATED_EVENT_SELECTION = `
       createdAt
       channelUniqueName
       eventId
+      eventNumber
       archived
       Channel {
         uniqueName
@@ -95,6 +96,7 @@ export const UPDATED_EVENT_SELECTION = `
             id
             channelUniqueName
             eventId
+            eventNumber
             Channel {
               uniqueName
             }

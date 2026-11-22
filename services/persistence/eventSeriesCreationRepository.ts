@@ -42,6 +42,7 @@ export const CREATED_EVENT_SERIES_SELECTION = `
       EventChannels {
         id
         channelUniqueName
+        eventNumber
         Channel {
           uniqueName
         }
@@ -50,6 +51,7 @@ export const CREATED_EVENT_SERIES_SELECTION = `
     EventChannels {
       id
       channelUniqueName
+      eventNumber
       Channel {
         uniqueName
       }

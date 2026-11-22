@@ -46,6 +46,7 @@ const eventSelectionSet = `
     EventChannels {
       id
       channelUniqueName
+      eventNumber
       Channel {
         uniqueName
       }

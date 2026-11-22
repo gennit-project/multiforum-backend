@@ -443,6 +443,7 @@ test("getDiscussionsInChannel returns discussionChannels and aggregateCount", as
     isFavorited:null, Channel:{uniqueName:'test-channel'},
     Discussion:{id:'d-1',title:null,body:null,createdAt:null,updatedAt:null,
       hasSensitiveContent:null,hasSpoiler:null,Author:null,Album:null,Tags:[],
+      DiscussionChannels:[{id:'dc-1',discussionId:'d-1',discussionNumber:7,channelUniqueName:'test-channel'}],
       DownloadableFiles:[],authorIsChannelModerator:false},
   } satisfies DiscussionListViewerChannel;
   const driver = createMockDriver([

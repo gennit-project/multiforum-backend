@@ -1,4 +1,4 @@
-import type {CustomChannelAnswer,CustomCommentAuthorIdentity,CustomViewerComment,CustomRootComment,CustomReplyComment,CustomEventComment,CustomCommentSectionChannel,RawCountConnection} from '../customResolvers/contracts/customCommentSources.js';
+import type {CustomChannelAnswer,CustomCommentEvent,CustomCommentAuthorIdentity,CustomViewerComment,CustomRootComment,CustomReplyComment,CustomEventComment,CustomCommentSectionChannel,RawCountConnection} from '../customResolvers/contracts/customCommentSources.js';
 import {rememberCanonicalSource as remember} from './canonicalSourceFields.js';
 import {rememberAuthorSourceType} from './authorSourceType.js';
 function author(source:CustomCommentAuthorIdentity|null){
@@ -19,16 +19,17 @@ function comment<T extends CustomViewerComment>(source:T):T {
  for(const version of source.PastVersions){remember(version);if(version.Author)remember(version.Author);}
  return source;
 }
+function event(source:CustomCommentEvent<unknown>){remember(source);source.EventChannels.forEach(remember);}
 export function canonicalRootComment(source:CustomRootComment):CustomRootComment {
  comment(source);source.FeedbackComments.forEach(remember);return source;
 }
 export function canonicalReplyComment(source:CustomReplyComment):CustomReplyComment {
  comment(source);remember(source.ParentComment);source.FeedbackComments.forEach(remember);
- if(source.Event)remember(source.Event);if(source.DiscussionChannel)remember(source.DiscussionChannel);
+ if(source.Event)event(source.Event);if(source.DiscussionChannel)remember(source.DiscussionChannel);
  return source;
 }
 export function canonicalEventComment(source:CustomEventComment):CustomEventComment {
- comment(source);source.ChildComments.forEach(remember);remember(source.Event);return source;
+ comment(source);source.ChildComments.forEach(remember);event(source.Event);return source;
 }
 export function canonicalCommentSectionChannel(source:CustomCommentSectionChannel):CustomCommentSectionChannel {
  remember(source);source.UpvotedByUsers.forEach(remember);source.SuperUpvotedByUsers.forEach(remember);

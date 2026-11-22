@@ -8,6 +8,7 @@ import { allocatePerUserNumberSnippet, IMAGE_NUMBER } from "../perUserNumber.js"
 export const CREATED_IMAGE_SELECTION = `
   {
     id
+    imageNumber
     url
     storageBucket
     storageObjectName

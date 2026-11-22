@@ -54,6 +54,7 @@ export const UPDATED_SERIES_OCCURRENCE_SELECTION = `
             id
             channelUniqueName
             eventId
+            eventNumber
             Channel {
               uniqueName
             }

@@ -60,9 +60,9 @@ beforeEach(async()=>{
 });
 const item=(title='Created')=>({eventCreateInput:{title,canceled:false,startTime:'2026-06-01T10:00:00Z',endTime:'2026-06-01T12:00:00Z',
   Tags:{create:[{node:{text:title}}]}},channelConnections:['forum','second']});
-const SOURCE=`mutation($input:[EventCreateInputWithChannels!]!){createEventWithChannelConnections(input:$input){id title canceled startTime endTime Tags{text} EventChannels{id channelUniqueName eventId createdAt archived} SubscribedToNotifications{username}}}`;
+const SOURCE=`mutation($input:[EventCreateInputWithChannels!]!){createEventWithChannelConnections(input:$input){id title canceled startTime endTime Tags{text} EventChannels{id channelUniqueName eventId eventNumber createdAt archived} SubscribedToNotifications{username}}}`;
 const execute=(input:ReturnType<typeof item>[],username='alice')=>graphql({schema,source:SOURCE,variableValues:{input},contextValue:{driver,req:{headers:{}},user:{username,email:null,email_verified:true,data:null}}});
-const ok=(result:Awaited<ReturnType<typeof execute>>)=>{assert.equal(result.errors,undefined,JSON.stringify(result.errors));return (result.data as any).createEventWithChannelConnections as Array<{id:string;title:string;Tags:Array<{text:string}>;EventChannels:Array<{channelUniqueName:string;eventId:string}>;SubscribedToNotifications:Array<{username:string}>}>;};
+const ok=(result:Awaited<ReturnType<typeof execute>>)=>{assert.equal(result.errors,undefined,JSON.stringify(result.errors));return (result.data as any).createEventWithChannelConnections as Array<{id:string;title:string;Tags:Array<{text:string}>;EventChannels:Array<{channelUniqueName:string;eventId:string;eventNumber:number|null}>;SubscribedToNotifications:Array<{username:string}>}>;};
 async function persistedTitles(){return (await driver.executeQuery('MATCH(e:Event) RETURN e.title AS title ORDER BY title')).records.map(r=>r.get('title'));}
 async function assertEmpty(){assert.equal((await driver.executeQuery('MATCH(n) WHERE n:Event OR n:EventChannel OR n:Tag RETURN n')).records.length,0);}
 
@@ -72,6 +72,8 @@ test('real GraphQL creation returns the saved item, tags, forum links and subscr
   assert.deepEqual(event.Tags.map(t=>t.text),['Created']);
   assert.deepEqual(event.EventChannels.map(c=>c.channelUniqueName).sort(),['forum','second']);
   assert.ok(event.EventChannels.every(c=>c.eventId===event.id));
+  // The client builds the post-create redirect from each forum's short URL number.
+  assert.deepEqual(event.EventChannels.map(c=>c.eventNumber),[1,1]);
   assert.deepEqual(event.SubscribedToNotifications.map(u=>u.username),['alice']);
   const stored=(await createEventWriteRepository(driver).findCreatedEvent(event.id))[0];
   assert.equal(stored.title,event.title);

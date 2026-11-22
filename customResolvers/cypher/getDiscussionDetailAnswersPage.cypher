@@ -18,6 +18,7 @@ ORDER BY answer.createdAt DESC, answer.id ASC
 LIMIT toInteger($pageLimit)
 RETURN answer {
   .id,
+  .shortId,
   .text,
   .createdAt,
   CommentAuthor: CASE WHEN answerAuthor IS NULL THEN null ELSE answerAuthor {

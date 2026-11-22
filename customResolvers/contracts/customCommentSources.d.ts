@@ -16,17 +16,20 @@ export type CustomViewerComment={
  SuperUpvotedByUsers:RawUsername[];ChildCommentsAggregate:{count:Integer};ChildCommentsConnection:RawCountConnection;
  PastVersions:CustomTextVersion[];SubscribedToNotifications:{username:string}[];
 };
+/** The comment's event with each forum's short URL number, for permalinks. */
+export type CustomCommentEvent<Id>={id:Id;EventChannels:{channelUniqueName:unknown;eventNumber:unknown}[]};
 export type CustomRootComment=CustomViewerComment & {ParentComment:null;FeedbackComments:{id:unknown}[]};
 export type CustomReplyComment=CustomViewerComment & {
- ParentComment:{id:string};FeedbackComments:{id:unknown}[];
- Event:{id:unknown}|null;DiscussionChannel:{id:unknown;channelUniqueName:unknown;discussionId:unknown}|null;
+ ParentComment:{id:string;shortId:unknown};FeedbackComments:{id:unknown}[];
+ Event:CustomCommentEvent<unknown>|null;
+ DiscussionChannel:{id:unknown;channelUniqueName:unknown;discussionId:unknown;discussionNumber:unknown}|null;
 };
 export type CustomEventComment=CustomViewerComment & {
- ParentComment:null;ChildComments:{id:unknown;text:unknown}[];Event:{id:string};DiscussionChannel:null;
+ ParentComment:null;ChildComments:{id:unknown;shortId:unknown;text:unknown}[];Event:CustomCommentEvent<string>;DiscussionChannel:null;
 };
-export type CustomChannelAnswer={id:unknown;text:unknown;createdAt:unknown;CommentAuthor:CustomCommentAuthorIdentity|null};
+export type CustomChannelAnswer={id:unknown;shortId:unknown;text:unknown;createdAt:unknown;CommentAuthor:CustomCommentAuthorIdentity|null};
 export type CustomCommentSectionChannel={
- id:unknown;weightedVotesCount:unknown;discussionId:string;channelUniqueName:string;emoji:unknown;
+ id:unknown;weightedVotesCount:unknown;discussionId:string;discussionNumber:unknown;channelUniqueName:string;emoji:unknown;
  archived:unknown;locked:unknown;answered:unknown;
  UpvotedByUsers:RawUsername[];UpvotedByUsersAggregate:{count:Integer};UpvotedByUsersConnection:RawCountConnection;
  SuperUpvotedByUsers:RawUsername[];CommentsAggregate:{count:Integer};CommentsConnection:RawCountConnection;

@@ -83,7 +83,7 @@ test("returns bounded child projections for event root comments", async () => {
   const firstComment = result.Comments.find((comment: any) => comment.id === "cm1");
 
   assert.equal(firstComment.ChildCommentsAggregate.count.toNumber(), 1);
-  assert.deepEqual(firstComment.ChildComments, [{ id: "cm3", text: "a reply" }]);
+  assert.deepEqual(firstComment.ChildComments, [{ id: "cm3", shortId: null, text: "a reply" }]);
 });
 
 test("excludes non-root comments (replies)", async () => {
